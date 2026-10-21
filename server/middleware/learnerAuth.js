@@ -1,0 +1,66 @@
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from './auth.js';
+
+// Learner sessions. Before this, any caller could submit quizzes, start the final, read progress or
+// claim a certificate for any email simply by passing `userId`. Now those endpoints require a signed
+// learner token whose subject must match the userId in the request.
+
+const LEARNER_TOKEN_TTL = '14d';
+const normId = (id) => String(id || '').trim().toLowerCase();
+
+export function signLearnerToken(email) {
+  return jwt.sign({ sub: normId(email), role: 'learner' }, JWT_SECRET, { expiresIn: LEARNER_TOKEN_TTL });
+}
+
+/** Returns the learner email from a valid token, or null. */
+export function learnerFromRequest(req) {
+  const token = req.headers['x-learner-token'];
+  if (!token) return null;
+  try {
+    const decoded = jwt.verify(String(token), JWT_SECRET);
+    return decoded?.role === 'learner' && decoded.sub ? decoded.sub : null;
+  } catch {
+    return null;
+  }
+}
+
+function isAdminRequest(req) {
+  const h = req.headers.authorization;
+  if (!h || !h.startsWith('Bearer ')) return false;
+  try { return jwt.verify(h.slice(7), JWT_SECRET)?.role === 'admin'; } catch { return false; }
+}
+
+// Endpoints that read or change one learner's own records.
+const PROTECTED = [
+  ['POST', /^\/quizzes\/module\/[^/]+\/submit$/],
+  ['GET', /^\/quizzes\/module\/[^/]+\/attempts$/],
+  ['POST', /^\/final-test\/(start|submit)$/],
+  ['GET', /^\/final-test\/attempts$/],
+  ['GET', /^\/progress\/[^/]+$/],
+  ['GET', /^\/enrollment$/],
+  ['POST', /^\/enrollment$/],
+  ['POST', /^\/certificates\/issue$/],
+  ['GET', /^\/practice\/progress$/]
+];
+
+/** Mounted at /api. Lets admins through, otherwise requires a learner token matching userId. */
+export function learnerGuard(req, res, next) {
+  const rule = PROTECTED.find(([method, re]) => method === req.method && re.test(req.path));
+  if (!rule) return next();
+  if (isAdminRequest(req)) return next();
+
+  const email = learnerFromRequest(req);
+  if (!email) {
+    return res.status(401).json({ success: false, code: 'LEARNER_AUTH_REQUIRED', message: 'Your session has expired. Please sign in again.' });
+  }
+  const claimed = normId(req.method === 'GET' ? req.query.userId : req.body?.userId);
+  if (claimed && claimed !== email) {
+    return res.status(403).json({ success: false, message: 'You can only access your own learning records.' });
+  }
+  // Fill in the userId from the token so handlers always act on the signed-in learner.
+  // (Express 5 re-parses req.query on every access, so replace the property rather than mutate it.)
+  if (req.method === 'GET') Object.defineProperty(req, 'query', { value: { ...req.query, userId: email }, configurable: true, enumerable: true });
+  else req.body = { ...(req.body || {}), userId: email };
+  req.learnerEmail = email;
+  next();
+}

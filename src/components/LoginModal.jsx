@@ -47,18 +47,18 @@ export default function AuthPage({ mode = 'login', onSwitchMode, onBack, onHome,
     try {
       if (isSignup) {
         const res = await api.learnerRegister({ name, regNo, phone, email, password: form.password });
-        onSuccess(res.learner, { isNew: true });
+        onSuccess({ ...res.learner, token: res.token }, { isNew: true });
         return;
       }
       try {
         const res = await api.learnerLogin({ email, regNo, password: form.password });
-        onSuccess(res.learner);
+        onSuccess({ ...res.learner, token: res.token });
       } catch (err) {
         // One-time migration for accounts created by the old browser-only login.
         const saved = readAccount(email);
         if (err.data?.code === 'NOT_FOUND' && saved && saved.password === form.password && (!saved.regNo || saved.regNo.toUpperCase() === regNo)) {
           const res = await api.learnerRegister({ name: saved.name || email.split('@')[0], regNo, phone: saved.phone || '0000000000', email, password: form.password });
-          onSuccess(res.learner);
+          onSuccess({ ...res.learner, token: res.token });
           return;
         }
         throw err;

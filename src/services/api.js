@@ -1,5 +1,7 @@
 // API Service for Arshith Bootcamp Backend Integration
 
+import { readStudent } from '../utils/session';
+
 const API_BASE = '/api';
 
 let adminToken = localStorage.getItem('arb_admin_token') || null;
@@ -32,6 +34,9 @@ async function request(url, options = {}) {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
+  // Signed learner session (required by quiz, progress, enrollment and certificate endpoints).
+  const learnerToken = readStudent()?.token;
+  if (learnerToken) headers['X-Learner-Token'] = learnerToken;
 
   try {
     const res = await fetch(`${API_BASE}${url}`, {
@@ -49,10 +54,14 @@ async function request(url, options = {}) {
       const error = new Error(data.message || 'An error occurred during API request.');
       error.status = res.status;
       error.data = data;
+      if (res.status === 401 && data.code === 'LEARNER_AUTH_REQUIRED') {
+        window.dispatchEvent(new CustomEvent('arb:learner-session-expired'));
+      }
       throw error;
     }
     return data;
   } catch (err) {
+    if (err.name === 'AbortError') throw err;
     if (!err.status) console.error(`API Error on ${url}:`, err);
     throw err;
   }
@@ -163,6 +172,13 @@ export const api = {
   learnerRegister: (data) => request('/learners/register', { method: 'POST', body: JSON.stringify(data) }),
   learnerLogin: (data) => request('/learners/login', { method: 'POST', body: JSON.stringify(data) }),
   sendContactMessage: (data) => request('/contact', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Module enrichment & practice (graded on the server; solutions are returned only after an attempt)
+  getModuleEnrichment: (courseId, moduleId, signal) =>
+    request(`/courses/${encodeURIComponent(courseId)}/modules/${encodeURIComponent(moduleId)}/enrichment`, { signal }),
+  checkPractice: (data) => request('/practice/check', { method: 'POST', body: JSON.stringify(data) }),
+  getPracticeProgress: (userId, courseId) =>
+    request(`/practice/progress?userId=${encodeURIComponent(userId || '')}&courseId=${encodeURIComponent(courseId)}`),
 
   // Admin Quiz System Management & Analytics
   getAdminQuestions: () => request('/admin/questions'),

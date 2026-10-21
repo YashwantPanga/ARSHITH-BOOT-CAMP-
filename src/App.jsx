@@ -120,6 +120,23 @@ function AppShell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentUser?.email]);
 
+  // Learner sessions are server-signed. Sessions created before that (no token) or expired ones
+  // must sign in again; the API raises 'arb:learner-session-expired' on a 401 from a protected route.
+  useEffect(() => {
+    const expire = () => {
+      if (!readStudent()) return;
+      saveUser(null);
+      setProgressByCourse({});
+      toast('Please sign in again to continue — your session has expired.', 'info', 5200);
+      const here = window.location.pathname + window.location.search;
+      navigate(paths.login(here.startsWith('/login') ? undefined : here), { replace: true });
+    };
+    window.addEventListener('arb:learner-session-expired', expire);
+    if (studentUser && !studentUser.token) expire();
+    return () => window.removeEventListener('arb:learner-session-expired', expire);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     const token = getAdminToken();
     if (!token) return;

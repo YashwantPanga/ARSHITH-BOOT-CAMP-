@@ -14,7 +14,15 @@ import PremiumCodeBlock from '../components/CodeBlock';
 import { PlaygroundProvider, usePlayground } from '../components/CodePlayground';
 import { ConceptMap, LearningFlow, BlueprintDiagram } from '../components/Diagrams';
 import { detectLanguage } from '../utils/highlight';
-import { displayNameOf } from '../utils/session';
+import { displayNameOf, userIdOf } from '../utils/session';
+import { api } from '../services/api';
+import { normalizeModule } from '../utils/normalizeModule';
+import Markdown from '../components/lesson/Markdown';
+import WorkflowDiagram from '../components/lesson/WorkflowDiagram';
+import PracticeExercises from '../components/lesson/PracticeExercises';
+import {
+  useModuleEnrichment, SectionSkeleton, LoadError, SkillsAndPrereqs, Intuition, WorkedExample, CaseStudy, KnowledgeCheck, FurtherLearning
+} from '../components/lesson/EnrichmentBlocks';
 
 /* ---------- small render helpers ---------- */
 // cleanText() collapses newlines, so clean line-by-line to keep the author's paragraph breaks.
@@ -63,6 +71,9 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   const currentIndex = Math.max(0, modules.findIndex(m => m.id === activeModuleId));
   const current = modules[currentIndex];
   const rm = current?.readingMaterial || {};
+  const nm = useMemo(() => normalizeModule(current), [current]);
+  const enr = useModuleEnrichment(course.id, current?.id);
+  const [practiceDone, setPracticeDone] = useState({});
 
   const [quizOpen, setQuizOpen] = useState(false);
   const [finalOpen, setFinalOpen] = useState(false);
@@ -85,6 +96,21 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
     mainRef.current?.scrollTo({ top: 0, behavior: 'auto' });
     if (readBarRef.current) readBarRef.current.style.width = '0%';
   }, [current?.id]);
+
+  // Practice completions saved on the server (signed-in learners only).
+  useEffect(() => {
+    if (!studentUser?.token) return undefined;
+    let alive = true;
+    api.getPracticeProgress(userIdOf(studentUser), course.id)
+      .then(res => {
+        if (!alive) return;
+        const map = {};
+        Object.entries(res.progress || {}).forEach(([moduleId, p]) => { map[moduleId] = Object.keys(p.exercises || {}); });
+        setPracticeDone(map);
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [course.id, studentUser]);
 
   const onMainScroll = (e) => {
     const el = e.currentTarget;
@@ -111,34 +137,53 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   };
 
   /* ---------- build the reading sections dynamically (numbering follows what exists) ---------- */
+  // Original module content comes from `nm` (a normalised, read-only view of readingMaterial);
+  // additional content comes from `enr` (loaded separately, never merged into the stored module).
   const sections = useMemo(() => {
     const s = [];
+    const E = enr.data;
+    const enrLoading = enr.status === 'loading';
+    const enrFailed = enr.status === 'error';
     const mistakes = [
-      ...(rm.commonErrors || []).map(e => ({ type: 'obj', ...e })),
-      ...(rm.commonMistakes || []).map(e => (typeof e === 'string' ? { type: 'str', text: e } : { type: 'obj', ...e }))
+      ...nm.commonErrors.map(e => ({ type: 'obj', ...e })),
+      ...nm.commonMistakes.map(e => (typeof e === 'string' ? { type: 'str', text: e } : { type: 'obj', ...e }))
     ];
-    const practices = (rm.bestPractices || []).map(normalizePractice).filter(p => p.rule || p.title);
+    const practices = nm.bestPractices.map(normalizePractice).filter(p => p.rule || p.title);
 
-    if (rm.introduction) s.push({ id: 'intro', title: 'Introduction', icon: BookOpen, body: <Paragraphs text={rm.introduction} /> });
-
-    if (rm.objectives?.length) s.push({
-      id: 'objectives', title: 'What you will learn', icon: Target, body: (
-        <ul className="grid sm:grid-cols-2 gap-3">
-          {rm.objectives.map((o, i) => (
-            <li key={i} className="flex gap-3 p-3.5 rounded-xl bg-brand-50/60 border border-brand-100 text-sm text-slate-700">
-              <CheckCircle2 className="w-4 h-4 text-peach-500 mt-0.5 shrink-0" />{cleanText(o)}
-            </li>
-          ))}
-        </ul>
+    // 1. Learning objectives
+    if (nm.objectives.length || E?.skills?.length || E?.prerequisites?.length) s.push({
+      id: 'objectives', title: 'Learning objectives', icon: Target, body: (
+        <div className="space-y-4">
+          {nm.objectives.length > 0 && (
+            <ul className="grid sm:grid-cols-2 gap-3">
+              {nm.objectives.map((o, i) => (
+                <li key={i} className="flex gap-3 p-3.5 rounded-xl bg-brand-50/60 border border-brand-100 text-sm text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-peach-500 mt-0.5 shrink-0" />{cleanText(o)}
+                </li>
+              ))}
+            </ul>
+          )}
+          {E && <SkillsAndPrereqs skills={E.skills} prerequisites={E.prerequisites} />}
+        </div>
       )
     });
 
-    if (rm.terminology?.length) s.push({
+    // 2. Introduction and intuition
+    if (nm.introduction || E?.intuition) s.push({
+      id: 'intro', title: 'Introduction & intuition', icon: BookOpen, body: (
+        <div className="space-y-4">
+          <Paragraphs text={nm.introduction} />
+          {E?.intuition && <Intuition intuition={E.intuition} />}
+        </div>
+      )
+    });
+
+    if (nm.terminology.length) s.push({
       id: 'terms', title: 'Key terminology', icon: BookOpen, body: (
         <div className="grid sm:grid-cols-2 gap-3">
-          {rm.terminology.map((t, i) => (
+          {nm.terminology.map((t, i) => (
             <div key={i} className="p-4 rounded-xl border border-slate-200 bg-white">
-              <p className="font-mono text-sm font-semibold text-brand-700">{cleanText(t.term)}</p>
+              <p className="font-mono text-sm font-semibold text-brand-700 break-words">{cleanText(t.term)}</p>
               <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">{cleanText(t.definition)}</p>
               {t.importance && <p className="text-xs text-slate-500 mt-2 pt-2 border-t border-slate-100"><strong className="text-slate-600">Why it matters:</strong> {cleanText(t.importance)}</p>}
             </div>
@@ -147,7 +192,10 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
       )
     });
 
-    const concepts = (rm.sections || []).filter(sec => sec.heading).map((sec, i) => ({ id: `concept-${i}`, label: sec.heading }));
+    // Concept map: from structured section headings, or from the Markdown headings of `theory`.
+    const concepts = nm.sections.length
+      ? nm.sections.filter(sec => sec.heading).map((sec, i) => ({ id: `concept-${i}`, label: sec.heading }))
+      : (nm.theoryMarkdown.match(/^#{2,4}\s+.+$/gm) || []).map((h) => ({ id: 'sec-theory', label: h.replace(/^#+\s+/, '') }));
     if (concepts.length >= 2) s.push({
       id: 'map', title: 'Concept map', icon: Network, body: (
         <div className="space-y-3">
@@ -157,33 +205,25 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
       )
     });
 
-    if (rm.diagram) s.push({
-      id: 'diagram', title: rm.diagram.title ? cleanText(rm.diagram.title) : 'Architecture & workflow', icon: Layers, body: (
-        <div className="space-y-3">
-          <BlueprintDiagram ascii={rm.diagram.ascii} />
-          <Paragraphs text={rm.diagram.explanation} className="text-sm leading-6 text-slate-600" />
-        </div>
-      )
-    });
-
-    if (rm.sections?.length) s.push({
+    // 3. Detailed concepts
+    if (nm.sections.length) s.push({
       id: 'theory', title: 'Concepts explained', icon: BookOpen, body: (
         <div className="space-y-5">
-          {rm.sections.map((sec, i) => (
+          {nm.sections.map((sec, i) => (
             <div key={i} id={`concept-${i}`} className="space-y-3 scroll-mt-6">
-              {sec.heading && <h4 className="flex items-center gap-3 text-xl font-semibold text-brand-900"><span className="w-7 h-7 rounded-lg bg-brand-50 text-brand-900 text-xs font-sans font-bold flex items-center justify-center shrink-0">{i + 1}</span>{cleanText(sec.heading).replace(/^\d+[.)]\s*/, '')}</h4>}
+              {sec.heading && <h4 className="flex items-start gap-3 text-xl font-semibold text-brand-900"><span className="mt-0.5 w-7 h-7 rounded-lg bg-brand-50 text-brand-900 text-xs font-sans font-bold flex items-center justify-center shrink-0">{i + 1}</span><span className="min-w-0">{cleanText(sec.heading).replace(/^\d+[.)]\s*/, '')}</span></h4>}
               <Paragraphs text={sec.text || sec.content} />
               {sec.bulletPoints?.length > 0 && (
                 <ul className="space-y-1.5 pl-1">
-                  {sec.bulletPoints.map((b, k) => <li key={k} className="flex gap-2.5 text-[15px] text-slate-600"><span className="text-peach-500 mt-1">•</span>{cleanText(b)}</li>)}
+                  {sec.bulletPoints.map((b, k) => <li key={k} className="flex gap-2.5 text-[15px] text-slate-600"><span className="text-peach-500 mt-1">•</span><span className="min-w-0">{cleanText(b)}</span></li>)}
                 </ul>
               )}
               {sec.code && <CodeBlock courseId={course.id} code={sec.code} />}
               {sec.table?.headers && (
-                <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <div className="overflow-x-auto thin-scroll rounded-xl border border-slate-200">
                   <table className="w-full text-sm">
                     <thead className="bg-brand-900 text-white"><tr>{sec.table.headers.map((h, k) => <th key={k} className="px-3 py-2 text-left font-semibold">{cleanText(h)}</th>)}</tr></thead>
-                    <tbody>{sec.table.rows.map((r, k) => <tr key={k} className="odd:bg-white even:bg-slate-50">{r.map((c, j) => <td key={j} className="px-3 py-2 text-slate-600 border-t border-slate-100">{cleanText(c)}</td>)}</tr>)}</tbody>
+                    <tbody>{(sec.table.rows || []).map((r, k) => <tr key={k} className="odd:bg-white even:bg-slate-50">{r.map((c, j) => <td key={j} className="px-3 py-2 text-slate-600 border-t border-slate-100">{cleanText(c)}</td>)}</tr>)}</tbody>
                   </table>
                 </div>
               )}
@@ -192,16 +232,43 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         </div>
       )
     });
+    else if (nm.theoryMarkdown) s.push({
+      id: 'theory', title: 'Concepts explained', icon: BookOpen, body: <Markdown source={nm.theoryMarkdown} courseId={course.id} />
+    });
 
-    if (rm.tutorials?.length) s.push({
+    // 4. Workflow & architecture: new structured diagram + the module's original ASCII diagram
+    if (nm.diagram || E?.workflow || enrLoading || enrFailed) s.push({
+      id: 'diagram', title: nm.diagram?.title ? cleanText(nm.diagram.title) : 'Architecture & workflow', icon: Layers, body: (
+        <div className="space-y-5">
+          {E?.workflow && (
+            <div className="space-y-3">
+              <p className="text-xs font-bold tracking-[0.14em] text-sage">{nm.diagram ? 'STEP-BY-STEP WORKFLOW' : 'WORKFLOW DIAGRAM'}</p>
+              <WorkflowDiagram def={E.workflow} />
+              {E.workflow.explanation && <p className="text-sm leading-6 text-charcoal/75">{E.workflow.explanation}</p>}
+            </div>
+          )}
+          {enrLoading && !nm.diagram && <SectionSkeleton />}
+          {enrFailed && <LoadError message={enr.message} onRetry={enr.retry} />}
+          {nm.diagram && (
+            <div className="space-y-3">
+              {E?.workflow && <p className="text-xs font-bold tracking-[0.14em] text-sage">ARCHITECTURE DIAGRAM</p>}
+              <BlueprintDiagram ascii={nm.diagram.ascii} />
+              <Paragraphs text={nm.diagram.explanation} className="text-sm leading-6 text-slate-600" />
+            </div>
+          )}
+        </div>
+      )
+    });
+
+    if (nm.tutorials.length) s.push({
       id: 'tutorials', title: 'Step-by-step tutorials', icon: Terminal, body: (
         <div className="space-y-5">
-          {rm.tutorials.map((t, i) => (
-            <div key={i} className="rounded-2xl border border-slate-200 p-5">
+          {nm.tutorials.map((t, i) => (
+            <div key={i} className="rounded-2xl border border-slate-200 p-4 sm:p-5">
               <h4 className="font-semibold text-brand-900">{cleanText(t.title)}</h4>
-              <ol className="mt-4 space-y-4 border-l-2 border-peach-200 pl-5">
+              <ol className="mt-4 space-y-4 border-l-2 border-peach-200 pl-5 ml-1">
                 {(t.steps || []).map((st, k) => (
-                  <li key={k} className="relative">
+                  <li key={k} className="relative min-w-0">
                     <span className="absolute -left-[1.95rem] top-0 w-6 h-6 rounded-full bg-peach-500 text-white text-[11px] font-bold flex items-center justify-center">{st.step || k + 1}</span>
                     <p className="text-sm font-medium text-slate-700">{cleanText(st.instruction)}</p>
                     {st.code && <div className="mt-2"><CodeBlock courseId={course.id} code={st.code} /></div>}
@@ -214,17 +281,21 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         </div>
       )
     });
+    else if (nm.tutorialMarkdown) s.push({
+      id: 'tutorials', title: 'Step-by-step tutorial', icon: Terminal, body: <Markdown source={nm.tutorialMarkdown} courseId={course.id} />
+    });
 
-    if (rm.codeExamples?.length) s.push({
+    // 5. Practical examples and code
+    if (nm.codeExamples.length || E?.workedExample) s.push({
       id: 'code', title: 'Code examples', icon: Code, body: (
-        <div className="space-y-5">
-          {rm.codeExamples.map((ex, i) => {
+        <div className="space-y-6">
+          {nm.codeExamples.map((ex, i) => {
             const key = `lbl-${i}`;
             return (
               <div key={i} className="space-y-2.5">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-brand-900">{cleanText(ex.title)}</p>
-                  {ex.language && <span className="chip bg-brand-50 text-brand-700 uppercase text-[10px]">{ex.language}</span>}
+                  <p className="text-sm font-semibold text-brand-900 min-w-0">{cleanText(ex.title)}</p>
+                  {ex.language && <span className="chip bg-brand-50 text-brand-700 uppercase text-[10px] shrink-0">{ex.language}</span>}
                 </div>
                 <CodeBlock courseId={course.id} language={ex.language} code={ex.code} />
                 {ex.explanation && <p className="text-sm text-slate-500"><strong className="text-slate-600">Note:</strong> {cleanText(ex.explanation)}</p>}
@@ -236,7 +307,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                         {ex.lineByLine.map((l, k) => (
                           <div key={k} className="grid grid-cols-[auto,1fr] gap-3 p-3 text-sm">
                             <span className="text-xs font-mono text-brand-500 pt-0.5">L{l.line}</span>
-                            <div><code className="text-[13px] text-brand-900 bg-brand-50 px-1.5 py-0.5 rounded">{l.code}</code><p className="text-slate-500 mt-1">{l.explanation}</p></div>
+                            <div className="min-w-0"><code className="text-[13px] text-brand-900 bg-brand-50 px-1.5 py-0.5 rounded break-words">{l.code}</code><p className="text-slate-500 mt-1">{l.explanation}</p></div>
                           </div>
                         ))}
                       </div>
@@ -246,6 +317,12 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
               </div>
             );
           })}
+          {E?.workedExample && (
+            <div className="pt-5 border-t border-brand-900/10">
+              <p className="text-xs font-bold tracking-[0.14em] text-sage mb-3">WORKED EXAMPLE, LINE BY LINE</p>
+              <WorkedExample example={E.workedExample} courseId={course.id} />
+            </div>
+          )}
         </div>
       )
     });
@@ -255,17 +332,17 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         <div className="space-y-3">
           {mistakes.map((m, i) => m.type === 'str' ? (
             <div key={i} className="flex gap-3 p-4 rounded-xl bg-rose-50/60 border border-rose-100 text-sm text-slate-700">
-              <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />{cleanText(m.text)}
+              <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" /><span className="min-w-0">{cleanText(m.text)}</span>
             </div>
           ) : (
             <div key={i} className="p-4 rounded-xl border border-rose-100 bg-white space-y-3">
-              <p className="text-sm font-semibold text-rose-600">{cleanText(m.error || m.title)}</p>
+              <p className="text-sm font-semibold text-rose-600">{cleanText(m.error || m.title || m.mistake)}</p>
               {m.reason && <p className="text-sm text-slate-600"><strong>Cause:</strong> {cleanText(m.reason)}</p>}
               <div className="grid sm:grid-cols-2 gap-3">
-                {m.wrongCode && <div><p className="text-[11px] font-semibold uppercase text-rose-600 mb-1">Wrong</p><CodeBlock courseId={course.id} code={m.wrongCode} tone="bad" runnable={false} compact /></div>}
-                {m.fixCode && <div><p className="text-[11px] font-semibold uppercase text-mint-500 mb-1">Correct</p><CodeBlock courseId={course.id} code={m.fixCode} tone="good" compact /></div>}
+                {m.wrongCode && <div className="min-w-0"><p className="text-[11px] font-semibold uppercase text-rose-600 mb-1">Wrong</p><CodeBlock courseId={course.id} code={m.wrongCode} tone="bad" runnable={false} compact /></div>}
+                {m.fixCode && <div className="min-w-0"><p className="text-[11px] font-semibold uppercase text-mint-500 mb-1">Correct</p><CodeBlock courseId={course.id} code={m.fixCode} tone="good" compact /></div>}
               </div>
-              {m.explanation && <p className="text-sm text-slate-500"><strong className="text-slate-600">Tip:</strong> {cleanText(m.explanation)}</p>}
+              {(m.explanation || m.fix) && <p className="text-sm text-slate-500"><strong className="text-slate-600">Tip:</strong> {cleanText(m.explanation || m.fix)}</p>}
             </div>
           ))}
         </div>
@@ -276,10 +353,10 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
       id: 'best', title: 'Best practices & industry standards', icon: Lightbulb, body: (
         <div className="grid sm:grid-cols-2 gap-3">
           {practices.map((p, i) => (
-            <div key={i} className="p-4 rounded-xl border border-mint-200 bg-mint-50/50 space-y-2">
+            <div key={i} className="p-4 rounded-xl border border-mint-200 bg-mint-50/50 space-y-2 min-w-0">
               <div className="flex gap-3">
                 <span className="w-6 h-6 rounded-lg bg-mint-400 text-white text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   {p.title && <p className="text-sm font-semibold text-brand-900">{cleanText(p.title)}</p>}
                   {p.rule && <p className="text-sm text-slate-700 leading-relaxed">{cleanText(p.rule)}</p>}
                 </div>
@@ -292,20 +369,45 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
       )
     });
 
-    if (rm.practiceExercise) s.push({
-      id: 'exercise', title: 'Practice exercise', icon: Sparkles, body: (
-        <div className="space-y-3">
-          {rm.practiceExercise.title && <p className="font-semibold text-brand-900">{cleanText(rm.practiceExercise.title)}</p>}
-          <p className="text-[15px] text-slate-600 whitespace-pre-line leading-7">{cleanLines(rm.practiceExercise.problem || '')}</p>
-          {rm.practiceExercise.solutionCode && (
-            <>
-              <div className="flex flex-wrap gap-2">
-                <button onClick={() => playground?.open({ code: practiceStarter(rm.practiceExercise, course.id), lang: detectLanguage(rm.practiceExercise.solutionCode, '', course.id) })} className="btn-primary py-2"><FlaskConical className="w-4 h-4" /> Solve in Practice Lab</button>
-                <button onClick={() => toggle('solution')} className="btn-outline py-2">{revealed.solution ? 'Hide solution' : 'Show solution'}</button>
-              </div>
-              {revealed.solution && <div className="animate-fade-in"><CodeBlock courseId={course.id} code={rm.practiceExercise.solutionCode} label="solution" /></div>}
-            </>
+    // 6. Real-world case study
+    if (E?.caseStudy) s.push({ id: 'case', title: 'Real-world case study', icon: Briefcase, body: <CaseStudy study={E.caseStudy} /> });
+
+    // 7. Practice: the module's original exercise, the new graded exercises and mini tasks
+    const pe = nm.practiceExercise;
+    if (pe || E?.exercises?.length || nm.miniTasks.length || enrLoading || enrFailed) s.push({
+      id: 'exercise', title: 'Practice exercises', icon: Sparkles, body: (
+        <div className="space-y-6">
+          {pe && (
+            <div className="rounded-2xl border border-brand-900/10 p-4 sm:p-5 space-y-3">
+              <p className="text-xs font-bold tracking-[0.14em] text-sage">MODULE EXERCISE</p>
+              <p className="font-semibold text-brand-900">{cleanText(pe.title)}</p>
+              {pe.problem && <p className="text-[15px] text-slate-600 whitespace-pre-line leading-7">{cleanLines(pe.problem)}</p>}
+              {pe.starterCode && <CodeBlock courseId={course.id} code={pe.starterCode} label="starter code" />}
+              {(pe.solutionCode || pe.starterCode) && (
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => playground?.open({ code: pe.starterCode || practiceStarter(pe, course.id), lang: detectLanguage(pe.solutionCode || pe.starterCode, '', course.id) })} className="btn-primary py-2"><FlaskConical className="w-4 h-4" /> Solve in Practice Lab</button>
+                  {pe.solutionCode && <button onClick={() => toggle('solution')} className="btn-outline py-2" aria-expanded={!!revealed.solution}>{revealed.solution ? 'Hide solution' : 'Show solution'}</button>}
+                </div>
+              )}
+              {revealed.solution && pe.solutionCode && <div className="animate-fade-in"><CodeBlock courseId={course.id} code={pe.solutionCode} label="solution" /></div>}
+            </div>
           )}
+          {E?.exercises?.length > 0 && (
+            <PracticeExercises exercises={E.exercises} courseId={course.id} moduleId={current.id} completedIds={practiceDone[current.id] || []} />
+          )}
+          {enrLoading && <SectionSkeleton lines={2} />}
+          {enrFailed && <LoadError message={enr.message} onRetry={enr.retry} />}
+          {nm.miniTasks.map((t, i) => (
+            <div key={i} className="rounded-2xl border border-dashed border-brand-300 p-4 sm:p-5 space-y-3">
+              <p className="text-xs font-bold tracking-[0.14em] text-sage flex items-center gap-2"><ClipboardList className="w-4 h-4" /> MINI TASK</p>
+              {t.title && <p className="font-semibold text-brand-900">{cleanText(t.title)}</p>}
+              {t.objective && <p className="text-[15px] text-slate-600">{cleanText(t.objective)}</p>}
+              {t.requirements?.length > 0 && (
+                <ul className="space-y-2">{t.requirements.map((r, k) => <li key={k} className="flex gap-2.5 text-sm text-slate-600"><CheckCircle2 className="w-4 h-4 text-mint-400 mt-0.5 shrink-0" />{cleanText(r)}</li>)}</ul>
+              )}
+              {t.deliverable && <p className="text-sm p-3 rounded-lg bg-peach-50 text-brand-900"><strong>Deliverable:</strong> {cleanText(t.deliverable)}</p>}
+            </div>
+          ))}
         </div>
       )
     });
@@ -318,8 +420,8 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
             <div key={i} className="rounded-xl border border-slate-200 p-4">
               <div className="flex gap-3 items-start">
                 <span className="w-6 h-6 rounded-full bg-brand-50 text-brand-700 text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
-                <p className="flex-1 text-sm font-medium text-slate-700">{cleanText(q.question)}</p>
-                <button onClick={() => toggle(key)} className="text-xs font-semibold text-peach-500 hover:text-peach-600 shrink-0">{revealed[key] ? 'Hide' : 'Answer'}</button>
+                <p className="flex-1 min-w-0 text-sm font-medium text-slate-700">{cleanText(q.question)}</p>
+                <button onClick={() => toggle(key)} aria-expanded={!!revealed[key]} className="text-xs font-semibold text-peach-500 hover:text-peach-600 shrink-0">{revealed[key] ? 'Hide' : 'Answer'}</button>
               </div>
               {revealed[key] && (
                 <div className="mt-3 ml-9 p-3 rounded-lg bg-slate-50 text-sm text-slate-600 space-y-2 animate-fade-in">
@@ -334,44 +436,41 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
       </div>
     );
 
-    if (rm.practiceQuestions?.length) s.push({ id: 'practice-q', title: 'Practice questions', icon: HelpCircle, body: qaList(rm.practiceQuestions, 'pq') });
-    if (rm.interviewQuestions?.length) s.push({ id: 'interview', title: 'Interview questions', icon: MessageSquare, body: qaList(rm.interviewQuestions, 'iq') });
+    if (nm.practiceQuestions.length) s.push({ id: 'practice-q', title: 'Practice questions', icon: HelpCircle, body: qaList(nm.practiceQuestions, 'pq') });
+    if (nm.interviewQuestions.length) s.push({ id: 'interview', title: 'Interview questions', icon: MessageSquare, body: qaList(nm.interviewQuestions, 'iq') });
 
-    if (rm.miniTask) s.push({
-      id: 'task', title: 'Mini task', icon: ClipboardList, body: (
-        <div className="space-y-3">
-          <p className="font-semibold text-brand-900">{cleanText(rm.miniTask.title)}</p>
-          {rm.miniTask.objective && <p className="text-[15px] text-slate-600">{cleanText(rm.miniTask.objective)}</p>}
-          {rm.miniTask.requirements?.length > 0 && (
-            <ul className="space-y-2">{rm.miniTask.requirements.map((r, i) => <li key={i} className="flex gap-2.5 text-sm text-slate-600"><CheckCircle2 className="w-4 h-4 text-mint-400 mt-0.5 shrink-0" />{cleanText(r)}</li>)}</ul>
-          )}
-          {rm.miniTask.deliverable && <p className="text-sm p-3 rounded-lg bg-peach-50 text-brand-900"><strong>Deliverable:</strong> {cleanText(rm.miniTask.deliverable)}</p>}
-        </div>
-      )
-    });
-
-    const takeaways = rm.summary?.takeaways?.length ? rm.summary.takeaways : rm.keyTakeaways;
-    if (takeaways?.length || rm.summary?.quickReference?.length) s.push({
+    // 8. Summary and key takeaways
+    const sum = nm.summary;
+    if (sum.takeaways.length || sum.quickReference.length || sum.text || E?.cheatSheet?.length) s.push({
       id: 'summary', title: 'Summary & key takeaways', icon: CheckCircle2, body: (
         <div className="space-y-4">
-          {takeaways?.length > 0 && <ul className="space-y-2">{takeaways.map((t, i) => <li key={i} className="flex gap-2.5 text-[15px] text-slate-600"><CheckCircle2 className="w-4 h-4 text-peach-500 mt-1 shrink-0" />{cleanText(t)}</li>)}</ul>}
-          {rm.summary?.quickReference?.length > 0 && (
-            <div className="grid sm:grid-cols-2 gap-2">{rm.summary.quickReference.map((q, i) => <code key={i} className="text-[13px] p-2.5 rounded-lg bg-brand-50 text-brand-900">{cleanText(q)}</code>)}</div>
+          {sum.text && <Paragraphs text={sum.text} />}
+          {sum.takeaways.length > 0 && <ul className="space-y-2">{sum.takeaways.map((t, i) => <li key={i} className="flex gap-2.5 text-[15px] text-slate-600"><CheckCircle2 className="w-4 h-4 text-peach-500 mt-1 shrink-0" /><span className="min-w-0">{cleanText(t)}</span></li>)}</ul>}
+          {sum.quickReference.length > 0 && (
+            <div className="grid sm:grid-cols-2 gap-2">{sum.quickReference.map((q, i) => <code key={i} className="text-[13px] p-2.5 rounded-lg bg-brand-50 text-brand-900 break-words">{cleanText(q)}</code>)}</div>
+          )}
+          {E?.cheatSheet?.length > 0 && (
+            <div>
+              <p className="text-xs font-bold tracking-[0.14em] text-sage mb-2">REMEMBER — CHEAT SHEET</p>
+              <div className="grid sm:grid-cols-2 gap-2">{E.cheatSheet.map((c, i) => <code key={i} className="text-[12.5px] p-2.5 rounded-lg bg-evergreen text-[#E9F1EC] break-words whitespace-pre-wrap">{c}</code>)}</div>
+            </div>
           )}
         </div>
       )
     });
 
-    if (rm.references?.length) s.push({
-      id: 'refs', title: 'References', icon: ExternalLink, body: (
-        <div className="flex flex-wrap gap-2">
-          {rm.references.map((r, i) => <a key={i} href={r.url} target="_blank" rel="noreferrer" className="chip bg-white border border-slate-200 text-brand-700 hover:border-brand-400">{r.title}<ExternalLink className="w-3 h-3" /></a>)}
-        </div>
-      )
+    // 9. Knowledge check (new questions; the graded quiz stays separate and unchanged)
+    if (E?.knowledgeCheck?.length) s.push({
+      id: 'knowledge', title: 'Knowledge check', icon: ListChecks, body: <KnowledgeCheck questions={E.knowledgeCheck} courseId={course.id} moduleId={current.id} />
+    });
+
+    // 10. Further learning
+    if (nm.references.length || E?.references?.length || E?.next) s.push({
+      id: 'refs', title: 'Further learning', icon: ExternalLink, body: <FurtherLearning references={E?.references || []} originalReferences={nm.references} next={E?.next} />
     });
     return s;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current?.id, revealed]);
+  }, [current?.id, revealed, enr.status, enr.data, practiceDone]);
 
   const jumpTo = (id) => jumpToEl(`sec-${id}`);
 

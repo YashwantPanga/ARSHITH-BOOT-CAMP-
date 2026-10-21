@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { getDb, saveDb } from '../db.js';
+import { signLearnerToken } from '../middleware/learnerAuth.js';
 
 // Learner accounts live on the server (previously they were only in the browser's localStorage,
 // with plain-text passwords, so a learner could not sign in from another device).
@@ -89,7 +90,7 @@ router.post('/learners/register', (req, res) => {
     });
   }
   saveDb(db);
-  res.status(201).json({ success: true, learner: publicLearner(db, learner) });
+  res.status(201).json({ success: true, learner: publicLearner(db, learner), token: signLearnerToken(email) });
 });
 
 router.post('/learners/login', (req, res) => {
@@ -123,7 +124,7 @@ router.post('/learners/login', (req, res) => {
     student.lastActivity = new Date().toISOString();
     saveDb(db);
   }
-  res.json({ success: true, learner: publicLearner(db, learner) });
+  res.json({ success: true, learner: publicLearner(db, learner), token: signLearnerToken(email) });
 });
 
 // Contact form – messages are stored for the admin team (previously the form only pretended to send).
