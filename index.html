@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/arshith-bootcamp-icon.png" />
+    <meta name="theme-color" content="#013A2B" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arshith Bootcamp — Learn Today, Build Tomorrow | Online Learning Platform</title>
+    <meta name="description" content="Practical courses taught by industry experts. Learn Python, Web Development, Data Science, SQL & AI at your own pace and earn verifiable certificates." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+      /* Inline so the splash paints before the bundle loads */
+      #arb-splash{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:#FBF8F1;transition:opacity .5s ease,visibility .5s ease}
+      #arb-splash.hide{opacity:0;visibility:hidden}
+    </style>
+  </head>
+  <body class="antialiased font-sans">
+    <div id="arb-splash" class="splash" role="status" aria-label="Loading Arshith Bootcamp">
+      <div class="arb-loader" aria-hidden="true">
+        <svg viewBox="0 0 100 100">
+          <circle class="ring" cx="50" cy="50" r="46" />
+          <circle class="ring-arc" cx="50" cy="50" r="46" />
+          <path class="stem" d="M50 74 C50 62 50 52 50 40" />
+          <path class="leaf leaf-l" d="M50 56 C40 56 32 50 30 40 C40 40 48 46 50 56Z" />
+          <path class="leaf leaf-r" d="M50 46 C60 46 68 40 70 30 C60 30 52 36 50 46Z" />
+          <circle class="seed" cx="50" cy="76" r="3" />
+        </svg>
+      </div>
+      <div class="splash-word" aria-hidden="true"><span style="animation-delay:.05s">A</span><span style="animation-delay:.1s">R</span><span style="animation-delay:.15s">S</span><span style="animation-delay:.2s">H</span><span style="animation-delay:.25s">I</span><span style="animation-delay:.3s">T</span><span style="animation-delay:.35s">H</span></div>
+      <div class="splash-bar"><i></i></div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

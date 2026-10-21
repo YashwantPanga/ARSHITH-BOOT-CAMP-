@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #FBF8F1;
+    color: #302B25;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  h1, h2, h3, .font-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; letter-spacing: -0.01em; }
+  ::selection { background: #BCD1C6; color: #013A2B; }
+  pre, code, textarea.font-mono, .font-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-ligatures: none; }
+  button { -webkit-user-select: none; user-select: none; }
+  :focus-visible { outline: 2px solid #426557; outline-offset: 2px; }
+}
+
+@layer components {
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl font-semibold text-sm px-5 py-2.5 transition-all duration-200 active:scale-[.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 cursor-pointer;
+  }
+  .btn-primary { @apply btn bg-brand-900 text-ivory hover:bg-brand-950 shadow-[0_10px_24px_-12px_rgba(1,58,43,.75)] hover:shadow-[0_14px_28px_-12px_rgba(1,58,43,.85)]; }
+  .btn-plum { @apply btn bg-brand-950 text-ivory hover:bg-black/80 shadow-[0_10px_24px_-12px_rgba(12,45,38,.8)]; }
+  .btn-outline { @apply btn bg-white/70 text-brand-900 border border-brand-900/80 hover:bg-brand-900 hover:text-ivory; }
+  .btn-ghost { @apply btn text-charcoal/70 hover:text-brand-900 hover:bg-brand-50; }
+  .btn-sage { @apply btn bg-sage text-ivory hover:bg-brand-600; }
+
+  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-sage; }
+
+  .card { @apply bg-white rounded-2xl border border-brand-900/10 shadow-soft; }
+  .card-hover { @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover hover:border-brand-300; }
+
+  .input {
+    @apply w-full px-4 py-3 text-sm bg-cream border border-brand-900/15 rounded-xl outline-none transition-all placeholder:text-charcoal/40 focus:bg-white focus:border-sage focus:ring-4 focus:ring-brand-100;
+  }
+
+  .chip { @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold; }
+
+  /* Code blocks in the reader and in assessments */
+  .code-block {
+    @apply bg-evergreen text-[#E9F1EC] rounded-xl p-4 text-[13px] leading-relaxed overflow-x-auto border border-black/20;
+    tab-size: 4;
+  }
+  .code-block pre { white-space: pre; margin: 0; }
+}
+
+/* Syntax colours (tuned for the evergreen code surface) */
+.tok-kw { color: #F2C879; }
+.tok-str { color: #A8D8B9; }
+.tok-num { color: #F4A98A; }
+.tok-com { color: #7E9A8E; font-style: italic; }
+.tok-fn { color: #9CCFF0; }
+.tok-tag { color: #F2C879; }
+.tok-attr { color: #C7B8F0; }
+.tok-op { color: #D5E3DB; }
+
+/* Subtle decorative leaf shapes (replace the old confetti triangles) */
+.tri { position: absolute; width: 14px; height: 14px; pointer-events: none; border-radius: 0 100% 0 100%; }
+.tri-orange { background: #426557; opacity: .55; }
+.tri-green { background: #90B1A2; opacity: .5; }
+.tri-purple { background: #013A2B; opacity: .35; }
+.tri-amber { background: #BCD1C6; opacity: .7; }
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #BCD1C6; border-radius: 999px; border: 2px solid #FBF8F1; }
+::-webkit-scrollbar-thumb:hover { background: #426557; }
+.thin-scroll::-webkit-scrollbar { width: 6px; }
+.thin-scroll::-webkit-scrollbar-thumb { border: 0; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+/* Legacy helper classes still used by admin screens */
+.dark-bezel { border: 1px solid #DDE8E2; box-shadow: 0 8px 25px rgba(1, 58, 43, 0.08); }
+.dark-bezel-lg { border: 1px solid #DDE8E2; box-shadow: 0 15px 35px rgba(1, 58, 43, 0.12); }
+.brand-bezel { border: 2px solid #013A2B; }
+.hero-gradient { background: radial-gradient(circle at 85% 15%, #DDE8E2 0%, #F8F5EE 45%, #FBF8F1 85%); }
+.cta-gradient { background: linear-gradient(135deg, #0C2D26 0%, #013A2B 55%, #1E5141 100%); }
+.card-hover-effect { transition: all .3s cubic-bezier(.4,0,.2,1); }
+.card-hover-effect:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -14px rgba(1,58,43,.25); }
+.float-animation { animation: float 4s ease-in-out infinite; }
+.float-animation-delayed { animation: float 4s ease-in-out 2s infinite; }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+/* Grain / dotted textures */
+.texture-dots { background-image: radial-gradient(rgba(1,58,43,.09) 1px, transparent 1px); background-size: 22px 22px; }
+.texture-dots-light { background-image: radial-gradient(rgba(251,248,241,.10) 1px, transparent 1px); background-size: 22px 22px; }
+
+/* Skeleton shimmer */
+.skeleton { background: linear-gradient(90deg, #F1EEE5 0%, #E6EDE8 50%, #F1EEE5 100%); background-size: 200% 100%; animation: shimmer 1.6s linear infinite; }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+/* ---------- Brand loader: a growing sapling inside a ring ---------- */
+.arb-loader { position: relative; width: 84px; height: 84px; }
+.arb-loader svg { width: 100%; height: 100%; overflow: visible; }
+.arb-loader .ring { fill: none; stroke: #DDE8E2; stroke-width: 3; }
+.arb-loader .ring-arc { fill: none; stroke: #013A2B; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 60 240; transform-origin: 50% 50%; animation: arb-spin 1.4s cubic-bezier(.6,.1,.4,.9) infinite; }
+.arb-loader .stem { fill: none; stroke: #013A2B; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 40; stroke-dashoffset: 40; animation: arb-draw 2.4s ease-in-out infinite; }
+.arb-loader .leaf { transform-box: fill-box; transform-origin: bottom center; transform: scale(0); animation: arb-leaf 2.4s ease-in-out infinite; }
+.arb-loader .leaf-l { fill: #426557; transform-origin: right bottom; animation-delay: .35s; }
+.arb-loader .leaf-r { fill: #013A2B; transform-origin: left bottom; animation-delay: .55s; }
+.arb-loader .seed { fill: #426557; animation: arb-pulse 2.4s ease-in-out infinite; }
+@keyframes arb-spin { to { transform: rotate(360deg); } }
+@keyframes arb-draw { 0% { stroke-dashoffset: 40; } 35%, 80% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 40; } }
+@keyframes arb-leaf { 0%, 20% { transform: scale(0); } 45%, 80% { transform: scale(1); } 100% { transform: scale(0); } }
+@keyframes arb-pulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+
+.splash { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; background: #FBF8F1; transition: opacity .5s ease, visibility .5s ease; }
+.splash.hide { opacity: 0; visibility: hidden; }
+.splash-word { font-family: 'Fraunces', Georgia, serif; font-size: 22px; letter-spacing: .32em; color: #013A2B; font-weight: 600; }
+.splash-word span { display: inline-block; opacity: 0; transform: translateY(8px); animation: splash-letter .6s cubic-bezier(.2,.7,.2,1) forwards; }
+.splash-bar { width: 160px; height: 2px; background: #DDE8E2; border-radius: 9px; overflow: hidden; }
+.splash-bar i { display: block; height: 100%; width: 40%; background: #013A2B; border-radius: 9px; animation: splash-bar 1.2s ease-in-out infinite; }
+@keyframes splash-letter { to { opacity: 1; transform: none; } }
+@keyframes splash-bar { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+
+/* Mobile bottom nav spacing */
+.has-bottom-nav { padding-bottom: 72px; }
+@media (min-width: 768px) { .has-bottom-nav { padding-bottom: 0; } }
+
+/* Reveal-on-scroll (see useReveal hook) */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.7,.2,1); }
+.reveal.is-visible { opacity: 1; transform: none; }
+
+/* Exam: block text selection during proctored final */
+.no-select, .no-select * { -webkit-user-select: none !important; user-select: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  .reveal { opacity: 1; transform: none; }
+}
