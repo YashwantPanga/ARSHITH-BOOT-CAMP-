@@ -140,7 +140,6 @@ function VerifiedCard({ cert, active, onHome }) {
         <Item icon={BookOpen} label="Course" value={displayTitle(cert.courseTitle)} />
         <Item icon={Award} label="Final score" value={cert.percentage != null ? `${cert.percentage}%${cert.score != null ? ` (${cert.score}/${cert.totalQuestions})` : ''}` : cert.grade} />
         <Item icon={Calendar} label="Issued on" value={cert.issueDate} />
-        <Item icon={User} label="Instructor" value={cert.instructorName} />
       </dl>
       {cert.skills?.length > 0 && (
         <div className="px-6 pb-6">
