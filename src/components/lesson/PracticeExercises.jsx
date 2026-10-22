@@ -82,7 +82,7 @@ export function ExerciseCard({ ex, index, courseId, moduleId, completed, onCompl
 
   return (
     <article className="rounded-2xl border border-brand-900/10 bg-white overflow-hidden" aria-labelledby={`ex-${ex.id}`}>
-      <header className="px-5 sm:px-6 pt-5 pb-4 border-b border-brand-900/10 bg-cream/60">
+      <header className="px-4 sm:px-6 pt-5 pb-4 border-b border-brand-900/10 bg-cream/60">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-sans text-[11px] font-bold tracking-[0.16em] text-sage">EXERCISE {index + 1}</span>
           <span className={`chip border text-[11px] ${DIFF_TONE[ex.difficulty] || DIFF_TONE.Intermediate}`}>{ex.difficulty}</span>
@@ -93,7 +93,7 @@ export function ExerciseCard({ ex, index, courseId, moduleId, completed, onCompl
         <p className="mt-1 text-sm text-charcoal/65 flex gap-2"><Target className="w-4 h-4 mt-0.5 text-sage shrink-0" />{ex.objective}</p>
       </header>
 
-      <div className="px-5 sm:px-6 py-5 space-y-4 text-[15px] leading-7 text-charcoal/85">
+      <div className="px-4 sm:px-6 py-5 space-y-4 text-[15px] leading-7 text-charcoal/85">
         <div className="space-y-1"><Para text={ex.problem} /></div>
         {ex.data && <div className="rounded-xl bg-cream p-3 text-sm"><Para text={ex.data} /></div>}
         {ex.instructions?.length > 0 && (

@@ -36,3 +36,19 @@ Terminal 2: `npm run dev`     (site on http://localhost:3000)
   connection is needed the first time.
 - **Module reader**: concept-map diagram per module, learning-flow diagram, syntax-highlighted code with line numbers.
 - **Contact form** now saves messages to `db.json` (`contactMessages`).
+
+## Quality checks (added with the content/diagram/practice overhaul)
+```
+npm test                    # Vitest: 54 tests (schema, normaliser, grading, API/auth, components, exercises)
+npm run validate:content    # inventories all modules -> reports/content-validation.md
+npm run validate:links      # also checks every reference URL -> reports/link-check.md
+npm run verify:exercises    # runs every solution/worked example and compares real output
+npm run report:content-diff # proves original module text, code and quizzes are unchanged
+```
+- `npm run verify:exercises` and the exercise test need Python 3 with NumPy, pandas and Matplotlib
+  for the AI modules; items are reported as SKIPPED (not passed) when a runtime is missing.
+- Learners now sign in with a server-issued token. Anyone signed in before this update is asked to
+  sign in once more.
+- Practice code runs in the learner's browser only (Python in a Web Worker via Pyodide, SQL via
+  sql.js, JavaScript in a sandboxed iframe). Nothing learners type is executed on the server.
+- Set `JWT_SECRET` in the environment for any real deployment (a development default is used otherwise).

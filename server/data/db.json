@@ -31052,78 +31052,6 @@
   ],
   "students": [
     {
-      "id": "ARB-STU-GU9QH3",
-      "name": "QA Sql",
-      "email": "qa.sql@example.test",
-      "regNo": "QA2026T03",
-      "phone": "9000000003",
-      "role": "Student",
-      "status": "active",
-      "avatar": "",
-      "joinDate": "2026-10-21",
-      "lastActivity": "2026-10-21T19:12:49.058Z",
-      "enrolledCourses": [
-        "sql-mastery"
-      ],
-      "progressMap": {
-        "sql-mastery": {
-          "progress": 0,
-          "completedModules": [],
-          "quizzesPassed": [],
-          "finalTestPassed": false,
-          "projectStatus": "Not Submitted"
-        }
-      }
-    },
-    {
-      "id": "ARB-STU-VUVTNT",
-      "name": "QA Web",
-      "email": "qa.web@example.test",
-      "regNo": "QA2026T02",
-      "phone": "9000000002",
-      "role": "Student",
-      "status": "active",
-      "avatar": "",
-      "joinDate": "2026-10-21",
-      "lastActivity": "2026-10-21T19:12:27.819Z",
-      "enrolledCourses": [
-        "web-development"
-      ],
-      "progressMap": {
-        "web-development": {
-          "progress": 0,
-          "completedModules": [],
-          "quizzesPassed": [],
-          "finalTestPassed": false,
-          "projectStatus": "Not Submitted"
-        }
-      }
-    },
-    {
-      "id": "ARB-STU-HX9S82",
-      "name": "QA Tester",
-      "email": "qa.tester@example.test",
-      "regNo": "QA2026T01",
-      "phone": "9000000001",
-      "role": "Student",
-      "status": "active",
-      "avatar": "",
-      "joinDate": "2026-10-21",
-      "lastActivity": "2026-10-21T19:11:35.710Z",
-      "enrolledCourses": [
-        "data-science-ai"
-      ],
-      "progressMap": {
-        "data-science-ai": {
-          "progress": 0,
-          "completedModules": [],
-          "quizzesPassed": [],
-          "finalTestPassed": false,
-          "projectStatus": "Not Submitted"
-        }
-      }
-    },
-    {
       "id": "ARB-STU-2KH7BQ",
       "name": "Panga Yashwant",
       "email": "pyashwant2002@gmail.com",
@@ -36975,92 +36903,12 @@
       "phone": "+916281037993",
       "passwordHash": "$2b$10$8JrHuj7/jd1X8SpKUBr/peNGbXvGfnIeJuGu.Z4Nw0TQwgm3deC0C",
       "createdAt": "2026-10-21T17:48:27.596Z"
-    },
-    "qa.tester@example.test": {
-      "learnerId": "ARB-STU-HX9S82",
-      "email": "qa.tester@example.test",
-      "name": "QA Tester",
-      "regNo": "QA2026T01",
-      "phone": "9000000001",
-      "passwordHash": "$2b$10$QFVGQ2/ePBdDexpeh4reO.Zpx8H4j2j19bEyjBihNNrfFn9qFUUb2",
-      "createdAt": "2026-10-21T19:11:35.710Z"
-    },
-    "qa.web@example.test": {
-      "learnerId": "ARB-STU-VUVTNT",
-      "email": "qa.web@example.test",
-      "name": "QA Web",
-      "regNo": "QA2026T02",
-      "phone": "9000000002",
-      "passwordHash": "$2b$10$pwrHe2T4KL4DKnXGRwOKxesnp1ahFP86RG.D.fc4FVBqSljcaFY1e",
-      "createdAt": "2026-10-21T19:12:27.819Z"
-    },
-    "qa.sql@example.test": {
-      "learnerId": "ARB-STU-GU9QH3",
-      "email": "qa.sql@example.test",
-      "name": "QA Sql",
-      "regNo": "QA2026T03",
-      "phone": "9000000003",
-      "passwordHash": "$2b$10$590n443TmSfWUqJe96ojw.eESrrMVIuAVKnsYRJSDugEmBIzKTgge",
-      "createdAt": "2026-10-21T19:12:49.058Z"
     }
   },
   "learnerEnrollments": {
     "pyashwant2002@gmail.com": {
       "courseId": "data-science-ai",
       "enrolledAt": "2026-10-21T17:48:41.341Z"
-    },
-    "qa.tester@example.test": {
-      "courseId": "data-science-ai",
-      "enrolledAt": "2026-10-21T19:11:44.753Z"
-    },
-    "qa.web@example.test": {
-      "courseId": "web-development",
-      "enrolledAt": "2026-10-21T19:12:27.850Z"
-    },
-    "qa.sql@example.test": {
-      "courseId": "sql-mastery",
-      "enrolledAt": "2026-10-21T19:12:49.089Z"
-    }
-  },
-  "practiceProgress": {
-    "qa.tester@example.test": {
-      "data-science-ai": {
-        "ai-ds-mod-7": {
-          "exercises": {
-            "ai7-e3": {
-              "completedAt": "2026-10-21T19:12:06.163Z"
-            }
-          },
-          "knowledge": {}
-        }
-      }
-    },
-    "qa.web@example.test": {
-      "web-development": {
-        "web-mod-9": {
-          "exercises": {
-            "web9-e3": {
-              "completedAt": "2026-10-21T19:12:33.887Z"
-            },
-            "web9-e1": {
-              "completedAt": "2026-10-21T19:12:37.070Z"
-            }
-          },
-          "knowledge": {}
-        }
-      }
-    },
-    "qa.sql@example.test": {
-      "sql-mastery": {
-        "sql-mod-15": {
-          "exercises": {
-            "sql15-e3": {
-              "completedAt": "2026-10-21T19:12:53.029Z"
-            }
-          },
-          "knowledge": {}
-        }
-      }
     }
   }
 }

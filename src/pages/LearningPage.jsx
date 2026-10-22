@@ -630,7 +630,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
             )}
 
             {sections.map((s, i) => (
-              <section key={s.id} id={`sec-${s.id}`} className="card p-5 sm:p-8 scroll-mt-4">
+              <section key={s.id} id={`sec-${s.id}`} className="card p-4 sm:p-8 scroll-mt-4">
                 <h2 className="flex items-center gap-3.5 text-xl sm:text-2xl font-medium text-brand-900 mb-5 pb-4 border-b border-brand-900/10">
                   <span className="w-10 h-10 rounded-xl bg-brand-900 text-ivory flex items-center justify-center shrink-0"><s.icon className="w-[18px] h-[18px]" /></span>
                   <span><span className="font-sans text-xs font-bold tracking-[0.2em] text-sage block mb-0.5">SECTION {String(i + 1).padStart(2, '0')}</span>{s.title}</span>
