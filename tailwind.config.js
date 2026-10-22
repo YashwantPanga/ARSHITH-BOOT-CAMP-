@@ -72,10 +72,19 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Fraunces', 'Georgia', 'serif'],
+        sans: ['DM Sans', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        display: ['DM Serif Display', 'Georgia', 'Times New Roman', 'serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
+      // Central type scale: display sizes are fluid, body sizes fixed for readability.
+      fontSize: {
+        'display-xl': ['clamp(2.4rem, 1.5rem + 3.6vw, 3.9rem)', { lineHeight: '1.06' }],
+        'display-lg': ['clamp(1.9rem, 1.4rem + 2vw, 2.75rem)', { lineHeight: '1.12' }],
+        'display-md': ['clamp(1.55rem, 1.3rem + 1vw, 2.1rem)', { lineHeight: '1.18' }],
+        'heading': ['1.375rem', { lineHeight: '1.3' }],
+        'body-lg': ['1.0625rem', { lineHeight: '1.75' }],
+      },
+      maxWidth: { reading: '46rem' },
       boxShadow: {
         'card': '0 8px 30px rgba(1, 58, 43, 0.06)',
         'card-hover': '0 24px 48px -18px rgba(1, 58, 43, 0.28)',

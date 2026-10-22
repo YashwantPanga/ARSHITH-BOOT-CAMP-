@@ -130,7 +130,7 @@ const CSS_DEMO = `<div class="card"><h2 class="card-title">Styled card</h2><p>Yo
 
 /** Builds the iframe document for an HTML, CSS or JavaScript snippet. */
 export function buildWebDoc(code, lang) {
-  const base = '<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Inter,system-ui,sans-serif;padding:16px;color:#302B25}</style>';
+  const base = '<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:"DM Sans",system-ui,sans-serif;padding:16px;color:#302B25}</style>';
   if (lang === 'css') return `<!doctype html><html><head>${base}${CONSOLE_SHIM}<style>${code}</style></head><body>${CSS_DEMO}</body></html>`;
   if (lang === 'javascript') return `<!doctype html><html><head>${base}${CONSOLE_SHIM}</head><body><div id="app"></div><script>${code.replace(/<\/script>/gi, '<\\/script>')}<\/script></body></html>`;
   const hasHead = /<head[^>]*>/i.test(code);

@@ -22,7 +22,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
             <span className="font-display text-[28px] sm:text-[32px] font-semibold text-brand-900 tracking-tight">arshith</span>
             <span className="font-display text-[28px] sm:text-[32px] italic text-sage">Academy</span>
           </p>
-          <h1 className="mt-4 text-[2.5rem] leading-[1.08] sm:text-[3.4rem] lg:text-[3.9rem] font-normal text-charcoal">
+          <h1 className="mt-4 text-display-xl text-charcoal">
             Achieve your career goals with <em className="not-italic font-semibold text-brand-900">free online courses</em>
           </h1>
           <p className="mt-6 text-[17px] sm:text-lg text-charcoal/70 leading-relaxed max-w-xl">

@@ -109,7 +109,7 @@ function DiagramSvg({ def }) {
             {e.label && (
               <g transform={`translate(${lx},${ly})`}>
                 <rect x={-(e.label.length * 3.3 + 8)} y="-9" width={e.label.length * 6.6 + 16} height="18" rx="9" fill="#0C2D26" stroke="#5F8574" />
-                <text textAnchor="middle" y="4" fontSize="10.5" fill="#E9F1EC" fontFamily="DM Sans, Inter, sans-serif">{e.label}</text>
+                <text textAnchor="middle" y="4" fontSize="10.5" fill="#E9F1EC" fontFamily="DM Sans, DM Sans, system-ui, sans-serif">{e.label}</text>
               </g>
             )}
           </g>
@@ -122,9 +122,9 @@ function DiagramSvg({ def }) {
             <rect width={L.NODE_W} height={L.NODE_H} rx="14" fill="#FBF8F1" stroke="#90B1A2" />
             <rect width="6" height={L.NODE_H - 20} x="0" y="10" rx="3" fill={i === 0 ? '#426557' : '#013A2B'} />
             <circle cx="24" cy="20" r="10" fill="#013A2B" />
-            <text x="24" y="24" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#FBF8F1" fontFamily="DM Sans, Inter, sans-serif">{i + 1}</text>
+            <text x="24" y="24" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#FBF8F1" fontFamily="DM Sans, DM Sans, system-ui, sans-serif">{i + 1}</text>
             {lines.map((l, k) => (
-              <text key={k} x="42" y={24 + k * 16 + (lines.length === 1 ? 8 : 0)} fontSize="12.5" fontWeight="600" fill="#302B25" fontFamily="DM Sans, Inter, sans-serif">{l}</text>
+              <text key={k} x="42" y={24 + k * 16 + (lines.length === 1 ? 8 : 0)} fontSize="12.5" fontWeight="600" fill="#302B25" fontFamily="DM Sans, DM Sans, system-ui, sans-serif">{l}</text>
             ))}
           </g>
         );

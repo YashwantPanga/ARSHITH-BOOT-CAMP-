@@ -52,7 +52,7 @@ export function ConceptMap({ title, concepts = [], onPick }) {
           <circle cx={cx} cy={cy} r="86" fill="#013A2B" />
           <circle cx={cx} cy={cy} r="78" fill="none" stroke="#FBF8F1" strokeOpacity=".25" />
           {centre.map((l, i) => (
-            <text key={i} x={cx} y={cy + (i - (centre.length - 1) / 2) * 19 + 6} textAnchor="middle" fontFamily="Fraunces, Georgia, serif" fontSize="16" fontWeight="600" fill="#FBF8F1">{l}</text>
+            <text key={i} x={cx} y={cy + (i - (centre.length - 1) / 2) * 19 + 6} textAnchor="middle" fontFamily="DM Serif Display, Georgia, serif" fontSize="16" fontWeight="400" fill="#FBF8F1">{l}</text>
           ))}
         </g>
         {nodes.map((n, i) => {
@@ -63,9 +63,9 @@ export function ConceptMap({ title, concepts = [], onPick }) {
               <rect width={w} height={h} rx="14" fill="#FFFFFF" stroke="#013A2B" strokeOpacity=".14" />
               <rect width="5" height={h - 16} x="0" y="8" rx="2.5" fill={i % 2 ? '#426557' : '#013A2B'} />
               <circle cx="22" cy={h / 2} r="11" fill="#EFF4F1" />
-              <text x="22" y={h / 2 + 4} textAnchor="middle" fontSize="11" fontWeight="700" fill="#013A2B" fontFamily="Inter, sans-serif">{i + 1}</text>
+              <text x="22" y={h / 2 + 4} textAnchor="middle" fontSize="11" fontWeight="700" fill="#013A2B" fontFamily="DM Sans, system-ui, sans-serif">{i + 1}</text>
               {n.lines.map((l, k) => (
-                <text key={k} x="42" y={h / 2 + (k - (n.lines.length - 1) / 2) * 16 + 4.5} fontSize="12.5" fontWeight="600" fill="#302B25" fontFamily="Inter, sans-serif">{l}</text>
+                <text key={k} x="42" y={h / 2 + (k - (n.lines.length - 1) / 2) * 16 + 4.5} fontSize="12.5" fontWeight="600" fill="#302B25" fontFamily="DM Sans, system-ui, sans-serif">{l}</text>
               ))}
             </g>
           );

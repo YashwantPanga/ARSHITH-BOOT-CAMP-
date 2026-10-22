@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ArrowLeft, Star, Clock, Users, Award, CheckCircle2, ChevronDown, BookOpen, ShieldCheck, Lock, PlayCircle, ListChecks, FileText } from 'lucide-react';
 import { SafeImg, ProgressBar, Triangles } from '../components/ui';
+import CourseSlideshow from '../components/CourseSlideshow';
+import { slidesForCourse } from '../data/courseGallery';
 import { cleanText } from '../utils/textUtils';
 
 export default function CourseDetailsPage({ course, enrolledCourseId, isLoggedIn, onBack, onEnroll, onContinue }) {
   const [open, setOpen] = useState(() => new Set([course.modules?.[0]?.id]));
   const isMine = enrolledCourseId === course.id;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const slides = useMemo(() => slidesForCourse(course), [course.id, course.thumbnail]);
   const isLocked = !!enrolledCourseId && !isMine;
   const done = course.modules?.filter(m => m.completed).length || 0;
   const total = course.modules?.length || 0;
@@ -47,9 +51,7 @@ export default function CourseDetailsPage({ course, enrolledCourseId, isLoggedIn
               </div>
             </div>
             <div className="lg:col-span-5">
-              <div className="rounded-[2rem] overflow-hidden ring-8 ring-white/10 shadow-2xl aspect-[16/10]">
-                <SafeImg src={course.thumbnail} alt="" className="w-full h-full object-cover" />
-              </div>
+              <CourseSlideshow slides={slides} courseTitle={course.title} iconType={course.iconType} />
             </div>
           </div>
         </div>

@@ -219,8 +219,8 @@ function Seal() {
       {ticks.map(a => <line key={a} x1="60" y1="6" x2="60" y2="11" stroke={IVORY} strokeOpacity=".5" strokeWidth="1.2" transform={`rotate(${a} 60 60)`} />)}
       <circle cx="60" cy="60" r="45" fill="none" stroke={IVORY} strokeOpacity=".6" strokeWidth="1" />
       <circle cx="60" cy="60" r="41" fill={EVERGREEN} />
-      <text x="60" y="34" textAnchor="middle" fontFamily="Inter, sans-serif" fontSize="7" fontWeight="700" letterSpacing="2" fill={IVORY} fillOpacity=".85">VERIFIED</text>
-      <text x="60" y="94" textAnchor="middle" fontFamily="Inter, sans-serif" fontSize="7" fontWeight="700" letterSpacing="2" fill={IVORY} fillOpacity=".85">ARSHITH</text>
+      <text x="60" y="34" textAnchor="middle" fontFamily="DM Sans, system-ui, sans-serif" fontSize="7" fontWeight="700" letterSpacing="2" fill={IVORY} fillOpacity=".85">VERIFIED</text>
+      <text x="60" y="94" textAnchor="middle" fontFamily="DM Sans, system-ui, sans-serif" fontSize="7" fontWeight="700" letterSpacing="2" fill={IVORY} fillOpacity=".85">ARSHITH</text>
       <path d="M60 46 C60 56 60 62 60 78" stroke={IVORY} strokeWidth="2" fill="none" strokeLinecap="round" />
       <path d="M60 66 C52 66 46 61 45 53 C53 53 59 58 60 66Z" fill="#90B1A2" />
       <path d="M60 58 C68 58 74 53 75 45 C67 45 61 50 60 58Z" fill={IVORY} />
@@ -231,10 +231,10 @@ function Seal() {
 function CertificateArt({ cert, verifyUrl, qr }) {
   const grade = String(cert.grade || '').replace(/^\d+%\s*/, '');
   return (
-    <div style={{ width: W, height: H, position: 'relative', background: IVORY, fontFamily: 'Inter, sans-serif', overflow: 'hidden', color: CHARCOAL }}>
+    <div style={{ width: W, height: H, position: 'relative', background: IVORY, fontFamily: 'DM Sans, system-ui, sans-serif', overflow: 'hidden', color: CHARCOAL }}>
       {/* Watermark: repeated brand tile + large centred mark */}
       <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(/arshith-watermark-tile.png)', backgroundSize: '240px 160px', opacity: 0.05 }} />
-      <div style={{ position: 'absolute', left: 250, top: 200, width: 700, textAlign: 'center', transform: 'rotate(-18deg)', fontFamily: 'Fraunces, Georgia, serif', fontSize: 120, fontWeight: 700, color: FOREST, opacity: 0.035, letterSpacing: 10 }}>ARSHITH</div>
+      <div style={{ position: 'absolute', left: 250, top: 200, width: 700, textAlign: 'center', transform: 'rotate(-18deg)', fontFamily: 'DM Serif Display, Georgia, serif', fontSize: 120, fontWeight: 400, color: FOREST, opacity: 0.035, letterSpacing: 10 }}>ARSHITH</div>
 
       {/* Left band */}
       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 210, background: `linear-gradient(180deg, ${FOREST} 0%, ${EVERGREEN} 100%)` }}>
@@ -245,7 +245,7 @@ function CertificateArt({ cert, verifyUrl, qr }) {
         <div style={{ position: 'absolute', left: 0, right: 0, top: 250, display: 'flex', justifyContent: 'center' }}><Seal /></div>
         <div style={{ position: 'absolute', left: 26, right: 26, bottom: 44, color: IVORY }}>
           <p style={{ fontSize: 9, letterSpacing: '0.24em', opacity: 0.6, fontWeight: 700 }}>CREDENTIAL</p>
-          <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 17, marginTop: 6, lineHeight: 1.25 }}>Professional<br />Certificate</p>
+          <p style={{ fontFamily: 'DM Serif Display, Georgia, serif', fontSize: 17, marginTop: 6, lineHeight: 1.25 }}>Professional<br />Certificate</p>
           <div style={{ height: 1, background: 'rgba(251,248,241,.25)', margin: '14px 0' }} />
           <p style={{ fontSize: 9, letterSpacing: '0.24em', opacity: 0.6, fontWeight: 700 }}>LEARNER ID</p>
           <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11.5, marginTop: 4, fontWeight: 600 }}>{cert.learnerId || cert.regNo || '—'}</p>
@@ -259,9 +259,9 @@ function CertificateArt({ cert, verifyUrl, qr }) {
       {/* Content */}
       <div style={{ position: 'absolute', left: 280, right: 70, top: 66, bottom: 56 }}>
         <p style={{ fontSize: 11, letterSpacing: '0.38em', color: SAGE, fontWeight: 700 }}>CERTIFICATE OF COMPLETION</p>
-        <p style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 15, color: CHARCOAL, opacity: 0.75, marginTop: 26 }}>This is to proudly certify that</p>
+        <p style={{ fontFamily: 'DM Serif Display, Georgia, serif', fontSize: 15, color: CHARCOAL, opacity: 0.75, marginTop: 26 }}>This is to proudly certify that</p>
         {/* Fixed line boxes keep html2canvas' text placement identical to the on-screen layout */}
-        <p data-shift="-9" style={{ fontFamily: 'Fraunces, Georgia, serif', fontStyle: 'italic', fontSize: String(cert.studentName).length > 26 ? 42 : 52, color: FOREST, fontWeight: 600, lineHeight: '72px', height: 72, marginTop: 6, maxWidth: 620, whiteSpace: 'nowrap' }}>{cert.studentName}</p>
+        <p data-shift="-9" style={{ fontFamily: 'DM Serif Display, Georgia, serif', fontStyle: 'italic', fontSize: String(cert.studentName).length > 26 ? 42 : 52, color: FOREST, fontWeight: 400, lineHeight: '72px', height: 72, marginTop: 6, maxWidth: 620, whiteSpace: 'nowrap' }}>{cert.studentName}</p>
         {cert.regNo && (
           <p style={{ marginTop: 6, fontSize: 11.5, lineHeight: '16px', letterSpacing: '0.16em', color: SAGE, fontWeight: 600 }}>
             REGISTRATION NO. <span style={{ fontFamily: 'JetBrains Mono, monospace', color: FOREST, letterSpacing: '0.06em' }}>{cert.regNo}</span>
@@ -271,7 +271,7 @@ function CertificateArt({ cert, verifyUrl, qr }) {
         <p style={{ marginTop: 18, fontSize: 14, color: CHARCOAL, opacity: 0.8, maxWidth: 560, lineHeight: 1.65 }}>
           has successfully completed every module and module quiz, and passed the proctored final assessment of
         </p>
-        <p style={{ fontFamily: 'Fraunces, Georgia, serif', marginTop: 8, fontSize: 31, fontWeight: 600, color: FOREST, maxWidth: 600, lineHeight: 1.15 }}>{cert.courseTitle}</p>
+        <p style={{ fontFamily: 'DM Serif Display, Georgia, serif', marginTop: 8, fontSize: 31, fontWeight: 400, color: FOREST, maxWidth: 600, lineHeight: 1.15 }}>{cert.courseTitle}</p>
         <div style={{ marginTop: 18, display: 'inline-block', border: `1px solid ${FOREST}`, borderRadius: 999, padding: 5, height: 40, boxSizing: 'border-box', whiteSpace: 'nowrap' }}>
           <span data-shift="-5" style={{ display: 'inline-block', verticalAlign: 'top', height: 28, lineHeight: '28px', padding: '0 12px 0 12px', color: SAGE, fontWeight: 600, letterSpacing: '0.08em', fontSize: 12 }}>FINAL SCORE</span>
           <span style={{ display: 'inline-block', verticalAlign: 'top', height: 28, lineHeight: '28px', background: FOREST, color: IVORY, borderRadius: 999, padding: '0 14px', fontWeight: 700, fontSize: 14 }}><span data-shift="-5">{cert.percentage}%{grade ? ` · ${grade}` : ''}</span></span>

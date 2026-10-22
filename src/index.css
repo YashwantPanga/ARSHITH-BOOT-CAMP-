@@ -5,12 +5,25 @@
 @layer base {
   html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
   body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     background-color: #FBF8F1;
     color: #302B25;
     font-feature-settings: 'cv11', 'ss01';
   }
-  h1, h2, h3, .font-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; letter-spacing: -0.01em; }
+  /* Design tokens (mirrors tailwind.config.js so non-Tailwind CSS and SVG can share them) */
+  :root {
+    --color-forest: #013A2B; --color-evergreen: #0C2D26; --color-ivory: #FBF8F1; --color-cream: #F8F5EE;
+    --color-sage: #426557; --color-charcoal: #302B25;
+    --font-sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --radius-card: 1rem; --content-width: 72rem; --reading-width: 46rem;
+  }
+  /* DM Serif Display ships one weight: never let the browser fake bold or italic glyphs. */
+  h1, h2, h3, .font-display { font-family: var(--font-display); font-weight: 400; font-synthesis: none; letter-spacing: -0.005em; text-wrap: balance; overflow-wrap: break-word; }
+  h4, h5, h6 { text-wrap: balance; overflow-wrap: break-word; }
+  p, li, dd { text-wrap: pretty; overflow-wrap: break-word; }
+  body { text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
   ::selection { background: #BCD1C6; color: #013A2B; }
   pre, code, textarea.font-mono, .font-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-ligatures: none; }
   button { -webkit-user-select: none; user-select: none; }
@@ -111,7 +124,7 @@
 
 .splash { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; background: #FBF8F1; transition: opacity .5s ease, visibility .5s ease; }
 .splash.hide { opacity: 0; visibility: hidden; }
-.splash-word { font-family: 'Fraunces', Georgia, serif; font-size: 22px; letter-spacing: .32em; color: #013A2B; font-weight: 600; }
+.splash-word { font-family: 'DM Serif Display', Georgia, 'Times New Roman', serif; font-size: 24px; letter-spacing: .3em; color: #013A2B; font-weight: 400; }
 .splash-word span { display: inline-block; opacity: 0; transform: translateY(8px); animation: splash-letter .6s cubic-bezier(.2,.7,.2,1) forwards; }
 .splash-bar { width: 160px; height: 2px; background: #DDE8E2; border-radius: 9px; overflow: hidden; }
 .splash-bar i { display: block; height: 100%; width: 40%; background: #013A2B; border-radius: 9px; animation: splash-bar 1.2s ease-in-out infinite; }
