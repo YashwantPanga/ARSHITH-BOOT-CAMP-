@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { readStudent, userIdOf } from '../utils/session';
+import { api } from '../services/api';
 import { 
   X, Briefcase, Code, CheckCircle, ExternalLink, Copy, Check, 
   Terminal, Sparkles, AlertCircle, Clock, FileText, ChevronRight 
 } from 'lucide-react';
 
-export default function CourseProjectsModal({ isOpen, onClose, course }) {
+const GITHUB_REPO_RE = /^https:\/\/github\.com\/[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})\/[A-Za-z0-9._-]{1,100}(?:\.git)?\/?$/;
+
+export default function CourseProjectsModal({ isOpen, onClose, course, onSubmitted }) {
   const projects = course?.projects || [];
   const [activeProjectId, setActiveProjectId] = useState(projects[0]?.id || '');
   const [copiedCode, setCopiedCode] = useState(false);
   const [submissions, setSubmissions] = useState({});
   const [githubUrlInput, setGithubUrlInput] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     if (projects.length > 0 && !activeProjectId) {
@@ -19,20 +25,41 @@ export default function CourseProjectsModal({ isOpen, onClose, course }) {
     }
   }, [projects]);
 
+  // Submissions live on the server. Older ones saved only in this browser are uploaded once.
   useEffect(() => {
-    if (isOpen) {
-      // Load saved project submissions from localStorage
-      const loaded = {};
-      projects.forEach(p => {
-        const saved = localStorage.getItem(`arb_proj_sub_${userIdOf(readStudent())}_${course?.id}_${p.id}`);
-        if (saved) {
-          try { loaded[p.id] = JSON.parse(saved); } catch (e) {}
+    if (!isOpen || !course) return undefined;
+    let alive = true;
+    const userId = userIdOf(readStudent());
+    setSaveSuccess(false);
+    setLoadError('');
+    (async () => {
+      try {
+        let res = await api.getMyProjects(userId, course.id);
+        const onServer = new Set(res.submissions.map(s => s.projectId));
+        let synced = false;
+        for (const p of projects) {
+          if (onServer.has(p.id)) continue;
+          const key = `arb_proj_sub_${userId}_${course.id}_${p.id}`;
+          try {
+            const local = JSON.parse(localStorage.getItem(key) || 'null');
+            if (local?.githubUrl && GITHUB_REPO_RE.test(local.githubUrl)) {
+              await api.submitProject({ userId, courseId: course.id, projectId: p.id, githubUrl: local.githubUrl });
+              synced = true;
+            }
+          } catch { /* ignore unreadable local records */ }
         }
-      });
-      setSubmissions(loaded);
-      setSaveSuccess(false);
-    }
-  }, [isOpen, course]);
+        if (synced) { res = await api.getMyProjects(userId, course.id); onSubmitted?.(); }
+        if (!alive) return;
+        const map = {};
+        res.submissions.forEach(s => { map[s.projectId] = s; });
+        setSubmissions(map);
+      } catch (err) {
+        if (alive) setLoadError(err.message || 'Could not load your submissions.');
+      }
+    })();
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, course?.id]);
 
   const activeProject = projects.find(p => p.id === activeProjectId) || projects[0];
 
@@ -40,6 +67,7 @@ export default function CourseProjectsModal({ isOpen, onClose, course }) {
     if (activeProject) {
       setGithubUrlInput(submissions[activeProject.id]?.githubUrl || '');
       setSaveSuccess(false);
+      setSaveError('');
     }
   }, [activeProject, submissions]);
 
@@ -51,23 +79,27 @@ export default function CourseProjectsModal({ isOpen, onClose, course }) {
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  const handleSaveSubmission = (e) => {
+  const handleSaveSubmission = async (e) => {
     e.preventDefault();
-    if (!githubUrlInput.trim() || !activeProject) return;
-
-    const record = {
-      githubUrl: githubUrlInput.trim(),
-      submittedAt: new Date().toISOString(),
-      status: 'Submitted'
-    };
-
-    const userId = userIdOf(readStudent());
-
-    localStorage.setItem(`arb_proj_sub_${userId}_${course.id}_${activeProject.id}`, JSON.stringify(record));
-    localStorage.setItem(`arb_proj_submitted_${course.id}_${userId}`, 'true');
-    setSubmissions(prev => ({ ...prev, [activeProject.id]: record }));
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    const url = githubUrlInput.trim();
+    if (!url || !activeProject || saving) return;
+    if (!GITHUB_REPO_RE.test(url)) {
+      setSaveError('Enter the link to a GitHub repository, e.g. https://github.com/your-name/project-name');
+      return;
+    }
+    setSaving(true);
+    setSaveError('');
+    try {
+      const res = await api.submitProject({ userId: userIdOf(readStudent()), courseId: course.id, projectId: activeProject.id, githubUrl: url });
+      setSubmissions(prev => ({ ...prev, [activeProject.id]: res.submission }));
+      setSaveSuccess(true);
+      onSubmitted?.(res.requirement);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      setSaveError(err.message || 'Could not save your submission. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const completedCount = Object.keys(submissions).length;
@@ -294,17 +326,21 @@ export default function CourseProjectsModal({ isOpen, onClose, course }) {
                     />
                     <button
                       type="submit"
+                      disabled={saving}
                       className="btn-primary shrink-0"
                     >
-                      Save Submission
+                      {saving ? 'Saving…' : submissions[activeProject.id] ? 'Update submission' : 'Submit repository'}
                     </button>
                   </form>
 
                   {saveSuccess && (
-                    <p className="text-xs text-mint-500 font-semibold flex items-center gap-1">
-                      ✓ Project link saved successfully!
+                    <p className="text-xs text-mint-500 font-semibold flex items-center gap-1" role="status">
+                      ✓ Repository submitted. {Object.keys(submissions).length}/{projects.length} projects submitted.
                     </p>
                   )}
+                  {saveError && <p className="text-xs text-rose-700 font-semibold" role="alert">{saveError}</p>}
+                  {loadError && <p className="text-xs text-rose-700" role="alert">{loadError}</p>}
+                  <p className="text-[11px] text-slate-500">The final assessment unlocks after you pass every module quiz and submit a GitHub repository for all {projects.length} projects.</p>
                 </div>
               </>
             ) : null}

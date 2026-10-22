@@ -1,6 +1,7 @@
 import express from 'express';
 import { getDb, saveDb, logActivity } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
+import { projectRequirement } from '../lib/projects.js';
 
 const router = express.Router();
 
@@ -142,6 +143,7 @@ router.get('/progress/:courseId', (req, res) => {
     moduleScores: getBestModuleScores(db, userId, course.id),
     finalAttempts: finalAttempts.map(attemptSummary),
     passedFinal: attemptSummary(passedFinal),
+    projects: projectRequirement(db, userId, course),
     certificateId: certificate?.certificateId || null
   });
 });
@@ -278,6 +280,20 @@ router.post('/final-test/start', (req, res) => {
       message: `Final assessment is locked. Pass all ${totalModules} module quizzes first (${passedModuleIds.length}/${totalModules} done).`,
       passedModules: passedModuleIds.length,
       totalModules
+    });
+  }
+
+  // 1b. Lock: a GitHub repository must be submitted for every mini project of the course.
+  const projects = projectRequirement(db, userId, course);
+  if (projects.missing.length) {
+    return res.status(403).json({
+      success: false,
+      locked: true,
+      reason: 'projects',
+      message: `Final assessment is locked. Submit a GitHub repository for every course project first (${projects.submitted}/${projects.required} submitted).`,
+      passedModules: passedModuleIds.length,
+      totalModules,
+      projects
     });
   }
 

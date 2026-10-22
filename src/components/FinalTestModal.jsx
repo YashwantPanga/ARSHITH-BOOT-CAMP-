@@ -24,7 +24,7 @@ const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 
  *  - The 3rd violation ends the exam automatically and it is recorded as a fail.
  *  - Copy / paste / right-click / dev-tools shortcuts are blocked.
  */
-export default function FinalTestModal({ isOpen, onClose, course, studentUser, locked, passedFinal, onSubmitted, onViewCertificate }) {
+export default function FinalTestModal({ isOpen, onClose, course, studentUser, locked, projectReq, passedFinal, onSubmitted, onViewCertificate }) {
   const [phase, setPhase] = useState('intro');
   const [error, setError] = useState('');
   const [session, setSession] = useState(null);
@@ -378,9 +378,11 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
           <Centered>
             <span className="w-16 h-16 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center mx-auto"><Lock className="w-8 h-8" /></span>
             <h2 className="mt-5 text-2xl font-bold text-brand-900">Final assessment is locked</h2>
-            <p className="mt-2 text-slate-500">Pass every module quiz (70% or more) to unlock the final assessment.
-              {lockInfo ? ` You have passed ${lockInfo.passedModules} of ${lockInfo.totalModules}.` : ` You have passed ${(course.modules || []).filter(m => m.completed).length} of ${(course.modules || []).length}.`}
-            </p>
+            <p className="mt-2 text-slate-500">To unlock the final assessment, pass every module quiz (70% or more) and submit a GitHub repository for every course project.</p>
+            <ul className="mt-4 text-sm text-slate-600 space-y-1 text-left inline-block">
+              <li>Module quizzes passed: <strong>{lockInfo?.passedModules ?? (course.modules || []).filter(m => m.completed).length} / {lockInfo?.totalModules ?? (course.modules || []).length}</strong></li>
+              {(lockInfo?.projects || projectReq)?.required > 0 && <li>Project repositories submitted: <strong>{(lockInfo?.projects || projectReq).submitted} / {(lockInfo?.projects || projectReq).required}</strong></li>}
+            </ul>
             <button onClick={onClose} className="btn-primary mt-7">Continue learning</button>
           </Centered>
         )}

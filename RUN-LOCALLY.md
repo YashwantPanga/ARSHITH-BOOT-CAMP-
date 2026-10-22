@@ -52,3 +52,12 @@ npm run report:content-diff # proves original module text, code and quizzes are 
 - Practice code runs in the learner's browser only (Python in a Web Worker via Pyodide, SQL via
   sql.js, JavaScript in a sandboxed iframe). Nothing learners type is executed on the server.
 - Set `JWT_SECRET` in the environment for any real deployment (a development default is used otherwise).
+
+## Final assessment lock and certificate QR codes
+- The final assessment unlocks only when a learner has passed every module quiz **and** submitted a
+  GitHub repository link (https://github.com/owner/repo) for every mini project of their course.
+  This is enforced by the server; submissions are stored in `db.json` (`projectSubmissions`) and
+  appear in the admin portal.
+- Certificate QR codes encode the site's public address. When you run the site on your computer the
+  QR uses its local-network address (e.g. http://192.168.1.21:5000), so a phone on the same Wi-Fi can
+  open it. For a real deployment set `PUBLIC_SITE_URL`, e.g. `PUBLIC_SITE_URL=https://learn.example.com`.

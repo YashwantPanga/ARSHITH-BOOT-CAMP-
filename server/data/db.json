@@ -31176,6 +31176,50 @@
   ],
   "certificates": [
     {
+      "id": "ARB-AIDS-2026-YA5CFE4R",
+      "certificateId": "ARB-AIDS-2026-YA5CFE4R",
+      "userId": "pyashwant2002@gmail.com",
+      "studentId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "studentEmail": "pyashwant2002@gmail.com",
+      "regNo": "77878787",
+      "learnerId": "ARB-STU-2KH7BQ",
+      "courseId": "data-science-ai",
+      "courseTitle": "AI WITH DATA SCIENCE",
+      "percentage": 92,
+      "score": 23,
+      "totalQuestions": 25,
+      "attemptId": "ftest-attempt-1792645360867",
+      "grade": "92% Distinction",
+      "issueDate": "October 22, 2026",
+      "createdAt": "2026-10-22T05:02:42.994Z",
+      "instructorName": "Dr. Ananya Sharma & Dr. Charles Severance",
+      "status": "active",
+      "skills": [
+        "Python",
+        "NumPy",
+        "Pandas",
+        "Matplotlib",
+        "Seaborn",
+        "Statistics",
+        "Hypothesis Testing",
+        "Exploratory Data Analysis",
+        "Scikit-Learn",
+        "Regression",
+        "Classification",
+        "Clustering",
+        "PCA",
+        "Deep Learning",
+        "Transformers",
+        "Generative AI",
+        "RAG",
+        "Vector Databases",
+        "FastAPI",
+        "Docker",
+        "MLOps"
+      ]
+    },
+    {
       "id": "ABC-2026-PY0128",
       "certificateId": "ABC-2026-PY0128",
       "studentId": "std-001",
@@ -36849,6 +36893,306 @@
   ],
   "quizAttempts": [
     {
+      "id": "attempt-1792645043901-440",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-15",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "aids-m15-q1": 1,
+        "aids-m15-q2": 1,
+        "aids-m15-q3": 1,
+        "aids-m15-q4": 3,
+        "aids-m15-q5": 2
+      },
+      "completedAt": "2026-10-22T04:57:23.901Z"
+    },
+    {
+      "id": "attempt-1792644991398-458",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-14",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "aids-m14-q1": 3,
+        "aids-m14-q2": 0,
+        "aids-m14-q3": 0,
+        "aids-m14-q4": 2,
+        "aids-m14-q5": 2
+      },
+      "completedAt": "2026-10-22T04:56:31.398Z"
+    },
+    {
+      "id": "attempt-1792644883599-770",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-13",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "aids-m13-q1": 2,
+        "aids-m13-q2": 2,
+        "aids-m13-q3": 2,
+        "aids-m13-q4": 1,
+        "aids-m13-q5": 1
+      },
+      "completedAt": "2026-10-22T04:54:43.599Z"
+    },
+    {
+      "id": "attempt-1792644810101-663",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-12",
+      "score": 4,
+      "totalQuestions": 5,
+      "percentage": 80,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "aids-m12-q1": 1,
+        "aids-m12-q2": 0,
+        "aids-m12-q3": 2,
+        "aids-m12-q4": 2,
+        "aids-m12-q5": 1
+      },
+      "completedAt": "2026-10-22T04:53:30.101Z"
+    },
+    {
+      "id": "attempt-1792644676096-126",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-11",
+      "score": 4,
+      "totalQuestions": 5,
+      "percentage": 80,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "aids-m11-q1": 3,
+        "aids-m11-q2": 2,
+        "aids-m11-q3": 2,
+        "aids-m11-q4": 2,
+        "aids-m11-q5": 1
+      },
+      "completedAt": "2026-10-22T04:51:16.096Z"
+    },
+    {
+      "id": "attempt-1792644590233-412",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-10",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "aids-m10-q1": 3,
+        "aids-m10-q2": 1,
+        "aids-m10-q3": 2,
+        "aids-m10-q4": 3,
+        "aids-m10-q5": 2
+      },
+      "completedAt": "2026-10-22T04:49:50.233Z"
+    },
+    {
+      "id": "attempt-1792644522774-289",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-9",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "aids-m9-q1": 2,
+        "aids-m9-q2": 1,
+        "aids-m9-q3": 1,
+        "aids-m9-q4": 1,
+        "aids-m9-q5": 2
+      },
+      "completedAt": "2026-10-22T04:48:42.774Z"
+    },
+    {
+      "id": "attempt-1792644447014-879",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-8",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "aids-m8-q1": 2,
+        "aids-m8-q2": 3,
+        "aids-m8-q3": 0,
+        "aids-m8-q4": 2,
+        "aids-m8-q5": 2
+      },
+      "completedAt": "2026-10-22T04:47:27.014Z"
+    },
+    {
+      "id": "attempt-1792644375463-928",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-7",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "aids-m7-q1": 1,
+        "aids-m7-q2": 1,
+        "aids-m7-q3": 0,
+        "aids-m7-q4": 1,
+        "aids-m7-q5": 0
+      },
+      "completedAt": "2026-10-22T04:46:15.463Z"
+    },
+    {
+      "id": "attempt-1792644314549-19",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-6",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "m6-q1": 3,
+        "m6-q2": 3,
+        "m6-q3": 3,
+        "m6-q4": 0,
+        "m6-q5": 1
+      },
+      "completedAt": "2026-10-22T04:45:14.549Z"
+    },
+    {
+      "id": "attempt-1792644136855-637",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-5",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "m5-q1": 2,
+        "m5-q2": 3,
+        "m5-q3": 3,
+        "m5-q4": 3,
+        "m5-q5": 2
+      },
+      "completedAt": "2026-10-22T04:42:16.856Z"
+    },
+    {
+      "id": "attempt-1792644071406-307",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-4",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "m4-q1": 2,
+        "m4-q2": 2,
+        "m4-q3": 0,
+        "m4-q4": 3,
+        "m4-q5": 1
+      },
+      "completedAt": "2026-10-22T04:41:11.406Z"
+    },
+    {
+      "id": "attempt-1792644015737-533",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-3",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "m3-q1": 2,
+        "m3-q2": 0,
+        "m3-q3": 1,
+        "m3-q4": 0,
+        "m3-q5": 1
+      },
+      "completedAt": "2026-10-22T04:40:15.737Z"
+    },
+    {
+      "id": "attempt-1792643954727-865",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-2",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 2,
+      "answers": {
+        "m2-q1": 2,
+        "m2-q2": 3,
+        "m2-q3": 1,
+        "m2-q4": 0,
+        "m2-q5": 0
+      },
+      "completedAt": "2026-10-22T04:39:14.727Z"
+    },
+    {
+      "id": "attempt-1792643904320-288",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "moduleId": "ai-ds-mod-1",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 2,
+      "answers": {
+        "m1-q1": 1,
+        "m1-q2": 1,
+        "m1-q3": 2,
+        "m1-q4": 2,
+        "m1-q5": 1
+      },
+      "completedAt": "2026-10-22T04:38:24.320Z"
+    },
+    {
       "id": "attempt-1792605572295-659",
       "userId": "pyashwant2002@gmail.com",
       "studentName": "Panga Yashwant",
@@ -36889,8 +37233,448 @@
       "completedAt": "2026-10-21T17:50:06.826Z"
     }
   ],
-  "finalTestAttempts": [],
-  "finalTestActiveSessions": {},
+  "finalTestAttempts": [
+    {
+      "id": "ftest-attempt-1792645360867",
+      "sessionId": "session-1792645148588-487572",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "paperCode": "ARB-AIDS-QP03",
+      "score": 23,
+      "totalQuestions": 25,
+      "percentage": 92,
+      "passed": true,
+      "attemptNumber": 1,
+      "timeTakenSeconds": 212,
+      "timeTakenFormatted": "3 minutes 32 seconds",
+      "isAutoSubmitted": false,
+      "startedAt": "2026-10-22T04:59:08.588Z",
+      "submittedAt": "2026-10-22T05:02:40.867Z",
+      "answers": {
+        "aids-set-c-1": 3,
+        "aids-set-c-2": 2,
+        "aids-set-c-3": 2,
+        "aids-set-c-4": 2,
+        "aids-set-c-5": 1,
+        "aids-set-c-6": 2,
+        "aids-set-c-7": 3,
+        "aids-set-c-8": 0,
+        "aids-set-c-9": 2,
+        "aids-set-c-10": 0,
+        "aids-set-c-11": 2,
+        "aids-set-c-12": 3,
+        "aids-set-c-13": 1,
+        "aids-set-c-14": 3,
+        "aids-set-c-15": 0,
+        "aids-set-c-16": 3,
+        "aids-set-c-17": 0,
+        "aids-set-c-18": 1,
+        "aids-set-c-19": 1,
+        "aids-set-c-20": 3,
+        "aids-set-c-21": 1,
+        "aids-set-c-22": 1,
+        "aids-set-c-23": 1,
+        "aids-set-c-24": 3,
+        "aids-set-c-25": 2
+      },
+      "questionsReview": [
+        {
+          "id": "aids-set-c-1",
+          "questionText": "Why does Lasso regression (L1) produce sparse models with exact zero coefficients while Ridge (L2) does not?",
+          "codeSnippet": null,
+          "options": [
+            "Ridge regression cannot handle negative numbers",
+            "Lasso automatically deletes columns from the pandas DataFrame",
+            "Lasso uses integer rounding after gradient descent",
+            "The diamond-shaped L1 constraint ball has sharp vertices on the coordinate axes where elliptical loss contours intersect at zero"
+          ],
+          "selectedAnswer": 3,
+          "correctAnswer": 3,
+          "isCorrect": true,
+          "explanation": "Geometrically, the L1 constraint boundary has sharp vertices aligned with the axes. Elliptical RSS contours frequently intersect these vertices, forcing coefficients to exactly zero."
+        },
+        {
+          "id": "aids-set-c-2",
+          "questionText": "What is the primary advantage of Adjusted R-squared over standard R-squared?",
+          "codeSnippet": null,
+          "options": [
+            "Adjusted R-squared does not require true target values",
+            "Adjusted R-squared is always between 0 and 100%",
+            "Adjusted R-squared penalizes the addition of non-informative predictor variables based on degrees of freedom",
+            "Adjusted R-squared eliminates the need for cross-validation"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 2,
+          "isCorrect": true,
+          "explanation": "Standard R^2 always increases or remains flat when adding features, even if useless. Adjusted R^2 penalizes additional features unless they improve model fit more than expected by chance."
+        },
+        {
+          "id": "aids-set-c-3",
+          "questionText": "In binary Logistic Regression, how is the Logit (Log-Odds) related to the linear equation w^T * x + b?",
+          "codeSnippet": null,
+          "options": [
+            "p / (1 - p) = ln(w^T * x + b)",
+            "w^T * x + b = 1 / (1 + e^-p)",
+            "ln(p / (1 - p)) = w^T * x + b",
+            "p = w^T * x + b"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 2,
+          "isCorrect": true,
+          "explanation": "The log-odds (logit) of probability p equals the linear combination of inputs: ln(p / (1 - p)) = w^T * x + b. Inverting this yields the sigmoid function p = 1 / (1 + e^-(w^T*x + b))."
+        },
+        {
+          "id": "aids-set-c-4",
+          "questionText": "Why is accuracy misleading when evaluating a model on a fraud detection dataset where 99% of transactions are legitimate?",
+          "codeSnippet": null,
+          "options": [
+            "Accuracy requires classes to have equal variance",
+            "Accuracy cannot be calculated on datasets with more than 1,000 rows",
+            "A trivial model that predicts 'Legitimate' for every single transaction achieves 99% accuracy while detecting zero fraud cases (0% Recall)",
+            "Scikit-Learn raises an error if classes are imbalanced"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 2,
+          "isCorrect": true,
+          "explanation": "The Accuracy Paradox demonstrates that on imbalanced data, predicting the majority class yields high accuracy while completely failing to identify the critical minority class."
+        },
+        {
+          "id": "aids-set-c-5",
+          "questionText": "What does the Kernel Trick allow Support Vector Machines to accomplish mathematically?",
+          "codeSnippet": null,
+          "options": [
+            "It trains neural networks without backpropagation",
+            "It computes dot products in an implicit high-dimensional feature space without explicitly calculating coordinates in that space",
+            "It replaces quadratic programming with linear sorting",
+            "It converts classification into clustering"
+          ],
+          "selectedAnswer": 1,
+          "correctAnswer": 1,
+          "isCorrect": true,
+          "explanation": "Mercer's theorem allows SVMs to evaluate inner products in high- or infinite-dimensional Hilbert spaces using kernel functions K(x, x'), fitting non-linear boundaries efficiently."
+        },
+        {
+          "id": "aids-set-c-6",
+          "questionText": "What objective function does the K-Means clustering algorithm iteratively minimize?",
+          "codeSnippet": null,
+          "options": [
+            "Mean Absolute Deviation",
+            "The Silhouette Coefficient",
+            "Within-Cluster Sum of Squares (WCSS / Inertia): sum of squared Euclidean distances between data points and assigned centroids",
+            "Cross-Entropy Loss"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 2,
+          "isCorrect": true,
+          "explanation": "K-Means minimizes Inertia (WCSS): J = sum_k sum_{x in S_k} ||x - mu_k||^2 using iterative Expectation-Maximization."
+        },
+        {
+          "id": "aids-set-c-7",
+          "questionText": "In Principal Component Analysis (PCA), what do the eigenvectors and eigenvalues of the sample covariance matrix represent?",
+          "codeSnippet": null,
+          "options": [
+            "Eigenvectors define cluster centroids; eigenvalues define cluster radii",
+            "Eigenvectors are learning rates; eigenvalues are momentum coefficients",
+            "Eigenvectors represent missing values; eigenvalues represent data types",
+            "Eigenvectors define orthogonal axes of maximum variance; eigenvalues quantify the variance along each corresponding axis"
+          ],
+          "selectedAnswer": 3,
+          "correctAnswer": 3,
+          "isCorrect": true,
+          "explanation": "Eigenvectors of the covariance matrix define the principal directions of variance, and their corresponding eigenvalues quantify the amount of variance explained along each axis."
+        },
+        {
+          "id": "aids-set-c-8",
+          "questionText": "What critical error does Nested Cross-Validation prevent during hyperparameter optimization?",
+          "codeSnippet": null,
+          "options": [
+            "Optimistic evaluation bias (tuning leakage) caused by evaluating the model on the same fold used to pick hyperparameters",
+            "Overfitting caused by using too few estimators",
+            "Missing value contamination in test sets",
+            "Floating-point overflow during matrix inversion"
+          ],
+          "selectedAnswer": 0,
+          "correctAnswer": 0,
+          "isCorrect": true,
+          "explanation": "Nested CV separates hyperparameter tuning (inner loop) from unbiased generalization performance estimation (outer loop), preventing tuning leakage."
+        },
+        {
+          "id": "aids-set-c-9",
+          "questionText": "Which fundamental game-theoretic axiom of SHAP values ensures that individual feature attributions sum to the difference between model prediction and expected base value?",
+          "codeSnippet": null,
+          "options": [
+            "The Dummy Player Axiom",
+            "The Symmetry Axiom",
+            "The Efficiency Axiom",
+            "The Monotonicity Axiom"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 2,
+          "isCorrect": true,
+          "explanation": "The efficiency axiom guarantees that the sum of all feature Shapley values across an instance equals the exact difference between the model output and the expected baseline: sum(phi_i) = f(x) - E[f(X)]."
+        },
+        {
+          "id": "aids-set-c-10",
+          "questionText": "Why is ReLU (Rectified Linear Unit) generally preferred over Sigmoid in hidden layers of deep neural networks?",
+          "codeSnippet": null,
+          "options": [
+            "ReLU has a constant derivative of 1 for all positive inputs, preventing vanishing gradients in deep architectures",
+            "ReLU is bounded between 0 and 1, making it a valid probability",
+            "ReLU is strictly negative for all inputs",
+            "ReLU requires complex trigonometric calculations"
+          ],
+          "selectedAnswer": 0,
+          "correctAnswer": 0,
+          "isCorrect": true,
+          "explanation": "Sigmoid saturates at 0 and 1 where its derivative is near zero, causing vanishing gradients in deep layers. ReLU maintains a derivative of 1 for positive values, allowing smooth gradient flow."
+        },
+        {
+          "id": "aids-set-c-11",
+          "questionText": "In the Transformer Scaled Dot-Product Attention equation Attention(Q, K, V) = softmax(Q * K^T / sqrt(d_k)) * V, why are dot products scaled by 1 / sqrt(d_k)?",
+          "codeSnippet": null,
+          "options": [
+            "To convert token vectors into positional encodings",
+            "To reduce the matrix dimension to 1x1",
+            "To prevent large dot product magnitudes from pushing the softmax function into regions with near-zero gradients",
+            "To ensure that attention weights sum to zero"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 2,
+          "isCorrect": true,
+          "explanation": "For large key dimensions d_k, dot products grow large, pushing the softmax into saturated regions with tiny gradients. Scaling by 1/sqrt(d_k) stabilizes variance to 1."
+        },
+        {
+          "id": "aids-set-c-12",
+          "questionText": "What primary mechanism allows Retrieval-Augmented Generation (RAG) to mitigate hallucinations in Large Language Models?",
+          "codeSnippet": null,
+          "options": [
+            "It retrains the entire foundation model weights on every query",
+            "It converts text into SQL queries exclusively",
+            "It increases the model temperature parameter to 2.0",
+            "It retrieves verified factual text chunks from external knowledge bases via vector embeddings and injects them directly into the LLM prompt context"
+          ],
+          "selectedAnswer": 3,
+          "correctAnswer": 3,
+          "isCorrect": true,
+          "explanation": "RAG grounds the LLM in domain-specific truth by retrieving relevant factual context chunks from external vector stores, instructing the model to synthesize answers based strictly on verified evidence."
+        },
+        {
+          "id": "aids-set-c-13",
+          "questionText": "What does a Population Stability Index (PSI) value of 0.24 indicate when monitoring a deployed machine learning model in production?",
+          "codeSnippet": null,
+          "options": [
+            "The model has achieved 24% higher accuracy",
+            "Significant data drift (distribution shift) has occurred between the baseline training distribution and production traffic, requiring model inspection or retraining",
+            "The model is completely stable with zero change",
+            "The API response latency has dropped by 24 milliseconds"
+          ],
+          "selectedAnswer": 1,
+          "correctAnswer": 1,
+          "isCorrect": true,
+          "explanation": "Standard PSI thresholds state: PSI < 0.1 means no change; 0.1 <= PSI < 0.2 means moderate shift; PSI >= 0.2 indicates significant population drift requiring investigation or retraining."
+        },
+        {
+          "id": "aids-set-c-14",
+          "questionText": "What distinguishes supervised learning from unsupervised learning in the modern AI taxonomy?",
+          "codeSnippet": null,
+          "options": [
+            "Supervised learning is deterministic; unsupervised learning is purely random",
+            "Supervised learning only runs on CPUs; unsupervised learning requires cloud GPUs",
+            "Supervised learning cannot handle numerical data",
+            "Supervised learning requires ground-truth target labels y; unsupervised learning identifies latent patterns in unlabeled feature data X"
+          ],
+          "selectedAnswer": 3,
+          "correctAnswer": 3,
+          "isCorrect": true,
+          "explanation": "Supervised learning learns a mapping function from input features X to labeled targets y, whereas unsupervised learning discovers clusters, density, or low-dimensional manifolds without target labels."
+        },
+        {
+          "id": "aids-set-c-15",
+          "questionText": "In Python data science workflows, what is the output of copying a list via b = a vs b = a.copy() when modifying nested mutable objects?",
+          "codeSnippet": "import copy\na = [[1, 2], [3, 4]]\nb = a.copy()\nb[0][0] = 99",
+          "options": [
+            "a[0][0] becomes 99 because .copy() creates a shallow copy sharing nested object references",
+            "b is set to None",
+            "A TypeError is raised because lists of lists cannot be copied",
+            "a[0][0] remains 1 because copy() creates a complete recursive deep copy"
+          ],
+          "selectedAnswer": 0,
+          "correctAnswer": 0,
+          "isCorrect": true,
+          "explanation": "Shallow copy (.copy() or list(a)) duplicates the outer container but retains references to the same inner mutable objects. To isolate nested structures completely, copy.deepcopy() is required."
+        },
+        {
+          "id": "aids-set-c-16",
+          "questionText": "According to NumPy broadcasting rules, can an array of shape (4, 1, 6) be broadcast with an array of shape (5, 6)?",
+          "codeSnippet": null,
+          "options": [
+            "No, because the dimensions have different lengths",
+            "Yes, but it produces shape (4, 1, 6)",
+            "No, broadcasting requires identical shapes",
+            "Yes, the trailing dimensions align (6 == 6) and the middle dimension expands (1 expands to 5), resulting in shape (4, 5, 6)"
+          ],
+          "selectedAnswer": 3,
+          "correctAnswer": 3,
+          "isCorrect": true,
+          "explanation": "NumPy aligns dimensions right-to-left: trailing dims 6 and 6 match; next dims 1 and 5 are compatible (1 expands to 5); leading dim 4 is prepended, yielding (4, 5, 6)."
+        },
+        {
+          "id": "aids-set-c-17",
+          "questionText": "What is the critical behavioral difference between df.loc[1:3] and df.iloc[1:3] in Pandas?",
+          "codeSnippet": null,
+          "options": [
+            "df.loc includes label '3' (inclusive end); df.iloc uses 0-based integer slicing and excludes integer index 3 (exclusive end)",
+            "There is no difference; they are exact synonyms",
+            "df.loc is for columns only; df.iloc is for rows only",
+            "df.loc requires GPU acceleration; df.iloc uses CPU"
+          ],
+          "selectedAnswer": 0,
+          "correctAnswer": 0,
+          "isCorrect": true,
+          "explanation": "df.loc uses label-based indexing where both start and stop boundaries are inclusive; df.iloc uses standard integer position-based indexing where the stop boundary is exclusive."
+        },
+        {
+          "id": "aids-set-c-18",
+          "questionText": "Under which missing data mechanism is mean or median imputation mathematically guaranteed to produce unbiased estimates of the population mean?",
+          "codeSnippet": null,
+          "options": [
+            "MAR (Missing at Random)",
+            "MCAR (Missing Completely at Random)",
+            "All missing data mechanisms equally",
+            "MNAR (Missing Not at Random)"
+          ],
+          "selectedAnswer": 1,
+          "correctAnswer": 1,
+          "isCorrect": true,
+          "explanation": "Under MCAR (Missing Completely at Random), the probability of missingness is completely independent of both observed and unobserved data, so sample statistics remain unbiased estimators of population parameters."
+        },
+        {
+          "id": "aids-set-c-19",
+          "questionText": "What design principle, coined by Edward Tufte, dictates that non-data ink (such as heavy decorative borders and excessive gridlines) should be minimized in analytical charts?",
+          "codeSnippet": null,
+          "options": [
+            "The Gestalt Law of Proximity",
+            "The Data-Ink Ratio",
+            "Color Temperature Theory",
+            "The Pareto 80/20 Rule"
+          ],
+          "selectedAnswer": 1,
+          "correctAnswer": 1,
+          "isCorrect": true,
+          "explanation": "Edward Tufte's Data-Ink Ratio states that the proportion of ink devoted to displaying actual data information should be maximized, while non-data ink should be stripped."
+        },
+        {
+          "id": "aids-set-c-20",
+          "questionText": "What does the Central Limit Theorem (CLT) state regarding the sampling distribution of the sample mean?",
+          "codeSnippet": null,
+          "options": [
+            "Sample variance is always equal to population standard deviation",
+            "All population datasets become normally distributed over time",
+            "Outliers are mathematically removed when sample size exceeds 30",
+            "As sample size n increases (typically n >= 30), the sampling distribution of the mean approaches a normal distribution regardless of the population distribution"
+          ],
+          "selectedAnswer": 3,
+          "correctAnswer": 3,
+          "isCorrect": true,
+          "explanation": "The CLT proves that the distribution of sample means approaches a normal distribution with mean mu and standard error sigma / sqrt(n) as sample size grows large, regardless of the population shape."
+        },
+        {
+          "id": "aids-set-c-21",
+          "questionText": "In statistical hypothesis testing, what does a Type I error (alpha) represent?",
+          "codeSnippet": null,
+          "options": [
+            "Using a sample size that is too small",
+            "Rejecting a true null hypothesis (False Positive)",
+            "Dividing by zero in a t-test calculation",
+            "Failing to reject a false null hypothesis (False Negative)"
+          ],
+          "selectedAnswer": 1,
+          "correctAnswer": 1,
+          "isCorrect": true,
+          "explanation": "A Type I error (alpha) occurs when a researcher rejects a true null hypothesis, falsely detecting an effect or difference that does not exist."
+        },
+        {
+          "id": "aids-set-c-22",
+          "questionText": "What are the lower and upper fences defined in Tukey's Interquartile Range (IQR) method for outlier detection?",
+          "codeSnippet": null,
+          "options": [
+            "Lower: Median - 1 * IQR; Upper: Median + 1 * IQR",
+            "Lower: Q1 - 1.5 * IQR; Upper: Q3 + 1.5 * IQR",
+            "Lower: Mean - 2 * StdDev; Upper: Mean + 2 * StdDev",
+            "Lower: Min + 0.1; Upper: Max - 0.1"
+          ],
+          "selectedAnswer": 1,
+          "correctAnswer": 1,
+          "isCorrect": true,
+          "explanation": "Tukey's fences define non-parametric outlier boundaries as [Q1 - 1.5*IQR, Q3 + 1.5*IQR], where IQR = Q3 - Q1."
+        },
+        {
+          "id": "aids-set-c-23",
+          "questionText": "Why is a Scikit-Learn Pipeline essential during cross-validation?",
+          "codeSnippet": null,
+          "options": [
+            "It converts text into images automatically",
+            "It prevents data leakage by ensuring that transformers (e.g. StandardScaler) are fitted strictly on training folds and only applied to validation folds",
+            "It allows Scikit-Learn to run without Python",
+            "It speeds up GPU training by 10x"
+          ],
+          "selectedAnswer": 1,
+          "correctAnswer": 1,
+          "isCorrect": true,
+          "explanation": "Pipeline encapsulates transformers and estimators together, guaranteeing that during cross-validation, transformers fit strictly on the (k-1) training folds to avoid test leakage."
+        },
+        {
+          "id": "aids-set-c-24",
+          "questionText": "How does high variance manifest on training and validation learning curves?",
+          "codeSnippet": null,
+          "options": [
+            "Near-zero training error accompanied by high validation error, creating a large generalization gap (overfitting)",
+            "Validation error that is lower than training error throughout training",
+            "High training error and high validation error converging together at unacceptable levels",
+            "Both errors staying at exact zero"
+          ],
+          "selectedAnswer": 3,
+          "correctAnswer": 0,
+          "isCorrect": false,
+          "explanation": "High variance (overfitting) occurs when a model memorizes training noise, achieving near-perfect training scores but performing poorly on validation data."
+        },
+        {
+          "id": "aids-set-c-25",
+          "questionText": "What is the closed-form analytical solution for the parameters beta in Ordinary Least Squares (OLS) regression?",
+          "codeSnippet": null,
+          "options": [
+            "beta = (X^T * X)^(-1) * X^T * y",
+            "beta = X * (X^T * X)^(-1) * y",
+            "beta = X^T * (y * y^T)^(-1)",
+            "beta = (X * X^T)^(-1) * y"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 0,
+          "isCorrect": false,
+          "explanation": "Setting the gradient of the Residual Sum of Squares (RSS) to zero analytically derives the OLS Normal Equation: beta = (X^T * X)^(-1) * X^T * y."
+        }
+      ],
+      "proctoring": {
+        "violationCount": 0,
+        "terminated": false,
+        "cameraVerified": true,
+        "violations": []
+      }
+    }
+  ],
+  "finalTestActiveSessions": {
+    "pyashwant2002@gmail.com::data-science-ai::final": {
+      "sessionId": "session-1792645148588-487572",
+      "userId": "pyashwant2002@gmail.com",
+      "studentName": "Panga Yashwant",
+      "courseId": "data-science-ai",
+      "paperCode": "ARB-AIDS-QP03",
+      "startedAt": 1792645148588,
+      "durationSeconds": 2700,
+      "submitted": true
+    }
+  },
   "meta": {
     "answersRebalanced": true
   },

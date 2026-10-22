@@ -11,7 +11,10 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
   const lp = course?.learnerProgress;
   const done = course?.modules?.filter(m => m.completed).length || 0;
   const total = course?.modules?.length || 0;
-  const allPassed = total > 0 && done === total;
+  const quizzesDone = total > 0 && done === total;
+  const projectReq = lp?.projects || { required: course?.projects?.length || 0, submitted: 0, missing: course?.projects || [] };
+  const projectsDone = projectReq.required === 0 || (projectReq.missing || []).length === 0;
+  const allPassed = quizzesDone && projectsDone;
   const passedFinal = lp?.passedFinal;
   const lastFinal = lp?.finalAttempts?.[0];
   const nextModule = course?.modules?.find(m => !m.completed) || course?.modules?.[0];
@@ -95,7 +98,11 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                 ) : allPassed ? (
                   <p className="mt-2 text-sm text-slate-600">Unlocked! 45 minutes, proctored, pass mark 70%.{lastFinal ? ` Last attempt: ${lastFinal.percentage}%.` : ''}</p>
                 ) : (
-                  <p className="mt-2 text-sm text-slate-500 flex gap-2"><Lock className="w-4 h-4 mt-0.5 shrink-0" />Locked until all {total} module quizzes are passed ({done}/{total}).</p>
+                  <div className="mt-2 text-sm text-slate-500 space-y-1">
+                    <p className="flex gap-2"><Lock className="w-4 h-4 mt-0.5 shrink-0" />Unlocks when both are done:</p>
+                    <p className="pl-6">Module quizzes passed: <strong className="text-brand-900">{done}/{total}</strong></p>
+                    {projectReq.required > 0 && <p className="pl-6">Project GitHub repos submitted: <strong className="text-brand-900">{projectReq.submitted}/{projectReq.required}</strong></p>}
+                  </div>
                 )}
                 {!passedFinal && allPassed && <button onClick={() => onContinue(course.id, nextModule?.id)} className="btn-primary w-full mt-4">Go to final assessment</button>}
               </div>

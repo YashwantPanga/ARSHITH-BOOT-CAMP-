@@ -19,19 +19,51 @@ const CREAM = '#F8F5EE';
 const SAGE = '#426557';
 const CHARCOAL = '#302B25';
 
-export const verifyUrlFor = (certId) => `${window.location.origin}/verify/${encodeURIComponent(certId)}`;
+const isLocalHost = (h) => /^(localhost|127\.0\.0\.1|\[::1\])$/.test(h);
+let baseUrlPromise = null;
+
+/**
+ * Base address encoded in QR codes. A QR code containing "localhost" cannot be opened by the phone that
+ * scans it, so when the site is opened on localhost we ask the server for its network address
+ * (or PUBLIC_SITE_URL when configured).
+ */
+export function getPublicBaseUrl() {
+  if (!isLocalHost(window.location.hostname)) return Promise.resolve(window.location.origin);
+  if (!baseUrlPromise) {
+    baseUrlPromise = fetch('/api/site-info')
+      .then(r => r.json())
+      .then(d => (d && /^https?:\/\//.test(d.publicUrl || '') ? d.publicUrl.replace(/\/+$/, '') : window.location.origin))
+      .catch(() => window.location.origin);
+  }
+  return baseUrlPromise;
+}
+
+export const verifyUrlFor = (certId, base = window.location.origin) => `${base}/verify/${encodeURIComponent(certId)}`;
+
+/** Verification URL for a certificate, resolved against the public base address. */
+export function useVerifyUrl(certId) {
+  const [url, setUrl] = useState('');
+  useEffect(() => {
+    if (!certId) { setUrl(''); return undefined; }
+    let alive = true;
+    getPublicBaseUrl().then(base => alive && setUrl(verifyUrlFor(certId, base)));
+    return () => { alive = false; };
+  }, [certId]);
+  return url;
+}
 
 /** QR code (as a data URL) that opens the public verification page for this certificate. */
 export function useCertificateQr(certId, size = 360) {
+  const url = useVerifyUrl(certId);
   const [qr, setQr] = useState('');
   useEffect(() => {
-    if (!certId) return undefined;
+    if (!url) return undefined;
     let alive = true;
-    QRCode.toDataURL(verifyUrlFor(certId), { errorCorrectionLevel: 'H', margin: 1, width: size, color: { dark: FOREST, light: '#FFFFFF' } })
-      .then(url => alive && setQr(url))
+    QRCode.toDataURL(url, { errorCorrectionLevel: 'H', margin: 1, width: size, color: { dark: FOREST, light: '#FFFFFF' } })
+      .then(data => alive && setQr(data))
       .catch(() => alive && setQr(''));
     return () => { alive = false; };
-  }, [certId, size]);
+  }, [url, size]);
   return qr;
 }
 
@@ -73,7 +105,7 @@ export default function CertificatePage({ course, studentUser, onBack, onVerify,
 
   const cert = state.cert;
   const qr = useCertificateQr(cert?.certificateId);
-  const verifyUrl = cert ? verifyUrlFor(cert.certificateId) : '';
+  const verifyUrl = useVerifyUrl(cert?.certificateId);
 
   const render = async () => {
     await document.fonts?.ready;

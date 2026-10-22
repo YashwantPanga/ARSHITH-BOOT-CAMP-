@@ -86,6 +86,10 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   const done = modules.filter(m => m.completed).length;
   const total = modules.length || 1;
   const allQuizzesPassed = done === modules.length && modules.length > 0;
+  // Final assessment also requires a GitHub repository for every mini project (enforced on the server).
+  const projectReq = course.learnerProgress?.projects || { required: course.projects?.length || 0, submitted: 0, missing: course.projects || [] };
+  const projectsDone = projectReq.required === 0 || (projectReq.missing || []).length === 0;
+  const finalReady = allQuizzesPassed && projectsDone;
   const passedFinal = course.learnerProgress?.passedFinal || null;
   const studentName = displayNameOf(studentUser);
 
@@ -124,7 +128,12 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   const openFinal = () => {
     if (passedFinal) { setFinalOpen(true); return; }
     if (!allQuizzesPassed) {
-      toast(`Final assessment unlocks after you pass all ${modules.length} module quizzes (${done}/${modules.length} done).`, 'error', 5000);
+      toast(`Final assessment unlocks after you pass all ${modules.length} module quizzes (${done}/${modules.length} done) and submit all project repositories.`, 'error', 5000);
+      return;
+    }
+    if (!projectsDone) {
+      toast(`Submit a GitHub repository for every course project to unlock the final assessment (${projectReq.submitted}/${projectReq.required} submitted).`, 'error', 5500);
+      setProjectsOpen(true);
       return;
     }
     setFinalOpen(true);
@@ -515,24 +524,29 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
 
       {course.projects?.length > 0 && (
         <button onClick={() => setProjectsOpen(true)} className="w-full rounded-2xl border border-slate-200 p-4 text-left hover:border-brand-300 transition">
-          <span className="flex items-center gap-2 text-sm font-semibold text-brand-900"><Briefcase className="w-4 h-4 text-peach-500" />{course.projects.length} mini projects</span>
-          <span className="block text-xs text-slate-500 mt-1">Practice builds with starter code &amp; GitHub submission.</span>
+          <span className="flex items-center gap-2 text-sm font-semibold text-brand-900"><Briefcase className="w-4 h-4 text-peach-500" />{course.projects.length} mini projects<span className={`ml-auto chip text-[10px] ${projectsDone ? 'bg-brand-900 text-ivory' : 'bg-cream text-charcoal/70 border border-brand-900/10'}`}>{projectReq.submitted}/{projectReq.required} submitted</span></span>
+          <span className="block text-xs text-slate-500 mt-1">{projectsDone ? 'All GitHub repositories submitted.' : 'Required for the final assessment: submit a GitHub repository for each project.'}</span>
         </button>
       )}
 
-      <div className={`rounded-2xl p-4 border ${passedFinal ? 'border-mint-300 bg-mint-50' : allQuizzesPassed ? 'border-peach-300 bg-peach-50' : 'border-slate-200 bg-slate-50'}`}>
+      <div className={`rounded-2xl p-4 border ${passedFinal ? 'border-mint-300 bg-mint-50' : finalReady ? 'border-peach-300 bg-peach-50' : 'border-slate-200 bg-slate-50'}`}>
         <p className="flex items-center gap-2 text-sm font-semibold text-brand-900">
-          {passedFinal ? <Award className="w-4 h-4 text-mint-500" /> : allQuizzesPassed ? <ShieldCheck className="w-4 h-4 text-peach-500" /> : <Lock className="w-4 h-4 text-slate-400" />}
+          {passedFinal ? <Award className="w-4 h-4 text-mint-500" /> : finalReady ? <ShieldCheck className="w-4 h-4 text-peach-500" /> : <Lock className="w-4 h-4 text-slate-400" />}
           Final assessment
         </p>
-        <p className="text-xs text-slate-500 mt-1.5">
-          {passedFinal ? `Passed with ${passedFinal.percentage}%. Your certificate is ready.`
-            : allQuizzesPassed ? '25 questions · 45 minutes · proctored. Pass mark 70%.'
-            : `Locked — pass all module quizzes first (${done}/${modules.length}).`}
-        </p>
-        {!passedFinal && <ProgressBar value={(done / total) * 100} className="mt-3" tone={allQuizzesPassed ? 'peach' : 'plum'} />}
-        <button onClick={passedFinal ? onViewCertificate : openFinal} disabled={!allQuizzesPassed && !passedFinal} className={`mt-3 w-full ${passedFinal ? 'btn-plum' : 'btn-primary'} py-2.5`}>
-          {passedFinal ? <><Award className="w-4 h-4" /> View certificate</> : allQuizzesPassed ? 'Start final assessment' : <><Lock className="w-4 h-4" /> Locked</>}
+        {passedFinal ? (
+          <p className="text-xs text-slate-500 mt-1.5">Passed with {passedFinal.percentage}%. Your certificate is ready.</p>
+        ) : finalReady ? (
+          <p className="text-xs text-slate-500 mt-1.5">25 questions · 45 minutes · proctored. Pass mark 70%.</p>
+        ) : (
+          <ul className="mt-2 space-y-1.5 text-xs">
+            <li className={`flex items-center gap-2 ${allQuizzesPassed ? 'text-brand-900' : 'text-slate-500'}`}>{allQuizzesPassed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}Pass all module quizzes ({done}/{modules.length})</li>
+            {projectReq.required > 0 && <li className={`flex items-center gap-2 ${projectsDone ? 'text-brand-900' : 'text-slate-500'}`}>{projectsDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}Submit GitHub repos for all projects ({projectReq.submitted}/{projectReq.required})</li>}
+          </ul>
+        )}
+        {!passedFinal && <ProgressBar value={((done + (projectReq.submitted || 0)) / (total + (projectReq.required || 0))) * 100} className="mt-3" tone={finalReady ? 'peach' : 'plum'} />}
+        <button onClick={passedFinal ? onViewCertificate : (allQuizzesPassed && !projectsDone ? () => setProjectsOpen(true) : openFinal)} disabled={!allQuizzesPassed && !passedFinal} className={`mt-3 w-full ${passedFinal ? 'btn-plum' : 'btn-primary'} py-2.5`}>
+          {passedFinal ? <><Award className="w-4 h-4" /> View certificate</> : finalReady ? 'Start final assessment' : allQuizzesPassed ? <><Briefcase className="w-4 h-4" /> Submit project repos</> : <><Lock className="w-4 h-4" /> Locked</>}
         </button>
       </div>
     </div>
@@ -559,8 +573,8 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         {passedFinal ? (
           <button onClick={onViewCertificate} className="btn-plum px-3 sm:px-4 py-2"><Award className="w-4 h-4" /><span className="hidden sm:inline">Certificate</span></button>
         ) : (
-          <button onClick={openFinal} className={`btn px-3 sm:px-4 py-2 ${allQuizzesPassed ? 'bg-peach-500 text-white hover:bg-peach-600' : 'bg-slate-100 text-slate-500'}`} title={allQuizzesPassed ? 'Start final assessment' : 'Pass all module quizzes to unlock'}>
-            {allQuizzesPassed ? <Clock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}<span className="hidden sm:inline">Final assessment</span>
+          <button onClick={openFinal} className={`btn px-3 sm:px-4 py-2 ${finalReady ? 'bg-peach-500 text-white hover:bg-peach-600' : 'bg-slate-100 text-slate-500'}`} title={finalReady ? 'Start final assessment' : 'Pass all module quizzes and submit all project repositories to unlock'}>
+            {finalReady ? <Clock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}<span className="hidden sm:inline">Final assessment</span>
           </button>
         )}
       </header>
@@ -684,13 +698,14 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         onClose={() => setFinalOpen(false)}
         course={course}
         studentUser={studentUser}
-        locked={!allQuizzesPassed}
+        locked={!finalReady}
+        projectReq={projectReq}
         passedFinal={passedFinal}
         onSubmitted={() => onProgressChanged()}
         onViewCertificate={() => { setFinalOpen(false); onViewCertificate(); }}
       />
 
-      <CourseProjectsModal isOpen={projectsOpen} onClose={() => setProjectsOpen(false)} course={course} />
+      <CourseProjectsModal isOpen={projectsOpen} onClose={() => setProjectsOpen(false)} course={course} onSubmitted={() => onProgressChanged()} />
     </div>
   );
 }

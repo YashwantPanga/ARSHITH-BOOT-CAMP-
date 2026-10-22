@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ArrowLeft, Star, Clock, Users, Award, CheckCircle2, ChevronDown, BookOpen, ShieldCheck, Lock, PlayCircle, ListChecks, FileText } from 'lucide-react';
-import { SafeImg, ProgressBar, Triangles } from '../components/ui';
+import { ProgressBar, Triangles } from '../components/ui';
 import CourseSlideshow from '../components/CourseSlideshow';
 import { slidesForCourse } from '../data/courseGallery';
 import { cleanText, displayTitle } from '../utils/textUtils';
@@ -112,16 +112,6 @@ export default function CourseDetailsPage({ course, enrolledCourseId, isLoggedIn
             </div>
           </section>
 
-          {course.instructor && (
-            <section className="card p-6 sm:p-8 flex flex-col sm:flex-row gap-5 items-start">
-              <SafeImg src={course.instructor.avatar} alt="" className="w-20 h-20 rounded-full object-cover ring-4 ring-peach-100" />
-              <div>
-                <p className="eyebrow">Our team</p>
-                <h3 className="text-lg font-bold text-brand-900 mt-1">{course.instructor.name}</h3>
-                <p className="text-sm text-slate-500">{course.instructor.role}</p>
-              </div>
-            </section>
-          )}
         </div>
 
         <aside className="lg:col-span-4 order-1 lg:order-2">

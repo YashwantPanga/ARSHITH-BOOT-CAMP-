@@ -177,6 +177,9 @@ export const api = {
   getModuleEnrichment: (courseId, moduleId, signal) =>
     request(`/courses/${encodeURIComponent(courseId)}/modules/${encodeURIComponent(moduleId)}/enrichment`, { signal }),
   checkPractice: (data) => request('/practice/check', { method: 'POST', body: JSON.stringify(data) }),
+  submitProject: (data) => request('/projects/submit', { method: 'POST', body: JSON.stringify(data) }),
+  getMyProjects: (userId, courseId) =>
+    request(`/projects/mine?userId=${encodeURIComponent(userId || '')}&courseId=${encodeURIComponent(courseId)}`),
   getPracticeProgress: (userId, courseId) =>
     request(`/practice/progress?userId=${encodeURIComponent(userId || '')}&courseId=${encodeURIComponent(courseId)}`),
 

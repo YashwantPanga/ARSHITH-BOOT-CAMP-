@@ -103,6 +103,10 @@
 .texture-dots { background-image: radial-gradient(rgba(1,58,43,.09) 1px, transparent 1px); background-size: 22px 22px; }
 .texture-dots-light { background-image: radial-gradient(rgba(251,248,241,.10) 1px, transparent 1px); background-size: 22px 22px; }
 
+/* Hero slideshow: slow Ken Burns zoom while a slide is visible */
+.hero-kenburns { animation: hero-kenburns 4.8s ease-out both; transform-origin: 50% 40%; }
+@keyframes hero-kenburns { from { transform: scale(1); } to { transform: scale(1.05); } }
+
 /* Skeleton shimmer */
 .skeleton { background: linear-gradient(90deg, #F1EEE5 0%, #E6EDE8 50%, #F1EEE5 100%); background-size: 200% 100%; animation: shimmer 1.6s linear infinite; }
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
