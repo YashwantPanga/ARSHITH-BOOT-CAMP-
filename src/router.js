@@ -24,8 +24,11 @@ export function parseLocation(loc = window.location) {
     case 'forgot-password': return { name: 'forgot-password', params: {}, query };
     case 'reset-password': return { name: 'reset-password', params: {}, query };
     case 'admin-login': return { name: 'admin-login', params: {}, query };
-    case 'admin-dashboard':
-    case 'admin': return { name: 'admin-dashboard', params: {}, query };
+    case 'admin-dashboard': return { name: 'admin-dashboard', params: {}, query };
+    case 'admin': {
+      if (a === 'login') return { name: 'admin-login', params: {}, query };
+      return { name: 'admin-dashboard', params: {}, query };
+    }
     default: return { name: 'not-found', params: {}, query };
   }
 }
@@ -46,8 +49,8 @@ export const paths = {
   verifyEmail: (email) => `/verify-email${email ? `?email=${encodeURIComponent(email)}` : ''}`,
   forgotPassword: (email) => `/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ''}`,
   resetPassword: (email) => `/reset-password${email ? `?email=${encodeURIComponent(email)}` : ''}`,
-  adminLogin: () => '/admin-login',
-  adminDashboard: () => '/admin-dashboard'
+  adminLogin: () => '/admin/login',
+  adminDashboard: () => '/admin/dashboard'
 };
 
 /** True while a proctored exam is running; App ignores Back presses then. */

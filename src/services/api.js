@@ -122,6 +122,16 @@ export const api = {
   resetStudentPassword: (id) => request(`/admin/students/${id}/reset-password`, { method: 'POST' }),
   enrollStudent: (studentId, courseId) => request('/admin/enrollments', { method: 'POST', body: JSON.stringify({ studentId, courseId }) }),
   removeEnrollment: (studentId, courseId) => request(`/admin/enrollments/${studentId}/${courseId}`, { method: 'DELETE' }),
+  exportStudentsExcel: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    const token = getAdminToken();
+    return fetch(`/api/admin/export/students${qs ? '?' + qs : ''}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    }).then(res => {
+      if (!res.ok) throw new Error('Excel export failed');
+      return res.blob();
+    });
+  },
 
   // Project Submissions
   getProjectSubmissions: () => request('/admin/projects/submissions'),

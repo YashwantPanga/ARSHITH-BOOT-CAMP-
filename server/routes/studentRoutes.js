@@ -4,48 +4,243 @@ import { verifyAdminToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Get all students
+export function computeStudentDetails(student, db) {
+  const normEmail = String(student.email || '').trim().toLowerCase();
+  const studentId = student.id;
+
+  // Find enrolled course IDs from student record or learnerEnrollments
+  let enrolledIds = Array.isArray(student.enrolledCourses) ? [...student.enrolledCourses] : [];
+  const learnerEnrollmentCourseId = db.learnerEnrollments?.[normEmail]?.courseId;
+  if (learnerEnrollmentCourseId && !enrolledIds.includes(learnerEnrollmentCourseId)) {
+    enrolledIds.push(learnerEnrollmentCourseId);
+  }
+  if (enrolledIds.length === 0 && student.progressMap) {
+    enrolledIds = Object.keys(student.progressMap);
+  }
+
+  const courses = db.courses || [];
+  const quizAttempts = db.quizAttempts || [];
+  const finalAttempts = db.finalTestAttempts || [];
+  const submissions = db.projectSubmissions || [];
+  const certificates = db.certificates || [];
+
+  const courseDetails = enrolledIds.map(cId => {
+    const course = courses.find(c => c.id === cId) || { id: cId, title: cId, modules: [] };
+    const modules = course.modules || [];
+    const totalModules = modules.length;
+
+    // Passed module IDs for this student & course
+    const passedAttempts = quizAttempts.filter(a =>
+      (String(a.userId || '').toLowerCase() === normEmail || a.studentId === studentId) &&
+      (a.courseId === cId || !a.courseId) &&
+      a.passed
+    );
+    const passedModuleIds = new Set(passedAttempts.map(a => a.moduleId));
+
+    const completedModules = [];
+    const pendingModules = [];
+    modules.forEach(m => {
+      if (passedModuleIds.has(m.id)) {
+        const attempt = passedAttempts.find(a => a.moduleId === m.id);
+        completedModules.push({
+          id: m.id,
+          title: m.title,
+          score: attempt?.percentage ?? attempt?.score ?? 100,
+          completedAt: attempt?.completedAt || student.lastActivity
+        });
+      } else {
+        pendingModules.push({
+          id: m.id,
+          title: m.title
+        });
+      }
+    });
+
+    // Check final test passed
+    const passedFinal = finalAttempts.find(a =>
+      (String(a.userId || '').toLowerCase() === normEmail || a.studentId === studentId) &&
+      a.courseId === cId &&
+      a.passed
+    );
+
+    // Calculate real progress percentage
+    let progress = 0;
+    if (passedFinal) {
+      progress = 100;
+    } else if (totalModules > 0) {
+      progress = Math.round((completedModules.length / totalModules) * 100);
+    } else if (student.progressMap?.[cId]?.progress) {
+      progress = student.progressMap[cId].progress;
+    }
+
+    // Check project submissions for this student & course
+    const studentSubs = submissions.filter(s =>
+      (String(s.userId || s.studentEmail || '').toLowerCase() === normEmail || s.studentId === studentId) &&
+      s.courseId === cId
+    );
+
+    let projectStatus = 'Not Submitted';
+    if (studentSubs.length > 0) {
+      if (studentSubs.some(s => s.status === 'Needs Revision' || s.status === 'Resubmission Required')) {
+        projectStatus = 'Needs Revision';
+      } else if (studentSubs.some(s => s.status === 'Under Review')) {
+        projectStatus = 'Under Review';
+      } else if (studentSubs.some(s => s.status === 'Submitted')) {
+        projectStatus = 'Submitted';
+      } else if (studentSubs.every(s => s.status === 'Approved')) {
+        projectStatus = 'Approved';
+      } else {
+        projectStatus = studentSubs[0].status;
+      }
+    } else if (student.progressMap?.[cId]?.projectStatus) {
+      projectStatus = student.progressMap[cId].projectStatus;
+    }
+
+    // Check certificate
+    const cert = certificates.find(c =>
+      (String(c.userId || c.studentEmail || '').toLowerCase() === normEmail || c.studentId === studentId || c.learnerId === studentId) &&
+      c.courseId === cId &&
+      c.status === 'active'
+    );
+
+    const certificateStatus = cert ? 'Earned' : 'Not Earned';
+
+    return {
+      courseId: cId,
+      courseTitle: course.title,
+      category: course.category || '',
+      progress,
+      totalModules,
+      completedModulesCount: completedModules.length,
+      completedModules,
+      pendingModules,
+      passedFinal: !!passedFinal,
+      finalScore: passedFinal?.percentage || passedFinal?.score || null,
+      projectStatus,
+      projectSubmissions: studentSubs,
+      latestGithubUrl: studentSubs[0]?.githubUrl || '',
+      certificateStatus,
+      certificateId: cert?.certificateId || null,
+      certificateIssueDate: cert?.issueDate || cert?.createdAt || null,
+      certificateGrade: cert?.grade || null
+    };
+  });
+
+  const primary = courseDetails[0] || {
+    courseId: '',
+    courseTitle: 'No Course Enrolled',
+    progress: 0,
+    totalModules: 0,
+    completedModulesCount: 0,
+    completedModules: [],
+    pendingModules: [],
+    projectStatus: 'Not Submitted',
+    projectSubmissions: [],
+    latestGithubUrl: '',
+    certificateStatus: 'Not Earned',
+    certificateId: null,
+    certificateIssueDate: null
+  };
+
+  let progressStatus = 'Not Started';
+  if (primary.progress === 100) progressStatus = 'Completed';
+  else if (primary.progress > 0) progressStatus = 'In Progress';
+
+  return {
+    id: student.id,
+    name: student.name,
+    email: student.email,
+    regNo: student.regNo || '',
+    phone: student.phone || '',
+    role: student.role || 'Student',
+    status: student.status || 'active',
+    avatar: student.avatar || '',
+    joinDate: student.joinDate || student.createdAt || '',
+    lastActivity: student.lastActivity || student.joinDate || '',
+    enrolledCourses: enrolledIds,
+    enrolledCourseDetails: courseDetails,
+    primaryCourse: primary.courseTitle,
+    progress: primary.progress,
+    progressStatus,
+    projectStatus: primary.projectStatus,
+    certificateStatus: primary.certificateStatus,
+    certificateId: primary.certificateId,
+    certificateIssueDate: primary.certificateIssueDate,
+    certificateGrade: primary.certificateGrade,
+    githubUrl: primary.latestGithubUrl,
+    projectSubmissions: primary.projectSubmissions,
+    completedModules: primary.completedModules,
+    pendingModules: primary.pendingModules,
+    totalModules: primary.totalModules,
+    completedModulesCount: primary.completedModulesCount
+  };
+}
+
+// Get all students with computed real database progress
 router.get('/admin/students', verifyAdminToken, (req, res) => {
   const db = getDb();
-  // Return students without sensitive internal data
-  const students = (db.students || []).map(s => ({
-    id: s.id,
-    name: s.name,
-    email: s.email,
-    regNo: s.regNo || '',
-    phone: s.phone || '',
-    role: s.role,
-    status: s.status,
-    avatar: s.avatar,
-    joinDate: s.joinDate,
-    lastActivity: s.lastActivity,
-    enrolledCourses: s.enrolledCourses || [],
-    progressMap: s.progressMap || {}
-  }));
+  const studentsList = [...(db.students || [])];
+  const existingEmails = new Set(studentsList.map(s => String(s.email).toLowerCase()));
 
-  res.json({ success: true, students });
+  // Ensure any registered learners are included
+  if (db.learners) {
+    Object.values(db.learners).forEach(l => {
+      const email = String(l.email).toLowerCase();
+      if (!existingEmails.has(email)) {
+        studentsList.push({
+          id: l.learnerId,
+          name: l.name,
+          email: l.email,
+          regNo: l.regNo || '',
+          phone: l.phone || '',
+          role: 'Student',
+          status: 'active',
+          avatar: '',
+          joinDate: l.createdAt ? l.createdAt.slice(0, 10) : '',
+          lastActivity: l.createdAt || '',
+          enrolledCourses: db.learnerEnrollments?.[email]?.courseId ? [db.learnerEnrollments[email].courseId] : [],
+          progressMap: {}
+        });
+        existingEmails.add(email);
+      }
+    });
+  }
+
+  const enrichedStudents = studentsList.map(s => computeStudentDetails(s, db));
+  res.json({ success: true, students: enrichedStudents });
 });
 
 // Get single student profile and details
 router.get('/admin/students/:id', verifyAdminToken, (req, res) => {
   const db = getDb();
-  const student = (db.students || []).find(s => s.id === req.params.id);
+  let student = (db.students || []).find(s => s.id === req.params.id || String(s.email).toLowerCase() === String(req.params.id).toLowerCase());
+  
+  if (!student && db.learners) {
+    const l = Object.values(db.learners).find(x => x.learnerId === req.params.id || String(x.email).toLowerCase() === String(req.params.id).toLowerCase());
+    if (l) {
+      student = {
+        id: l.learnerId,
+        name: l.name,
+        email: l.email,
+        regNo: l.regNo || '',
+        phone: l.phone || '',
+        role: 'Student',
+        status: 'active',
+        avatar: '',
+        joinDate: l.createdAt ? l.createdAt.slice(0, 10) : '',
+        lastActivity: l.createdAt || '',
+        enrolledCourses: db.learnerEnrollments?.[l.email]?.courseId ? [db.learnerEnrollments[l.email].courseId] : [],
+        progressMap: {}
+      };
+    }
+  }
+
   if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
 
+  const details = computeStudentDetails(student, db);
   res.json({
     success: true,
-    student: {
-      id: student.id,
-      name: student.name,
-      email: student.email,
-      role: student.role,
-      status: student.status,
-      avatar: student.avatar,
-      joinDate: student.joinDate,
-      lastActivity: student.lastActivity,
-      enrolledCourses: student.enrolledCourses || [],
-      progressMap: student.progressMap || {}
-    }
+    student: details
   });
 });
 

@@ -6,7 +6,7 @@
     "email": "admin@arshithbootcamp.com",
     "role": "admin",
     "createdAt": "2026-01-01T00:00:00.000Z",
-    "lastLogin": "2026-10-10T11:58:09.743Z"
+    "lastLogin": "2026-10-22T07:00:39.365Z"
   },
   "courses": [
     {
@@ -31322,6 +31322,86 @@
     }
   ],
   "activityLogs": [
+    {
+      "id": "log-1792652439432-873",
+      "adminId": "ARB-ADMIN-001",
+      "action": "ADMIN_LOGIN",
+      "target": "Admin Portal",
+      "details": "Successful administrator login",
+      "timestamp": "2026-10-22T07:00:39.432Z",
+      "ipAddress": "::1",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0"
+    },
+    {
+      "id": "log-1792652321442-595",
+      "adminId": "ARB-ADMIN-001",
+      "action": "ADMIN_LOGIN",
+      "target": "Admin Portal",
+      "details": "Successful administrator login",
+      "timestamp": "2026-10-22T06:58:41.442Z",
+      "ipAddress": "::1",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+    },
+    {
+      "id": "log-1792651894916-28",
+      "adminId": "ARB-ADMIN-001",
+      "action": "ADMIN_LOGIN",
+      "target": "Admin Portal",
+      "details": "Successful administrator login",
+      "timestamp": "2026-10-22T06:51:34.916Z",
+      "ipAddress": "::1",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+    },
+    {
+      "id": "log-1792651332160-239",
+      "adminId": "ARB-ADMIN-001",
+      "action": "ADMIN_LOGIN",
+      "target": "Admin Portal",
+      "details": "Successful administrator login",
+      "timestamp": "2026-10-22T06:42:12.160Z",
+      "ipAddress": "::1",
+      "device": "node"
+    },
+    {
+      "id": "log-1792651313516-680",
+      "adminId": "ARB-ADMIN-001",
+      "action": "ADMIN_LOGIN",
+      "target": "Admin Portal",
+      "details": "Successful administrator login",
+      "timestamp": "2026-10-22T06:41:53.516Z",
+      "ipAddress": "::1",
+      "device": "node"
+    },
+    {
+      "id": "log-1792651286001-422",
+      "adminId": "ARB-ADMIN-001",
+      "action": "ADMIN_LOGIN",
+      "target": "Admin Portal",
+      "details": "Successful administrator login",
+      "timestamp": "2026-10-22T06:41:26.001Z",
+      "ipAddress": "::1",
+      "device": "node"
+    },
+    {
+      "id": "log-1792651274747-413",
+      "adminId": "ARB-ADMIN-001",
+      "action": "ADMIN_LOGIN",
+      "target": "Admin Portal",
+      "details": "Successful administrator login",
+      "timestamp": "2026-10-22T06:41:14.747Z",
+      "ipAddress": "::1",
+      "device": "node"
+    },
+    {
+      "id": "log-1792651242808-452",
+      "adminId": "ARB-ADMIN-001",
+      "action": "ADMIN_LOGIN",
+      "target": "Admin Portal",
+      "details": "Successful administrator login",
+      "timestamp": "2026-10-22T06:40:42.809Z",
+      "ipAddress": "::1",
+      "device": "node"
+    },
     {
       "id": "log-1791633504889-353",
       "adminId": "ARB-ADMIN-001",

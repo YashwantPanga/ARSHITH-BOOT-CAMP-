@@ -247,7 +247,7 @@ function AppShell() {
   const handleAdminLogout = async () => {
     try { await api.adminLogout(); } catch { /* ignore */ }
     setAdminUser(null);
-    navigate(paths.home());
+    navigate(paths.adminLogin(), { replace: true });
   };
 
   /* ---------------- Route guards ---------------- */
@@ -259,6 +259,14 @@ function AppShell() {
     if (needsLogin && !studentUser) {
       const here = window.location.pathname + window.location.search;
       navigate(paths.login(here), { replace: true });
+      return;
+    }
+    if (route.name === 'admin-dashboard' && !adminUser && !getAdminToken()) {
+      navigate(paths.adminLogin(), { replace: true });
+      return;
+    }
+    if (route.name === 'admin-login' && (adminUser || getAdminToken())) {
+      navigate(paths.adminDashboard(), { replace: true });
       return;
     }
     if (route.name === 'learning' && studentUser && coursesLoaded) {
@@ -275,7 +283,7 @@ function AppShell() {
       navigate(paths.dashboard(), { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [route, studentUser, coursesLoaded, enrolledCourseId]);
+  }, [route, studentUser, adminUser, coursesLoaded, enrolledCourseId]);
 
   /* ---------------- Render ---------------- */
   const goCourses = (query) => navigate(paths.courses(query));
