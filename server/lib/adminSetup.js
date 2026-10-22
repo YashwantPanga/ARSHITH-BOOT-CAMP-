@@ -8,13 +8,18 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function applyAdminSettings() {
   const email = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+  const username = String(process.env.ADMIN_USERNAME || '').trim().toLowerCase();
   const password = String(process.env.ADMIN_PASSWORD || '');
-  if (!email && !password) return [];
 
   const db = getDb();
   if (!db.admin) return ['no admin account found'];
   const admin = db.admin;
   const changes = [];
+
+  if (username && admin.username !== username) {
+    admin.username = username;
+    changes.push(`admin username set to ${username}`);
+  }
 
   if (email) {
     if (!EMAIL_RE.test(email)) changes.push('ADMIN_EMAIL ignored: not a valid email address');
