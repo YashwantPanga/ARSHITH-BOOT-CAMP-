@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import request from 'supertest';
 
-// Final assessment lock: all module quizzes AND a GitHub repository for every course project.
+// Final assessment lock: all module quizzes AND a GitHub repository for any one course project.
 const tmp = path.join(os.tmpdir(), `arb-lock-db-${process.pid}-${Date.now()}.json`);
 let app;
 const email = `lock${Date.now()}@example.test`;
@@ -38,12 +38,12 @@ describe('final assessment lock', () => {
     expect(res.body.locked).toBe(true);
   });
 
-  it('stays locked after all quizzes until every project repository is submitted', async () => {
+  it('stays locked after all quizzes until a project repository is submitted', async () => {
     passAllQuizzes();
     const res = await request(app).post('/api/final-test/start').set('X-Learner-Token', token).send({ userId: email, courseId: 'python-programming' });
     expect(res.status).toBe(403);
     expect(res.body.reason).toBe('projects');
-    expect(res.body.projects).toMatchObject({ required: 3, submitted: 0 });
+    expect(res.body.projects).toMatchObject({ required: 1, total: 3, submitted: 0 });
   });
 
   it('rejects links that are not GitHub repositories', async () => {
@@ -58,18 +58,16 @@ describe('final assessment lock', () => {
     expect(res.status).toBe(401);
   });
 
-  it('unlocks once all three repositories are submitted, and admins can see them', async () => {
-    for (const [i, projectId] of ['py-proj-1', 'py-proj-2', 'py-proj-3'].entries()) {
-      const res = await request(app).post('/api/projects/submit').set('X-Learner-Token', token).send({ userId: email, courseId: 'python-programming', projectId, githubUrl: `https://github.com/lock-tester/project-${i + 1}` });
-      expect(res.status).toBe(200);
-      expect(res.body.requirement.submitted).toBe(i + 1);
-    }
+  it('unlocks once any one repository is submitted (the second project is enough), and admins can see it', async () => {
+    const res = await request(app).post('/api/projects/submit').set('X-Learner-Token', token).send({ userId: email, courseId: 'python-programming', projectId: 'py-proj-2', githubUrl: 'https://github.com/lock-tester/project-2' });
+    expect(res.status).toBe(200);
+    expect(res.body.requirement).toMatchObject({ required: 1, total: 3, submitted: 1, missing: [] });
     const progress = await request(app).get(`/api/progress/python-programming?userId=${email}`).set('X-Learner-Token', token);
     expect(progress.body.projects.missing).toEqual([]);
     const start = await request(app).post('/api/final-test/start').set('X-Learner-Token', token).send({ userId: email, studentName: 'Lock Tester', courseId: 'python-programming' });
     expect(start.status).toBe(200);
     const db = JSON.parse(fs.readFileSync(tmp, 'utf8'));
-    expect(db.projectSubmissions.filter(s => s.userId === email).length).toBe(3);
+    expect(db.projectSubmissions.filter(s => s.userId === email).length).toBe(1);
   });
 });
 

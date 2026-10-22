@@ -340,7 +340,7 @@ export default function CourseProjectsModal({ isOpen, onClose, course, onSubmitt
                   )}
                   {saveError && <p className="text-xs text-rose-700 font-semibold" role="alert">{saveError}</p>}
                   {loadError && <p className="text-xs text-rose-700" role="alert">{loadError}</p>}
-                  <p className="text-[11px] text-slate-500">The final assessment unlocks after you pass every module quiz and submit a GitHub repository for all {projects.length} projects.</p>
+                  <p className="text-[11px] text-slate-500">The final assessment unlocks after you complete every module quiz and submit a GitHub repository for any one of these {projects.length} projects.</p>
                 </div>
               </>
             ) : null}

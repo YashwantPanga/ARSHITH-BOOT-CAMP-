@@ -86,8 +86,8 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   const done = modules.filter(m => m.completed).length;
   const total = modules.length || 1;
   const allQuizzesPassed = done === modules.length && modules.length > 0;
-  // Final assessment also requires a GitHub repository for every mini project (enforced on the server).
-  const projectReq = course.learnerProgress?.projects || { required: course.projects?.length || 0, submitted: 0, missing: course.projects || [] };
+  // Final assessment also requires a GitHub repository for any one mini project (enforced on the server).
+  const projectReq = course.learnerProgress?.projects || { required: Math.min(1, course.projects?.length || 0), total: course.projects?.length || 0, submitted: 0, missing: course.projects || [] };
   const projectsDone = projectReq.required === 0 || (projectReq.missing || []).length === 0;
   const finalReady = allQuizzesPassed && projectsDone;
   const passedFinal = course.learnerProgress?.passedFinal || null;
@@ -132,7 +132,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
       return;
     }
     if (!projectsDone) {
-      toast(`Submit a GitHub repository for every course project to unlock the final assessment (${projectReq.submitted}/${projectReq.required} submitted).`, 'error', 5500);
+      toast('Submit a GitHub repository for any one course project to unlock the final assessment.', 'error', 5500);
       setProjectsOpen(true);
       return;
     }
@@ -524,8 +524,8 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
 
       {course.projects?.length > 0 && (
         <button onClick={() => setProjectsOpen(true)} className="w-full rounded-2xl border border-slate-200 p-4 text-left hover:border-brand-300 transition">
-          <span className="flex items-center gap-2 text-sm font-semibold text-brand-900"><Briefcase className="w-4 h-4 text-peach-500" />{course.projects.length} mini projects<span className={`ml-auto chip text-[10px] ${projectsDone ? 'bg-brand-900 text-ivory' : 'bg-cream text-charcoal/70 border border-brand-900/10'}`}>{projectReq.submitted}/{projectReq.required} submitted</span></span>
-          <span className="block text-xs text-slate-500 mt-1">{projectsDone ? 'All GitHub repositories submitted.' : 'Required for the final assessment: submit a GitHub repository for each project.'}</span>
+          <span className="flex items-center gap-2 text-sm font-semibold text-brand-900"><Briefcase className="w-4 h-4 text-peach-500" />{course.projects.length} mini projects<span className={`ml-auto chip text-[10px] ${projectsDone ? 'bg-brand-900 text-ivory' : 'bg-cream text-charcoal/70 border border-brand-900/10'}`}>{projectReq.submitted}/{projectReq.total ?? course.projects.length} submitted</span></span>
+          <span className="block text-xs text-slate-500 mt-1">{projectsDone ? 'Project submitted. The final assessment can be unlocked.' : 'Required for the final assessment: submit a GitHub repository for any one project.'}</span>
         </button>
       )}
 
@@ -541,10 +541,10 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         ) : (
           <ul className="mt-2 space-y-1.5 text-xs">
             <li className={`flex items-center gap-2 ${allQuizzesPassed ? 'text-brand-900' : 'text-slate-500'}`}>{allQuizzesPassed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}Pass all module quizzes ({done}/{modules.length})</li>
-            {projectReq.required > 0 && <li className={`flex items-center gap-2 ${projectsDone ? 'text-brand-900' : 'text-slate-500'}`}>{projectsDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}Submit GitHub repos for all projects ({projectReq.submitted}/{projectReq.required})</li>}
+            {projectReq.required > 0 && <li className={`flex items-center gap-2 ${projectsDone ? 'text-brand-900' : 'text-slate-500'}`}>{projectsDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}Submit a GitHub repo for any one project ({Math.min(projectReq.submitted, projectReq.required)}/{projectReq.required})</li>}
           </ul>
         )}
-        {!passedFinal && <ProgressBar value={((done + (projectReq.submitted || 0)) / (total + (projectReq.required || 0))) * 100} className="mt-3" tone={finalReady ? 'peach' : 'plum'} />}
+        {!passedFinal && <ProgressBar value={((done + Math.min(projectReq.submitted || 0, projectReq.required || 0)) / (total + (projectReq.required || 0))) * 100} className="mt-3" tone={finalReady ? 'peach' : 'plum'} />}
         <button onClick={passedFinal ? onViewCertificate : (allQuizzesPassed && !projectsDone ? () => setProjectsOpen(true) : openFinal)} disabled={!allQuizzesPassed && !passedFinal} className={`mt-3 w-full ${passedFinal ? 'btn-plum' : 'btn-primary'} py-2.5`}>
           {passedFinal ? <><Award className="w-4 h-4" /> View certificate</> : finalReady ? 'Start final assessment' : allQuizzesPassed ? <><Briefcase className="w-4 h-4" /> Submit project repos</> : <><Lock className="w-4 h-4" /> Locked</>}
         </button>

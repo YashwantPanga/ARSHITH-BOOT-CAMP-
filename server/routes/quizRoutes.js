@@ -285,14 +285,14 @@ router.post('/final-test/start', (req, res) => {
     });
   }
 
-  // 1b. Lock: a GitHub repository must be submitted for every mini project of the course.
+  // 1b. Lock: a GitHub repository must be submitted for at least one mini project of the course.
   const projects = projectRequirement(db, userId, course);
   if (projects.missing.length) {
     return res.status(403).json({
       success: false,
       locked: true,
       reason: 'projects',
-      message: `Final assessment is locked. Submit a GitHub repository for every course project first (${projects.submitted}/${projects.required} submitted).`,
+      message: 'Final assessment is locked. Submit a GitHub repository for any one course project first.',
       passedModules: passedModuleIds.length,
       totalModules,
       projects
