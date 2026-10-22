@@ -19,6 +19,7 @@ import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import CategoriesPage from './pages/CategoriesPage';
 import { AboutPage, ContactPage } from './pages/AboutContactPages';
+import { VerifyEmailPage, ForgotPasswordPage, ResetPasswordPage, rememberDevMail } from './pages/AccountPages';
 
 import { api, getAdminToken } from './services/api';
 import { parseLocation, paths, examGuard } from './router';
@@ -278,7 +279,7 @@ function AppShell() {
 
   /* ---------------- Render ---------------- */
   const goCourses = (query) => navigate(paths.courses(query));
-  const isChromeless = ['learning', 'admin-login', 'admin-dashboard', 'login', 'register'].includes(route.name);
+  const isChromeless = ['learning', 'admin-login', 'admin-dashboard', 'login', 'register', 'verify-email', 'forgot-password', 'reset-password'].includes(route.name);
 
   const loading = <PageLoader />;
 
@@ -403,6 +404,46 @@ function AppShell() {
           onBack={() => (window.history.length > 1 ? window.history.back() : navigate('/'))}
           onHome={() => navigate('/')}
           onSuccess={handleAuthSuccess}
+          onNeedVerification={(email, dev) => {
+            if (dev) rememberDevMail({ email, ...dev });
+            navigate(paths.verifyEmail(email) + (route.query.next ? `&next=${encodeURIComponent(route.query.next)}` : ''));
+          }}
+          onForgotPassword={(email) => navigate(paths.forgotPassword(email))}
+        />
+      );
+      break;
+    case 'verify-email':
+      page = (
+        <VerifyEmailPage
+          key={route.query.email || ''}
+          email={route.query.email || ''}
+          token={route.query.token || ''}
+          onVerified={(user) => handleAuthSuccess(user, { isNew: true })}
+          onBack={() => navigate(paths.login())}
+          onHome={() => navigate('/')}
+        />
+      );
+      break;
+    case 'forgot-password':
+      page = (
+        <ForgotPasswordPage
+          initialEmail={route.query.email || ''}
+          onCodeSent={(email) => navigate(paths.resetPassword(email))}
+          onBack={() => navigate(paths.login())}
+          onHome={() => navigate('/')}
+        />
+      );
+      break;
+    case 'reset-password':
+      page = (
+        <ResetPasswordPage
+          key={`${route.query.email || ''}|${route.query.token || ''}`}
+          email={route.query.email || ''}
+          token={route.query.token || ''}
+          onDone={() => { toast('Password changed. Please sign in with your new password.', 'success', 5000); navigate(paths.login()); }}
+          onResend={() => navigate(paths.forgotPassword(route.query.email || ''))}
+          onBack={() => navigate(paths.login())}
+          onHome={() => navigate('/')}
         />
       );
       break;

@@ -1,7 +1,7 @@
 # Content preservation report
 
 Baseline: tests/fixtures/content-baseline.json
-Generated: 2026-10-22T05:30:30.080Z
+Generated: 2026-10-22T05:57:13.768Z
 
 - Modules compared: **60**, changed: **0**
 - Question-bank items compared: **275**, changed: **0**

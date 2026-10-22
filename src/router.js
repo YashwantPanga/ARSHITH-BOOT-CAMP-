@@ -20,6 +20,9 @@ export function parseLocation(loc = window.location) {
     case 'verify': return { name: 'verify', params: { certId: a || '' }, query };
     case 'login': return { name: 'login', params: {}, query };
     case 'register': return { name: 'register', params: {}, query };
+    case 'verify-email': return { name: 'verify-email', params: {}, query };
+    case 'forgot-password': return { name: 'forgot-password', params: {}, query };
+    case 'reset-password': return { name: 'reset-password', params: {}, query };
     case 'admin-login': return { name: 'admin-login', params: {}, query };
     case 'admin-dashboard':
     case 'admin': return { name: 'admin-dashboard', params: {}, query };
@@ -40,6 +43,9 @@ export const paths = {
   verify: (certId) => (certId ? `/verify/${encodeURIComponent(certId)}` : '/verify'),
   login: (next) => (next ? `/login?next=${encodeURIComponent(next)}` : '/login'),
   register: (next) => (next ? `/register?next=${encodeURIComponent(next)}` : '/register'),
+  verifyEmail: (email) => `/verify-email${email ? `?email=${encodeURIComponent(email)}` : ''}`,
+  forgotPassword: (email) => `/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ''}`,
+  resetPassword: (email) => `/reset-password${email ? `?email=${encodeURIComponent(email)}` : ''}`,
   adminLogin: () => '/admin-login',
   adminDashboard: () => '/admin-dashboard'
 };

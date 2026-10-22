@@ -3,6 +3,9 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { getDb, saveDb } from '../db.js';
 import { signLearnerToken } from '../middleware/learnerAuth.js';
+import { sendMail, devCodesAllowed } from '../lib/mailer.js';
+import { verificationEmail, resetEmail, passwordChangedEmail } from '../lib/emailTemplates.js';
+import { publicBase } from '../lib/publicUrl.js';
 
 // Learner accounts live on the server (previously they were only in the browser's localStorage,
 // with plain-text passwords, so a learner could not sign in from another device).
@@ -40,7 +43,49 @@ function publicLearner(db, l) {
 // Simple in-memory brute-force guard per email
 const attempts = new Map();
 
-router.post('/learners/register', (req, res) => {
+/* ---------- one-time codes (email verification & password reset) ---------- */
+const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
+const RESET_TTL_MS = 30 * 60 * 1000;
+const RESEND_COOLDOWN_MS = 60 * 1000;
+const MAX_CODE_ATTEMPTS = 5;
+const sha = (v) => crypto.createHash('sha256').update(String(v)).digest('hex');
+const sixDigits = () => String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+
+/** Creates a code + link token, stores only their hashes, returns the plain values. */
+function issueOneTimeCode(learner, field, ttl) {
+  const code = sixDigits();
+  const token = crypto.randomBytes(32).toString('hex');
+  learner[field] = { codeHash: sha(`${learner.email}:${code}`), tokenHash: sha(token), expiresAt: Date.now() + ttl, attempts: 0, sentAt: Date.now() };
+  return { code, token };
+}
+
+/** Checks a code or link token against the stored record. Returns 'ok' | 'expired' | 'invalid' | 'locked'. */
+function checkOneTimeCode(learner, field, { code, token }) {
+  const rec = learner[field];
+  if (!rec) return 'invalid';
+  if (Date.now() > rec.expiresAt) return 'expired';
+  if (rec.attempts >= MAX_CODE_ATTEMPTS) return 'locked';
+  const ok = (token && sha(token) === rec.tokenHash) || (code && sha(`${learner.email}:${String(code).trim()}`) === rec.codeHash);
+  if (!ok) { rec.attempts += 1; return rec.attempts >= MAX_CODE_ATTEMPTS ? 'locked' : 'invalid'; }
+  return 'ok';
+}
+
+const CODE_MESSAGES = {
+  expired: 'This code has expired. Request a new one.',
+  invalid: 'That code is not correct. Check the latest email and try again.',
+  locked: 'Too many incorrect attempts. Request a new code.'
+};
+
+async function sendVerification(req, learner) {
+  const { code, token } = issueOneTimeCode(learner, 'emailVerification', VERIFY_TTL_MS);
+  const link = `${publicBase(req).publicUrl}/verify-email?email=${encodeURIComponent(learner.email)}&token=${token}`;
+  const result = await sendMail({ to: learner.email, ...verificationEmail({ name: learner.name, code, link }) });
+  return { result, devCode: devCodesAllowed() ? code : undefined };
+}
+
+const mailStatus = (result) => (result.delivered ? 'sent' : result.mode === 'outbox' ? 'outbox' : 'failed');
+
+router.post('/learners/register', async (req, res) => {
   const email = normEmail(req.body.email);
   const regNo = normReg(req.body.regNo);
   const name = String(req.body.name || '').trim();
@@ -67,7 +112,8 @@ router.post('/learners/register', (req, res) => {
     regNo,
     phone,
     passwordHash: bcrypt.hashSync(password, 10),
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    emailVerified: false
   };
   db.learners[email] = learner;
 
@@ -90,7 +136,89 @@ router.post('/learners/register', (req, res) => {
     });
   }
   saveDb(db);
-  res.status(201).json({ success: true, learner: publicLearner(db, learner), token: signLearnerToken(email) });
+
+  // The account stays inactive until the email address is verified with the emailed code.
+  const { result, devCode } = await sendVerification(req, learner);
+  const fresh = getDb();
+  if (fresh.learners?.[email]) { fresh.learners[email].emailVerification = learner.emailVerification; saveDb(fresh); }
+  res.status(201).json({
+    success: true,
+    verificationRequired: true,
+    email,
+    emailStatus: mailStatus(result),
+    ...(devCode ? { devCode } : {}),
+    message: result.delivered ? `We sent a 6-digit code to ${email}.` : 'Your account was created, but email is not configured on this server yet.'
+  });
+});
+
+router.post('/learners/verify-email', (req, res) => {
+  const email = normEmail(req.body.email);
+  const db = getDb();
+  const learner = db.learners?.[email];
+  if (!learner) return res.status(400).json({ success: false, message: CODE_MESSAGES.invalid });
+  if (learner.emailVerified !== false) {
+    return res.json({ success: true, alreadyVerified: true, learner: publicLearner(db, learner), token: signLearnerToken(email) });
+  }
+  const verdict = checkOneTimeCode(learner, 'emailVerification', { code: req.body.code, token: req.body.token });
+  if (verdict !== 'ok') { saveDb(db); return res.status(400).json({ success: false, code: verdict.toUpperCase(), message: CODE_MESSAGES[verdict] }); }
+  learner.emailVerified = true;
+  learner.emailVerifiedAt = new Date().toISOString();
+  delete learner.emailVerification;
+  saveDb(db);
+  res.json({ success: true, learner: publicLearner(db, learner), token: signLearnerToken(email) });
+});
+
+router.post('/learners/resend-verification', async (req, res) => {
+  const email = normEmail(req.body.email);
+  const db = getDb();
+  const learner = db.learners?.[email];
+  const generic = { success: true, message: 'If this account still needs verification, a new code has been sent.' };
+  if (!learner || learner.emailVerified !== false) return res.json(generic);
+  const last = learner.emailVerification?.sentAt || 0;
+  if (Date.now() - last < RESEND_COOLDOWN_MS) {
+    return res.status(429).json({ success: false, message: `Please wait ${Math.ceil((RESEND_COOLDOWN_MS - (Date.now() - last)) / 1000)} seconds before requesting another code.` });
+  }
+  const { result, devCode } = await sendVerification(req, learner);
+  saveDb(db);
+  res.json({ ...generic, emailStatus: mailStatus(result), ...(devCode ? { devCode } : {}) });
+});
+
+/* ---------- forgot / reset password ---------- */
+router.post('/learners/forgot-password', async (req, res) => {
+  const email = normEmail(req.body.email);
+  // Same response whether or not the account exists, so emails cannot be enumerated.
+  const generic = { success: true, message: 'If an account exists for this email, we have sent a password reset code.' };
+  if (!EMAIL_RE.test(email)) return res.status(400).json({ success: false, message: 'Please enter a valid email address.' });
+  const db = getDb();
+  const learner = db.learners?.[email];
+  if (!learner) return res.json(generic);
+  const last = learner.passwordReset?.sentAt || 0;
+  if (Date.now() - last < RESEND_COOLDOWN_MS) return res.json(generic);
+  const { code, token } = issueOneTimeCode(learner, 'passwordReset', RESET_TTL_MS);
+  saveDb(db);
+  const link = `${publicBase(req).publicUrl}/reset-password?email=${encodeURIComponent(email)}&token=${token}`;
+  const result = await sendMail({ to: email, ...resetEmail({ name: learner.name, code, link }) });
+  res.json({ ...generic, emailStatus: mailStatus(result), ...(devCodesAllowed() ? { devCode: code } : {}) });
+});
+
+router.post('/learners/reset-password', async (req, res) => {
+  const email = normEmail(req.body.email);
+  const password = String(req.body.password || '');
+  if (password.length < 6) return res.status(400).json({ success: false, field: 'password', message: 'Password must be at least 6 characters.' });
+  const db = getDb();
+  const learner = db.learners?.[email];
+  if (!learner) return res.status(400).json({ success: false, message: CODE_MESSAGES.invalid });
+  const verdict = checkOneTimeCode(learner, 'passwordReset', { code: req.body.code, token: req.body.token });
+  if (verdict !== 'ok') { saveDb(db); return res.status(400).json({ success: false, code: verdict.toUpperCase(), message: CODE_MESSAGES[verdict] }); }
+  learner.passwordHash = bcrypt.hashSync(password, 10);
+  learner.passwordChangedAt = new Date().toISOString(); // signs out every existing session
+  delete learner.passwordReset;
+  // Receiving the reset code proves ownership of the address.
+  if (learner.emailVerified === false) { learner.emailVerified = true; learner.emailVerifiedAt = learner.passwordChangedAt; delete learner.emailVerification; }
+  saveDb(db);
+  attempts.delete(email);
+  sendMail({ to: email, ...passwordChangedEmail({ name: learner.name }) }).catch(() => {});
+  res.json({ success: true, message: 'Your password has been changed. Please sign in with your new password.' });
 });
 
 router.post('/learners/login', (req, res) => {
@@ -118,6 +246,9 @@ router.post('/learners/login', (req, res) => {
   if (!bcrypt.compareSync(password, learner.passwordHash)) return fail('Incorrect password. Please try again.');
 
   attempts.delete(email);
+  if (learner.emailVerified === false) {
+    return res.status(403).json({ success: false, code: 'EMAIL_NOT_VERIFIED', email, message: 'Please verify your email address first. Enter the 6-digit code we emailed you.' });
+  }
   const student = (db.students || []).find(s => normEmail(s.email) === email);
   if (student) {
     if (String(student.status || '').toLowerCase() === 'deactivated') return res.status(403).json({ success: false, message: 'This account has been deactivated. Please contact support.' });

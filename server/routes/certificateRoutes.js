@@ -1,41 +1,10 @@
 import express from 'express';
 import { getDb, saveDb, logActivity } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
-import crypto from 'crypto';
+import { ensureCertificate, makeUniqueCertificateId, sendCompletionEmail } from '../lib/certificates.js';
 import { normalizeUserId, getPassedFinalAttempt, PASS_PERCENTAGE } from './quizRoutes.js';
 
 const router = express.Router();
-
-const COURSE_CODES = {
-  'python-programming': 'PY',
-  'sql-mastery': 'SQL',
-  'web-development': 'WD',
-  'data-science-ai': 'AIDS'
-};
-
-function courseCode(course) {
-  return COURSE_CODES[course.id] ||
-    course.title.split(/\s+/).map(w => w[0]).join('').replace(/[^A-Z]/gi, '').toUpperCase().slice(0, 4) || 'GEN';
-}
-
-/** ARB-PY-2026-7KQ2M9XD — 8 random base32 chars, guaranteed unique inside db.certificates. */
-function makeUniqueCertificateId(db, course) {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const existing = new Set((db.certificates || []).map(c => String(c.certificateId).toUpperCase()));
-  for (;;) {
-    const bytes = crypto.randomBytes(8);
-    let suffix = '';
-    for (const b of bytes) suffix += alphabet[b % alphabet.length];
-    const id = `ARB-${courseCode(course)}-${new Date().getFullYear()}-${suffix}`;
-    if (!existing.has(id)) return id;
-  }
-}
-
-function gradeLabel(pct) {
-  if (pct >= 90) return 'Distinction';
-  if (pct >= 80) return 'Merit';
-  return 'Pass';
-}
 
 // ==========================================
 // LEARNER: CLAIM CERTIFICATE (only after passing the final with >= 70%)
@@ -57,42 +26,15 @@ router.post('/certificates/issue', (req, res) => {
     });
   }
 
-  if (!db.certificates) db.certificates = [];
-  let cert = db.certificates.find(c => c.userId === userId && c.courseId === course.id && c.status === 'active');
-
-  const learner = db.learners?.[userId];
-  if (!cert) {
-    const certificateId = makeUniqueCertificateId(db, course);
-    const pct = passedAttempt.percentage;
-    cert = {
-      id: certificateId,
-      certificateId,
-      userId,
-      studentId: userId,
-      // Name / reg. no. come from the server-side account when it exists, so they can't be spoofed.
-      studentName: learner?.name || String(studentName || '').trim() || passedAttempt.studentName || userId,
-      studentEmail: userId,
-      regNo: learner?.regNo || String(regNo || '').trim().toUpperCase(),
-      learnerId: learner?.learnerId || '',
-      courseId: course.id,
-      courseTitle: course.title,
-      percentage: pct,
-      score: passedAttempt.score,
-      totalQuestions: passedAttempt.totalQuestions,
-      attemptId: passedAttempt.id,
-      grade: `${pct}% ${gradeLabel(pct)}`,
-      issueDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-      createdAt: new Date().toISOString(),
-      instructorName: course.instructor?.name || 'Arshith Bootcamp',
-      status: 'active',
-      skills: course.skills || []
-    };
-    db.certificates.unshift(cert);
-    saveDb(db);
-  } else if (learner && !cert.learnerId) {
-    cert.learnerId = learner.learnerId;
-    if (!cert.regNo) cert.regNo = learner.regNo;
-    saveDb(db);
+  const { cert, created } = ensureCertificate(db, userId, course, passedAttempt, { studentName, regNo });
+  saveDb(db);
+  // Safety net: if the completion email was not sent when the final was passed, send it now.
+  if (created || !cert.completionEmail) {
+    sendCompletionEmail(cert, req).then(() => {
+      const fresh = getDb();
+      const c = (fresh.certificates || []).find(x => x.certificateId === cert.certificateId);
+      if (c) { c.completionEmail = cert.completionEmail; saveDb(fresh); }
+    }).catch(() => {});
   }
 
   res.json({ success: true, certificate: cert });

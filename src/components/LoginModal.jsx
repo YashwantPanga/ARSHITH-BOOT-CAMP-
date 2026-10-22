@@ -8,7 +8,7 @@ import { api } from '../services/api';
  * Full-page Login / Register screen (routes: /login and /register).
  * Accounts are stored in this browser; enrollment, quiz and exam results live on the server.
  */
-export default function AuthPage({ mode = 'login', onSwitchMode, onBack, onHome, onSuccess }) {
+export default function AuthPage({ mode = 'login', onSwitchMode, onBack, onHome, onSuccess, onNeedVerification, onForgotPassword }) {
   const isSignup = mode === 'signup';
   const [form, setForm] = useState({ name: '', regNo: '', phone: '', email: '', password: '', confirm: '' });
   const [showPw, setShowPw] = useState(false);
@@ -47,7 +47,8 @@ export default function AuthPage({ mode = 'login', onSwitchMode, onBack, onHome,
     try {
       if (isSignup) {
         const res = await api.learnerRegister({ name, regNo, phone, email, password: form.password });
-        onSuccess({ ...res.learner, token: res.token }, { isNew: true });
+        // New accounts must verify their email before signing in.
+        onNeedVerification(email, { code: res.devCode, status: res.emailStatus });
         return;
       }
       try {
@@ -58,9 +59,10 @@ export default function AuthPage({ mode = 'login', onSwitchMode, onBack, onHome,
         const saved = readAccount(email);
         if (err.data?.code === 'NOT_FOUND' && saved && saved.password === form.password && (!saved.regNo || saved.regNo.toUpperCase() === regNo)) {
           const res = await api.learnerRegister({ name: saved.name || email.split('@')[0], regNo, phone: saved.phone || '0000000000', email, password: form.password });
-          onSuccess({ ...res.learner, token: res.token });
+          onNeedVerification(email, { code: res.devCode, status: res.emailStatus });
           return;
         }
+        if (err.data?.code === 'EMAIL_NOT_VERIFIED') { onNeedVerification(email, null); return; }
         throw err;
       }
     } catch (err) {
@@ -135,6 +137,11 @@ export default function AuthPage({ mode = 'login', onSwitchMode, onBack, onHome,
                     {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </Field>
+                {!isSignup && (
+                  <p className="sm:col-span-2 -mt-2 text-right">
+                    <button type="button" onClick={() => onForgotPassword(form.email.trim())} className="text-xs font-semibold text-brand-900 hover:underline">Forgot password?</button>
+                  </p>
+                )}
                 {isSignup && (
                   <Field label="Confirm password" icon={KeyRound}>
                     <input className="input pl-11" type={showPw ? 'text' : 'password'} autoComplete="new-password" placeholder="••••••••" value={form.confirm} onChange={set('confirm')} />

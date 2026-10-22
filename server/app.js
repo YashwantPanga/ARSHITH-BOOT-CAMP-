@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
-import os from 'os';
+import { publicBase } from './lib/publicUrl.js';
 import authRoutes from './routes/authRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
@@ -39,28 +39,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'Arshith Bootcamp Secure Backend API', timestamp: new Date().toISOString() });
 });
 
-// Public address used in certificate QR codes. "localhost" in a QR code points at the scanning
-// phone itself, so when the site runs on a computer we advertise its local-network address instead.
-// Set PUBLIC_SITE_URL (e.g. https://learn.example.com) in production.
-function lanAddress() {
-  const candidates = [];
-  for (const list of Object.values(os.networkInterfaces())) {
-    for (const ni of list || []) {
-      if (ni.family === 'IPv4' && !ni.internal) candidates.push(ni.address);
-    }
-  }
-  const isPrivate = (ip) => /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip);
-  return candidates.find(isPrivate) || candidates[0] || null;
-}
-app.get('/api/site-info', (req, res) => {
-  const configured = (process.env.PUBLIC_SITE_URL || '').trim().replace(/\/+$/, '');
-  if (configured) return res.json({ success: true, publicUrl: configured, source: 'PUBLIC_SITE_URL' });
-  const host = String(req.headers.host || '');
-  const port = host.includes(':') ? host.split(':').pop() : (process.env.PORT || 5000);
-  const local = /^(localhost|127\.0\.0\.1|\[::1\])(:|$)/.test(host);
-  const ip = local ? lanAddress() : null;
-  res.json({ success: true, publicUrl: ip ? `http://${ip}:${port}` : `${req.protocol}://${host}`, source: ip ? 'lan' : 'request' });
-});
+// Public address used in certificate QR codes and emails (see server/lib/publicUrl.js).
+app.get('/api/site-info', (req, res) => res.json({ success: true, ...publicBase(req) }));
 
 // Learner-owned endpoints require a signed learner session
 app.use('/api', learnerGuard);

@@ -61,3 +61,16 @@ npm run report:content-diff # proves original module text, code and quizzes are 
 - Certificate QR codes encode the site's public address. When you run the site on your computer the
   QR uses its local-network address (e.g. http://192.168.1.21:5000), so a phone on the same Wi-Fi can
   open it. For a real deployment set `PUBLIC_SITE_URL`, e.g. `PUBLIC_SITE_URL=https://learn.example.com`.
+
+## Email verification, forgot password and course-completion email
+
+- **Sign-up** now sends a 6-digit code (and a one-click link) to the learner's email. The account can't sign in until the email is verified. Accounts created before this change keep working without verification.
+- **Forgot password?** on the sign-in page emails a reset code/link (valid 30 minutes, 5 attempts). After a reset, all older sessions are signed out and a "password changed" notice is emailed.
+- **Course completion:** when a learner passes the final assessment, they get a congratulations email with their grade, certificate ID, certificate link and public verify link (sent once per certificate).
+
+### Turning on real email
+1. Copy `.env.example` to `.env` in the project folder.
+2. Fill in `SMTP_USER`, `SMTP_PASS` and `MAIL_FROM`. For Gmail, turn on 2-Step Verification and create an App Password at https://myaccount.google.com/apppasswords — use that 16-character password as `SMTP_PASS`.
+3. Set `PUBLIC_SITE_URL` to the address learners open (so links in emails work on their phones), then restart the server.
+
+Until SMTP is configured, emails are saved as HTML files in `server/data/outbox/` and the code is shown on screen for testing (never in production, `NODE_ENV=production`).

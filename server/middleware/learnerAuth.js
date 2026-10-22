@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from './auth.js';
+import { getDb } from '../db.js';
 
 // Learner sessions. Before this, any caller could submit quizzes, start the final, read progress or
 // claim a certificate for any email simply by passing `userId`. Now those endpoints require a signed
@@ -18,7 +19,11 @@ export function learnerFromRequest(req) {
   if (!token) return null;
   try {
     const decoded = jwt.verify(String(token), JWT_SECRET);
-    return decoded?.role === 'learner' && decoded.sub ? decoded.sub : null;
+    if (decoded?.role !== 'learner' || !decoded.sub) return null;
+    // Tokens issued before a password change are no longer valid.
+    const changedAt = getDb().learners?.[decoded.sub]?.passwordChangedAt;
+    if (changedAt && decoded.iat * 1000 < new Date(changedAt).getTime() - 1000) return null;
+    return decoded.sub;
   } catch {
     return null;
   }

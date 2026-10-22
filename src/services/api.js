@@ -172,6 +172,10 @@ export const api = {
   learnerRegister: (data) => request('/learners/register', { method: 'POST', body: JSON.stringify(data) }),
   learnerLogin: (data) => request('/learners/login', { method: 'POST', body: JSON.stringify(data) }),
   sendContactMessage: (data) => request('/contact', { method: 'POST', body: JSON.stringify(data) }),
+  verifyEmail: (data) => request('/learners/verify-email', { method: 'POST', body: JSON.stringify(data) }),
+  resendVerification: (email) => request('/learners/resend-verification', { method: 'POST', body: JSON.stringify({ email }) }),
+  forgotPassword: (email) => request('/learners/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
+  resetPassword: (data) => request('/learners/reset-password', { method: 'POST', body: JSON.stringify(data) }),
 
   // Module enrichment & practice (graded on the server; solutions are returned only after an attempt)
   getModuleEnrichment: (courseId, moduleId, signal) =>

@@ -2,6 +2,7 @@ import express from 'express';
 import { getDb, saveDb, logActivity } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
 import { projectRequirement } from '../lib/projects.js';
+import { ensureCertificate, sendCompletionEmail } from '../lib/certificates.js';
 
 const router = express.Router();
 
@@ -440,7 +441,18 @@ router.post('/final-test/submit', (req, res) => {
 
   db.finalTestAttempts.unshift(attempt);
   session.submitted = true;
+
+  // Passing the final completes the course: create the certificate and email the learner (once).
+  let certificate = null;
+  if (passed) certificate = ensureCertificate(db, userId, course, attempt, { studentName }).cert;
   saveDb(db);
+  if (certificate && !certificate.completionEmail) {
+    sendCompletionEmail(certificate, req).then(() => {
+      const fresh = getDb();
+      const c = (fresh.certificates || []).find(x => x.certificateId === certificate.certificateId);
+      if (c) { c.completionEmail = certificate.completionEmail; saveDb(fresh); }
+    }).catch(() => {});
+  }
 
   res.json({
     success: true,

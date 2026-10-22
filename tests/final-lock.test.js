@@ -14,9 +14,11 @@ beforeAll(async () => {
   fs.copyFileSync(path.join(__dirname, '..', 'server', 'data', 'db.json'), tmp);
   process.env.ARB_DB_FILE = tmp;
   process.env.NODE_ENV = 'test';
+  process.env.ARB_OUTBOX_DIR = path.join(os.tmpdir(), `arb-outbox-${process.pid}`);
   app = (await import('../server/app.js')).default;
   const reg = await request(app).post('/api/learners/register').send({ name: 'Lock Tester', regNo: 'LOCK0001', phone: '9876543210', email, password: 'secret123' });
-  token = reg.body.token;
+  const verified = await request(app).post('/api/learners/verify-email').send({ email, code: reg.body.devCode });
+  token = verified.body.token;
   await request(app).post('/api/enrollment').set('X-Learner-Token', token).send({ userId: email, courseId: 'python-programming' });
 });
 afterAll(() => { try { fs.unlinkSync(tmp); } catch { /* ignore */ } });

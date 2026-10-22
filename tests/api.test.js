@@ -12,6 +12,7 @@ beforeAll(async () => {
   fs.copyFileSync(path.join(__dirname, '..', 'server', 'data', 'db.json'), tmp);
   process.env.ARB_DB_FILE = tmp;
   process.env.NODE_ENV = 'test';
+  process.env.ARB_OUTBOX_DIR = path.join(os.tmpdir(), `arb-outbox-${process.pid}`);
   app = (await import('../server/app.js')).default;
 });
 afterAll(() => { try { fs.unlinkSync(tmp); } catch { /* ignore */ } });
@@ -20,12 +21,17 @@ const learner = { name: 'Test Learner', regNo: 'TST0001', phone: '9876543210', e
 let token;
 
 describe('learner accounts', () => {
-  it('registers and returns a signed token, never the password', async () => {
+  it('registers, requires email verification, then returns a signed token (never the password)', async () => {
     const res = await request(app).post('/api/learners/register').send(learner);
     expect(res.status).toBe(201);
-    expect(res.body.token).toBeTruthy();
+    expect(res.body.verificationRequired).toBe(true);
+    expect(res.body.token).toBeUndefined();
     expect(JSON.stringify(res.body)).not.toMatch(/secret123|passwordHash/);
-    token = res.body.token;
+    const v = await request(app).post('/api/learners/verify-email').send({ email: learner.email, code: res.body.devCode });
+    expect(v.status).toBe(200);
+    expect(v.body.token).toBeTruthy();
+    expect(JSON.stringify(v.body)).not.toMatch(/secret123|passwordHash|codeHash/);
+    token = v.body.token;
   });
   it('rejects a duplicate registration number', async () => {
     const res = await request(app).post('/api/learners/register').send({ ...learner, email: 'other@example.test' });
