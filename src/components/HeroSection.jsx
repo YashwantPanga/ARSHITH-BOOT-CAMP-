@@ -11,7 +11,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
       <div className="absolute inset-0 texture-dots opacity-60 pointer-events-none" aria-hidden="true" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8">
-        <nav className="text-sm text-charcoal/60" aria-label="Breadcrumb">Home <span className="mx-1.5 text-charcoal/30">›</span> <span className="text-charcoal">Arshith Bootcamp</span></nav>
+        <nav className="text-sm text-charcoal/60" aria-label="Breadcrumb">Home <span className="mx-1.5 text-charcoal/30">›</span> <a href="https://arshithgroup.com" target="_blank" rel="noopener noreferrer" className="text-charcoal hover:underline">arshithgroup.com</a></nav>
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 lg:pb-0 grid lg:grid-cols-12 gap-10 items-center">
