@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { getDb, saveDb } from '../db.js';
 import { signLearnerToken } from '../middleware/learnerAuth.js';
-import { sendMail, devCodesAllowed } from '../lib/mailer.js';
+import { sendMail, devCodesAllowed, smtpConfigured } from '../lib/mailer.js';
 import { verificationEmail, resetEmail, passwordChangedEmail } from '../lib/emailTemplates.js';
 import { publicBase } from '../lib/publicUrl.js';
 
@@ -76,14 +76,24 @@ const CODE_MESSAGES = {
   locked: 'Too many incorrect attempts. Request a new code.'
 };
 
-async function sendVerification(req, learner) {
+/** Creates a new verification code on the learner (caller saves the db), returns the email to send. */
+function issueVerification(req, learner) {
   const { code, token } = issueOneTimeCode(learner, 'emailVerification', VERIFY_TTL_MS);
   const link = `${publicBase(req).publicUrl}/verify-email?email=${encodeURIComponent(learner.email)}&token=${token}`;
-  const result = await sendMail({ to: learner.email, ...verificationEmail({ name: learner.name, code, link }) });
-  return { result, devCode: devCodesAllowed() ? code : undefined };
+  return { mail: { to: learner.email, ...verificationEmail({ name: learner.name, code, link }) }, devCode: devCodesAllowed() ? code : undefined };
 }
 
 const mailStatus = (result) => (result.delivered ? 'sent' : result.mode === 'outbox' ? 'outbox' : 'failed');
+
+/**
+ * Sends an email. With real SMTP it goes out in the background (Gmail takes ~3-5 s to accept a message),
+ * so the page responds immediately; failures are logged. Without SMTP it is saved to the outbox first.
+ */
+async function dispatchMail(mail) {
+  if (!smtpConfigured()) return mailStatus(await sendMail(mail));
+  sendMail(mail).then(r => { if (!r.delivered) console.error(`[mail] "${mail.subject}" to ${mail.to} was not delivered: ${r.error}`); });
+  return 'sending';
+}
 
 router.post('/learners/register', async (req, res) => {
   const email = normEmail(req.body.email);
@@ -116,6 +126,8 @@ router.post('/learners/register', async (req, res) => {
     emailVerified: false
   };
   db.learners[email] = learner;
+  // The account stays inactive until the email address is verified with the emailed code.
+  const { mail, devCode } = issueVerification(req, learner);
 
   // Mirror into the admin "students" list so registrations show up in the admin portal.
   if (!db.students) db.students = [];
@@ -137,17 +149,14 @@ router.post('/learners/register', async (req, res) => {
   }
   saveDb(db);
 
-  // The account stays inactive until the email address is verified with the emailed code.
-  const { result, devCode } = await sendVerification(req, learner);
-  const fresh = getDb();
-  if (fresh.learners?.[email]) { fresh.learners[email].emailVerification = learner.emailVerification; saveDb(fresh); }
+  const emailStatus = await dispatchMail(mail);
   res.status(201).json({
     success: true,
     verificationRequired: true,
     email,
-    emailStatus: mailStatus(result),
+    emailStatus,
     ...(devCode ? { devCode } : {}),
-    message: result.delivered ? `We sent a 6-digit code to ${email}.` : 'Your account was created, but email is not configured on this server yet.'
+    message: emailStatus === 'outbox' || emailStatus === 'failed' ? 'Your account was created, but email is not configured on this server yet.' : `We sent a 6-digit code to ${email}.`
   });
 });
 
@@ -178,9 +187,9 @@ router.post('/learners/resend-verification', async (req, res) => {
   if (Date.now() - last < RESEND_COOLDOWN_MS) {
     return res.status(429).json({ success: false, message: `Please wait ${Math.ceil((RESEND_COOLDOWN_MS - (Date.now() - last)) / 1000)} seconds before requesting another code.` });
   }
-  const { result, devCode } = await sendVerification(req, learner);
+  const { mail, devCode } = issueVerification(req, learner);
   saveDb(db);
-  res.json({ ...generic, emailStatus: mailStatus(result), ...(devCode ? { devCode } : {}) });
+  res.json({ ...generic, emailStatus: await dispatchMail(mail), ...(devCode ? { devCode } : {}) });
 });
 
 /* ---------- forgot / reset password ---------- */
@@ -197,8 +206,8 @@ router.post('/learners/forgot-password', async (req, res) => {
   const { code, token } = issueOneTimeCode(learner, 'passwordReset', RESET_TTL_MS);
   saveDb(db);
   const link = `${publicBase(req).publicUrl}/reset-password?email=${encodeURIComponent(email)}&token=${token}`;
-  const result = await sendMail({ to: email, ...resetEmail({ name: learner.name, code, link }) });
-  res.json({ ...generic, emailStatus: mailStatus(result), ...(devCodesAllowed() ? { devCode: code } : {}) });
+  const emailStatus = await dispatchMail({ to: email, ...resetEmail({ name: learner.name, code, link }) });
+  res.json({ ...generic, emailStatus, ...(devCodesAllowed() ? { devCode: code } : {}) });
 });
 
 router.post('/learners/reset-password', async (req, res) => {

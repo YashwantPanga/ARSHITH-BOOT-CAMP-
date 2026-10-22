@@ -20,6 +20,10 @@ function getTransport() {
   if (!transport) {
     const port = Number(process.env.SMTP_PORT || 587);
     transport = nodemailer.createTransport({
+      // Keep the SMTP connection open and reuse it: a fresh connect + TLS + login to Gmail costs ~4-5 s per email.
+      pool: true,
+      maxConnections: 2,
+      maxMessages: Infinity,
       host: process.env.SMTP_HOST,
       port,
       secure: String(process.env.SMTP_SECURE || (port === 465)).toLowerCase() === 'true',
@@ -28,6 +32,18 @@ function getTransport() {
     });
   }
   return transport;
+}
+
+/** Opens the SMTP connection ahead of time so the first email is not delayed. Never throws. */
+export async function warmUpMailer() {
+  if (!smtpConfigured()) return false;
+  try {
+    await getTransport().verify();
+    return true;
+  } catch (err) {
+    console.error('[mail] SMTP login failed:', err.message);
+    return false;
+  }
 }
 
 /** Returns { delivered, mode: 'smtp' | 'outbox', error? }. Never throws. */
