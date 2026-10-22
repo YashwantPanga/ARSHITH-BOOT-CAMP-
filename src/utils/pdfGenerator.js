@@ -206,6 +206,7 @@ export async function generateCoursePDF(course, studentName = 'Student') {
     checkPageBreak(25);
 
     if (title) {
+      y += 2; // breathing room above the code title
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9.5);
       doc.setTextColor(1, 58, 43);
@@ -270,27 +271,53 @@ export async function generateCoursePDF(course, studentName = 'Student') {
       doc.text("Line-by-Line Code Annotation:", margin, y);
       y += 4.5;
 
-      lineByLine.forEach(lbl => {
-        checkPageBreak(8);
+      // Each annotation is stacked: number, the code line on a light strip, then the explanation
+      // underneath. `line` is usually the code itself (sometimes a line number with the code in `code`).
+      lineByLine.forEach((lbl, idx) => {
+        const isNumber = /^\s*\d+(\s*-\s*\d+)?\s*$/.test(String(lbl.line ?? ''));
+        const codeText = cleanText(isNumber ? lbl.code : (lbl.line || lbl.code));
+        const label = isNumber ? `Line ${String(lbl.line).trim()}` : String(idx + 1);
+        const indent = 9;
+        const innerW = contentWidth - indent - 4;
+
         doc.setFont("courier", "bold");
-        doc.setFontSize(7.5);
-        doc.setTextColor(1, 58, 43);
-        const lineNumStr = `Line ${lbl.line}:`;
-        doc.text(lineNumStr, margin + 2, y);
-
-        doc.setFont("courier", "normal");
-        doc.setTextColor(48, 43, 37);
-        const codeSnip = doc.splitTextToSize(cleanText(lbl.code), 45);
-        doc.text(codeSnip, margin + 18, y);
-
+        doc.setFontSize(7.6);
+        const codeLines = codeText ? doc.splitTextToSize(codeText, innerW - 4) : [];
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.setTextColor(93, 87, 78);
-        const expLines = doc.splitTextToSize(cleanText(lbl.explanation), contentWidth - 68);
-        doc.text(expLines, margin + 66, y);
+        const expLines = lbl.explanation ? doc.splitTextToSize(cleanText(lbl.explanation), innerW) : [];
 
-        const rowH = Math.max(codeSnip.length * 3.5, expLines.length * 3.5, 4.5);
-        y += rowH + 1.5;
+        const codeH = codeLines.length ? codeLines.length * 3.5 + 2.6 : 0;
+        const expH = expLines.length * 3.6;
+        checkPageBreak(codeH + expH + 6);
+
+        // number badge
+        doc.setFillColor(1, 58, 43);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(isNumber ? 6 : 7);
+        const badgeW = Math.max(5.2, doc.getTextWidth(label) + 2.6);
+        doc.roundedRect(margin + 2, y - 0.2, badgeW, 4.6, 1.2, 1.2, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.text(label, margin + 2 + badgeW / 2, y + 3.05, { align: "center" });
+
+        let cy = y;
+        if (codeLines.length) {
+          doc.setFillColor(239, 244, 241);
+          doc.roundedRect(margin + indent, cy - 0.2, innerW + 4, codeH, 1.2, 1.2, 'F');
+          doc.setFont("courier", "bold");
+          doc.setFontSize(7.6);
+          doc.setTextColor(1, 58, 43);
+          codeLines.forEach((l, k) => doc.text(l, margin + indent + 2, cy + 3.1 + k * 3.5));
+          cy += codeH + 1.2;
+        }
+        if (expLines.length) {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(93, 87, 78);
+          expLines.forEach((l, k) => doc.text(l, margin + indent, cy + 2.9 + k * 3.6));
+          cy += expH;
+        }
+        y = Math.max(cy, y + 5) + 2.6;
       });
       y += 2;
     }
