@@ -737,28 +737,32 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
                   <button onClick={() => setActiveSection('students')} className="text-xs font-bold text-brand-700 hover:underline">View All Students →</button>
                 </div>
                 <div className="divide-y divide-slate-100 text-xs font-bold">
-                  {students.slice(0, 4).map(st => (
-                    <div key={st.id} className="py-3 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-900 font-black flex items-center justify-center text-xs">
-                          {st.name?.charAt(0) || 'S'}
+                  {students.length === 0 ? (
+                    <p className="py-6 text-center text-xs text-slate-400">No registered students yet.</p>
+                  ) : (
+                    students.slice(0, 4).map(st => (
+                      <div key={st.id} className="py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-900 font-black flex items-center justify-center text-xs">
+                            {st.name?.charAt(0) || 'S'}
+                          </div>
+                          <div>
+                            <p className="font-black text-slate-900">{st.name}</p>
+                            <span className="text-[10px] text-slate-400">{st.email} • {st.primaryCourse}</span>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-black text-slate-900">{st.name}</p>
-                          <span className="text-[10px] text-slate-400">{st.email} • {st.primaryCourse}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-extrabold text-slate-700">{st.progress || 0}%</span>
+                          <button
+                            onClick={() => setSelectedStudentDetail(st)}
+                            className="px-2.5 py-1 text-[11px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg"
+                          >
+                            Details
+                          </button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-extrabold text-slate-700">{st.progress || 0}%</span>
-                        <button
-                          onClick={() => setSelectedStudentDetail(st)}
-                          className="px-2.5 py-1 text-[11px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg"
-                        >
-                          Details
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -1149,56 +1153,65 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs font-bold">
-                    {students
-                      .filter(s => !selectedProgressCourseId || (s.enrolledCourses || []).includes(selectedProgressCourseId))
-                      .map(student => {
-                        const targetDetail = (student.enrolledCourseDetails || []).find(cd => !selectedProgressCourseId || cd.courseId === selectedProgressCourseId) || student;
-                        const prog = targetDetail.progress || 0;
-                        return (
-                          <tr key={student.id} className="hover:bg-slate-50 transition-colors">
-                            <td className="py-4 px-4">
-                              <p className="font-black text-slate-900">{student.name}</p>
-                              <span className="text-[10px] text-slate-400">{student.email}</span>
-                            </td>
-                            <td className="py-4 px-4 text-slate-700">
-                              {targetDetail.courseTitle || student.primaryCourse}
-                            </td>
-                            <td className="py-4 px-4">
-                              <span className="px-2 py-1 bg-slate-100 rounded-lg text-slate-700 text-[11px] font-extrabold">
-                                {targetDetail.completedModulesCount || 0} / {targetDetail.totalModules || 0}
-                              </span>
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="w-28 space-y-1">
-                                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                                  <div className={`h-full ${getProgressColor(prog)}`} style={{ width: `${prog}%` }}></div>
-                                </div>
-                                <span className="text-[10px] text-slate-500 font-bold">{prog}%</span>
-                              </div>
-                            </td>
-                            <td className="py-4 px-4">
-                              {targetDetail.passedFinal ? (
-                                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                  Passed ({targetDetail.finalScore || '92'}%)
+                    {students.filter(s => !selectedProgressCourseId || (s.enrolledCourses || []).includes(selectedProgressCourseId)).length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-12 text-center text-slate-400 font-semibold">
+                          <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                          <p className="text-sm font-bold text-slate-700">No enrolled students in this course yet.</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      students
+                        .filter(s => !selectedProgressCourseId || (s.enrolledCourses || []).includes(selectedProgressCourseId))
+                        .map(student => {
+                          const targetDetail = (student.enrolledCourseDetails || []).find(cd => !selectedProgressCourseId || cd.courseId === selectedProgressCourseId) || student;
+                          const prog = targetDetail.progress || 0;
+                          return (
+                            <tr key={student.id} className="hover:bg-slate-50 transition-colors">
+                              <td className="py-4 px-4">
+                                <p className="font-black text-slate-900">{student.name}</p>
+                                <span className="text-[10px] text-slate-400">{student.email}</span>
+                              </td>
+                              <td className="py-4 px-4 text-slate-700">
+                                {targetDetail.courseTitle || student.primaryCourse}
+                              </td>
+                              <td className="py-4 px-4">
+                                <span className="px-2 py-1 bg-slate-100 rounded-lg text-slate-700 text-[11px] font-extrabold">
+                                  {targetDetail.completedModulesCount || 0} / {targetDetail.totalModules || 0}
                                 </span>
-                              ) : (
-                                <span className="text-[11px] text-slate-400 font-medium">Pending</span>
-                              )}
-                            </td>
-                            <td className="py-4 px-4">
-                              {getCertStatusBadge(targetDetail.certificateStatus, targetDetail.certificateId)}
-                            </td>
-                            <td className="py-4 px-4 text-right">
-                              <button
-                                onClick={() => setSelectedStudentDetail(student)}
-                                className="px-3 py-1 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl"
-                              >
-                                View Details
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                              </td>
+                              <td className="py-4 px-4">
+                                <div className="w-28 space-y-1">
+                                  <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                    <div className={`h-full ${getProgressColor(prog)}`} style={{ width: `${prog}%` }}></div>
+                                  </div>
+                                  <span className="text-[10px] text-slate-500 font-bold">{prog}%</span>
+                                </div>
+                              </td>
+                              <td className="py-4 px-4">
+                                {targetDetail.passedFinal ? (
+                                  <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    Passed ({targetDetail.finalScore || '92'}%)
+                                  </span>
+                                ) : (
+                                  <span className="text-[11px] text-slate-400 font-medium">Pending</span>
+                                )}
+                              </td>
+                              <td className="py-4 px-4">
+                                {getCertStatusBadge(targetDetail.certificateStatus, targetDetail.certificateId)}
+                              </td>
+                              <td className="py-4 px-4 text-right">
+                                <button
+                                  onClick={() => setSelectedStudentDetail(student)}
+                                  className="px-3 py-1 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl"
+                                >
+                                  View Details
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                    )}
                   </tbody>
                 </table>
               </div>
