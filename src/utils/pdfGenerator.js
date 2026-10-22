@@ -1,4 +1,7 @@
 import jsPDF from 'jspdf';
+import { api } from '../services/api';
+import { visualDiagramFor } from '../data/visualDiagrams';
+import { drawVisualDiagram, drawWorkflow, workflowToPng } from './pdfDiagrams';
 
 // Helper function to sanitize non-ASCII characters & encoding artifacts for jsPDF WinAnsi font
 export function cleanText(str) {
@@ -39,7 +42,23 @@ export function cleanText(str) {
     .trim();
 }
 
-export function generateCoursePDF(course, studentName = 'Student') {
+/** Loads each module's workflow diagram (same data as the lesson page) and renders it to an image. */
+async function prepareWorkflows(course) {
+  const out = {};
+  await Promise.all((course.modules || []).map(async (mod) => {
+    try {
+      const res = await api.getModuleEnrichment(course.id, mod.id);
+      const wf = res?.enrichment?.workflow;
+      if (wf?.nodes?.length) out[mod.id] = { def: wf, png: await workflowToPng(wf) };
+    } catch {
+      // No workflow for this module, or it could not be loaded: the PDF simply leaves it out.
+    }
+  }));
+  return out;
+}
+
+export async function generateCoursePDF(course, studentName = 'Student') {
+  const workflows = typeof window !== 'undefined' ? await prepareWorkflows(course) : {};
   const PDFDoc = (jsPDF && jsPDF.jsPDF) ? jsPDF.jsPDF : jsPDF;
   const doc = new PDFDoc({
     orientation: 'portrait',
@@ -587,9 +606,25 @@ export function generateCoursePDF(course, studentName = 'Student') {
         y += 2;
       }
 
-      // 4. Visual Diagram & Architecture
-      if (rm.diagram) {
+      // 4. Visual Diagram & Architecture — the same diagrams the lesson page shows
+      const wf = workflows[mod.id];
+      const visual = visualDiagramFor(mod.id);
+      if (rm.diagram || wf) {
+        // Keep the heading on the same page as the first diagram.
+        if (wf) {
+          const imgW = Math.min(contentWidth, wf.png.width * 0.2);
+          checkPageBreak(Math.min(pageHeight - 50, (imgW * wf.png.height) / wf.png.width) + 32);
+        }
         renderSubheading("4. Architecture & Visual Workflow Diagram", null, [30, 81, 65]);
+        const diagramCtx = { doc, margin, contentWidth, pageHeight, checkPageBreak, renderCodeBox, getY: () => y, setY: (v) => { y = v; } };
+        if (wf) drawWorkflow(diagramCtx, wf.def, wf.png);
+      }
+      if (rm.diagram && visual) {
+        drawVisualDiagram({ doc, margin, contentWidth, pageHeight, checkPageBreak, renderCodeBox, getY: () => y, setY: (v) => { y = v; } }, visual);
+        if (rm.diagram.explanation) {
+          renderParagraph(rm.diagram.explanation, 8.5, [93, 87, 78], "italic");
+        }
+      } else if (rm.diagram) {
         checkPageBreak(12);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(9);

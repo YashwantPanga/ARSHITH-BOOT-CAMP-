@@ -138,7 +138,7 @@ const NODE_TONES = [
   ['#FFF1F2', '#FECDD3', '#BE123C', '#881337']
 ];
 
-function DiagramSvg({ def, L }) {
+export function DiagramSvg({ def, L }) {
   const pos = new Map(L.nodes.map(n => [n.id, n]));
   // A box directly below n in the same column (an arrow leaving or entering n from below would cross it).
   const hasBelow = (n) => L.nodes.some(m => m.layer === n.layer && m.y > n.y);

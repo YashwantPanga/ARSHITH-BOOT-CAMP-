@@ -80,6 +80,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   const [quizOpen, setQuizOpen] = useState(false);
   const [finalOpen, setFinalOpen] = useState(false);
   const [projectsOpen, setProjectsOpen] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const [revealed, setRevealed] = useState({});
   const mainRef = useRef(null);
@@ -574,7 +575,18 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
           <ProgressBar value={course.progress} className="w-24" />
         </div>
         <button onClick={() => playground?.open()} className="btn-ghost px-3 py-2 border border-brand-900/10" title="Open the Practice Lab"><FlaskConical className="w-4 h-4" /><span className="hidden xl:inline">Practice Lab</span></button>
-        <button onClick={() => generateCoursePDF(course, studentName)} className="btn-outline px-3 py-2" title="Download course PDF"><Download className="w-4 h-4" /><span className="hidden xl:inline">Course PDF</span></button>
+        <button
+          onClick={async () => {
+            setPdfBusy(true);
+            try { await generateCoursePDF(course, studentName); } catch (err) { toast(`Could not create the PDF: ${err.message}`, 'error'); } finally { setPdfBusy(false); }
+          }}
+          disabled={pdfBusy}
+          className="btn-outline px-3 py-2"
+          title="Download course PDF"
+        >
+          {pdfBusy ? <span className="w-4 h-4 border-2 border-brand-900/30 border-t-brand-900 rounded-full animate-spin" aria-hidden="true" /> : <Download className="w-4 h-4" />}
+          <span className="hidden xl:inline">{pdfBusy ? 'Preparing…' : 'Course PDF'}</span>
+        </button>
         {passedFinal ? (
           <button onClick={onViewCertificate} className="btn-plum px-3 sm:px-4 py-2"><Award className="w-4 h-4" /><span className="hidden sm:inline">Certificate</span></button>
         ) : (
