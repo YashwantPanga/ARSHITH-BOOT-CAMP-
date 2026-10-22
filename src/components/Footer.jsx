@@ -19,68 +19,9 @@ export default function Footer({ navigate }) {
       <span className="tri tri-orange absolute top-8 right-[12%] opacity-80 pointer-events-none" />
       <span className="tri tri-green absolute bottom-10 left-[8%] opacity-70 pointer-events-none" />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-12">
-        {/* Top Contact Highlight Banner: 3 Pill Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 pb-12 border-b border-white/10">
-          {/* Card 1: Email Us */}
-          <a
-            href="mailto:careers@arshithgroup.com"
-            className="bg-white text-slate-900 border-2 border-[#093322] rounded-[24px] p-4 px-5 flex items-center gap-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:border-emerald-600 group cursor-pointer"
-          >
-            <div className="w-12 h-12 rounded-full bg-[#e6f7f0] border border-[#a7f3d0] flex items-center justify-center text-[#065f46] shrink-0 group-hover:bg-[#d1fae5] group-hover:scale-105 transition-all">
-              <Mail className="w-5 h-5" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[10.5px] font-extrabold uppercase tracking-wider text-slate-400 block leading-tight">
-                EMAIL US
-              </span>
-              <span className="text-sm sm:text-[15px] font-black text-slate-900 truncate block mt-0.5 group-hover:text-emerald-700 transition-colors">
-                careers@arshithgroup.com
-              </span>
-            </div>
-          </a>
-
-          {/* Card 2: Call Support */}
-          <a
-            href="tel:+918618471444"
-            className="bg-white text-slate-900 border-2 border-[#093322] rounded-[24px] p-4 px-5 flex items-center gap-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:border-emerald-600 group cursor-pointer"
-          >
-            <div className="w-12 h-12 rounded-full bg-[#e6f7f0] border border-[#a7f3d0] flex items-center justify-center text-[#065f46] shrink-0 group-hover:bg-[#d1fae5] group-hover:scale-105 transition-all">
-              <Phone className="w-5 h-5" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[10.5px] font-extrabold uppercase tracking-wider text-slate-400 block leading-tight">
-                CALL SUPPORT
-              </span>
-              <span className="text-sm sm:text-[15px] font-black text-slate-900 truncate block mt-0.5 group-hover:text-emerald-700 transition-colors">
-                +91 86184 71444
-              </span>
-            </div>
-          </a>
-
-          {/* Card 3: Headquarters */}
-          <a
-            href="https://maps.google.com/?q=Bengaluru,Karnataka,India"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-white text-slate-900 border-2 border-[#093322] rounded-[24px] p-4 px-5 flex items-center gap-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:border-emerald-600 group cursor-pointer"
-          >
-            <div className="w-12 h-12 rounded-full bg-[#e6f7f0] border border-[#a7f3d0] flex items-center justify-center text-[#065f46] shrink-0 group-hover:bg-[#d1fae5] group-hover:scale-105 transition-all">
-              <MapPin className="w-5 h-5" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[10.5px] font-extrabold uppercase tracking-wider text-slate-400 block leading-tight">
-                HEADQUARTERS
-              </span>
-              <span className="text-sm sm:text-[15px] font-black text-slate-900 truncate block mt-0.5 group-hover:text-emerald-700 transition-colors">
-                Bengaluru, Karnataka, India
-              </span>
-            </div>
-          </a>
-        </div>
-
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         {/* Navigation & Brand Grid */}
-        <div className="pt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand Info & Social Links */}
           <div className="space-y-4">
             <button onClick={() => navigate(paths.home())} aria-label="Home" className="block text-left">
