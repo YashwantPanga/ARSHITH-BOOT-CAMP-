@@ -1,12 +1,15 @@
 {
   "admin": {
     "adminId": "ARB-ADMIN-001",
-    "passwordHash": "$2b$10$DYKNsHHfNNEk6UrIbZNUyO/QKE5zuD6zCmVcInL.7q.j9.NOhMgPC",
+    "passwordHash": "$2b$10$YHP0jndpWparCEJQPwhyeuIJbnKjYf5NgLSnoaIFjf3UD1ctkxTQe",
     "name": "Arshith Bootcamp Administrator",
     "email": "admin@arshithbootcamp.com",
     "role": "admin",
     "createdAt": "2026-01-01T00:00:00.000Z",
-    "lastLogin": "2026-10-22T07:10:33.830Z"
+    "lastLogin": "2026-10-22T11:01:20.571Z",
+    "username": "arshithbootcamp",
+    "passwordEnvHash": "$2b$10$pOtYk.5z9YWWnpgPoVkWiOlrz3Ce8c6uienAmmLIWPGoNMElqDuWm",
+    "passwordChangedAt": "2026-10-22T10:55:25.016Z"
   },
   "courses": [
     {
@@ -31461,6 +31464,26 @@
     }
   ],
   "activityLogs": [
+    {
+      "id": "log-1792666880685-123",
+      "adminId": "ARB-ADMIN-001",
+      "action": "ADMIN_LOGIN",
+      "target": "Admin Portal",
+      "details": "Successful administrator login",
+      "timestamp": "2026-10-22T11:01:20.685Z",
+      "ipAddress": "::1",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0"
+    },
+    {
+      "id": "log-1792666589210-872",
+      "adminId": "ARB-ADMIN-001",
+      "action": "ADMIN_LOGIN",
+      "target": "Admin Portal",
+      "details": "Successful administrator login",
+      "timestamp": "2026-10-22T10:56:29.210Z",
+      "ipAddress": "::1",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+    },
     {
       "id": "log-1792653033873-948",
       "adminId": "ARB-ADMIN-001",

@@ -82,13 +82,13 @@ export default function AdminLoginPage({ onLoginSuccess, onGoHome }) {
             {/* Admin ID */}
             <div>
               <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
-                Admin email or ID
+                Admin Username, Email or ID
               </label>
               <div className="relative">
                 <input
                   type="text"
                   required
-                  placeholder="you@example.com"
+                  placeholder="arshithbootcamp"
                   value={adminId}
                   onChange={(e) => setAdminId(e.target.value)}
                   className="w-full pl-11 pr-4 py-3 text-sm font-bold bg-slate-50 hover:bg-slate-100/70 focus:bg-white border-2 border-slate-200 focus:border-brand-900 rounded-2xl outline-none transition-all"
