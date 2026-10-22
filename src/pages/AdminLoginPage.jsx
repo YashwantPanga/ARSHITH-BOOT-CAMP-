@@ -13,7 +13,7 @@ export default function AdminLoginPage({ onLoginSuccess, onGoHome }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!adminId.trim() || !password.trim()) {
-      setErrorMessage('Please enter both Admin ID and Password.');
+      setErrorMessage('Please enter your admin email (or ID) and password.');
       return;
     }
 
@@ -25,10 +25,10 @@ export default function AdminLoginPage({ onLoginSuccess, onGoHome }) {
       if (res.success && res.admin) {
         onLoginSuccess(res.admin);
       } else {
-        setErrorMessage(res.message || 'Invalid Admin ID or Password');
+        setErrorMessage(res.message || 'Invalid admin email/ID or password');
       }
     } catch (err) {
-      setErrorMessage(err.message || 'Invalid Admin ID or Password');
+      setErrorMessage(err.message || 'Invalid admin email/ID or password');
     } finally {
       setLoading(false);
     }
@@ -82,13 +82,13 @@ export default function AdminLoginPage({ onLoginSuccess, onGoHome }) {
             {/* Admin ID */}
             <div>
               <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
-                Admin ID
+                Admin email or ID
               </label>
               <div className="relative">
                 <input
                   type="text"
                   required
-                  placeholder="e.g. ARB-ADMIN-001"
+                  placeholder="you@example.com"
                   value={adminId}
                   onChange={(e) => setAdminId(e.target.value)}
                   className="w-full pl-11 pr-4 py-3 text-sm font-bold bg-slate-50 hover:bg-slate-100/70 focus:bg-white border-2 border-slate-200 focus:border-brand-900 rounded-2xl outline-none transition-all"
@@ -147,18 +147,6 @@ export default function AdminLoginPage({ onLoginSuccess, onGoHome }) {
             </button>
 
           </form>
-
-          {/* Demo Admin Credentials Helper Card */}
-          <div className="p-3.5 rounded-2xl bg-brand-50/70 border border-brand-200 text-xs text-brand-900 space-y-1">
-            <p className="font-extrabold flex items-center gap-1 text-brand-800">
-              <Sparkles className="w-3.5 h-3.5 text-brand-600" />
-              <span>Default Administrator Credentials</span>
-            </p>
-            <div className="font-mono text-[11px] text-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-1 pt-0.5">
-              <span>Admin ID: <strong className="text-brand-900 font-bold">ARB-ADMIN-001</strong></span>
-              <span>Password: <strong className="text-brand-900 font-bold">admin123</strong></span>
-            </div>
-          </div>
 
           {/* Footer note */}
           <div className="pt-4 border-t border-slate-100 text-center text-xs text-slate-400">

@@ -1,7 +1,13 @@
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { getDb } from '../db.js';
 
-export const JWT_SECRET = process.env.JWT_SECRET || 'arshith_bootcamp_admin_secret_key_2026_super_secure';
+// Signs admin and learner sessions. Set JWT_SECRET in .env so sessions survive restarts; without it a
+// random secret is used for this run only (never a fixed value, since the source code is public).
+export const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(48).toString('hex');
+if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'test') {
+  console.warn('[auth] JWT_SECRET is not set - using a temporary secret; everyone is signed out when the server restarts.');
+}
 
 export function verifyAdminToken(req, res, next) {
   const authHeader = req.headers.authorization;

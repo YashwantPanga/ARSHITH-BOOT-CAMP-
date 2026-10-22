@@ -2,10 +2,12 @@ import 'dotenv/config';
 import app from './app.js';
 import { initDb, flushDb } from './db.js';
 import { smtpConfigured, warmUpMailer } from './lib/mailer.js';
+import { applyAdminSettings } from './lib/adminSetup.js';
 
 const PORT = process.env.PORT || 5000;
 
 const mode = await initDb();
+for (const change of applyAdminSettings()) console.log(`[admin] ${change}`);
 
 app.listen(PORT, () => {
   console.log(`=================================================`);

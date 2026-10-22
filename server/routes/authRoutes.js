@@ -8,12 +8,13 @@ const router = express.Router();
 
 // Track failed login attempts for basic rate limiting / brute force protection
 const loginAttempts = new Map();
+const KNOWN_DEFAULT_PASSWORDS = ['admin123', 'Admin@2026'];
 
 router.post('/admin/login', (req, res) => {
   const { adminId, password } = req.body;
 
   if (!adminId || !password) {
-    return res.status(400).json({ success: false, message: 'Invalid Admin ID or Password' });
+    return res.status(400).json({ success: false, message: 'Invalid admin email/ID or password' });
   }
 
   const clientIp = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
@@ -37,7 +38,17 @@ router.post('/admin/login', (req, res) => {
     String(admin.email || '').trim().toLowerCase() === rawId
   );
 
-  // Check password match (stored bcrypt hash or configured admin password)
+  // The old built-in demo passwords are published in the source code, so they never sign in,
+  // even if the stored hash still matches one of them. Set ADMIN_PASSWORD in .env instead.
+  if (isIdValid && KNOWN_DEFAULT_PASSWORDS.includes(password)) {
+    return res.status(403).json({
+      success: false,
+      code: 'DEFAULT_PASSWORD_DISABLED',
+      message: 'The default admin password has been disabled. Set ADMIN_EMAIL and ADMIN_PASSWORD in the server .env file and restart the server.'
+    });
+  }
+
+  // Check password match against the stored bcrypt hash
   let isPasswordValid = false;
   if (isIdValid && admin.passwordHash) {
     try {
@@ -45,13 +56,6 @@ router.post('/admin/login', (req, res) => {
     } catch {
       isPasswordValid = false;
     }
-  }
-
-  const defaultAdminPasses = [process.env.ADMIN_PASSWORD, 'admin123', 'Admin@2026'].filter(Boolean);
-  if (isIdValid && !isPasswordValid && defaultAdminPasses.includes(password)) {
-    isPasswordValid = true;
-    admin.passwordHash = bcrypt.hashSync(password, 10);
-    saveDb(db);
   }
 
   if (!isIdValid || !isPasswordValid) {
@@ -140,6 +144,10 @@ router.post('/admin/change-password', verifyAdminToken, (req, res) => {
       success: false,
       message: 'Password must be at least 8 characters long, contain an uppercase letter, a lowercase letter, a number, and a special character.'
     });
+  }
+
+  if (KNOWN_DEFAULT_PASSWORDS.includes(newPassword)) {
+    return res.status(400).json({ success: false, message: 'That password is published in the source code. Choose a different one.' });
   }
 
   const db = getDb();
