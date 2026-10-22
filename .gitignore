@@ -5,3 +5,5 @@ dist
 *.log
 scratch/
 server/data/outbox/
+
+*.zip
