@@ -5,7 +5,7 @@ import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/re
 
 vi.mock('../src/services/api', () => ({ api: { checkPractice: vi.fn(), getModuleEnrichment: vi.fn() } }));
 import { api } from '../src/services/api';
-import WorkflowDiagram, { layoutDiagram } from '../src/components/lesson/WorkflowDiagram';
+import WorkflowDiagram, { layoutDiagram, wrapLabel } from '../src/components/lesson/WorkflowDiagram';
 import PracticeExercises, { ExerciseCard } from '../src/components/lesson/PracticeExercises';
 import Markdown from '../src/components/lesson/Markdown';
 import CourseSlideshow from '../src/components/CourseSlideshow';
@@ -38,6 +38,25 @@ describe('WorkflowDiagram', () => {
     const L = layoutDiagram(valid);
     expect(L.nodes.map(n => n.layer)).toEqual([0, 1, 2]);
     expect(L.edges.find(e => e.label === 'retrain').back).toBe(true);
+  });
+  it('wraps labels to fit the box, breaking long code tokens instead of overflowing', () => {
+    const lines = wrapLabel('model.predict(X_test_scaled_features)');
+    expect(lines.length).toBeGreaterThan(1);
+    expect(lines.join('')).toBe('model.predict(X_test_scaled_features)');
+    for (const l of wrapLabel('Findings & hypotheses for the next experiment')) expect(l.length).toBeLessThanOrEqual(20);
+  });
+  it('numbers steps in reading order, not in data order', () => {
+    const def = { nodes: [{ id: 'df', label: 'DataFrame' }, { id: 'split', label: 'Split' }, { id: 'merge', label: 'Merge' }], edges: [{ from: 'df', to: 'merge' }, { from: 'merge', to: 'split' }] };
+    const L = layoutDiagram(def);
+    expect(L.nodes.find(n => n.id === 'merge').step).toBe(2);
+    expect(L.nodes.find(n => n.id === 'split').step).toBe(3);
+  });
+  it('wraps every real module workflow onto rows that fit a lesson column', () => {
+    for (const mods of Object.values(ENRICHMENT)) for (const [id, e] of Object.entries(mods)) {
+      const L = layoutDiagram(e.workflow);
+      expect(L.width, id).toBeLessThanOrEqual(1160);
+      for (const n of L.nodes) for (const line of n.lines) expect(line.length, `${id}: ${n.label}`).toBeLessThanOrEqual(20);
+    }
   });
   it('renders every real module diagram without throwing', () => {
     for (const mods of Object.values(ENRICHMENT)) for (const e of Object.values(mods)) {
