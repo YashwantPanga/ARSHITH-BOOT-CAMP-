@@ -74,3 +74,21 @@ npm run report:content-diff # proves original module text, code and quizzes are 
 3. Set `PUBLIC_SITE_URL` to the address learners open (so links in emails work on their phones), then restart the server.
 
 Until SMTP is configured, emails are saved as HTML files in `server/data/outbox/` and the code is shown on screen for testing (never in production, `NODE_ENV=production`).
+
+## Storing the database in Supabase (free plan)
+
+Without any settings the app keeps using `server/data/db.json`. To move the data to Supabase:
+
+1. **Wake the project.** Free Supabase projects pause after about a week without use. Open your project in the Supabase dashboard and click **Restore project** if it says paused, then wait until it is green ("Healthy").
+2. **Create the table.** In the project, open **SQL Editor -> New query**, paste the contents of `supabase/setup.sql`, and click **Run**.
+3. **Copy your keys.** Open **Project Settings -> API** (or **API Keys**). Copy the **Project URL** and the **secret** key (`service_role`, or one starting with `sb_secret_`). Never use the secret key in frontend code or share it.
+4. **Add them to `.env`** (copy `.env.example` if you have no `.env` yet):
+   ```
+   SUPABASE_URL=https://<your-project-ref>.supabase.co
+   SUPABASE_SERVICE_KEY=<secret key>
+   ```
+5. **Start the server** (`npm start`). The first time, it uploads everything in `db.json` (courses, students, certificates, quizzes, projects) to Supabase. The start-up banner shows `Database: Supabase`.
+
+From then on every change is saved to Supabase within a second, so data survives restarts and redeploys. `npm run db:backup` downloads a copy of the live data into `backups/`.
+
+Supabase only stores the data. The website itself (the Node server) still needs a host - your own PC, or a free host such as Render - with the same two `SUPABASE_` settings.

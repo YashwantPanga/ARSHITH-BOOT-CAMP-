@@ -6,7 +6,7 @@
     "email": "admin@arshithbootcamp.com",
     "role": "admin",
     "createdAt": "2026-01-01T00:00:00.000Z",
-    "lastLogin": "2026-10-22T07:00:39.365Z"
+    "lastLogin": "2026-10-22T07:10:33.830Z"
   },
   "courses": [
     {
@@ -31052,6 +31052,30 @@
   ],
   "students": [
     {
+      "id": "ARB-STU-LA96AD",
+      "name": "YASHU",
+      "email": "pangayashwant4@gmail.com",
+      "regNo": "1234",
+      "phone": "+916281037993",
+      "role": "Student",
+      "status": "active",
+      "avatar": "",
+      "joinDate": "2026-10-22",
+      "lastActivity": "2026-10-22T06:26:56.108Z",
+      "enrolledCourses": [
+        "web-development"
+      ],
+      "progressMap": {
+        "web-development": {
+          "progress": 0,
+          "completedModules": [],
+          "quizzesPassed": [],
+          "finalTestPassed": false,
+          "projectStatus": "Not Submitted"
+        }
+      }
+    },
+    {
       "id": "ARB-STU-2KH7BQ",
       "name": "Panga Yashwant",
       "email": "pyashwant2002@gmail.com",
@@ -31061,7 +31085,7 @@
       "status": "active",
       "avatar": "",
       "joinDate": "2026-10-21",
-      "lastActivity": "2026-10-21T19:15:55.548Z",
+      "lastActivity": "2026-10-22T06:19:41.794Z",
       "enrolledCourses": [
         "data-science-ai"
       ],
@@ -31176,6 +31200,44 @@
   ],
   "certificates": [
     {
+      "id": "ARB-WD-2026-ML6RMNLH",
+      "certificateId": "ARB-WD-2026-ML6RMNLH",
+      "userId": "pangayashwant4@gmail.com",
+      "studentId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "studentEmail": "pangayashwant4@gmail.com",
+      "regNo": "1234",
+      "learnerId": "ARB-STU-LA96AD",
+      "courseId": "web-development",
+      "courseTitle": "Web Development",
+      "percentage": 88,
+      "score": 22,
+      "totalQuestions": 25,
+      "attemptId": "ftest-attempt-1792652247496",
+      "grade": "88% Merit",
+      "issueDate": "October 22, 2026",
+      "createdAt": "2026-10-22T06:57:27.655Z",
+      "instructorName": "Vikramaditya Rao",
+      "status": "active",
+      "skills": [
+        "HTML5 Semantic Architecture",
+        "CSS3 Flexbox & Grid Layouts",
+        "Mobile-First Responsive Design",
+        "Modern JavaScript (ES6+)",
+        "DOM Manipulation & Event Handling",
+        "Git & GitHub Version Control",
+        "React.js & Hooks Lifecycle",
+        "Node.js & Express REST APIs",
+        "Relational & Document Databases",
+        "JWT Authentication & Web Security",
+        "Cloud Deployment & CI/CD Pipelines"
+      ],
+      "completionEmail": {
+        "status": "saved-to-outbox",
+        "at": "2026-10-22T06:57:27.695Z"
+      }
+    },
+    {
       "id": "ARB-AIDS-2026-YA5CFE4R",
       "certificateId": "ARB-AIDS-2026-YA5CFE4R",
       "userId": "pyashwant2002@gmail.com",
@@ -31267,6 +31329,83 @@
   ],
   "projectSubmissions": [
     {
+      "id": "sub-1792651963861-838",
+      "userId": "pangayashwant4@gmail.com",
+      "studentId": "ARB-STU-LA96AD",
+      "studentName": "YASHU",
+      "studentEmail": "pangayashwant4@gmail.com",
+      "courseId": "web-development",
+      "courseTitle": "Web Development",
+      "projectId": "web-proj-3",
+      "projectTitle": "Project 3: Full-Stack Course Catalog REST API & Client",
+      "status": "Submitted",
+      "githubUrl": "https://github.com/YashwantPanga/prudhvi-manasa-invitation-2",
+      "liveProjectUrl": "",
+      "submittedAt": "2026-10-22T06:52:43.861Z",
+      "score": null,
+      "feedback": "",
+      "history": [
+        {
+          "status": "Submitted",
+          "timestamp": "2026-10-22T06:52:43.861Z",
+          "note": "Submitted by learner"
+        }
+      ]
+    },
+    {
+      "id": "sub-1792651958234-909",
+      "userId": "pangayashwant4@gmail.com",
+      "studentId": "ARB-STU-LA96AD",
+      "studentName": "YASHU",
+      "studentEmail": "pangayashwant4@gmail.com",
+      "courseId": "web-development",
+      "courseTitle": "Web Development",
+      "projectId": "web-proj-2",
+      "projectTitle": "Project 2: Interactive Task & Productivity Dashboard with LocalStorage",
+      "status": "Submitted",
+      "githubUrl": "https://github.com/YashwantPanga/prudhvi-manasa-invitation-2",
+      "liveProjectUrl": "",
+      "submittedAt": "2026-10-22T06:52:38.234Z",
+      "score": null,
+      "feedback": "",
+      "history": [
+        {
+          "status": "Submitted",
+          "timestamp": "2026-10-22T06:52:38.234Z",
+          "note": "Submitted by learner"
+        }
+      ]
+    },
+    {
+      "id": "sub-1792651817563-280",
+      "userId": "pangayashwant4@gmail.com",
+      "studentId": "ARB-STU-LA96AD",
+      "studentName": "YASHU",
+      "studentEmail": "pangayashwant4@gmail.com",
+      "courseId": "web-development",
+      "courseTitle": "Web Development",
+      "projectId": "web-proj-1",
+      "projectTitle": "Project 1: Responsive Product Landing Page & Interactive Showcase",
+      "status": "Submitted",
+      "githubUrl": "https://github.com/YashwantPanga/prudhvi-manasa-invitation-2",
+      "liveProjectUrl": "",
+      "submittedAt": "2026-10-22T06:52:12.745Z",
+      "score": null,
+      "feedback": "",
+      "history": [
+        {
+          "status": "Submitted",
+          "timestamp": "2026-10-22T06:50:17.563Z",
+          "note": "Submitted by learner"
+        },
+        {
+          "status": "Submitted",
+          "timestamp": "2026-10-22T06:52:12.745Z",
+          "note": "Resubmitted by learner"
+        }
+      ]
+    },
+    {
       "id": "sub-001",
       "studentId": "std-002",
       "studentName": "Priya Sharma",
@@ -31322,6 +31461,16 @@
     }
   ],
   "activityLogs": [
+    {
+      "id": "log-1792653033873-948",
+      "adminId": "ARB-ADMIN-001",
+      "action": "ADMIN_LOGIN",
+      "target": "Admin Portal",
+      "details": "Successful administrator login",
+      "timestamp": "2026-10-22T07:10:33.873Z",
+      "ipAddress": "::1",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+    },
     {
       "id": "log-1792652439432-873",
       "adminId": "ARB-ADMIN-001",
@@ -36977,6 +37126,326 @@
   ],
   "quizAttempts": [
     {
+      "id": "attempt-1792651893263-968",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-12",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 2,
+      "answers": {
+        "web-q-12-1": 2,
+        "web-q-12-2": 0,
+        "web-q-12-3": 3,
+        "web-q-12-4": 0,
+        "web-q-12-5": 0
+      },
+      "completedAt": "2026-10-22T06:51:33.263Z"
+    },
+    {
+      "id": "attempt-1792651752120-559",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-12",
+      "score": 0,
+      "totalQuestions": 5,
+      "percentage": 0,
+      "passed": false,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-12-1": 1,
+        "web-q-12-2": 3,
+        "web-q-12-3": 2,
+        "web-q-12-4": 3,
+        "web-q-12-5": 3
+      },
+      "completedAt": "2026-10-22T06:49:12.120Z"
+    },
+    {
+      "id": "attempt-1792651718636-127",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-15",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-15-1": 1,
+        "web-q-15-2": 0,
+        "web-q-15-3": 0,
+        "web-q-15-4": 0,
+        "web-q-15-5": 3
+      },
+      "completedAt": "2026-10-22T06:48:38.636Z"
+    },
+    {
+      "id": "attempt-1792651657882-939",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-14",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-14-1": 1,
+        "web-q-14-2": 3,
+        "web-q-14-3": 0,
+        "web-q-14-4": 3,
+        "web-q-14-5": 2
+      },
+      "completedAt": "2026-10-22T06:47:37.882Z"
+    },
+    {
+      "id": "attempt-1792651610352-469",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-13",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-13-1": 3,
+        "web-q-13-2": 0,
+        "web-q-13-3": 0,
+        "web-q-13-4": 1,
+        "web-q-13-5": 0
+      },
+      "completedAt": "2026-10-22T06:46:50.352Z"
+    },
+    {
+      "id": "attempt-1792651546787-805",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-11",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-11-1": 2,
+        "web-q-11-2": 2,
+        "web-q-11-3": 1,
+        "web-q-11-4": 2,
+        "web-q-11-5": 3
+      },
+      "completedAt": "2026-10-22T06:45:46.787Z"
+    },
+    {
+      "id": "attempt-1792651496213-705",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-10",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-10-1": 0,
+        "web-q-10-2": 3,
+        "web-q-10-3": 1,
+        "web-q-10-4": 3,
+        "web-q-10-5": 0
+      },
+      "completedAt": "2026-10-22T06:44:56.213Z"
+    },
+    {
+      "id": "attempt-1792651436439-115",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-9",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-9-1": 3,
+        "web-q-9-2": 3,
+        "web-q-9-3": 1,
+        "web-q-9-4": 0,
+        "web-q-9-5": 0
+      },
+      "completedAt": "2026-10-22T06:43:56.439Z"
+    },
+    {
+      "id": "attempt-1792651382736-697",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-8",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-8-1": 2,
+        "web-q-8-2": 3,
+        "web-q-8-3": 0,
+        "web-q-8-4": 1,
+        "web-q-8-5": 2
+      },
+      "completedAt": "2026-10-22T06:43:02.736Z"
+    },
+    {
+      "id": "attempt-1792651333459-615",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-7",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-7-1": 0,
+        "web-q-7-2": 0,
+        "web-q-7-3": 0,
+        "web-q-7-4": 2,
+        "web-q-7-5": 0
+      },
+      "completedAt": "2026-10-22T06:42:13.459Z"
+    },
+    {
+      "id": "attempt-1792651271466-943",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-6",
+      "score": 4,
+      "totalQuestions": 5,
+      "percentage": 80,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-6-1": 3,
+        "web-q-6-2": 1,
+        "web-q-6-3": 0,
+        "web-q-6-4": 0,
+        "web-q-6-5": 3
+      },
+      "completedAt": "2026-10-22T06:41:11.466Z"
+    },
+    {
+      "id": "attempt-1792651038535-786",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-5",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-5-1": 0,
+        "web-q-5-2": 3,
+        "web-q-5-3": 3,
+        "web-q-5-4": 0,
+        "web-q-5-5": 2
+      },
+      "completedAt": "2026-10-22T06:37:18.535Z"
+    },
+    {
+      "id": "attempt-1792650978610-363",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-4",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-4-1": 3,
+        "web-q-4-2": 1,
+        "web-q-4-3": 2,
+        "web-q-4-4": 0,
+        "web-q-4-5": 0
+      },
+      "completedAt": "2026-10-22T06:36:18.611Z"
+    },
+    {
+      "id": "attempt-1792650885192-681",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-3",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-3-1": 1,
+        "web-q-3-2": 1,
+        "web-q-3-3": 2,
+        "web-q-3-4": 2,
+        "web-q-3-5": 3
+      },
+      "completedAt": "2026-10-22T06:34:45.192Z"
+    },
+    {
+      "id": "attempt-1792650663632-256",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-2",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-2-1": 2,
+        "web-q-2-2": 3,
+        "web-q-2-3": 3,
+        "web-q-2-4": 2,
+        "web-q-2-5": 3
+      },
+      "completedAt": "2026-10-22T06:31:03.632Z"
+    },
+    {
+      "id": "attempt-1792650544430-805",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "moduleId": "web-mod-1",
+      "score": 5,
+      "totalQuestions": 5,
+      "percentage": 100,
+      "passed": true,
+      "attemptNumber": 1,
+      "answers": {
+        "web-q-1-1": 2,
+        "web-q-1-2": 1,
+        "web-q-1-3": 1,
+        "web-q-1-4": 1,
+        "web-q-1-5": 3
+      },
+      "completedAt": "2026-10-22T06:29:04.430Z"
+    },
+    {
       "id": "attempt-1792645043901-440",
       "userId": "pyashwant2002@gmail.com",
       "studentName": "Panga Yashwant",
@@ -37318,6 +37787,434 @@
     }
   ],
   "finalTestAttempts": [
+    {
+      "id": "ftest-attempt-1792652247496",
+      "sessionId": "session-1792651990461-431812",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "paperCode": "ARB-WD-QP04",
+      "score": 22,
+      "totalQuestions": 25,
+      "percentage": 88,
+      "passed": true,
+      "attemptNumber": 1,
+      "timeTakenSeconds": 257,
+      "timeTakenFormatted": "4 minutes 17 seconds",
+      "isAutoSubmitted": false,
+      "startedAt": "2026-10-22T06:53:10.461Z",
+      "submittedAt": "2026-10-22T06:57:27.496Z",
+      "answers": {
+        "web-set-d-1": 3,
+        "web-set-d-2": 2,
+        "web-set-d-3": 0,
+        "web-set-d-4": 0,
+        "web-set-d-5": 0,
+        "web-set-d-6": 1,
+        "web-set-d-7": 1,
+        "web-set-d-8": 2,
+        "web-set-d-9": 3,
+        "web-set-d-10": 2,
+        "web-set-d-11": 3,
+        "web-set-d-12": 0,
+        "web-set-d-13": 2,
+        "web-set-d-14": 2,
+        "web-set-d-15": 2,
+        "web-set-d-16": 2,
+        "web-set-d-17": 1,
+        "web-set-d-18": 1,
+        "web-set-d-19": 1,
+        "web-set-d-20": 0,
+        "web-set-d-21": 1,
+        "web-set-d-22": 2,
+        "web-set-d-23": 2,
+        "web-set-d-24": 3,
+        "web-set-d-25": 1
+      },
+      "questionsReview": [
+        {
+          "id": "web-set-d-1",
+          "questionText": "What is the proper way to handle network and HTTP error responses when using `fetch()` with `async/await`?",
+          "codeSnippet": "const res = await fetch('/api/data');",
+          "options": [
+            "fetch() rejects automatically whenever status is 404 or 500, caught by try/catch",
+            "Call res.abort() immediately after awaiting the response",
+            "Use window.onerror to intercept HTTP status codes",
+            "Check `if (!res.ok)` manually because fetch only rejects on network failures, not on 4xx/5xx HTTP status codes"
+          ],
+          "selectedAnswer": 3,
+          "correctAnswer": 3,
+          "isCorrect": true,
+          "explanation": "`fetch()` promises only reject on network failure or if the request is aborted. For HTTP errors like 404 or 500, `res.ok` evaluates to `false` and must be checked explicitly."
+        },
+        {
+          "id": "web-set-d-2",
+          "questionText": "Which Git command creates a new feature branch named 'feature-auth' and immediately checks it out into your working directory?",
+          "codeSnippet": null,
+          "options": [
+            "git pull origin feature-auth",
+            "git branch -m feature-auth",
+            "git checkout -b feature-auth (or git switch -c feature-auth)",
+            "git merge feature-auth"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 2,
+          "isCorrect": true,
+          "explanation": "`git checkout -b <branch>` or modern `git switch -c <branch>` creates the branch and switches the working tree to it in a single atomic command."
+        },
+        {
+          "id": "web-set-d-3",
+          "questionText": "What is the primary performance benefit of React's Virtual DOM reconciliation process?",
+          "codeSnippet": null,
+          "options": [
+            "It diffs changes in memory and calculates the minimal set of real DOM operations required, minimizing expensive browser layout reflows",
+            "It converts JSX into native Android and iOS mobile viewports",
+            "It completely replaces browser rendering engines with WebAssembly",
+            "It executes all React code on the server before sending raw static HTML"
+          ],
+          "selectedAnswer": 0,
+          "correctAnswer": 0,
+          "isCorrect": true,
+          "explanation": "Manipulating the real DOM triggers browser reflow and repaint calculations. React maintains an in-memory Virtual DOM tree, performs a heuristic O(n) diffing algorithm, and batches real DOM updates."
+        },
+        {
+          "id": "web-set-d-4",
+          "questionText": "Why must React component state never be mutated directly (e.g., `this.state.count = 5` or `user.name = 'Vikram'`)?",
+          "codeSnippet": null,
+          "options": [
+            "Direct mutation does not trigger a component re-render, leading to state inconsistencies and stale UI",
+            "Direct mutation causes immediate memory overflow in V8 engine",
+            "JavaScript throws a syntax error when assigning to state properties",
+            "React state objects are frozen with Object.freeze() at compile time"
+          ],
+          "selectedAnswer": 0,
+          "correctAnswer": 0,
+          "isCorrect": true,
+          "explanation": "React relies on state setter functions (`setState` or `setCount`) to notify the reconciliation engine that state has changed and schedule a re-render of the component."
+        },
+        {
+          "id": "web-set-d-5",
+          "questionText": "How can you ensure a React `useEffect` hook runs only once when a component mounts, and cleans up when it unmounts?",
+          "codeSnippet": "useEffect(() => {\n  const timer = setInterval(...);\n  return () => clearInterval(timer);\n}, [ ??? ]);",
+          "options": [
+            "Pass an empty dependency array `[]` as the second argument",
+            "Omit the dependency array completely",
+            "Pass `[null]` in the dependency array",
+            "Pass `[true, false]` in the dependency array"
+          ],
+          "selectedAnswer": 0,
+          "correctAnswer": 0,
+          "isCorrect": true,
+          "explanation": "An empty dependency array `[]` tells React the effect does not depend on any props or state, executing the setup function once on mount and returning the cleanup function on unmount."
+        },
+        {
+          "id": "web-set-d-6",
+          "questionText": "In React Router DOM v6+, which hook is used to extract dynamic URL parameters (such as `/courses/:courseId`)?",
+          "codeSnippet": null,
+          "options": [
+            "useNavigate()",
+            "useParams()",
+            "useLocation()",
+            "useSearchParams()"
+          ],
+          "selectedAnswer": 1,
+          "correctAnswer": 1,
+          "isCorrect": true,
+          "explanation": "`useParams()` returns an object of key/value pairs of the dynamic params from the current URL that matched the `<Route path=\"/courses/:courseId\">`."
+        },
+        {
+          "id": "web-set-d-7",
+          "questionText": "What must an Express custom middleware function invoke to pass control to the subsequent middleware in the request-response pipeline?",
+          "codeSnippet": "app.use((req, res, next) => {\n  console.log(req.method, req.url);\n  // What goes here?\n});",
+          "options": [
+            "process.nextTick();",
+            "next();",
+            "res.continue();",
+            "return true;"
+          ],
+          "selectedAnswer": 1,
+          "correctAnswer": 1,
+          "isCorrect": true,
+          "explanation": "Calling `next()` hands off execution to the next middleware in the Express stack. If `next()` is omitted and no response is returned, the request will hang indefinitely."
+        },
+        {
+          "id": "web-set-d-8",
+          "questionText": "Which HTTP method and status code combination should be used when creating a new resource via a REST API endpoint?",
+          "codeSnippet": null,
+          "options": [
+            "PATCH with status 304 Not Modified",
+            "PUT with status 204 No Content",
+            "POST with status 201 Created",
+            "GET with status 200 OK"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 2,
+          "isCorrect": true,
+          "explanation": "The `POST` method is standard for resource creation, and HTTP `201 Created` indicates that the request succeeded and resulted in a new resource being created."
+        },
+        {
+          "id": "web-set-d-9",
+          "questionText": "How do parameterized queries (prepared statements) protect backend applications from SQL injection attacks?",
+          "codeSnippet": null,
+          "options": [
+            "They block all non-alphabetical characters from being entered into input fields",
+            "They convert SQL statements into JavaScript before sending them to the database engine",
+            "They encrypt the entire database table with AES-256",
+            "They treat user-supplied inputs strictly as literal data parameters rather than executable SQL code, preventing injection of malicious syntax"
+          ],
+          "selectedAnswer": 3,
+          "correctAnswer": 3,
+          "isCorrect": true,
+          "explanation": "Parameterized queries separate the query structure/logic from user input. The database engine compiles the SQL query first, ensuring user input cannot modify the execution AST or command logic."
+        },
+        {
+          "id": "web-set-d-10",
+          "questionText": "What are the three dot-separated components that compose a JSON Web Token (JWT)?",
+          "codeSnippet": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+          "options": [
+            "Username, Password Hash, and Salt",
+            "Public Key, Private Key, and Certificate Authority",
+            "Header (algorithm & token type), Payload (claims & user data), and Signature (tamper verification)",
+            "Client ID, Client Secret, and Expiration Timestamp"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 2,
+          "isCorrect": true,
+          "explanation": "A JWT consists of three Base64URL-encoded parts: Header (specifying hashing algorithm), Payload (containing user identity claims), and Signature (verifying that the sender is authentic and data is untampered)."
+        },
+        {
+          "id": "web-set-d-11",
+          "questionText": "What is the correct sequence of events when a user enters 'https://arshithbootcamp.com' into a web browser address bar?",
+          "codeSnippet": null,
+          "options": [
+            "TCP handshake -> HTML parsing -> DNS lookup -> TLS certificate verification",
+            "HTTP GET request sent directly to IP -> Browser parses HTML -> DNS lookup resolves domain",
+            "Server pushes HTML immediately -> Client establishes TLS session -> Browser registers domain",
+            "DNS resolution maps domain to server IP -> TCP 3-way handshake & TLS handshake established -> Browser sends HTTP request -> Server returns response"
+          ],
+          "selectedAnswer": 3,
+          "correctAnswer": 3,
+          "isCorrect": true,
+          "explanation": "The browser first performs DNS resolution (checking browser cache, OS cache, router, and recursive resolvers) to locate the server IP. It then initiates a TCP 3-way handshake and TLS handshake for HTTPS before transmitting the HTTP GET request."
+        },
+        {
+          "id": "web-set-d-12",
+          "questionText": "Which HTTP status code should a RESTful server return when a client attempts to access a protected dashboard route without providing a valid authentication token?",
+          "codeSnippet": null,
+          "options": [
+            "401 Unauthorized",
+            "404 Not Found",
+            "400 Bad Request",
+            "403 Forbidden"
+          ],
+          "selectedAnswer": 0,
+          "correctAnswer": 0,
+          "isCorrect": true,
+          "explanation": "HTTP 401 Unauthorized indicates that the request lacks valid authentication credentials. (HTTP 403 Forbidden indicates the server understands the caller's identity but refuses authorization)."
+        },
+        {
+          "id": "web-set-d-13",
+          "questionText": "Why is semantic HTML5 (<header>, <nav>, <main>, <article>, <section>) strongly preferred over generic <div> elements for modern web development?",
+          "codeSnippet": null,
+          "options": [
+            "Semantic HTML tags automatically apply flexbox and grid styling without requiring CSS rules",
+            "Non-semantic tags like <div> are deprecated in HTML5 and trigger browser quirks mode",
+            "Semantic tags provide accessibility landmarks for screen readers, clarify document hierarchy for SEO, and improve code maintainability",
+            "Semantic elements render twice as fast because browsers bypass CSS calculation for them"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 2,
+          "isCorrect": true,
+          "explanation": "Semantic HTML provides structural meaning to browsers, assistive technologies (screen readers), and search engine crawlers, building an accessible accessibility tree and superior SEO hierarchy."
+        },
+        {
+          "id": "web-set-d-14",
+          "questionText": "Which HTML meta element tag is strictly required in the <head> to ensure responsive web page scaling on mobile devices?",
+          "codeSnippet": null,
+          "options": [
+            "<meta name=\"screen-orientation\" content=\"portrait\">",
+            "<meta name=\"mobile-web-app-capable\" content=\"yes\">",
+            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">",
+            "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 2,
+          "isCorrect": true,
+          "explanation": "The viewport meta tag `<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">` instructs mobile browsers to match screen width in device-independent pixels and sets the initial zoom scale to 1:1."
+        },
+        {
+          "id": "web-set-d-15",
+          "questionText": "What attribute should be placed on an HTML5 form input to enforce that user entry must match an email pattern and cannot be left blank before form submission?",
+          "codeSnippet": "<input type=\"email\" name=\"userEmail\" ... >",
+          "options": [
+            "enforce=\"email\"",
+            "validate=\"strict\"",
+            "required",
+            "notnull=\"true\""
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 2,
+          "isCorrect": true,
+          "explanation": "Adding the boolean `required` attribute triggers the browser's native Constraint Validation API, blocking form submission if the input is empty or invalid."
+        },
+        {
+          "id": "web-set-d-16",
+          "questionText": "Which HTML5 element provides responsive art direction by allowing developers to define different image source files for varying viewport widths and pixel densities?",
+          "codeSnippet": null,
+          "options": [
+            "<figure>",
+            "<svg>",
+            "<picture>",
+            "<canvas>"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 2,
+          "isCorrect": true,
+          "explanation": "The `<picture>` element wraps one or more `<source media=\"...\">` tags and an `<img>` fallback, enabling art direction and responsive image loading optimized for specific device viewports."
+        },
+        {
+          "id": "web-set-d-17",
+          "questionText": "When an element has `width: 300px; padding: 20px; border: 5px solid black; box-sizing: border-box;`, what is its total rendered horizontal width in the browser?",
+          "codeSnippet": null,
+          "options": [
+            "325px",
+            "300px",
+            "340px",
+            "350px"
+          ],
+          "selectedAnswer": 1,
+          "correctAnswer": 1,
+          "isCorrect": true,
+          "explanation": "Under `box-sizing: border-box`, padding and border are included within the declared width. Thus the total rendered width is exactly 300px (the content area shrinks to 300 - 40 - 10 = 250px)."
+        },
+        {
+          "id": "web-set-d-18",
+          "questionText": "Given the following CSS selectors targeting the same `<button>` element, which rule will have the highest specificity and win?",
+          "codeSnippet": "/* Rule A */ button.primary:hover\n/* Rule B */ #submit-btn\n/* Rule C */ div.modal button.primary\n/* Rule D */ button[type='submit']",
+          "options": [
+            "Rule B (1-0-0)",
+            "Rule A (0-1-2)",
+            "Rule C (0-1-2)",
+            "Rule D (0-1-1)"
+          ],
+          "selectedAnswer": 1,
+          "correctAnswer": 0,
+          "isCorrect": false,
+          "explanation": "ID selectors (#submit-btn) have a specificity weight of 1-0-0, which overrides any number of classes, pseudo-classes, or element selectors without an ID."
+        },
+        {
+          "id": "web-set-d-19",
+          "questionText": "In a flex container with `flex-direction: row;`, which CSS property aligns flex items along the cross axis (vertical direction)?",
+          "codeSnippet": null,
+          "options": [
+            "justify-content",
+            "align-items",
+            "flex-wrap",
+            "align-content"
+          ],
+          "selectedAnswer": 1,
+          "correctAnswer": 1,
+          "isCorrect": true,
+          "explanation": "`align-items` controls alignment of items along the cross axis in a single flex line, while `justify-content` controls distribution along the main axis."
+        },
+        {
+          "id": "web-set-d-20",
+          "questionText": "What does the CSS Grid declaration `grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));` achieve?",
+          "codeSnippet": null,
+          "options": [
+            "Automatically creates as many responsive columns of at least 250px as fit the container width, expanding equally to fill remaining space",
+            "Restricts the container to a maximum width of 250px",
+            "Creates an infinite number of overlapping 1fr columns",
+            "Creates exactly 3 columns fixed at 250px each"
+          ],
+          "selectedAnswer": 0,
+          "correctAnswer": 0,
+          "isCorrect": true,
+          "explanation": "`auto-fit` dynamically fills the row with as many columns as possible with a minimum size of 250px, and `1fr` allows them to expand equally to occupy remaining container space without media queries."
+        },
+        {
+          "id": "web-set-d-21",
+          "questionText": "What is the primary philosophy of the 'Mobile-First' CSS development methodology?",
+          "codeSnippet": null,
+          "options": [
+            "Embedding mobile app native binaries into HTML web views",
+            "Writing base CSS styles for mobile viewports first, then progressively enhancing using min-width media queries for larger screens",
+            "Using max-width queries exclusively to shrink desktop layouts down to small screens",
+            "Writing CSS only for smartphones and ignoring desktop displays"
+          ],
+          "selectedAnswer": 1,
+          "correctAnswer": 1,
+          "isCorrect": true,
+          "explanation": "Mobile-first writes default baseline styles for mobile devices without media queries, then layers on additional styles using `min-width` breakpoints as screen real estate increases."
+        },
+        {
+          "id": "web-set-d-22",
+          "questionText": "What is the fundamental difference between `var`, `let`, and `const` in modern JavaScript?",
+          "codeSnippet": null,
+          "options": [
+            "There is no functional difference; var is just older syntax for let",
+            "const creates immutable data structures where array contents can never be modified",
+            "let and const are block-scoped and exist in the Temporal Dead Zone before declaration; const cannot be reassigned; var is function-scoped and hoisted with undefined",
+            "var is block-scoped, while let and const are function-scoped"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 2,
+          "isCorrect": true,
+          "explanation": "`let` and `const` provide block scoping `{}` and prevent access prior to declaration (TDZ). `const` prevents binding reassignment. `var` is function-scoped and hoisted initialized to `undefined`."
+        },
+        {
+          "id": "web-set-d-23",
+          "questionText": "What is a closure in JavaScript?",
+          "codeSnippet": "function makeCounter() {\n  let count = 0;\n  return () => ++count;\n}\nconst c = makeCounter();",
+          "options": [
+            "A syntax error caused by unclosed parentheses or brackets",
+            "A method to terminate memory leaks by removing DOM elements",
+            "An anonymous function that executes immediately upon creation (IIFE)",
+            "The combination of a function bundled together with references to its surrounding lexical environment"
+          ],
+          "selectedAnswer": 2,
+          "correctAnswer": 3,
+          "isCorrect": false,
+          "explanation": "A closure gives an inner function access to its outer function's scope even after the outer function has returned, preserving state in the lexical environment."
+        },
+        {
+          "id": "web-set-d-24",
+          "questionText": "Why is event delegation (attaching a single event listener to a parent element) superior to attaching individual listeners to 1,000 table rows?",
+          "codeSnippet": null,
+          "options": [
+            "Event listeners cannot be attached to child elements in modern HTML5",
+            "Event bubbling is disabled when using event delegation",
+            "Event delegation bypasses the browser JavaScript thread for faster rendering",
+            "It significantly reduces memory consumption and automatically handles click events on dynamically added rows via event bubbling"
+          ],
+          "selectedAnswer": 3,
+          "correctAnswer": 3,
+          "isCorrect": true,
+          "explanation": "By listening on the parent and leveraging event bubbling (`e.target`), you only allocate one event listener in memory and newly appended items immediately respond without re-binding."
+        },
+        {
+          "id": "web-set-d-25",
+          "questionText": "In what order will the numbers be logged to the console in the following code snippet?",
+          "codeSnippet": "console.log(1);\nsetTimeout(() => console.log(2), 0);\nPromise.resolve().then(() => console.log(3));\nconsole.log(4);",
+          "options": [
+            "4, 1, 3, 2",
+            "1, 2, 3, 4",
+            "1, 4, 3, 2",
+            "1, 4, 2, 3"
+          ],
+          "selectedAnswer": 1,
+          "correctAnswer": 2,
+          "isCorrect": false,
+          "explanation": "Synchronous code runs first (1, 4). The microtask queue (Promise resolution) executes before the macrotask queue (setTimeout callback), so 3 logs before 2. Final order: 1, 4, 3, 2."
+        }
+      ],
+      "proctoring": {
+        "violationCount": 0,
+        "terminated": false,
+        "cameraVerified": true,
+        "violations": []
+      }
+    },
     {
       "id": "ftest-attempt-1792645360867",
       "sessionId": "session-1792645148588-487572",
@@ -37757,6 +38654,16 @@
       "startedAt": 1792645148588,
       "durationSeconds": 2700,
       "submitted": true
+    },
+    "pangayashwant4@gmail.com::web-development::final": {
+      "sessionId": "session-1792651990461-431812",
+      "userId": "pangayashwant4@gmail.com",
+      "studentName": "YASHU",
+      "courseId": "web-development",
+      "paperCode": "ARB-WD-QP04",
+      "startedAt": 1792651990461,
+      "durationSeconds": 2700,
+      "submitted": true
     }
   },
   "meta": {
@@ -37769,14 +38676,30 @@
       "name": "Panga Yashwant",
       "regNo": "77878787",
       "phone": "+916281037993",
-      "passwordHash": "$2b$10$8JrHuj7/jd1X8SpKUBr/peNGbXvGfnIeJuGu.Z4Nw0TQwgm3deC0C",
-      "createdAt": "2026-10-21T17:48:27.596Z"
+      "passwordHash": "$2b$10$HBBBIVokD.tBhfZXo8cH3OT5v/xf7eAeDaZlM6Jhghj8izLVV5SAK",
+      "createdAt": "2026-10-21T17:48:27.596Z",
+      "passwordChangedAt": "2026-10-22T06:19:28.878Z"
+    },
+    "pangayashwant4@gmail.com": {
+      "learnerId": "ARB-STU-LA96AD",
+      "email": "pangayashwant4@gmail.com",
+      "name": "YASHU",
+      "regNo": "1234",
+      "phone": "+916281037993",
+      "passwordHash": "$2b$10$YT64uBDrH6xbpqxla43RWepcWcskJQyfHpJHzFEjErF1.VqmjFWwu",
+      "createdAt": "2026-10-22T06:26:56.108Z",
+      "emailVerified": true,
+      "emailVerifiedAt": "2026-10-22T06:27:08.968Z"
     }
   },
   "learnerEnrollments": {
     "pyashwant2002@gmail.com": {
       "courseId": "data-science-ai",
       "enrolledAt": "2026-10-21T17:48:41.341Z"
+    },
+    "pangayashwant4@gmail.com": {
+      "courseId": "web-development",
+      "enrolledAt": "2026-10-22T06:27:25.786Z"
     }
   }
 }
