@@ -3,12 +3,13 @@ import { readStudent, userIdOf } from '../utils/session';
 import { api } from '../services/api';
 import { 
   X, Briefcase, Code, CheckCircle, ExternalLink, Copy, Check, 
-  Terminal, Sparkles, AlertCircle, Clock, FileText, ChevronRight 
+  Terminal, Sparkles, AlertCircle, Clock, FileText, ChevronRight, ArrowRight, Lock 
 } from 'lucide-react';
 
 const GITHUB_REPO_RE = /^https:\/\/github\.com\/[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})\/[A-Za-z0-9._-]{1,100}(?:\.git)?\/?$/;
 
-export default function CourseProjectsModal({ isOpen, onClose, course, onSubmitted }) {
+// quizProgress: { done, total } module quizzes; onStartFinal opens the final assessment.
+export default function CourseProjectsModal({ isOpen, onClose, course, onSubmitted, quizProgress, passedFinal, onStartFinal }) {
   const projects = course?.projects || [];
   const [activeProjectId, setActiveProjectId] = useState(projects[0]?.id || '');
   const [copiedCode, setCopiedCode] = useState(false);
@@ -340,7 +341,20 @@ export default function CourseProjectsModal({ isOpen, onClose, course, onSubmitt
                   )}
                   {saveError && <p className="text-xs text-rose-700 font-semibold" role="alert">{saveError}</p>}
                   {loadError && <p className="text-xs text-rose-700" role="alert">{loadError}</p>}
-                  <p className="text-[11px] text-slate-500">The final assessment unlocks after you complete every module quiz and submit a GitHub repository for any one of these {projects.length} projects.</p>
+                  {Object.keys(submissions).length > 0 && !passedFinal && onStartFinal ? (
+                    quizProgress && quizProgress.done < quizProgress.total ? (
+                      <div className="rounded-xl border border-brand-900/10 bg-white p-3 text-xs text-slate-600 flex items-start gap-2">
+                        <Lock className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                        <span>Project requirement done. Complete the remaining module quizzes ({quizProgress.done}/{quizProgress.total} done) to unlock the final assessment.</span>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={onStartFinal} className="btn-primary w-full py-3">
+                        Start final assessment <ArrowRight className="w-4 h-4" />
+                      </button>
+                    )
+                  ) : (
+                    <p className="text-[11px] text-slate-500">The final assessment unlocks after you complete every module quiz and submit a GitHub repository for any one of these {projects.length} projects.</p>
+                  )}
                 </div>
               </>
             ) : null}

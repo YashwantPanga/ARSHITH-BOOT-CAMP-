@@ -705,7 +705,15 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         onViewCertificate={() => { setFinalOpen(false); onViewCertificate(); }}
       />
 
-      <CourseProjectsModal isOpen={projectsOpen} onClose={() => setProjectsOpen(false)} course={course} onSubmitted={() => onProgressChanged()} />
+      <CourseProjectsModal
+        isOpen={projectsOpen}
+        onClose={() => setProjectsOpen(false)}
+        course={course}
+        onSubmitted={() => onProgressChanged()}
+        quizProgress={{ done, total: modules.length }}
+        passedFinal={!!passedFinal}
+        onStartFinal={async () => { setProjectsOpen(false); await onProgressChanged(); setFinalOpen(true); }}
+      />
     </div>
   );
 }
