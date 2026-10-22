@@ -499,7 +499,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         <div className="flex items-center gap-3">
           <ProgressRing value={(done / total) * 100} size={52} dark />
           <div>
-            <p className="text-xs text-brand-200">Quizzes passed</p>
+            <p className="text-xs text-brand-200">Quizzes completed</p>
             <p className="font-semibold">{done} of {modules.length} modules</p>
           </div>
         </div>
@@ -515,7 +515,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
               </span>
               <span className="flex-1 min-w-0">
                 <span className={`block text-sm leading-snug ${active ? 'font-semibold text-brand-900' : 'text-slate-600'}`}>{moduleTitle(m.title)}</span>
-                <span className="block text-[11px] text-slate-400 mt-0.5">{m.completed ? `Quiz passed${m.quizScore !== undefined ? ` · ${m.quizScore}%` : ''}` : m.quizScore !== undefined ? `Best ${m.quizScore}% · retake quiz` : 'Quiz pending'}</span>
+                <span className="block text-[11px] text-slate-400 mt-0.5">{m.completed ? `Quiz done${m.quizScore !== undefined ? ` · ${m.quizScore}%` : ''}` : 'Quiz pending'}</span>
               </span>
             </button>
           );
@@ -616,7 +616,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                 {current.description && <p className="mt-3 text-brand-100/90 leading-relaxed max-w-3xl">{cleanText(current.description)}</p>}
                 <div className="mt-6 flex flex-wrap items-center gap-2 text-xs">
                   <span className={`chip ${current.completed ? 'bg-ivory text-brand-900' : 'bg-white/10 text-brand-100'}`}>
-                    {current.completed ? <><CheckCircle2 className="w-3.5 h-3.5" /> Quiz passed {myScore !== undefined ? `(${myScore}%)` : ''}</> : 'Quiz not passed yet'}
+                    {current.completed ? <><CheckCircle2 className="w-3.5 h-3.5" /> Quiz done {myScore !== undefined ? `(${myScore}%)` : ''}</> : 'Quiz not taken yet'}
                   </span>
                   <span className="chip bg-white/10 text-brand-100"><BookOpen className="w-3.5 h-3.5" />{sections.length} sections</span>
                   <span className="chip bg-white/10 text-brand-100"><Timer className="w-3.5 h-3.5" />~{readingMinutes(rm)} min read</span>
@@ -629,7 +629,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
               { icon: BookOpen, title: 'Read & understand', text: 'Concepts and concept map', done: true },
               { icon: Code, title: 'Run the examples', text: 'Press “Try it” on any code', done: false },
               { icon: FlaskConical, title: 'Practice', text: 'Solve the exercise in the lab', done: false },
-              { icon: ListChecks, title: 'Pass the quiz', text: '70% marks the module done', done: !!current.completed }
+              { icon: ListChecks, title: 'Take the quiz', text: 'Finishing it marks the module done', done: !!current.completed }
             ]} />
 
             {/* Section jump list */}
@@ -658,7 +658,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
               <span className="w-14 h-14 rounded-2xl bg-peach-500 text-white flex items-center justify-center shrink-0"><ListChecks className="w-7 h-7" /></span>
               <div className="flex-1">
                 <p className="font-bold text-brand-900 text-lg">Module {currentIndex + 1} quiz</p>
-                <p className="text-sm text-slate-500">5 questions · pass mark 70% · unlimited retakes. Passing marks this module complete.</p>
+                <p className="text-sm text-slate-500">5 questions · unlimited retakes. Finishing it marks this module complete.</p>
               </div>
               <button onClick={() => setQuizOpen(true)} className={current.completed ? 'btn-outline' : 'btn-primary'}>
                 {current.completed ? 'Retake quiz' : 'Take quiz'}

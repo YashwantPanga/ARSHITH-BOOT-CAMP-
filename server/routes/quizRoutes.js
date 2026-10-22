@@ -38,13 +38,14 @@ function getModuleQuestions(db, moduleId) {
   return [];
 }
 
-/** Module ids of `courseId` whose quiz this user has passed at least once. */
+/** Module ids of `courseId` whose quiz this user has completed. Module quizzes have no pass mark:
+ *  any submitted attempt (including older attempts recorded as below 70%) marks the module done. */
 export function getPassedModuleIds(db, userId, courseId) {
   const course = findCourse(db, courseId);
   const moduleIds = new Set((course?.modules || []).map(m => m.id));
   const passed = new Set();
   for (const a of db.quizAttempts || []) {
-    if (a.userId === userId && a.passed && moduleIds.has(a.moduleId)) passed.add(a.moduleId);
+    if (a.userId === userId && moduleIds.has(a.moduleId)) passed.add(a.moduleId);
   }
   return [...passed];
 }
@@ -161,7 +162,7 @@ router.get('/quizzes/module/:moduleId', (req, res) => {
   if (!questions.length) {
     return res.status(404).json({ success: false, message: `No quiz questions found for module ${moduleId}` });
   }
-  res.json({ success: true, moduleId, totalQuestions: questions.length, passingScore: PASS_PERCENTAGE, questions });
+  res.json({ success: true, moduleId, totalQuestions: questions.length, passingScore: 0, questions });
 });
 
 router.post('/quizzes/module/:moduleId/submit', (req, res) => {
@@ -197,7 +198,7 @@ router.post('/quizzes/module/:moduleId/submit', (req, res) => {
 
   const totalQuestions = moduleQuestions.length;
   const percentage = Math.round((correctCount / totalQuestions) * 100);
-  const passed = percentage >= PASS_PERCENTAGE;
+  const passed = true; // module quizzes have no pass mark; finishing one completes the module
 
   if (!db.quizAttempts) db.quizAttempts = [];
   const attemptNumber = db.quizAttempts.filter(a => a.userId === userId && a.moduleId === moduleId).length + 1;
@@ -221,7 +222,7 @@ router.post('/quizzes/module/:moduleId/submit', (req, res) => {
 
   res.json({
     success: true,
-    message: passed ? 'Module Quiz Passed!' : 'Module Quiz Not Passed',
+    message: 'Module Quiz Completed!',
     result: {
       attemptId: attempt.id,
       moduleId,

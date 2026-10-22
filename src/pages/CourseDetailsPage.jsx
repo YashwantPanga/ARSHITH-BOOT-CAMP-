@@ -77,7 +77,7 @@ export default function CourseDetailsPage({ course, enrolledCourseId, isLoggedIn
                 <p className="eyebrow">Curriculum</p>
                 <h2 className="text-2xl font-bold text-brand-900 mt-1">{total} modules · quiz after each</h2>
               </div>
-              {isMine && <span className="text-sm text-slate-500">{done}/{total} quizzes passed</span>}
+              {isMine && <span className="text-sm text-slate-500">{done}/{total} quizzes completed</span>}
             </div>
             <div className="mt-6 divide-y divide-slate-100 border border-slate-100 rounded-2xl overflow-hidden">
               {course.modules?.map((m, i) => {
@@ -129,7 +129,7 @@ export default function CourseDetailsPage({ course, enrolledCourseId, isLoggedIn
             {cta}
             <ul className="space-y-3 text-sm text-slate-600 pt-2">
               <li className="flex gap-3"><FileText className="w-4 h-4 text-brand-400 mt-0.5" />{total} reading modules with code</li>
-              <li className="flex gap-3"><ListChecks className="w-4 h-4 text-brand-400 mt-0.5" />{total} module quizzes · pass mark 70%</li>
+              <li className="flex gap-3"><ListChecks className="w-4 h-4 text-brand-400 mt-0.5" />{total} module quizzes</li>
               <li className="flex gap-3"><ShieldCheck className="w-4 h-4 text-brand-400 mt-0.5" />45-min proctored final ({course.finalTest?.totalQuestions || 25} questions)</li>
               <li className="flex gap-3"><Award className="w-4 h-4 text-brand-400 mt-0.5" />Certificate with your score &amp; unique ID</li>
             </ul>

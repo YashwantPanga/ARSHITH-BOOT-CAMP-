@@ -61,6 +61,16 @@ describe('protected learner endpoints', () => {
     expect(p.status).toBe(200);
     expect(p.body.passedModuleIds).toEqual([]);
   });
+  it('mark a module done after any quiz attempt (module quizzes have no pass mark)', async () => {
+    const res = await request(app).post('/api/quizzes/module/py-mod-1/submit').set('X-Learner-Token', token).send({ userId: learner.email, answers: {} });
+    expect(res.status).toBe(200);
+    expect(res.body.result.percentage).toBe(0);
+    expect(res.body.result.passed).toBe(true);
+    expect(res.body.result.passedModuleIds).toContain('py-mod-1');
+    const p = await request(app).get(`/api/progress/python-programming?userId=${learner.email}`).set('X-Learner-Token', token);
+    expect(p.body.passedModuleIds).toContain('py-mod-1');
+    expect(p.body.passPercentage).toBe(70); // the final assessment still needs 70%
+  });
   it('keep certification requirements intact (no certificate without passing the final)', async () => {
     const res = await request(app).post('/api/certificates/issue').set('X-Learner-Token', token).send({ userId: learner.email, courseId: 'python-programming' });
     expect(res.status).toBe(403);

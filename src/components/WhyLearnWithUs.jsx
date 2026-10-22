@@ -5,7 +5,7 @@ import { IMAGES } from '../data/meta';
 
 const STEPS = [
   { icon: BookOpen, title: 'Read 15 deep-dive modules', text: 'Concepts, worked code, common mistakes and best practices — written like a textbook, not a playlist.', tone: 'bg-brand-900 text-white' },
-  { icon: ListChecks, title: 'Pass every module quiz', text: 'A 5-question quiz closes each module. Score 70% or more to mark the module complete.', tone: 'bg-white text-brand-900' },
+  { icon: ListChecks, title: 'Complete every module quiz', text: 'A 5-question quiz closes each module. Finish it to mark the module complete.', tone: 'bg-white text-brand-900' },
   { icon: ShieldCheck, title: 'Take the proctored final', text: 'The 45-minute final unlocks only after all quizzes are passed, with camera, tab and fullscreen monitoring.', tone: 'bg-white text-brand-900' },
   { icon: Award, title: 'Earn a unique certificate', text: 'Score 70%+ and download a certificate with your exact score and a one-of-a-kind verification ID.', tone: 'bg-white text-brand-900' }
 ];

@@ -58,7 +58,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                   <h2 className="mt-3 text-xl font-bold text-brand-900">{displayTitle(course.title)}</h2>
                   <p className="text-sm text-slate-500 mt-1 line-clamp-2">{cleanText(course.shortDescription)}</p>
                   <div className="mt-4">
-                    <div className="flex justify-between text-xs mb-1.5"><span className="text-slate-500">{done}/{total} module quizzes passed</span><span className="font-semibold text-brand-900">{course.progress}%</span></div>
+                    <div className="flex justify-between text-xs mb-1.5"><span className="text-slate-500">{done}/{total} module quizzes completed</span><span className="font-semibold text-brand-900">{course.progress}%</span></div>
                     <ProgressBar value={course.progress} />
                   </div>
                   <div className="mt-5 flex flex-wrap gap-2">
@@ -100,7 +100,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                 ) : (
                   <div className="mt-2 text-sm text-slate-500 space-y-1">
                     <p className="flex gap-2"><Lock className="w-4 h-4 mt-0.5 shrink-0" />Unlocks when both are done:</p>
-                    <p className="pl-6">Module quizzes passed: <strong className="text-brand-900">{done}/{total}</strong></p>
+                    <p className="pl-6">Module quizzes completed: <strong className="text-brand-900">{done}/{total}</strong></p>
                     {projectReq.required > 0 && <p className="pl-6">Project GitHub repos submitted: <strong className="text-brand-900">{projectReq.submitted}/{projectReq.required}</strong></p>}
                   </div>
                 )}
