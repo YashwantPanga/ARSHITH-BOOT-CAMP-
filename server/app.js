@@ -59,8 +59,16 @@ app.use('/api', practiceRoutes);
 // Serve the production build (npm run build) so the whole site runs from one port.
 const distDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'dist');
 if (fs.existsSync(path.join(distDir, 'index.html'))) {
-  app.use(express.static(distDir));
-  app.get(/^\/(?!api\/).*/, (req, res) => res.sendFile(path.join(distDir, 'index.html')));
+  // index.html is never cached, so a reload always picks up the latest build; the hashed files in
+  // /assets change name on every build and can be cached for a long time.
+  const noCache = (res) => res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  app.use(express.static(distDir, {
+    setHeaders: (res, file) => {
+      if (file.endsWith('.html')) noCache(res);
+      else if (file.includes(`${path.sep}assets${path.sep}`)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }));
+  app.get(/^\/(?!api\/).*/, (req, res) => { noCache(res); res.sendFile(path.join(distDir, 'index.html')); });
 }
 
 // Fallback handler for unmatched API routes

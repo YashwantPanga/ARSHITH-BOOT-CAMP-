@@ -22,7 +22,6 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
           <div className="absolute inset-0 bg-gradient-to-t from-evergreen/55 via-evergreen/5 to-transparent" />
           {isMine && <span className="absolute top-2.5 right-2.5 chip bg-ivory text-brand-900">Enrolled</span>}
           {isLocked && <span className="absolute top-2.5 right-2.5 chip bg-white/90 text-charcoal/70"><Lock className="w-3 h-3" /> Locked</span>}
-          {course.bestseller && !isMine && !isLocked && <span className="absolute top-2.5 right-2.5 chip bg-ivory/95 text-brand-900">Bestseller</span>}
         </div>
         <TrackBadge type={course.iconType} className="absolute left-3 -bottom-5" />
       </button>

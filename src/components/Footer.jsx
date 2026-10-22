@@ -86,7 +86,6 @@ export default function Footer({ navigate }) {
               {link('About us', paths.about())}
               {link('Contact', paths.contact())}
               {link('My dashboard', paths.dashboard())}
-              {link('Admin portal', paths.adminLogin())}
             </ul>
           </div>
 

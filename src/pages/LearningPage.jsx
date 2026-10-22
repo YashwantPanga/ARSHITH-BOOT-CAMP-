@@ -540,7 +540,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
           <p className="text-xs text-slate-500 mt-1.5">25 questions · 45 minutes · proctored. Pass mark 70%.</p>
         ) : (
           <ul className="mt-2 space-y-1.5 text-xs">
-            <li className={`flex items-center gap-2 ${allQuizzesPassed ? 'text-brand-900' : 'text-slate-500'}`}>{allQuizzesPassed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}Pass all module quizzes ({done}/{modules.length})</li>
+            <li className={`flex items-center gap-2 ${allQuizzesPassed ? 'text-brand-900' : 'text-slate-500'}`}>{allQuizzesPassed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}Complete all module quizzes ({done}/{modules.length})</li>
             {projectReq.required > 0 && <li className={`flex items-center gap-2 ${projectsDone ? 'text-brand-900' : 'text-slate-500'}`}>{projectsDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}Submit a GitHub repo for any one project ({Math.min(projectReq.submitted, projectReq.required)}/{projectReq.required})</li>}
           </ul>
         )}
@@ -573,7 +573,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         {passedFinal ? (
           <button onClick={onViewCertificate} className="btn-plum px-3 sm:px-4 py-2"><Award className="w-4 h-4" /><span className="hidden sm:inline">Certificate</span></button>
         ) : (
-          <button onClick={openFinal} className={`btn px-3 sm:px-4 py-2 ${finalReady ? 'bg-peach-500 text-white hover:bg-peach-600' : 'bg-slate-100 text-slate-500'}`} title={finalReady ? 'Start final assessment' : 'Pass all module quizzes and submit all project repositories to unlock'}>
+          <button onClick={openFinal} className={`btn px-3 sm:px-4 py-2 ${finalReady ? 'bg-peach-500 text-white hover:bg-peach-600' : 'bg-slate-100 text-slate-500'}`} title={finalReady ? 'Start final assessment' : 'Complete all module quizzes and submit a GitHub repo for any one project to unlock'}>
             {finalReady ? <Clock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}<span className="hidden sm:inline">Final assessment</span>
           </button>
         )}
