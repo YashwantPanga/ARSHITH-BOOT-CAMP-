@@ -3,6 +3,7 @@ import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import PopularCourses from './components/PopularCourses';
 import WhyLearnWithUs from './components/WhyLearnWithUs';
+import StackingSections from './components/StackingSections';
 import CtaSection from './components/CtaSection';
 import Footer from './components/Footer';
 import MobileBottomNav from './components/MobileBottomNav';
@@ -307,18 +308,20 @@ function AppShell() {
   switch (route.name) {
     case 'home':
       page = (
-        <>
-          <HeroSection onExploreClick={() => goCourses()} onVerifyClick={() => navigate(paths.verify())} onRegisterClick={() => navigate(studentUser ? paths.dashboard() : paths.register())} courses={courses} />
+        // Home page sections stack like a deck of cards as you scroll.
+        <StackingSections>
+          <HeroSection key="hero" onExploreClick={() => goCourses()} onVerifyClick={() => navigate(paths.verify())} onRegisterClick={() => navigate(studentUser ? paths.dashboard() : paths.register())} courses={courses} />
           <PopularCourses
+            key="popular"
             courses={decoratedCourses}
             enrolledCourseId={enrolledCourseId}
             onSelectCourse={(id) => navigate(paths.course(id))}
             onEnrollCourse={requestEnroll}
             onViewAllCourses={() => goCourses()}
           />
-          <WhyLearnWithUs />
-          <CtaSection onExploreClick={() => goCourses()} />
-        </>
+          <WhyLearnWithUs key="why" />
+          <CtaSection key="cta" onExploreClick={() => goCourses()} />
+        </StackingSections>
       );
       break;
     case 'courses':

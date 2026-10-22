@@ -6,7 +6,7 @@ import { IMAGES } from '../data/meta';
 const STEPS = [
   { icon: BookOpen, title: 'Read 15 deep-dive modules', text: 'Concepts, worked code, common mistakes and best practices — written like a textbook, not a playlist.', tone: 'bg-brand-900 text-white' },
   { icon: ListChecks, title: 'Complete every module quiz', text: 'A 5-question quiz closes each module. Finish it to mark the module complete.', tone: 'bg-white text-brand-900' },
-  { icon: ShieldCheck, title: 'Take the proctored final', text: 'The 45-minute final unlocks only after all quizzes are passed, with camera, tab and fullscreen monitoring.', tone: 'bg-white text-brand-900' },
+  { icon: ShieldCheck, title: 'Take the proctored final', text: 'The 45-minute final unlocks after every module quiz and one project repository, with camera, tab and fullscreen monitoring.', tone: 'bg-white text-brand-900' },
   { icon: Award, title: 'Earn a unique certificate', text: 'Score 70%+ and download a certificate with your exact score and a one-of-a-kind verification ID.', tone: 'bg-white text-brand-900' }
 ];
 
@@ -25,7 +25,7 @@ export default function WhyLearnWithUs() {
               <div className="absolute -right-4 bottom-10 bg-brand-900 text-white rounded-2xl p-4 shadow-xl w-44">
                 <LineChart className="w-5 h-5 text-peach-400" />
                 <p className="text-2xl font-bold mt-2">70%</p>
-                <p className="text-xs text-brand-200">pass mark for every quiz &amp; the final</p>
+                <p className="text-xs text-brand-200">pass mark for the final assessment</p>
               </div>
               <div className="absolute -left-4 bottom-0 bg-mint-400 text-white rounded-2xl px-4 py-3 shadow-xl flex items-center gap-2">
                 <Briefcase className="w-4 h-4" /><span className="text-sm font-semibold">3 mini projects</span>
