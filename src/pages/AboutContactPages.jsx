@@ -58,9 +58,9 @@ export function ContactPage() {
         <h1 className="mt-2 text-3xl sm:text-4xl font-bold text-brand-900">Contact Arshith Bootcamp</h1>
         <p className="mt-3 text-slate-500">Questions about a course, your assessment or a certificate? We usually reply within one working day.</p>
         <div className="mt-8 bg-brand-900 text-white rounded-3xl p-7 space-y-5">
-          <p className="flex gap-3"><MapPin className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Address</span>Hyderabad, Telangana, India</span></p>
-          <p className="flex gap-3"><Phone className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Phone</span>+91 90000 00000</span></p>
-          <p className="flex gap-3"><Mail className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Email</span>support@arshithbootcamp.com</span></p>
+          <p className="flex gap-3"><MapPin className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Headquarters</span>Bengaluru, Karnataka, India</span></p>
+          <p className="flex gap-3"><Phone className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Phone</span>+91 86184 71444</span></p>
+          <p className="flex gap-3"><Mail className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Email</span>careers@arshithgroup.com</span></p>
         </div>
       </div>
       <div className="lg:col-span-7">
