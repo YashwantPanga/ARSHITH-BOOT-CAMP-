@@ -2,11 +2,60 @@ import jsPDF from 'jspdf';
 import { api } from '../services/api';
 import { visualDiagramFor } from '../data/visualDiagrams';
 import { drawVisualDiagram, drawWorkflow, workflowToPng } from './pdfDiagrams';
+import { normalizeModule } from './normalizeModule';
+import { detectLanguage } from './highlight';
+import { displayTitle } from './textUtils';
+
+// Converts LaTeX maths (as written in the course text) into readable plain text for the PDF,
+// e.g. \frac{a}{b} -> (a)/(b), \binom{n}{k} -> C(n, k), \mu -> mu, x^{n-k} -> x^(n-k).
+const GREEK = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'varepsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'pi', 'rho', 'sigma', 'tau', 'upsilon', 'phi', 'varphi', 'chi', 'psi', 'omega', 'Gamma', 'Delta', 'Theta', 'Lambda', 'Xi', 'Pi', 'Sigma', 'Phi', 'Psi', 'Omega'];
+export function latexToText(tex) {
+  let t = String(tex);
+  // one-argument wrappers whose content is kept as-is
+  const unwrap = ['text', 'mathrm', 'mathbf', 'mathbb', 'mathcal', 'mathit', 'operatorname', 'boldsymbol', 'textbf', 'textit'];
+  // commands with braces: repeat so nested ones resolve from the inside out
+  for (let pass = 0; pass < 6; pass++) {
+    const before = t;
+    t = t.replace(/\\(?:d|t)?frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, '($1)/($2)')
+      .replace(/\\binom\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, 'C($1, $2)')
+      .replace(/\\sqrt\s*\[([^\]]*)\]\s*\{([^{}]*)\}/g, 'root$1($2)')
+      .replace(/\\sqrt\s*\{([^{}]*)\}/g, 'sqrt($1)')
+      .replace(/\\(?:hat|widehat)\s*\{([^{}]*)\}/g, '$1_hat')
+      .replace(/\\(?:bar|overline)\s*\{([^{}]*)\}/g, '$1_bar')
+      .replace(/\\(?:tilde|widetilde)\s*\{([^{}]*)\}/g, '$1~')
+      .replace(/\\vec\s*\{([^{}]*)\}/g, '$1')
+      .replace(/\\underbrace\s*\{([^{}]*)\}\s*_\s*\{([^{}]*)\}/g, '$1')
+      .replace(new RegExp(`\\\\(?:${unwrap.join('|')})\\s*\\{([^{}]*)\\}`, 'g'), '$1')
+      .replace(/\^\s*\{([^{}]*)\}/g, (m, x) => (x.length > 1 ? `^(${x})` : `^${x}`))
+      .replace(/_\s*\{([^{}]*)\}/g, (m, x) => (x.length > 1 ? `_(${x})` : `_${x}`));
+    if (t === before) break;
+  }
+  const words = {
+    cdot: '*', times: 'x', div: '/', pm: '+/-', neq: '!=', ne: '!=', leq: '<=', le: '<=', geq: '>=', ge: '>=', approx: '~=', sim: '~', propto: '~',
+    infty: 'infinity', in: ' in ', notin: ' not in ', forall: 'for all ', exists: 'there exists ', partial: 'd', nabla: 'grad ', odot: ' (.) ',
+    to: '->', rightarrow: '->', Rightarrow: '=>', leftarrow: '<-', mid: '|', setminus: '\\', subseteq: ' subset of ', subset: ' subset of ', cup: ' U ', cap: ' n ',
+    sum: 'sum', prod: 'prod', int: 'integral', log: 'log', ln: 'ln', exp: 'exp', min: 'min', max: 'max', arg: 'arg', lim: 'lim',
+    ldots: '...', cdots: '...', dots: '...', quad: '  ', qquad: '   ', left: '', right: '', big: '', Big: '', lvert: '|', rvert: '|', lVert: '||', rVert: '||', top: 'T'
+  };
+  t = t.replace(/\\([A-Za-z]+)/g, (m, w) => (GREEK.includes(w) ? w.replace(/^var/, '') : w in words ? words[w] : w));
+  return t.replace(/\\[,;:! ]/g, ' ').replace(/\\\\/g, '; ').replace(/[{}]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+// Is the text between two $ signs maths (as opposed to two prices, like "$300 to $500")?
+// Maths: LaTeX markup, a plain number ($0.05$), or a short expression that does not start with a
+// digit and has no space just inside the $ signs ($k$, $p < 0.05$).
+function isMathSpan(inner) {
+  if (/[\\^_{}]/.test(inner)) return true;
+  if (/^\d*\.?\d+$/.test(inner)) return true;
+  return /[A-Za-z]/.test(inner) && !/^\s|\s$/.test(inner) && !/^\d/.test(inner) && inner.length <= 40;
+}
 
 // Helper function to sanitize non-ASCII characters & encoding artifacts for jsPDF WinAnsi font
 export function cleanText(str) {
   if (!str) return '';
   return String(str)
+    // LaTeX maths between $...$ or $$...$$ becomes readable text (prices such as $300 are left alone)
+    .replace(/\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/g, (m, a, b) => (isMathSpan(a || b) ? latexToText(a || b) : m))
     // Fix existing corruption artifacts
     .replace(/"Çö/g, ' - ')
     .replace(/Çö/g, ' - ')
@@ -42,6 +91,23 @@ export function cleanText(str) {
     .trim();
 }
 
+/** Like cleanText, but for code: keeps indentation and inner spacing, only replaces characters
+ *  the PDF fonts cannot show. */
+export function cleanCodeLine(str) {
+  return String(str ?? '')
+    .replace(/\t/g, '    ')
+    .replace(/[—–‒―]/g, '-')
+    .replace(/[“”„]/g, '"')
+    .replace(/[‘’‚]/g, "'")
+    .replace(/→/g, '->').replace(/←/g, '<-')
+    .replace(/≥/g, '>=').replace(/≤/g, '<=').replace(/≠/g, '!=')
+    .replace(/×/g, 'x').replace(/•/g, '-').replace(/✓/g, 'v').replace(/✗/g, 'x')
+    .replace(/[─-╿]/g, '-')
+    .replace(/[ ​]/g, ' ')
+    .replace(/[^\x00-\x7F]/g, '')
+    .replace(/\s+$/, '');
+}
+
 /** Loads each module's workflow diagram (same data as the lesson page) and renders it to an image. */
 async function prepareWorkflows(course) {
   const out = {};
@@ -72,7 +138,7 @@ export async function generateCoursePDF(course, studentName = 'Student') {
   const contentWidth = pageWidth - (margin * 2);
   let y = margin;
 
-  const cleanCourseTitle = cleanText(course.title);
+  const cleanCourseTitle = cleanText(displayTitle(course.title));
   const cleanStudentName = cleanText(studentName);
 
   // Helper to add semi-transparent brand watermark
@@ -123,7 +189,7 @@ export async function generateCoursePDF(course, studentName = 'Student') {
     // Header bar
     doc.setFillColor(1, 58, 43); // Forest Green #013A2B
     doc.rect(0, 0, pageWidth, 12, 'F');
-    
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(255, 255, 255);
@@ -131,7 +197,12 @@ export async function generateCoursePDF(course, studentName = 'Student') {
 
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    doc.text(cleanCourseTitle, pageWidth - margin, 8, { align: "right" });
+    // Shorten a long course title so it never runs into the left-hand label.
+    let headerTitle = cleanCourseTitle;
+    const maxHeaderW = contentWidth - doc.getTextWidth("ARSHITH BOOTCAMP - Official Course Manual") * (8 / 9) - 14;
+    while (headerTitle.length > 4 && doc.getTextWidth(headerTitle) > maxHeaderW) headerTitle = headerTitle.slice(0, -2);
+    if (headerTitle !== cleanCourseTitle) headerTitle = headerTitle.replace(/\s+\S*$/, '') + '...';
+    doc.text(headerTitle, pageWidth - margin, 8, { align: "right" });
 
     // Footer bar
     doc.setDrawColor(228, 224, 215);
@@ -140,7 +211,7 @@ export async function generateCoursePDF(course, studentName = 'Student') {
 
     doc.setFontSize(8);
     doc.setTextColor(122, 116, 106);
-    doc.text("Learn Today, Build Tomorrow * www.arshithbootcamp.com", margin, pageHeight - 6);
+    doc.text("Learn Today, Build Tomorrow  |  arshithgroup.com", margin, pageHeight - 6);
     doc.text(`Page ${pNum}`, pageWidth - margin, pageHeight - 6, { align: "right" });
   };
 
@@ -155,16 +226,50 @@ export async function generateCoursePDF(course, studentName = 'Student') {
     return false;
   };
 
+  const INK = [48, 43, 37];
+  const MUTED = [122, 116, 106];
+  const lineH = (size) => size * 0.3528 * 1.38; // mm between baselines for a font size in pt
+
+  /**
+   * Writes wrapped text at the current position, breaking pages between lines.
+   * `keep` reserves extra room so a label stays on the same page as the content after it.
+   */
+  const writeText = (text, { x = margin, width = contentWidth - (x - margin), size = 9, style = "normal", color = INK, font = "helvetica", lh, keep = 0, after = 1 } = {}) => {
+    const clean = cleanText(text);
+    if (!clean) return;
+    doc.setFont(font, style);
+    doc.setFontSize(size);
+    const lines = doc.splitTextToSize(clean, width);
+    const h = lh || lineH(size);
+    checkPageBreak(Math.min(lines.length, 2) * h + keep);
+    lines.forEach(l => {
+      checkPageBreak(h + 1);
+      doc.setFont(font, style);
+      doc.setFontSize(size);
+      doc.setTextColor(color[0], color[1], color[2]);
+      doc.text(l, x, y);
+      y += h;
+    });
+    y += after;
+  };
+  // A bold label that always stays on the same page as at least a few lines of what follows it.
+  const writeLabel = (text, opts = {}) => writeText(text, { size: 8.6, style: "bold", color: [1, 58, 43], keep: 12, after: 0.6, ...opts });
+
   // Helper for Section Subheading
   const renderSubheading = (title, num = null, color = [30, 81, 65]) => {
-    checkPageBreak(22);
-    y += 2;
+    checkPageBreak(45); // keep the heading with the start of its section
+    y += 3;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11.5);
     doc.setTextColor(color[0], color[1], color[2]);
     const headingText = num ? `${num}. ${cleanText(title)}` : cleanText(title);
-    doc.text(headingText, margin, y);
-    y += 6.5;
+    const lines = doc.splitTextToSize(headingText, contentWidth);
+    doc.text(lines, margin, y);
+    y += (lines.length - 1) * 5.2 + 2;
+    doc.setDrawColor(color[0], color[1], color[2]);
+    doc.setLineWidth(0.35);
+    doc.line(margin, y, margin + 14, y);
+    y += 5;
   };
 
   // Helper for Text Paragraph
@@ -175,30 +280,50 @@ export async function generateCoursePDF(course, studentName = 'Student') {
     doc.setFontSize(size);
     doc.setTextColor(color[0], color[1], color[2]);
     const lines = doc.splitTextToSize(clean, contentWidth);
-    
+    const h = lineH(size);
+
     lines.forEach(line => {
-      checkPageBreak(6);
+      checkPageBreak(h + 1);
+      doc.setFont("helvetica", font);
+      doc.setFontSize(size);
+      doc.setTextColor(color[0], color[1], color[2]);
       doc.text(line, margin, y);
-      y += 4.8;
+      y += h;
     });
     y += 3;
   };
 
-  // Helper for Bullet Point
+  // Helper for Bullet Point. The marker is drawn as a shape (round dot, or an empty box for
+  // checklists "[ ]") and every line of the text hangs at the same indent.
   const renderBullet = (bulletText, indent = 4, bulletChar = "-") => {
     if (!bulletText) return;
     const clean = cleanText(bulletText);
+    const size = 9;
+    const h = lineH(size);
+    const textX = margin + indent + 4;
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(9.5);
-    doc.setTextColor(48, 43, 37);
-    const lines = doc.splitTextToSize(`${bulletChar} ${clean}`, contentWidth - indent);
-    
+    doc.setFontSize(size);
+    const lines = doc.splitTextToSize(clean, contentWidth - indent - 4);
+
     lines.forEach((line, idx) => {
-      checkPageBreak(6);
-      doc.text(line, margin + (idx === 0 ? indent : indent + 3), y);
-      y += 4.8;
+      checkPageBreak(h + 1);
+      if (idx === 0) {
+        if (bulletChar === "[ ]") {
+          doc.setDrawColor(66, 101, 87);
+          doc.setLineWidth(0.3);
+          doc.rect(margin + indent, y - 2.3, 2.4, 2.4, 'S');
+        } else {
+          doc.setFillColor(66, 101, 87);
+          doc.circle(margin + indent + 1, y - 1.1, 0.75, 'F');
+        }
+      }
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(size);
+      doc.setTextColor(48, 43, 37);
+      doc.text(line, textX, y);
+      y += h;
     });
-    y += 1.5;
+    y += 1.2;
   };
 
   // Helper for Code Block (with wrapping and line-by-line support)
@@ -207,34 +332,49 @@ export async function generateCoursePDF(course, studentName = 'Student') {
 
     if (title) {
       y += 2; // breathing room above the code title
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9.5);
-      doc.setTextColor(1, 58, 43);
-      doc.text(`${cleanText(title)} (${language.toUpperCase()})`, margin, y);
-      y += 4.5;
+      // Show the language only when it is a real one (not an internal tag such as "buggy" or "schema").
+      const lang = String(language || '').toLowerCase();
+      const showLang = /^(python|javascript|js|typescript|sql|html|css|bash|shell|json|jsx|java|c\+\+|go)$/.test(lang);
+      const LANG_NAMES = { js: 'JavaScript', javascript: 'JavaScript', typescript: 'TypeScript', jsx: 'JSX', sql: 'SQL', html: 'HTML', css: 'CSS', json: 'JSON', python: 'Python', bash: 'Bash', shell: 'Shell', java: 'Java', go: 'Go', 'c++': 'C++' };
+      writeText(`${cleanText(title)}${showLang ? `  (${LANG_NAMES[lang] || lang})` : ''}`, { size: 9.2, style: "bold", color: [1, 58, 43], keep: 16, after: 0.8 });
     }
 
-    const cleanRaw = String(codeString || '').replace(/\t/g, '  ');
-    const rawLines = cleanRaw.split('\n');
+    // Code keeps its indentation (cleanText would collapse it). Lines are wrapped by character count
+    // (Courier is monospaced); a wrapped continuation keeps the line's indent plus two spaces.
+    doc.setFont("courier", "normal");
+    doc.setFontSize(8);
+    const charW = doc.getTextWidth("M");
+    const maxChars = Math.max(20, Math.floor((contentWidth - 12) / charW));
     const wrappedLines = [];
-    rawLines.forEach(l => {
-      const sanitized = cleanText(l);
-      const split = doc.splitTextToSize(sanitized, contentWidth - 12);
-      if (split.length > 0) {
-        wrappedLines.push(...split);
-      } else {
-        wrappedLines.push('');
+    String(codeString || '').split('\n').forEach(rawLine => {
+      const line = cleanCodeLine(rawLine);
+      if (line.length <= maxChars) { wrappedLines.push(line); return; }
+      const indent = ' '.repeat(Math.min(line.length - line.trimStart().length, 24) + 2);
+      let rest = line;
+      let first = true;
+      while (rest.length > 0) {
+        const room = first ? maxChars : maxChars - indent.length;
+        if (rest.length <= room) { wrappedLines.push(first ? rest : indent + rest); break; }
+        let cut = Math.max(rest.lastIndexOf(' ', room), rest.lastIndexOf(',', room - 1) + 1, rest.lastIndexOf('(', room - 1) + 1);
+        if (cut < room * 0.5) cut = room;
+        wrappedLines.push((first ? '' : indent) + rest.slice(0, cut).replace(/\s+$/, ''));
+        rest = rest.slice(cut).replace(/^\s+/, '');
+        first = false;
       }
     });
+    while (wrappedLines.length && !wrappedLines[wrappedLines.length - 1].trim()) wrappedLines.pop();
+    while (wrappedLines.length && !wrappedLines[0].trim()) wrappedLines.shift();
 
-    // Chunk code box across pages if needed
+    // Draw the box, splitting it across pages when needed. Each line sits at a fixed spacing that
+    // matches the box height, so there is no empty band at the bottom.
+    const CODE_LH = 3.7;
     let lineIdx = 0;
     while (lineIdx < wrappedLines.length) {
-      checkPageBreak(15);
+      checkPageBreak(16);
       const availableSpace = pageHeight - 22 - y;
-      const maxLinesCanFit = Math.max(2, Math.floor((availableSpace - 8) / 4.2));
+      const maxLinesCanFit = Math.max(3, Math.floor((availableSpace - 7) / CODE_LH));
       const chunk = wrappedLines.slice(lineIdx, lineIdx + maxLinesCanFit);
-      const boxH = (chunk.length * 4.2) + 7;
+      const boxH = chunk.length * CODE_LH + 6;
 
       doc.setFillColor(12, 45, 38); // Evergreen #0C2D26
       doc.roundedRect(margin, y, contentWidth, boxH, 2, 2, 'F');
@@ -242,9 +382,9 @@ export async function generateCoursePDF(course, studentName = 'Student') {
       doc.setFont("courier", "normal");
       doc.setFontSize(8);
       doc.setTextColor(228, 224, 215); // Light slate text
-      doc.text(chunk, margin + 6, y + 5);
+      chunk.forEach((l, k) => doc.text(l, margin + 6, y + 5 + k * CODE_LH));
 
-      y += boxH + 4;
+      y += boxH + 3.5;
       lineIdx += chunk.length;
     }
 
@@ -324,6 +464,74 @@ export async function generateCoursePDF(course, studentName = 'Student') {
     y += 2;
   };
 
+  // Renders the simple Markdown used in some modules' theory/tutorial text: ### headings, bullet and
+  // numbered lists, paragraphs, **bold** markers (shown as plain text) and ``` code fences.
+  const inlineMd = (t) => String(t).replace(/\*\*(.+?)\*\*/g, '$1').replace(/__(.+?)__/g, '$1').replace(/`([^`]+)`/g, '$1').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)');
+  const renderMarkdown = (md) => {
+    const lines = String(md || '').replace(/\r/g, '').split('\n');
+    let para = [];
+    const flush = () => { if (para.length) { renderParagraph(inlineMd(para.join(' ')), 9); para = []; } };
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (/^\s*```/.test(line)) {
+        flush();
+        const lang = line.replace(/^\s*```/, '').trim();
+        const code = [];
+        for (i++; i < lines.length && !/^\s*```/.test(lines[i]); i++) code.push(lines[i]);
+        renderCodeBox(null, code.join('\n'), lang || 'code');
+        continue;
+      }
+      const h = line.match(/^(#{1,6})\s+(.*)$/);
+      if (h) {
+        flush();
+        y += 1.5;
+        writeLabel(inlineMd(h[2]), { size: h[1].length <= 2 ? 10.2 : 9.4, keep: 14, after: 1.2 });
+        continue;
+      }
+      const b = line.match(/^(\s*)[-*+]\s+(.*)$/);
+      if (b) { flush(); renderBullet(inlineMd(b[2]), b[1].length >= 2 ? 12 : 4, "-"); continue; }
+      const n = line.match(/^\s*(\d+)[.)]\s+(.*)$/);
+      if (n) {
+        flush();
+        const size = 9;
+        doc.setFont("helvetica", "bold"); doc.setFontSize(size);
+        checkPageBreak(lineH(size) + 1);
+        doc.setTextColor(66, 101, 87);
+        doc.text(`${n[1]}.`, margin + 4, y);
+        writeText(inlineMd(n[2]), { x: margin + 10, size, after: 1 });
+        continue;
+      }
+      if (!line.trim()) { flush(); continue; }
+      para.push(line.trim());
+    }
+    flush();
+  };
+
+  // Section banner: a filled rounded box whose height follows its (wrapped) title and subtitle.
+  const renderBanner = (title, subtitle = null, fill = [1, 58, 43]) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13.5);
+    const tLines = doc.splitTextToSize(cleanText(title), contentWidth - 16);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.6);
+    const sLines = subtitle ? doc.splitTextToSize(cleanText(subtitle), contentWidth - 16) : [];
+    const h = 9 + tLines.length * 6 + (sLines.length ? sLines.length * 4 + 1.5 : 0) + 2;
+    checkPageBreak(h + 10);
+    doc.setFillColor(fill[0], fill[1], fill[2]);
+    doc.roundedRect(margin, y, contentWidth, h, 3, 3, 'F');
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13.5);
+    doc.setTextColor(255, 255, 255);
+    doc.text(tLines, margin + 8, y + 9.5);
+    if (sLines.length) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.6);
+      doc.setTextColor(232, 238, 234);
+      doc.text(sLines, margin + 8, y + 9.5 + tLines.length * 6 + 0.5);
+    }
+    y += h + 8;
+  };
+
   // ==========================================
   // COVER PAGE (PAGE 1)
   // ==========================================
@@ -343,7 +551,7 @@ export async function generateCoursePDF(course, studentName = 'Student') {
   doc.setFontSize(13);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(188, 209, 198);
-  doc.text("Learn Today, Build Tomorrow * Official Learning Platform", margin + 14, 57);
+  doc.text("Learn Today, Build Tomorrow  |  Official Learning Platform", margin + 14, 57);
 
   doc.setDrawColor(255, 255, 255);
   doc.setLineWidth(0.5);
@@ -363,7 +571,7 @@ export async function generateCoursePDF(course, studentName = 'Student') {
   const titleLines = doc.splitTextToSize(coverTitleMain, contentWidth - 20);
   doc.text(titleLines, margin + 14, 80);
 
-  let coverY = 80 + (titleLines.length * 7.5);
+  let coverY = 80 + (titleLines.length * 7.5) + 2;
   doc.setFontSize(10.5);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(205, 199, 187);
@@ -372,8 +580,9 @@ export async function generateCoursePDF(course, studentName = 'Student') {
     : isAIDataScience
       ? "Comprehensive 15-Module Curriculum | Python, Statistics, Machine Learning, Deep Learning, GenAI & MLOps"
       : `Level: ${cleanText(course.level)} | Duration: ${cleanText(course.duration)} | Modules: ${course.modules.length}`;
-  doc.text(subtitle, margin + 14, coverY);
-  coverY += 6;
+  const subtitleLines = doc.splitTextToSize(cleanText(subtitle), contentWidth - 20);
+  doc.text(subtitleLines, margin + 14, coverY);
+  coverY += subtitleLines.length * 5 + 2;
 
   doc.setFontSize(9);
   doc.setTextColor(163, 157, 145);
@@ -382,7 +591,7 @@ export async function generateCoursePDF(course, studentName = 'Student') {
     : isAIDataScience
       ? "Chief AI Scientist: Dr. Ananya Sharma | Arshith Bootcamp Advanced AI Research Board"
       : "Chief Architect & Lead Educators | Arshith Bootcamp Technical Curriculum Board";
-  doc.text(authorText, margin + 14, coverY);
+  doc.text(doc.splitTextToSize(authorText, contentWidth - 20), margin + 14, coverY);
 
   // Student Enrollment Card Box
   doc.setFillColor(12, 45, 38); // Dark green card
@@ -399,7 +608,7 @@ export async function generateCoursePDF(course, studentName = 'Student') {
   doc.setFontSize(12.5);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(255, 255, 255);
-  doc.text(`Candidate Name: ${cleanStudentName}`, margin + 10, 183);
+  doc.text(doc.splitTextToSize(`Candidate Name: ${cleanStudentName}`, contentWidth - 78)[0], margin + 10, 183);
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
@@ -408,14 +617,17 @@ export async function generateCoursePDF(course, studentName = 'Student') {
   const curriculumSummary = isAIDataScience
     ? "Curriculum: 15 Core Modules + 5 Capstone Projects + 25-Question Certification Exam"
     : "Curriculum: 15 Core Modules + 3 Mini Projects + 1 Capstone + 25-Question Certification Exam";
-  doc.text(curriculumSummary, margin + 10, 200);
+  doc.text(doc.splitTextToSize(curriculumSummary, contentWidth - 20)[0], margin + 10, 200);
   doc.text(`Export Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, margin + 10, 207);
 
   // Verification Seal
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(251, 248, 241); // Ivory accent
-  doc.text("[VERIFIED OFFICIAL MANUAL]", pageWidth - margin - 58, 183);
+  doc.setDrawColor(188, 209, 198);
+  doc.setLineWidth(0.4);
+  doc.roundedRect(pageWidth - margin - 58, 177.5, 50, 8.5, 2, 2, 'S');
+  doc.text("VERIFIED OFFICIAL MANUAL", pageWidth - margin - 33, 183, { align: "center" });
 
   // ==========================================
   // TABLE OF CONTENTS (PAGE 2)
@@ -441,15 +653,15 @@ export async function generateCoursePDF(course, studentName = 'Student') {
     const cleanTitle = cleanText(mod.title);
     const cleanDesc = cleanText(mod.description);
 
-    checkPageBreak(20);
+    checkPageBreak(26); // keep a contents entry (title, description, topics) together
 
-    const numStr = `Module ${(idx + 1).toString().padStart(2, '0')}:`;
+    const numStr = `Module ${(idx + 1).toString().padStart(2, '0')}`;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(1, 58, 43);
     doc.text(numStr, margin, y);
-    
-    const titleLines = doc.splitTextToSize(cleanTitle.replace(/^Module \d+\s*[-–—]\s*/i, ''), contentWidth - 32);
+
+    const titleLines = doc.splitTextToSize(cleanTitle.replace(/^Module\s*\d+\s*[:\-–—]\s*/i, ''), contentWidth - 32);
     doc.text(titleLines, margin + 28, y);
     y += (titleLines.length * 4.4);
 
@@ -462,16 +674,24 @@ export async function generateCoursePDF(course, studentName = 'Student') {
       y += (descLines.length * 3.6) + 1.5;
     }
 
-    // List key subtopics from sections
-    if (mod.readingMaterial && mod.readingMaterial.sections) {
-      const subtopics = mod.readingMaterial.sections.map(s => cleanText(s.heading)).slice(0, 4);
+    // List key subtopics: section headings, or the ### headings of Markdown theory text.
+    const tocRm = mod.readingMaterial || {};
+    const subtopics = (Array.isArray(tocRm.sections) && tocRm.sections.length
+      ? tocRm.sections.map(s => s.heading)
+      : String(tocRm.theory || '').split('\n').filter(l => /^#{1,4}\s/.test(l)).map(l => l.replace(/^#+\s*/, '').replace(/\*\*/g, ''))
+    ).map(t => cleanText(t).replace(/^\d+[.)]\s*/, '')).filter(Boolean).slice(0, 4);
+    if (subtopics.length) {
       doc.setFont("helvetica", "italic");
       doc.setFontSize(7.5);
       doc.setTextColor(66, 101, 87);
-      const subtopicLine = `Core Topics: ${subtopics.join(' * ')} | Tutorials, 15 Practice Qs, 10 Interview Qs`;
+      const subtopicLine = `Core topics: ${subtopics.join('  |  ')}`;
       const wrappedSubtopics = doc.splitTextToSize(subtopicLine, contentWidth - 32);
       wrappedSubtopics.forEach(sl => {
         checkPageBreak(5);
+        // A page break redraws the header and changes the font, so set it again for every line.
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(7.5);
+        doc.setTextColor(66, 101, 87);
         doc.text(sl, margin + 28, y);
         y += 3.6;
       });
@@ -488,7 +708,7 @@ export async function generateCoursePDF(course, studentName = 'Student') {
   doc.setFontSize(11);
   doc.setTextColor(30, 81, 65);
   doc.text("Practical Projects & Final Certification Examination", margin, y);
-  y += 6;
+  y += 7;
 
   const extraSections = isAIDataScience ? [
     { num: "P1.", title: "Capstone Project 1: Real Estate Valuation & Predictive Modeling Engine", desc: "Data Cleaning, Skewness, ColumnTransformer, Ridge/Lasso, and Residual Diagnostics." },
@@ -523,8 +743,9 @@ export async function generateCoursePDF(course, studentName = 'Student') {
     doc.setFontSize(8.5);
     doc.setTextColor(1, 58, 43);
     doc.text(es.num, margin, y);
-    doc.text(cleanText(es.title), margin + 12, y);
-    y += 4.2;
+    const esTitle = doc.splitTextToSize(cleanText(es.title), contentWidth - 12);
+    doc.text(esTitle, margin + 12, y);
+    y += esTitle.length * 4.2;
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
@@ -582,53 +803,32 @@ export async function generateCoursePDF(course, studentName = 'Student') {
     y += headerBoxH + 8;
 
     const rm = mod.readingMaterial;
+    // Modules store their reading material in a few different shapes; normalise like the lesson page does.
+    const nm = normalizeModule(mod);
+    let sectionNo = 0;
+    const section = (title, color = [30, 81, 65]) => renderSubheading(`${++sectionNo}. ${title}`, null, color);
     if (rm) {
       // 1. Introduction
       if (rm.introduction) {
-        renderSubheading("1. Introduction & Overview", null, [30, 81, 65]);
+        section("Introduction & Overview");
         renderParagraph(rm.introduction);
       }
 
       // 2. Learning Objectives
       if (rm.objectives && rm.objectives.length > 0) {
-        renderSubheading("2. Learning Objectives", null, [30, 81, 65]);
+        section("Learning Objectives");
         rm.objectives.forEach(obj => renderBullet(obj, 4, "[x]"));
         y += 3;
       }
 
       // 3. Technical Terminology & Core Definitions
       if (rm.terminology && rm.terminology.length > 0) {
-        renderSubheading("3. Important Definitions & Technical Terminology", null, [30, 81, 65]);
+        section("Important Definitions & Technical Terminology");
         rm.terminology.forEach(t => {
-          checkPageBreak(14);
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(9);
-          doc.setTextColor(1, 58, 43);
-          doc.text(`* ${cleanText(t.term)}:`, margin + 2, y);
-          y += 4.2;
-
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8.5);
-          doc.setTextColor(48, 43, 37);
-          const defLines = doc.splitTextToSize(cleanText(t.definition), contentWidth - 8);
-          defLines.forEach(l => {
-            checkPageBreak(5);
-            doc.text(l, margin + 6, y);
-            y += 4;
-          });
-
-          if (t.importance) {
-            doc.setFont("helvetica", "italic");
-            doc.setFontSize(8);
-            doc.setTextColor(66, 101, 87);
-            const impLines = doc.splitTextToSize(`Significance: ${cleanText(t.importance)}`, contentWidth - 8);
-            impLines.forEach(l => {
-              checkPageBreak(4.5);
-              doc.text(l, margin + 6, y);
-              y += 3.8;
-            });
-          }
-          y += 2;
+          writeLabel(cleanText(t.term), { size: 9, x: margin + 2 });
+          writeText(t.definition, { x: margin + 6, size: 8.6, after: 0.4 });
+          if (t.importance) writeText(`Significance: ${cleanText(t.importance)}`, { x: margin + 6, size: 8, style: "italic", color: [66, 101, 87], after: 0 });
+          y += 2.2;
         });
         y += 2;
       }
@@ -636,32 +836,32 @@ export async function generateCoursePDF(course, studentName = 'Student') {
       // 4. Visual Diagram & Architecture — the same diagrams the lesson page shows
       const wf = workflows[mod.id];
       const visual = visualDiagramFor(mod.id);
-      if (rm.diagram || wf) {
+      const dg = nm.diagram;
+      if (dg || wf) {
         // Keep the heading on the same page as the first diagram.
         if (wf) {
           const imgW = Math.min(contentWidth, wf.png.width * 0.2);
           checkPageBreak(Math.min(pageHeight - 50, (imgW * wf.png.height) / wf.png.width) + 32);
         }
-        renderSubheading("4. Architecture & Visual Workflow Diagram", null, [30, 81, 65]);
+        section("Architecture & Visual Workflow Diagram");
         const diagramCtx = { doc, margin, contentWidth, pageHeight, checkPageBreak, renderCodeBox, getY: () => y, setY: (v) => { y = v; } };
         if (wf) drawWorkflow(diagramCtx, wf.def, wf.png);
       }
-      if (rm.diagram && visual) {
+      if (dg && visual) {
         drawVisualDiagram({ doc, margin, contentWidth, pageHeight, checkPageBreak, renderCodeBox, getY: () => y, setY: (v) => { y = v; } }, visual);
-        if (rm.diagram.explanation) {
-          renderParagraph(rm.diagram.explanation, 8.5, [93, 87, 78], "italic");
+        if (dg.explanation) {
+          renderParagraph(dg.explanation, 8.5, [93, 87, 78], "italic");
         }
-      } else if (rm.diagram) {
+      } else if (dg) {
         checkPageBreak(12);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(9);
         doc.setTextColor(48, 43, 37);
-        doc.text(cleanText(rm.diagram.title), margin, y);
-        y += 4.5;
+        if (dg.title) { doc.text(cleanText(dg.title), margin, y); y += 4.5; }
 
-        if (rm.diagram.ascii) {
-          const asciiLines = rm.diagram.ascii.split('\n');
-          const cleanAscii = asciiLines.map(l => cleanText(l));
+        if (dg.ascii) {
+          const asciiLines = dg.ascii.split('\n');
+          const cleanAscii = asciiLines.map(l => cleanCodeLine(l));
           const boxH = (cleanAscii.length * 3.5) + 6;
 
           checkPageBreak(boxH + 4);
@@ -675,14 +875,14 @@ export async function generateCoursePDF(course, studentName = 'Student') {
           y += boxH + 4;
         }
 
-        if (rm.diagram.explanation) {
-          renderParagraph(rm.diagram.explanation, 8.5, [93, 87, 78], "italic");
+        if (dg.explanation) {
+          renderParagraph(dg.explanation, 8.5, [93, 87, 78], "italic");
         }
       }
 
       // 5. Detailed Explanations & Core Subtopics
       if (rm.sections && rm.sections.length > 0) {
-        renderSubheading("5. Detailed Explanations of Every Topic & Subtopic", null, [30, 81, 65]);
+        section("Detailed Explanations of Every Topic & Subtopic");
         rm.sections.forEach(sec => {
           checkPageBreak(14);
           doc.setFont("helvetica", "bold");
@@ -706,19 +906,25 @@ export async function generateCoursePDF(course, studentName = 'Student') {
             checkPageBreak(25);
             const colCount = sec.table.headers.length;
             const colWidth = contentWidth / colCount;
+            const drawColumnLines = (top, height) => {
+              doc.setDrawColor(228, 224, 215);
+              doc.setLineWidth(0.25);
+              for (let c = 1; c < colCount; c++) doc.line(margin + c * colWidth, top, margin + c * colWidth, top + height);
+            };
 
-            // Table Header
-            doc.setFillColor(248, 245, 238);
-            doc.rect(margin, y, contentWidth, 6.5, 'F');
+            // Table Header (as tall as its longest heading)
             doc.setFont("helvetica", "bold");
             doc.setFontSize(8);
-            doc.setTextColor(48, 43, 37);
-
-            sec.table.headers.forEach((h, hIdx) => {
-              const hText = doc.splitTextToSize(cleanText(h), colWidth - 4);
-              doc.text(hText, margin + (hIdx * colWidth) + 2, y + 4.5);
+            const headerCells = sec.table.headers.map(h => doc.splitTextToSize(cleanText(h), colWidth - 4));
+            const headerH = Math.max(...headerCells.map(l => l.length)) * 3.6 + 3.4;
+            doc.setFillColor(239, 244, 241);
+            doc.rect(margin, y, contentWidth, headerH, 'F');
+            doc.setTextColor(1, 58, 43);
+            headerCells.forEach((lines, hIdx) => {
+              doc.text(lines, margin + (hIdx * colWidth) + 2, y + 4.4);
             });
-            y += 6.5;
+            drawColumnLines(y, headerH);
+            y += headerH;
 
             // Table Rows
             doc.setFont("helvetica", "normal");
@@ -735,8 +941,13 @@ export async function generateCoursePDF(course, studentName = 'Student') {
 
               checkPageBreak(maxRowHeight + 2);
               doc.setDrawColor(228, 224, 215);
+              doc.setLineWidth(0.25);
               doc.rect(margin, y, contentWidth, maxRowHeight, 'S');
+              drawColumnLines(y, maxRowHeight);
 
+              doc.setFont("helvetica", "normal");
+              doc.setFontSize(8);
+              doc.setTextColor(48, 43, 37);
               formattedCells.forEach((cellLines, cIdx) => {
                 doc.text(cellLines, margin + (cIdx * colWidth) + 2, y + 4);
               });
@@ -747,25 +958,20 @@ export async function generateCoursePDF(course, studentName = 'Student') {
         });
       }
 
+      if (nm.theoryMarkdown) {
+        section("Concepts Explained");
+        renderMarkdown(nm.theoryMarkdown);
+      }
+
       // 6. Step-by-Step Practical Tutorials
       if (rm.tutorials && rm.tutorials.length > 0) {
-        renderSubheading("6. Step-by-Step Practical Tutorials", null, [30, 81, 65]);
+        section("Step-by-Step Practical Tutorials");
         rm.tutorials.forEach(tut => {
-          checkPageBreak(12);
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(9.5);
-          doc.setTextColor(1, 58, 43);
-          doc.text(`Tutorial: ${cleanText(tut.title)}`, margin, y);
-          y += 5;
+          writeLabel(`Tutorial: ${cleanText(tut.title)}`, { size: 9.5, keep: 16, after: 1.2 });
 
           if (tut.steps && Array.isArray(tut.steps)) {
             tut.steps.forEach(st => {
-              checkPageBreak(12);
-              doc.setFont("helvetica", "bold");
-              doc.setFontSize(8.5);
-              doc.setTextColor(30, 81, 65);
-              doc.text(`Step ${st.step}: ${cleanText(st.instruction)}`, margin + 3, y);
-              y += 4.5;
+              writeText(`Step ${st.step}: ${cleanText(st.instruction)}`, { x: margin + 3, size: 8.6, style: "bold", color: [30, 81, 65], keep: 14, after: 0.8 });
 
               if (st.code) {
                 renderCodeBox(null, st.code, "code", st.explanation);
@@ -777,14 +983,19 @@ export async function generateCoursePDF(course, studentName = 'Student') {
         });
       }
 
+      if (nm.tutorialMarkdown) {
+        section("Step-by-Step Practical Tutorial");
+        renderMarkdown(nm.tutorialMarkdown);
+      }
+
       // 7. Syntax & Complete Working Code Examples
       if (rm.codeExamples && rm.codeExamples.length > 0) {
-        renderSubheading("7. Syntax & Complete Working Code Examples", null, [30, 81, 65]);
+        section("Syntax & Complete Working Code Examples");
         rm.codeExamples.forEach(ex => {
           renderCodeBox(
             ex.title,
             ex.code,
-            ex.language || "javascript",
+            ex.language || detectLanguage(ex.code, '', course.id),
             ex.explanation,
             ex.lineByLine
           );
@@ -793,24 +1004,10 @@ export async function generateCoursePDF(course, studentName = 'Student') {
 
       // 8. Common Errors, Debugging Techniques & Solutions
       if (rm.commonErrors && rm.commonErrors.length > 0) {
-        renderSubheading("8. Common Errors, Debugging Techniques & Solutions", null, [185, 28, 28]); // Red
+        section("Common Errors, Debugging Techniques & Solutions", [185, 28, 28]);
         rm.commonErrors.forEach(err => {
-          checkPageBreak(16);
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(9);
-          doc.setTextColor(185, 28, 28);
-          doc.text(`! Error: ${cleanText(err.error)}`, margin, y);
-          y += 4.2;
-
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8.5);
-          doc.setTextColor(48, 43, 37);
-          const rLines = doc.splitTextToSize(`Root Cause: ${cleanText(err.reason)}`, contentWidth - 4);
-          rLines.forEach(l => {
-            checkPageBreak(5);
-            doc.text(l, margin + 4, y);
-            y += 4;
-          });
+          writeLabel(`Error: ${cleanText(err.error)}`, { size: 9, color: [185, 28, 28], keep: 14 });
+          writeText(`Root cause: ${cleanText(err.reason)}`, { x: margin + 4, size: 8.6, after: 0.6 });
 
           if (err.wrongCode) {
             renderCodeBox("Incorrect / Buggy Code", err.wrongCode, "buggy", null);
@@ -824,36 +1021,12 @@ export async function generateCoursePDF(course, studentName = 'Student') {
 
       // 9. Best Practices & Industry Standards
       if (rm.bestPractices && rm.bestPractices.length > 0) {
-        renderSubheading("9. Best Practices & Industry Standards", null, [66, 101, 87]); // Teal
+        section("Best Practices & Industry Standards", [66, 101, 87]);
         rm.bestPractices.forEach(bp => {
-          checkPageBreak(14);
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(9);
-          doc.setTextColor(66, 101, 87);
-          doc.text(`* ${cleanText(bp.title)}`, margin + 2, y);
-          y += 4.2;
-
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8.5);
-          doc.setTextColor(48, 43, 37);
-          const ruleLines = doc.splitTextToSize(cleanText(bp.rule), contentWidth - 6);
-          ruleLines.forEach(l => {
-            checkPageBreak(5);
-            doc.text(l, margin + 6, y);
-            y += 4;
-          });
-
-          if (bp.why) {
-            doc.setFont("helvetica", "italic");
-            doc.setFontSize(8);
-            doc.setTextColor(122, 116, 106);
-            const whyLines = doc.splitTextToSize(`Rationale: ${cleanText(bp.why)}`, contentWidth - 6);
-            whyLines.forEach(l => {
-              checkPageBreak(4.5);
-              doc.text(l, margin + 6, y);
-              y += 3.8;
-            });
-          }
+          if (typeof bp === 'string') { renderBullet(bp, 2, "-"); return; }
+          writeLabel(cleanText(bp.title), { size: 9, x: margin + 2, color: [66, 101, 87] });
+          writeText(bp.rule, { x: margin + 6, size: 8.6, after: 0.4 });
+          if (bp.why) writeText(`Rationale: ${cleanText(bp.why)}`, { x: margin + 6, size: 8, style: "italic", color: MUTED, after: 0 });
 
           if (bp.example) {
             renderCodeBox("Industry Standard Example", bp.example, "best-practice", null);
@@ -863,256 +1036,125 @@ export async function generateCoursePDF(course, studentName = 'Student') {
       }
 
       // 10. Hands-on Practice Exercise & Detailed Solution
-      if (rm.practiceExercise) {
-        renderSubheading("10. Hands-On Practice Exercise & Solution", null, [66, 101, 87]); // Amber
-        checkPageBreak(14);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(9.5);
-        doc.setTextColor(66, 101, 87);
-        doc.text(`Exercise Challenge: ${cleanText(rm.practiceExercise.title)}`, margin, y);
-        y += 4.5;
+      const pe = nm.practiceExercise;
+      if (pe) {
+        section("Hands-On Practice Exercise & Solution", [66, 101, 87]);
+        writeLabel(`Exercise: ${cleanText(pe.title)}`, { size: 9.5, color: [66, 101, 87], keep: 14, after: 1.2 });
 
-        renderParagraph(rm.practiceExercise.problem, 8.5, [48, 43, 37]);
+        renderParagraph(pe.problem, 8.8, [48, 43, 37]);
+        if (pe.starterCode) renderCodeBox("Starter code", pe.starterCode, detectLanguage(pe.starterCode, '', course.id));
 
-        if (rm.practiceExercise.hints && rm.practiceExercise.hints.length > 0) {
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(8);
-          doc.setTextColor(66, 101, 87);
-          doc.text("Implementation Hints:", margin + 2, y);
-          y += 4;
+        if (rm.practiceExercise?.hints && rm.practiceExercise.hints.length > 0) {
+          writeLabel("Implementation hints", { x: margin + 2, size: 8.4, color: [66, 101, 87] });
           rm.practiceExercise.hints.forEach(h => renderBullet(h, 4, ">"));
           y += 2;
         }
 
-        if (rm.practiceExercise.solutionCode) {
-          renderCodeBox("Complete Working Solution Code", rm.practiceExercise.solutionCode, "solution", rm.practiceExercise.explanation);
+        if (pe.solutionCode) {
+          renderCodeBox("Complete working solution", pe.solutionCode, detectLanguage(pe.solutionCode, '', course.id), rm.practiceExercise?.explanation);
         }
       }
 
       // 11. Practice Questions with Answers (15 Questions)
       if (rm.practiceQuestions && rm.practiceQuestions.length > 0) {
-        renderSubheading("11. Practice Questions & Technical Explanations (15 Qs)", null, [30, 81, 65]);
+        section(`Practice Questions & Technical Explanations (${rm.practiceQuestions.length})`);
         rm.practiceQuestions.forEach((pq, pqIdx) => {
-          checkPageBreak(25);
-          y += 2;
-
-          // Question header & text
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(9.5);
-          doc.setTextColor(1, 58, 43);
-          const qTitle = `Practice Question ${pqIdx + 1}:`;
-          doc.text(qTitle, margin, y);
-          y += 4.5;
-
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(9);
-          doc.setTextColor(48, 43, 37);
-          const qLines = doc.splitTextToSize(cleanText(pq.question), contentWidth);
-          qLines.forEach(l => {
-            checkPageBreak(5.5);
-            doc.text(l, margin, y);
-            y += 4.5;
-          });
-
-          // Model Answer
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(8.5);
-          doc.setTextColor(30, 81, 65);
-          checkPageBreak(5);
-          doc.text("Technical Answer:", margin + 4, y);
-          y += 4.2;
-
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8.5);
-          doc.setTextColor(48, 43, 37);
-          const aLines = doc.splitTextToSize(cleanText(pq.answer), contentWidth - 6);
-          aLines.forEach(l => {
-            checkPageBreak(5);
-            doc.text(l, margin + 4, y);
-            y += 4.2;
-          });
-
-          // Detailed Explanation
-          if (pq.explanation) {
-            checkPageBreak(5);
-            doc.setFont("helvetica", "italic");
-            doc.setFontSize(8);
-            doc.setTextColor(93, 87, 78);
-            const expLines = doc.splitTextToSize(`Concept Deep Dive: ${cleanText(pq.explanation)}`, contentWidth - 6);
-            expLines.forEach(l => {
-              checkPageBreak(4.5);
-              doc.text(l, margin + 4, y);
-              y += 4;
-            });
-          }
-          y += 3.5;
+          checkPageBreak(28);
+          y += 1.5;
+          writeLabel(`Practice Question ${pqIdx + 1}`, { size: 9.4, keep: 18 });
+          writeText(pq.question, { size: 9, style: "bold", after: 1.2 });
+          writeLabel("Answer", { x: margin + 4, size: 8.4, color: [30, 81, 65], keep: 8 });
+          writeText(pq.answer, { x: margin + 4, size: 8.6, after: 0.6 });
+          if (pq.explanation) writeText(`Concept deep dive: ${cleanText(pq.explanation)}`, { x: margin + 4, size: 8, style: "italic", color: [93, 87, 78], after: 0 });
+          y += 3;
         });
         y += 2;
       }
 
       // 12. Technical Interview Questions & Model Answers (10 Questions)
       if (rm.interviewQuestions && rm.interviewQuestions.length > 0) {
-        renderSubheading("12. Technical Interview Questions & Model Answers (10 Qs)", null, [30, 81, 65]); // Purple
+        section(`Technical Interview Questions & Model Answers (${rm.interviewQuestions.length})`);
         rm.interviewQuestions.forEach((iq, iqIdx) => {
-          checkPageBreak(25);
-          y += 2;
-
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(9.5);
-          doc.setTextColor(30, 81, 65);
-          const qTitle = `Interview Question ${iqIdx + 1}:`;
-          doc.text(qTitle, margin, y);
-          y += 4.5;
-
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(9);
-          doc.setTextColor(48, 43, 37);
-          const qLines = doc.splitTextToSize(cleanText(iq.question), contentWidth);
-          qLines.forEach(l => {
-            checkPageBreak(5.5);
-            doc.text(l, margin, y);
-            y += 4.5;
-          });
-
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(8.5);
-          doc.setTextColor(30, 81, 65);
-          checkPageBreak(5);
-          doc.text("Candidate Model Answer:", margin + 4, y);
-          y += 4.2;
-
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8.5);
-          doc.setTextColor(48, 43, 37);
-          const aLines = doc.splitTextToSize(cleanText(iq.answer), contentWidth - 6);
-          aLines.forEach(l => {
-            checkPageBreak(5);
-            doc.text(l, margin + 4, y);
-            y += 4.2;
-          });
-
+          checkPageBreak(28);
+          y += 1.5;
+          writeLabel(`Interview Question ${iqIdx + 1}`, { size: 9.4, color: [30, 81, 65], keep: 18 });
+          writeText(iq.question, { size: 9, style: "bold", after: 1.2 });
+          writeLabel("Model answer", { x: margin + 4, size: 8.4, color: [30, 81, 65], keep: 8 });
+          writeText(iq.answer, { x: margin + 4, size: 8.6, after: 0.6 });
           if (iq.keyPoints && iq.keyPoints.length > 0) {
-            checkPageBreak(6);
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(8);
-            doc.setTextColor(30, 81, 65);
-            doc.text("Key Talking Points for Interviewers:", margin + 4, y);
-            y += 4.2;
+            writeLabel("Key talking points", { x: margin + 4, size: 8.2, color: [30, 81, 65] });
             iq.keyPoints.forEach(kp => renderBullet(kp, 6, "*"));
           }
-          y += 3.5;
+          y += 3;
         });
         y += 2;
       }
 
       // 13. Practical Mini-Task / Real-World Assignment
-      if (rm.miniTask) {
-        renderSubheading("13. Practical Mini-Task & Assignment", null, [30, 81, 65]);
-        checkPageBreak(14);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(9.5);
-        doc.setTextColor(1, 58, 43);
-        doc.text(`Assignment: ${cleanText(rm.miniTask.title)}`, margin, y);
-        y += 4.5;
-
-        renderParagraph(`Objective: ${rm.miniTask.objective}`, 8.5, [48, 43, 37]);
-
-        if (rm.miniTask.requirements && rm.miniTask.requirements.length > 0) {
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(8.5);
-          doc.setTextColor(48, 43, 37);
-          doc.text("Task Requirements:", margin, y);
-          y += 4;
-          rm.miniTask.requirements.forEach(req => renderBullet(req, 4, "[ ]"));
-          y += 2;
-        }
-
-        if (rm.miniTask.deliverable) {
-          renderParagraph(`Deliverable: ${rm.miniTask.deliverable}`, 8.5, [66, 101, 87], "bold");
-        }
-
-        if (rm.miniTask.evaluationCriteria && rm.miniTask.evaluationCriteria.length > 0) {
-          checkPageBreak(15);
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(8.5);
-          doc.setTextColor(48, 43, 37);
-          doc.text("Grading & Evaluation Rubric:", margin, y);
-          y += 4;
-          rm.miniTask.evaluationCriteria.forEach(ec => renderBullet(ec, 4, "*"));
-          y += 2;
-        }
+      if (nm.miniTasks.length) {
+        section(nm.miniTasks.length > 1 ? "Practical Mini-Tasks & Assignments" : "Practical Mini-Task & Assignment");
+        nm.miniTasks.forEach((task, tIdx) => {
+          if (tIdx > 0) y += 1.5;
+          writeLabel(`${nm.miniTasks.length > 1 ? `Task ${tIdx + 1}` : 'Assignment'}: ${cleanText(task.title || '').replace(/^Mini task \d+$/i, '') || 'Practice task'}`, { size: 9.4, keep: 14, after: 1 });
+          const brief = task.objective || task.description;
+          if (brief) renderParagraph(brief, 8.8, [48, 43, 37]);
+          if (task.requirements && task.requirements.length > 0) {
+            writeLabel("Task requirements", { color: INK });
+            task.requirements.forEach(req => renderBullet(req, 4, "[ ]"));
+            y += 1.5;
+          }
+          if (task.deliverable) writeText(`Deliverable: ${cleanText(task.deliverable)}`, { size: 8.8, style: "bold", color: [66, 101, 87], after: 1.5 });
+          if (task.evaluationCriteria && task.evaluationCriteria.length > 0) {
+            writeLabel("Grading & evaluation rubric", { color: INK });
+            task.evaluationCriteria.forEach(ec => renderBullet(ec, 4, "*"));
+            y += 1.5;
+          }
+        });
       }
 
       // 14. Module Summary & Key Takeaways
-      if (rm.summary) {
-        renderSubheading("14. Module Summary & Key Takeaways", null, [30, 81, 65]);
-        if (rm.summary.takeaways && rm.summary.takeaways.length > 0) {
-          rm.summary.takeaways.forEach(tk => renderBullet(tk, 4, "v"));
+      const sm = nm.summary;
+      if (sm.takeaways.length || sm.quickReference.length || sm.text) {
+        section("Module Summary & Key Takeaways");
+        if (sm.text) renderParagraph(sm.text, 9);
+        if (sm.takeaways.length) {
+          sm.takeaways.forEach(tk => renderBullet(tk, 4, "-"));
           y += 2;
         }
-        if (rm.summary.quickReference && rm.summary.quickReference.length > 0) {
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(8.5);
-          doc.setTextColor(1, 58, 43);
-          doc.text("Quick Reference Cheatsheet:", margin, y);
-          y += 4;
-          rm.summary.quickReference.forEach(qr => renderBullet(qr, 4, "#"));
+        if (sm.quickReference.length) {
+          writeLabel("Quick reference cheatsheet");
+          sm.quickReference.forEach(qr => renderBullet(qr, 4, "-"));
           y += 2;
         }
       }
 
       // 15. Module Self-Assessment MCQs
       if (rm.selfAssessment && rm.selfAssessment.questions && rm.selfAssessment.questions.length > 0) {
-        renderSubheading("15. Module Self-Assessment (5 MCQs)", null, [30, 81, 65]);
+        section(`Module Self-Assessment (${rm.selfAssessment.questions.length} questions)`);
         rm.selfAssessment.questions.forEach((q, qIdx) => {
-          checkPageBreak(14);
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(8.5);
-          doc.setTextColor(1, 58, 43);
-          const qLines = doc.splitTextToSize(`Q${qIdx + 1}: ${cleanText(q.questionText)}`, contentWidth);
-          qLines.forEach(l => {
-            checkPageBreak(5);
-            doc.text(l, margin, y);
-            y += 4;
-          });
+          checkPageBreak(24);
+          writeText(`Q${qIdx + 1}. ${cleanText(q.questionText)}`, { size: 8.8, style: "bold", color: [1, 58, 43], keep: 12, after: 0.8 });
 
           if (q.codeSnippet) {
             renderCodeBox(null, q.codeSnippet, "snippet", null);
           }
 
           if (q.options && Array.isArray(q.options)) {
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(8);
-            doc.setTextColor(48, 43, 37);
-            q.options.forEach((opt, oIdx) => {
-              const optLabel = `${String.fromCharCode(65 + oIdx)}) ${cleanText(opt)}`;
-              checkPageBreak(4.5);
-              doc.text(optLabel, margin + 4, y);
-              y += 3.8;
-            });
+            q.options.forEach((opt, oIdx) => writeText(`${String.fromCharCode(65 + oIdx)})  ${cleanText(opt)}`, { x: margin + 4, size: 8.4, after: 0.2 }));
           }
 
           if (q.explanation) {
-            doc.setFont("helvetica", "italic");
-            doc.setFontSize(8);
-            doc.setTextColor(66, 101, 87);
-            checkPageBreak(5);
-            doc.text(`Key: Option ${cleanText(q.correctAnswer)} - ${cleanText(q.explanation)}`, margin + 4, y);
-            y += 4;
+            writeText(`Answer: ${cleanText(q.correctAnswer)}  -  ${cleanText(q.explanation)}`, { x: margin + 4, size: 8, style: "italic", color: [66, 101, 87], after: 0 });
           }
-          y += 2;
+          y += 2.5;
         });
       }
 
       // References
-      if (rm.references && rm.references.length > 0) {
-        checkPageBreak(12);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8.5);
-        doc.setTextColor(122, 116, 106);
-        doc.text("Official References & Documentation:", margin, y);
-        y += 4;
-        rm.references.forEach(ref => {
+      if (nm.references.length > 0) {
+        y += 2;
+        writeLabel("Official references & documentation", { color: MUTED });
+        nm.references.forEach(ref => {
           renderBullet(`${ref.title}: ${ref.url}`, 4, "-");
         });
         y += 4;
@@ -1129,74 +1171,44 @@ export async function generateCoursePDF(course, studentName = 'Student') {
     addHeaderFooter(pageCount);
     y = 25;
 
-    doc.setFillColor(12, 45, 38);
-    doc.roundedRect(margin, y, contentWidth, 20, 3, 3, 'F');
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(255, 255, 255);
-    doc.text("COURSE PRACTICAL PROJECTS - INDUSTRY ASSIGNMENTS", margin + 8, y + 12);
-    y += 28;
+    renderBanner("COURSE PRACTICAL PROJECTS - INDUSTRY ASSIGNMENTS", null, [12, 45, 38]);
 
     course.projects.forEach((proj, pIdx) => {
-      checkPageBreak(25);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12.5);
-      doc.setTextColor(1, 58, 43);
-      doc.text(`Project ${pIdx + 1}: ${cleanText(proj.title)}`, margin, y);
-      y += 5.5;
-
-      if (proj.subtitle) {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8.5);
-        doc.setTextColor(66, 101, 87);
-        doc.text(cleanText(proj.subtitle), margin, y);
-        y += 4.5;
+      checkPageBreak(30);
+      if (pIdx > 0) {
+        doc.setDrawColor(228, 224, 215);
+        doc.setLineWidth(0.3);
+        doc.line(margin, y - 4, margin + contentWidth, y - 4);
       }
-
+      writeText(`Project ${pIdx + 1}: ${cleanText(proj.title.replace(/^Project\s*\d+\s*:\s*/i, ''))}`, { size: 12, style: "bold", color: [1, 58, 43], keep: 14, after: 0.8 });
+      if (proj.subtitle) writeText(proj.subtitle, { size: 8.6, style: "bold", color: [66, 101, 87], after: 0.4 });
       if (proj.difficulty || proj.estimatedTime) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8.5);
-        doc.setTextColor(122, 116, 106);
-        doc.text(`Difficulty: ${cleanText(proj.difficulty || 'Medium')} | Duration: ${cleanText(proj.estimatedTime || '8 hours')}`, margin, y);
-        y += 4.5;
+        writeText(`Difficulty: ${cleanText(proj.difficulty || 'Medium')}   |   Duration: ${cleanText(proj.estimatedTime || '8 hours')}`, { size: 8.4, color: MUTED, after: 1.5 });
       }
 
       renderParagraph(proj.description);
 
       if (proj.objectives && proj.objectives.length > 0) {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(9);
-        doc.setTextColor(30, 81, 65);
-        doc.text("Core Learning Objectives:", margin, y);
-        y += 4.5;
+        writeLabel("Core learning objectives", { size: 9, color: [30, 81, 65] });
         proj.objectives.forEach(obj => renderBullet(obj, 4, "[x]"));
         y += 3;
       }
 
       if (proj.requirements && proj.requirements.length > 0) {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(9);
-        doc.setTextColor(48, 43, 37);
-        doc.text("Technical & Architectural Requirements:", margin, y);
-        y += 4.5;
+        writeLabel("Technical & architectural requirements", { size: 9, color: INK });
         proj.requirements.forEach(req => renderBullet(req, 4, ">"));
         y += 3;
       }
 
       if (proj.starterCode) {
-        renderCodeBox("Project Implementation & Starter Code", proj.starterCode, "javascript", null);
+        renderCodeBox("Project implementation & starter code", proj.starterCode, detectLanguage(proj.starterCode, '', course.id), null);
       }
 
       if (proj.expectedOutput) {
-        checkPageBreak(12);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8.5);
-        doc.setTextColor(1, 58, 43);
-        doc.text("Expected Milestone Deliverable:", margin, y);
-        y += 4.5;
+        writeLabel("Expected milestone deliverable");
         renderParagraph(proj.expectedOutput, 8.5, [93, 87, 78], "italic");
       }
-      y += 6;
+      y += 8;
     });
   }
 
@@ -1209,73 +1221,34 @@ export async function generateCoursePDF(course, studentName = 'Student') {
     addHeaderFooter(pageCount);
     y = 25;
 
-    doc.setFillColor(1, 58, 43);
-    doc.roundedRect(margin, y, contentWidth, 22, 3, 3, 'F');
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(255, 255, 255);
-    doc.text("FINAL CAPSTONE PROJECT - PRODUCTION SPECIFICATION", margin + 8, y + 14);
-    y += 30;
+    renderBanner("FINAL CAPSTONE PROJECT - PRODUCTION SPECIFICATION");
 
     const fp = course.finalProject;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.setTextColor(1, 58, 43);
-    doc.text(cleanText(fp.title), margin, y);
-    y += 6;
+    writeText(fp.title, { size: 12.5, style: "bold", color: [1, 58, 43], after: 2 });
 
     renderParagraph(fp.description);
 
     if (fp.techStack && fp.techStack.length > 0) {
-      renderParagraph(`Full Stack Architecture: ${fp.techStack.join(' * ')}`, 9, [66, 101, 87], "bold");
+      renderParagraph(`Full Stack Architecture: ${fp.techStack.join('  |  ')}`, 9, [66, 101, 87], "bold");
     }
 
     if (fp.requirements && fp.requirements.length > 0) {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9.5);
-      doc.setTextColor(30, 81, 65);
-      doc.text("Capstone Requirements & Modules:", margin, y);
-      y += 4.5;
+      writeLabel("Capstone requirements & modules", { size: 9.4, color: [30, 81, 65] });
       fp.requirements.forEach(req => renderBullet(req, 4, "[ ]"));
       y += 4;
     }
 
     if (fp.rubric && fp.rubric.length > 0) {
-      checkPageBreak(25);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9.5);
-      doc.setTextColor(48, 43, 37);
-      doc.text("Evaluation & Grading Rubric:", margin, y);
-      y += 5;
-
+      writeLabel("Evaluation & grading rubric", { size: 9.4, color: INK, keep: 16 });
       fp.rubric.forEach(rb => {
-        checkPageBreak(8);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8.5);
-        doc.setTextColor(30, 81, 65);
-        doc.text(`${cleanText(rb.criterion)} (${rb.weight}):`, margin + 4, y);
-        y += 4;
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(93, 87, 78);
-        const descLines = doc.splitTextToSize(cleanText(rb.description), contentWidth - 8);
-        descLines.forEach(l => {
-          checkPageBreak(4.5);
-          doc.text(l, margin + 6, y);
-          y += 3.8;
-        });
-        y += 1.5;
+        writeText(`${cleanText(rb.criterion)} (${cleanText(rb.weight)})`, { x: margin + 4, size: 8.6, style: "bold", color: [30, 81, 65], keep: 6, after: 0.3 });
+        writeText(rb.description, { x: margin + 6, size: 8.2, color: [93, 87, 78], after: 1.4 });
       });
     }
 
     // Capstone Database Schema Specifications
-    checkPageBreak(25);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10.5);
-    doc.setTextColor(1, 58, 43);
-    doc.text("Capstone Data Architecture & Relational / Document Schemas:", margin, y);
-    y += 5;
+    y += 2;
+    writeLabel("Capstone data architecture & relational / document schemas", { size: 10, keep: 24 });
 
     const schemaCode = `// Capstone Database Architecture Specification
 // PostgreSQL / MongoDB Schema Models
@@ -1305,12 +1278,8 @@ export async function generateCoursePDF(course, studentName = 'Student') {
     renderCodeBox("Relational & NoSQL Schema Models", schemaCode, "schema", null);
 
     // Capstone REST API Endpoints Table
-    checkPageBreak(25);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10.5);
-    doc.setTextColor(1, 58, 43);
-    doc.text("RESTful API Endpoint Architecture Specification:", margin, y);
-    y += 5;
+    y += 2;
+    writeLabel("RESTful API endpoint architecture specification", { size: 10, keep: 24 });
 
     const apiEndpointsCode = `// REST API Routes Specification
 // Base URL: /api/v1
@@ -1335,7 +1304,7 @@ GET    /api/v1/jobs/:id/applicants -> Review candidate applications [Recruiter P
     renderCodeBox("Production REST API Endpoint Matrix", apiEndpointsCode, "api-spec", null);
 
     if (fp.starterArchitecture) {
-      renderCodeBox("Full-Stack Capstone Starter Architecture", fp.starterArchitecture, "javascript", null);
+      renderCodeBox("Full-stack capstone starter architecture", fp.starterArchitecture, detectLanguage(fp.starterArchitecture, '', course.id), null);
     }
   }
 
@@ -1361,68 +1330,30 @@ GET    /api/v1/jobs/:id/applicants -> Review candidate applications [Recruiter P
     addHeaderFooter(pageCount);
     y = 25;
 
-    doc.setFillColor(66, 101, 87); // Sage header
-    doc.roundedRect(margin, y, contentWidth, 24, 3, 3, 'F');
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.setTextColor(255, 255, 255);
-    doc.text(`EXAMINATION PAPER ${pIdx + 1}: ${cleanText(paper.title)}`, margin + 8, y + 10);
-
-    doc.setFontSize(8.5);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(248, 245, 238);
-    doc.text(`${cleanText(paper.subtitle || 'Official Question Paper')} | Time Allowed: ${paper.timeLimitMinutes || 45} Mins | Passing Score: ${paper.passingScore || 80}%`, margin + 8, y + 17);
-    y += 32;
+    renderBanner(
+      `Examination Paper ${pIdx + 1}: ${cleanText(paper.title)}`,
+      `${cleanText(paper.subtitle || 'Official Question Paper')}   |   Time allowed: ${paper.timeLimitMinutes || 45} minutes   |   Passing score: ${paper.passingScore || 70}%`,
+      [66, 101, 87]
+    );
 
     paper.questions.forEach((q, qIdx) => {
-      checkPageBreak(18);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.setTextColor(1, 58, 43);
-      const qNumText = `Question ${qIdx + 1} [${cleanText(q.topic || 'General')}]:`;
-      doc.text(qNumText, margin, y);
-      y += 4.5;
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8.5);
-      doc.setTextColor(48, 43, 37);
-      const qLines = doc.splitTextToSize(cleanText(q.questionText), contentWidth);
-      qLines.forEach(l => {
-        checkPageBreak(5);
-        doc.text(l, margin, y);
-        y += 4;
-      });
+      checkPageBreak(26);
+      writeLabel(`Question ${qIdx + 1}  -  ${cleanText(q.topic || 'General')}`, { size: 8.8, keep: 16 });
+      writeText(q.questionText, { size: 8.8, style: "bold", after: 0.8 });
 
       if (q.codeSnippet) {
         renderCodeBox(null, q.codeSnippet, "snippet", null);
       }
 
       if (q.options && Array.isArray(q.options)) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(48, 43, 37);
-        q.options.forEach((opt, oIdx) => {
-          const optLabel = `${String.fromCharCode(65 + oIdx)}) ${cleanText(opt)}`;
-          checkPageBreak(4.5);
-          doc.text(optLabel, margin + 4, y);
-          y += 3.8;
-        });
+        q.options.forEach((opt, oIdx) => writeText(`${String.fromCharCode(65 + oIdx)})  ${cleanText(opt)}`, { x: margin + 4, size: 8.4, after: 0.2 }));
       }
 
       if (q.explanation || q.correctAnswer !== undefined) {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8);
-        doc.setTextColor(30, 81, 65);
-        checkPageBreak(5);
-        const ansLabel = `Answer: Option ${cleanText(q.correctAnswer)} - ${cleanText(q.explanation || '')}`;
-        const ansLines = doc.splitTextToSize(ansLabel, contentWidth - 4);
-        ansLines.forEach(l => {
-          checkPageBreak(4.5);
-          doc.text(l, margin + 4, y);
-          y += 3.8;
-        });
+        const answerText = typeof q.correctAnswer === 'number' && Array.isArray(q.options) ? String.fromCharCode(65 + q.correctAnswer) : cleanText(q.correctAnswer);
+        writeText(`Answer: ${answerText}${q.explanation ? `  -  ${cleanText(q.explanation)}` : ''}`, { x: margin + 4, size: 8.2, style: "bold", color: [30, 81, 65], after: 0 });
       }
-      y += 3;
+      y += 3.5;
     });
   });
 
@@ -1434,15 +1365,16 @@ GET    /api/v1/jobs/:id/applicants -> Review candidate applications [Recruiter P
   addHeaderFooter(pageCount);
   y = 25;
 
-  doc.setFillColor(1, 58, 43);
-  doc.roundedRect(margin, y, contentWidth, 20, 3, 3, 'F');
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(255, 255, 255);
-  doc.text("FINAL REVISION & PRE-FLIGHT DEPLOYMENT CHECKLIST", margin + 8, y + 13);
-  y += 28;
+  renderBanner(isWebDev ? "FINAL REVISION & PRE-FLIGHT DEPLOYMENT CHECKLIST" : "FINAL REVISION CHECKLIST",
+    isWebDev ? null : "Tick each point once you can explain it without notes. Built from the key takeaways of every module.");
 
-  const checklistCategories = [
+  // The web checklist is specific to web development; other courses revise their own modules' takeaways.
+  const moduleChecklist = (course.modules || []).map((m, i) => {
+    const sum = m.readingMaterial?.summary;
+    const take = Array.isArray(sum) ? sum : Array.isArray(sum?.takeaways) ? sum.takeaways : [];
+    return { category: `${i + 1}. ${cleanText(m.title).replace(/^Module\s*\d+\s*[:\-]\s*/i, '')}`, items: take.slice(0, 3).map(t => (typeof t === 'string' ? t : t?.text || '')).filter(Boolean) };
+  }).filter(c => c.items.length);
+  const webChecklist = [
     {
       category: "1. HTML5 & Semantic Web Architecture",
       items: [
@@ -1495,14 +1427,9 @@ GET    /api/v1/jobs/:id/applicants -> Review candidate applications [Recruiter P
     }
   ];
 
+  const checklistCategories = isWebDev || !moduleChecklist.length ? webChecklist : moduleChecklist;
   checklistCategories.forEach(cat => {
-    checkPageBreak(16);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(30, 81, 65);
-    doc.text(cat.category, margin, y);
-    y += 5;
-
+    writeLabel(cat.category, { size: 9.8, color: [30, 81, 65], keep: 14, after: 1 });
     cat.items.forEach(item => {
       renderBullet(item, 4, "[ ]");
     });
@@ -1528,7 +1455,7 @@ GET    /api/v1/jobs/:id/applicants -> Review candidate applications [Recruiter P
   doc.setFontSize(12);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(188, 209, 198);
-  doc.text("Congratulations on completing the entire Web Development curriculum!", margin + 15, y + 36);
+  doc.text(doc.splitTextToSize(`Congratulations on completing the entire ${cleanCourseTitle} curriculum!`, contentWidth - 30), margin + 15, y + 36);
 
   doc.setDrawColor(255, 255, 255);
   doc.setLineWidth(0.5);
@@ -1537,21 +1464,21 @@ GET    /api/v1/jobs/:id/applicants -> Review candidate applications [Recruiter P
   doc.setFontSize(10.5);
   doc.setTextColor(255, 255, 255);
   doc.text(`Student Name: ${cleanStudentName}`, margin + 15, y + 58);
-  doc.text(`Course Title: ${cleanCourseTitle}`, margin + 15, y + 68);
+  doc.text(doc.splitTextToSize(`Course Title: ${cleanCourseTitle}`, contentWidth - 30)[0], margin + 15, y + 68);
   doc.text(`Modules Completed: ${course.modules.length} / ${course.modules.length} Modules (100% Comprehensive)`, margin + 15, y + 78);
   const portfolioText = isAIDataScience
     ? `Practical Portfolio: 5 End-to-End Capstone Projects Completed`
     : isWebDev
       ? `Practical Portfolio: 3 Mini Projects + 1 Enterprise Capstone Completed`
-      : `Practical Portfolio: Practical Capstone Projects Completed`;
+      : `Practical Portfolio: ${course.projects?.length || 3} Mini Projects`;
   doc.text(portfolioText, margin + 15, y + 88);
-  doc.text(`Certification Assessment: Verified Passing Score on 25 Comprehensive Qs`, margin + 15, y + 98);
-  doc.text(`Official Issuer: Arshith Bootcamp Platform (www.arshithbootcamp.com)`, margin + 15, y + 108);
+  doc.text(`Certification Assessment: 25-question proctored final (70% to pass)`, margin + 15, y + 98);
+  doc.text(`Official Issuer: Arshith Bootcamp Platform (arshithgroup.com)`, margin + 15, y + 108);
 
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(251, 248, 241); // Ivory accent
-  doc.text("* VERIFIED OFFICIAL COURSE DOCUMENT *", margin + 15, y + 124);
+  doc.text("VERIFIED OFFICIAL COURSE DOCUMENT", margin + 15, y + 124);
 
   if (typeof doc.save === 'function' && typeof window !== 'undefined') {
     const filename = isWebDev
