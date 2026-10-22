@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, XCircle, Loader2, ExternalLink, ArrowRight, Briefcase, Database, Flag, AlertTriangle, RefreshCw, Lightbulb, GraduationCap } from 'lucide-react';
 import { api } from '../../services/api';
 import CodeBlock from '../CodeBlock';
+import { resolveLink } from '../../../shared/linkOverrides.js';
 
 /* ------------------------------------------------------------------ */
 /* Data loading: enrichment is fetched per module, with retry          */
@@ -224,7 +225,7 @@ const hostOf = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); 
 
 export function FurtherLearning({ references = [], originalReferences = [], next }) {
   const seen = new Set();
-  const all = [...references, ...originalReferences].filter(r => r?.url && !seen.has(r.url) && seen.add(r.url));
+  const all = [...references, ...originalReferences].map(r => (r?.url ? { ...r, url: resolveLink(r.url) } : r)).filter(r => r?.url && !seen.has(r.url) && seen.add(r.url));
   return (
     <div className="space-y-4">
       {all.length > 0 && (

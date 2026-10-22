@@ -9,7 +9,12 @@
     "build": "vite build",
     "start": "node server/index.js",
     "app": "vite build && node server/index.js",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "validate:content": "node scripts/validate-content.mjs",
+    "validate:links": "node scripts/validate-content.mjs --links",
+    "verify:exercises": "node scripts/verify-exercises.mjs",
+    "report:content-diff": "node scripts/content-diff.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

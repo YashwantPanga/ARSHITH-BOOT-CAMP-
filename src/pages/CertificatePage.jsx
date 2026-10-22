@@ -6,6 +6,7 @@ import { Download, ShieldCheck, ArrowLeft, Lock, Copy, Check, AlertTriangle, QrC
 import { api } from '../services/api';
 import { userIdOf, displayNameOf } from '../utils/session';
 import { BrandLoader, useToast } from '../components/ui';
+import { displayTitle } from '../utils/textUtils';
 
 const W = 1000;
 const H = 707; // A4 landscape ratio
@@ -271,7 +272,7 @@ function CertificateArt({ cert, verifyUrl, qr }) {
         <p style={{ marginTop: 18, fontSize: 14, color: CHARCOAL, opacity: 0.8, maxWidth: 560, lineHeight: 1.65 }}>
           has successfully completed every module and module quiz, and passed the proctored final assessment of
         </p>
-        <p style={{ fontFamily: 'DM Serif Display, Georgia, serif', marginTop: 8, fontSize: 31, fontWeight: 400, color: FOREST, maxWidth: 600, lineHeight: 1.15 }}>{cert.courseTitle}</p>
+        <p style={{ fontFamily: 'DM Serif Display, Georgia, serif', marginTop: 8, fontSize: 31, fontWeight: 400, color: FOREST, maxWidth: 600, lineHeight: 1.15 }}>{displayTitle(cert.courseTitle)}</p>
         <div style={{ marginTop: 18, display: 'inline-block', border: `1px solid ${FOREST}`, borderRadius: 999, padding: 5, height: 40, boxSizing: 'border-box', whiteSpace: 'nowrap' }}>
           <span data-shift="-5" style={{ display: 'inline-block', verticalAlign: 'top', height: 28, lineHeight: '28px', padding: '0 12px 0 12px', color: SAGE, fontWeight: 600, letterSpacing: '0.08em', fontSize: 12 }}>FINAL SCORE</span>
           <span style={{ display: 'inline-block', verticalAlign: 'top', height: 28, lineHeight: '28px', background: FOREST, color: IVORY, borderRadius: 999, padding: '0 14px', fontWeight: 700, fontSize: 14 }}><span data-shift="-5">{cert.percentage}%{grade ? ` · ${grade}` : ''}</span></span>

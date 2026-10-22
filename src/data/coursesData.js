@@ -23267,7 +23267,7 @@ export const INITIAL_COURSES = [
   },
   {
     "id": "data-science-ai",
-    "title": "AI with Data Science",
+    "title": "AI WITH DATA SCIENCE",
     "slug": "data-science-ai",
     "category": "Artificial Intelligence & Data Science",
     "level": "Beginner to Advanced",

@@ -2,7 +2,7 @@ import React from 'react';
 import { Star, Clock, Lock, PlayCircle, Users, BadgeCheck, ArrowRight } from 'lucide-react';
 import { SafeImg, ProgressBar } from './ui';
 import TrackBadge from './TrackBadge';
-import { cleanText } from '../utils/textUtils';
+import { cleanText, displayTitle } from '../utils/textUtils';
 import { hoursOf } from '../data/meta';
 
 export default function CourseCard({ course, enrolledCourseId, onSelect, onEnroll, index = 0 }) {
@@ -29,7 +29,7 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
 
       <div className="px-1.5 pt-8 pb-1 flex flex-col flex-1">
         <h3 className="font-sans text-[17px] font-semibold text-charcoal leading-snug">
-          <button onClick={() => onSelect(course.id)} className="text-left hover:text-brand-900 transition-colors">{cleanText(course.title)}</button>
+          <button onClick={() => onSelect(course.id)} className="text-left hover:text-brand-900 transition-colors">{displayTitle(course.title)}</button>
         </h3>
         <p className="mt-1.5 text-sm text-charcoal/60 line-clamp-2">{cleanText(course.shortDescription || course.description)}</p>
 

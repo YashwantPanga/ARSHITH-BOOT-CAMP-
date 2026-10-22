@@ -3,7 +3,7 @@ import { ArrowLeft, Star, Clock, Users, Award, CheckCircle2, ChevronDown, BookOp
 import { SafeImg, ProgressBar, Triangles } from '../components/ui';
 import CourseSlideshow from '../components/CourseSlideshow';
 import { slidesForCourse } from '../data/courseGallery';
-import { cleanText } from '../utils/textUtils';
+import { cleanText, displayTitle } from '../utils/textUtils';
 
 export default function CourseDetailsPage({ course, enrolledCourseId, isLoggedIn, onBack, onEnroll, onContinue }) {
   const [open, setOpen] = useState(() => new Set([course.modules?.[0]?.id]));
@@ -41,7 +41,7 @@ export default function CourseDetailsPage({ course, enrolledCourseId, isLoggedIn
           <div className="grid lg:grid-cols-12 gap-10 mt-6 items-center">
             <div className="lg:col-span-7">
               <span className="chip bg-peach-500 text-white">{course.category}</span>
-              <h1 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">{cleanText(course.title)}</h1>
+              <h1 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">{displayTitle(course.title)}</h1>
               <p className="mt-4 text-brand-100 text-base sm:text-lg leading-relaxed max-w-2xl">{cleanText(course.description)}</p>
               <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-brand-100">
                 <span className="flex items-center gap-1.5"><Star className="w-4 h-4 fill-amber-400 text-amber-400" />{course.rating} rating</span>
@@ -51,7 +51,7 @@ export default function CourseDetailsPage({ course, enrolledCourseId, isLoggedIn
               </div>
             </div>
             <div className="lg:col-span-5">
-              <CourseSlideshow slides={slides} courseTitle={course.title} iconType={course.iconType} />
+              <CourseSlideshow slides={slides} courseTitle={displayTitle(course.title)} iconType={course.iconType} />
             </div>
           </div>
         </div>

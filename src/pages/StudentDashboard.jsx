@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { PlayCircle, Award, Lock, ListChecks, ShieldCheck, BookOpen, Mail, Hash, Phone, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { ProgressRing, ProgressBar, SafeImg, BrandLoader, Triangles } from '../components/ui';
-import { cleanText } from '../utils/textUtils';
+import { cleanText, displayTitle } from '../utils/textUtils';
 
 export default function StudentDashboard({ studentUser, courses, coursesLoaded, enrolledCourseId, onOpenCourse, onContinue, onViewCertificate, onExploreCourses, onRefresh }) {
   useEffect(() => { onRefresh?.(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
@@ -52,7 +52,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                 <SafeImg src={course.thumbnail} alt="" className="sm:col-span-2 h-48 sm:h-full w-full object-cover" />
                 <div className="sm:col-span-3 p-6 flex flex-col">
                   <span className="chip bg-peach-50 text-peach-600 self-start">{course.category}</span>
-                  <h2 className="mt-3 text-xl font-bold text-brand-900">{cleanText(course.title)}</h2>
+                  <h2 className="mt-3 text-xl font-bold text-brand-900">{displayTitle(course.title)}</h2>
                   <p className="text-sm text-slate-500 mt-1 line-clamp-2">{cleanText(course.shortDescription)}</p>
                   <div className="mt-4">
                     <div className="flex justify-between text-xs mb-1.5"><span className="text-slate-500">{done}/{total} module quizzes passed</span><span className="font-semibold text-brand-900">{course.progress}%</span></div>

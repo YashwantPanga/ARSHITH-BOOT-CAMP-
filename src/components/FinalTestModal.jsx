@@ -7,7 +7,7 @@ import confetti from 'canvas-confetti';
 import { api } from '../services/api';
 import { examGuard } from '../router';
 import { userIdOf, displayNameOf } from '../utils/session';
-import { cleanText } from '../utils/textUtils';
+import { cleanText, displayTitle } from '../utils/textUtils';
 import { QuestionCard, ReviewList } from './ModuleQuizModal';
 import { Spinner } from './ui';
 
@@ -351,7 +351,7 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
         <span className="w-10 h-10 rounded-xl bg-brand-900 text-peach-400 flex items-center justify-center shrink-0"><ShieldCheck className="w-5 h-5" /></span>
         <div className="min-w-0 flex-1">
           <p className="eyebrow">Proctored final assessment</p>
-          <p className="text-sm font-semibold text-brand-900 truncate">{cleanText(course.title)}</p>
+          <p className="text-sm font-semibold text-brand-900 truncate">{displayTitle(course.title)}</p>
         </div>
         {phase === 'taking' && (
           <>

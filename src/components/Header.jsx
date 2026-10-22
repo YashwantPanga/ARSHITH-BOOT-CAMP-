@@ -3,7 +3,7 @@ import { Search, Menu, X, LogOut, LayoutDashboard, ChevronRight, ChevronDown, Sh
 import { Logo } from './ui';
 import { TrackMark } from './TrackBadge';
 import { paths } from '../router';
-import { cleanText } from '../utils/textUtils';
+import { cleanText, displayTitle } from '../utils/textUtils';
 
 const NAV = [
   { name: 'Home', id: 'home', to: paths.home(), icon: BookOpen },
@@ -68,7 +68,7 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
                       <button key={c.id} onClick={() => go(paths.course(c.id))} className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-cream text-left transition">
                         <TrackMark type={c.iconType} className="w-8 h-8 shrink-0" />
                         <span className="min-w-0">
-                          <span className="block text-sm font-semibold text-charcoal truncate">{cleanText(c.title)}</span>
+                          <span className="block text-sm font-semibold text-charcoal truncate">{displayTitle(c.title)}</span>
                           <span className="block text-xs text-charcoal/50">{c.modules?.length || 0} modules · {c.level}</span>
                         </span>
                       </button>

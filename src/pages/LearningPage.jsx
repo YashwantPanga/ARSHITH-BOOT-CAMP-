@@ -5,7 +5,7 @@ import {
   ShieldCheck, Lightbulb, Target, ClipboardList, MessageSquare, Clock, Network, PlayCircle, FlaskConical, Timer
 } from 'lucide-react';
 import { generateCoursePDF } from '../utils/pdfGenerator';
-import { cleanText, moduleTitle } from '../utils/textUtils';
+import { cleanText, moduleTitle, displayTitle } from '../utils/textUtils';
 import ModuleQuizModal from '../components/ModuleQuizModal';
 import FinalTestModal from '../components/FinalTestModal';
 import CourseProjectsModal from '../components/CourseProjectsModal';
@@ -547,7 +547,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         <button onClick={() => setDrawer(true)} className="lg:hidden p-2 rounded-xl hover:bg-slate-100" aria-label="Open modules"><Menu className="w-5 h-5 text-brand-900" /></button>
         <button onClick={onExit} className="btn-ghost px-3 py-2 hidden sm:inline-flex"><ArrowLeft className="w-4 h-4" /> Dashboard</button>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-peach-500 truncate">{cleanText(course.title)}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-peach-500 truncate">{displayTitle(course.title)}</p>
           <p className="text-sm font-semibold text-brand-900 truncate">Module {currentIndex + 1}: {moduleTitle(current.title)}</p>
         </div>
         <div className="hidden md:flex items-center gap-2 text-xs text-slate-500 mr-1">

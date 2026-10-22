@@ -3,6 +3,7 @@ import jsQR from 'jsqr';
 import { Search, ShieldCheck, ShieldX, Award, QrCode, Camera, Upload, X, Calendar, User, Hash, BookOpen, BadgeCheck } from 'lucide-react';
 import { api } from '../services/api';
 import { BrandLoader } from '../components/ui';
+import { displayTitle } from '../utils/textUtils';
 import { useCertificateQr } from './CertificatePage';
 
 /** Pulls a certificate ID out of whatever a QR code contains (verify URL or the bare ID). */
@@ -136,7 +137,7 @@ function VerifiedCard({ cert, active, onHome }) {
         <Item icon={User} label="Awarded to" value={cert.studentName} />
         {cert.regNo && <Item icon={Hash} label="Registration no." value={cert.regNo} mono />}
         {cert.learnerId && <Item icon={ShieldCheck} label="Learner ID" value={cert.learnerId} mono />}
-        <Item icon={BookOpen} label="Course" value={cert.courseTitle} />
+        <Item icon={BookOpen} label="Course" value={displayTitle(cert.courseTitle)} />
         <Item icon={Award} label="Final score" value={cert.percentage != null ? `${cert.percentage}%${cert.score != null ? ` (${cert.score}/${cert.totalQuestions})` : ''}` : cert.grade} />
         <Item icon={Calendar} label="Issued on" value={cert.issueDate} />
         <Item icon={User} label="Instructor" value={cert.instructorName} />
