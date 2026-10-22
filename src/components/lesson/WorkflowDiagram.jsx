@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ArrowDown, RefreshCw } from 'lucide-react';
+import { DiagramCard } from '../diagrams/VisualDiagram';
 import { validateDiagram } from '../../../shared/contentSchema.js';
 
 /* Layered left-to-right layout. Forward edges define layers (longest path); edges that point back
@@ -67,6 +68,16 @@ function wrap(text, max = 22, lines = 2) {
   return out;
 }
 
+// Same colour family as the visual diagram cards: [card fill, border, accent/badge, title text].
+const NODE_TONES = [
+  ['#F0F9FF', '#BAE6FD', '#0369A1', '#0C4A6E'],
+  ['#ECFDF5', '#A7F3D0', '#047857', '#064E3B'],
+  ['#F5F3FF', '#DDD6FE', '#6D28D9', '#4C1D95'],
+  ['#FFFBEB', '#FDE68A', '#B45309', '#78350F'],
+  ['#F0FDFA', '#99F6E4', '#0F766E', '#134E4A'],
+  ['#FFF1F2', '#FECDD3', '#BE123C', '#881337']
+];
+
 function DiagramSvg({ def }) {
   const L = useMemo(() => layoutDiagram(def), [def]);
   const pos = new Map(L.nodes.map(n => [n.id, n]));
@@ -76,7 +87,7 @@ function DiagramSvg({ def }) {
       <title id="wf-title">{def.title || 'Workflow diagram'}</title>
       <defs>
         <marker id="wf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M0,0 L10,5 L0,10 z" fill="#BCD1C6" />
+          <path d="M0,0 L10,5 L0,10 z" fill="#5F8574" />
         </marker>
       </defs>
       {L.edges.map((e, i) => {
@@ -105,11 +116,11 @@ function DiagramSvg({ def }) {
         }
         return (
           <g key={i}>
-            <path d={d} fill="none" stroke="#BCD1C6" strokeWidth="1.6" strokeDasharray={e.back ? '5 4' : undefined} markerEnd="url(#wf-arrow)" />
+            <path d={d} fill="none" stroke="#5F8574" strokeOpacity=".7" strokeWidth="1.8" strokeDasharray={e.back ? '5 4' : undefined} markerEnd="url(#wf-arrow)" />
             {e.label && (
               <g transform={`translate(${lx},${ly})`}>
-                <rect x={-(e.label.length * 3.3 + 8)} y="-9" width={e.label.length * 6.6 + 16} height="18" rx="9" fill="#0C2D26" stroke="#5F8574" />
-                <text textAnchor="middle" y="4" fontSize="10.5" fill="#E9F1EC" fontFamily="DM Sans, DM Sans, system-ui, sans-serif">{e.label}</text>
+                <rect x={-(e.label.length * 3.3 + 8)} y="-9" width={e.label.length * 6.6 + 16} height="18" rx="9" fill="#FFFFFF" stroke="#BCD1C6" />
+                <text textAnchor="middle" y="4" fontSize="10.5" fill="#302B25" fontFamily="DM Sans, system-ui, sans-serif">{e.label}</text>
               </g>
             )}
           </g>
@@ -117,19 +128,53 @@ function DiagramSvg({ def }) {
       })}
       {L.nodes.map((n, i) => {
         const lines = wrap(n.label);
+        const [fill, stroke, accent, ink] = NODE_TONES[i % NODE_TONES.length];
         return (
           <g key={n.id} transform={`translate(${n.x},${n.y})`}>
-            <rect width={L.NODE_W} height={L.NODE_H} rx="14" fill="#FBF8F1" stroke="#90B1A2" />
-            <rect width="6" height={L.NODE_H - 20} x="0" y="10" rx="3" fill={i === 0 ? '#426557' : '#013A2B'} />
-            <circle cx="24" cy="20" r="10" fill="#013A2B" />
-            <text x="24" y="24" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#FBF8F1" fontFamily="DM Sans, DM Sans, system-ui, sans-serif">{i + 1}</text>
+            <rect width={L.NODE_W} height={L.NODE_H} rx="14" fill={fill} stroke={stroke} strokeWidth="1.2" />
+            <circle cx="22" cy="20" r="11" fill={accent} />
+            <text x="22" y="24" textAnchor="middle" fontSize="11" fontWeight="700" fill="#FFFFFF" fontFamily="DM Sans, system-ui, sans-serif">{i + 1}</text>
             {lines.map((l, k) => (
-              <text key={k} x="42" y={24 + k * 16 + (lines.length === 1 ? 8 : 0)} fontSize="12.5" fontWeight="600" fill="#302B25" fontFamily="DM Sans, DM Sans, system-ui, sans-serif">{l}</text>
+              <text key={k} x="40" y={24 + k * 16 + (lines.length === 1 ? 8 : 0)} fontSize="12.5" fontWeight="600" fill={ink} fontFamily="DM Sans, system-ui, sans-serif">{l}</text>
             ))}
           </g>
         );
       })}
     </svg>
+  );
+}
+
+/** Phone layout: the same stages as numbered cards from top to bottom, edge labels on the arrows. */
+function DiagramStack({ def }) {
+  const L = useMemo(() => layoutDiagram(def), [def]);
+  const order = [...L.nodes].sort((a, b) => a.layer - b.layer || a.y - b.y);
+  const label = new Map(def.nodes.map(n => [n.id, n.label]));
+  const loops = L.edges.filter(e => e.back);
+  return (
+    <div className="p-3">
+      <ol>
+        {order.map((n, i) => {
+          const outs = L.edges.filter(e => !e.back && e.from === n.id);
+          return (
+            <li key={n.id}>
+              <DiagramCard node={{ title: n.label, text: n.detail }} n={def.nodes.findIndex(x => x.id === n.id) + 1} index={def.nodes.findIndex(x => x.id === n.id)} />
+              {i < order.length - 1 && (
+                <div className="flex flex-col items-center py-1.5 text-[12px] text-charcoal/60" aria-hidden="true">
+                  <ArrowDown className="w-4 h-4 text-sage" />
+                  {outs.length > 0 && <span className="text-center">{outs.map(e => e.label ? `${e.label} → ${label.get(e.to)}` : `→ ${label.get(e.to)}`).join(' · ')}</span>}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+      {loops.length > 0 && (
+        <div className="mt-3 rounded-xl border border-dashed border-brand-300 bg-white/70 p-3">
+          <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-sage flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5" aria-hidden="true" /> Feedback loops</p>
+          <ul className="mt-1.5 space-y-1">{loops.map((e, i) => <li key={i} className="text-[13px] text-charcoal/80"><span className="font-semibold">{label.get(e.from)}</span> ↺ <span className="font-semibold">{label.get(e.to)}</span>{e.label && <span className="text-charcoal/60"> — {e.label}</span>}</li>)}</ul>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -165,15 +210,17 @@ export default function WorkflowDiagram({ def }) {
   const hasStageData = def.nodes.some(n => n.input || n.output);
   return (
     <figure className="space-y-4">
-      <div className="relative rounded-2xl overflow-hidden border border-black/20 bg-evergreen">
-        <div className="absolute inset-0 opacity-[.12] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#BCD1C6 1px, transparent 1px), linear-gradient(90deg, #BCD1C6 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-        <div className="relative flex items-center justify-between gap-3 px-4 h-9 border-b border-white/10 bg-black/20">
-          <span className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-brand-300 truncate">{def.title || 'Workflow'}</span>
-          <span className="text-[10.5px] text-brand-300/80 shrink-0 sm:hidden">scroll →</span>
+      <div className="relative rounded-3xl overflow-hidden border border-brand-900/10 bg-gradient-to-b from-[#F6F9FC] to-[#F8F5EE]">
+        <div className="relative flex items-center justify-between gap-3 px-4 sm:px-5 pt-4 pb-1">
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold tracking-[0.16em] uppercase text-sage">Workflow</p>
+            <p className="font-display text-lg sm:text-xl text-forest leading-tight truncate">{def.title || 'Workflow'}</p>
+          </div>
         </div>
-        <div className="relative overflow-x-auto thin-scroll p-2 sm:p-3" tabIndex={0} aria-label="Diagram, scroll horizontally on small screens">
+        <div className="relative overflow-x-auto thin-scroll p-2 sm:p-3 hidden sm:block" tabIndex={0} aria-label="Diagram, scroll horizontally if it is wider than the screen">
           <DiagramBoundary><DiagramSvg def={def} /></DiagramBoundary>
         </div>
+        <div className="sm:hidden"><DiagramBoundary><DiagramStack def={def} /></DiagramBoundary></div>
       </div>
       {def.caption && <figcaption className="text-sm text-charcoal/65">{def.caption}</figcaption>}
       {hasStageData && (

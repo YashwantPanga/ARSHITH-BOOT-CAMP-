@@ -13,6 +13,8 @@ import { ProgressRing, ProgressBar, useToast, SafeImg } from '../components/ui';
 import PremiumCodeBlock from '../components/CodeBlock';
 import { PlaygroundProvider, usePlayground } from '../components/CodePlayground';
 import { ConceptMap, LearningFlow, BlueprintDiagram } from '../components/Diagrams';
+import VisualDiagram from '../components/diagrams/VisualDiagram';
+import { visualDiagramFor } from '../data/visualDiagrams';
 import { detectLanguage } from '../utils/highlight';
 import { displayNameOf, userIdOf } from '../utils/session';
 import { api } from '../services/api';
@@ -261,7 +263,10 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
           {nm.diagram && (
             <div className="space-y-3">
               {E?.workflow && <p className="text-xs font-bold tracking-[0.14em] text-sage">ARCHITECTURE DIAGRAM</p>}
-              <BlueprintDiagram ascii={nm.diagram.ascii} />
+              {/* Visual version when one exists; the original text diagram stays one click away. */}
+              {visualDiagramFor(current.id)
+                ? <VisualDiagram key={current.id} def={visualDiagramFor(current.id)} original={nm.diagram.ascii} />
+                : <BlueprintDiagram ascii={nm.diagram.ascii} />}
               <Paragraphs text={nm.diagram.explanation} className="text-sm leading-6 text-slate-600" />
             </div>
           )}
