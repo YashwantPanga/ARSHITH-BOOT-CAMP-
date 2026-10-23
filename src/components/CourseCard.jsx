@@ -5,10 +5,15 @@ import TrackBadge from './TrackBadge';
 import { cleanText, displayTitle } from '../utils/textUtils';
 import { hoursOf } from '../data/meta';
 
+// Certificate-style card art (1600x1000, 16:10) in public/course-cards/, by course id. Other courses
+// keep their own thumbnail.
+const CARD_ART = new Set(['python-programming', 'sql-mastery', 'web-development', 'data-science-ai']);
+
 export default function CourseCard({ course, enrolledCourseId, onSelect, onEnroll, index = 0 }) {
   const isMine = enrolledCourseId === course.id;
   const isLocked = !!enrolledCourseId && !isMine;
   const modules = course.modules?.length || 0;
+  const art = CARD_ART.has(course.id) ? `/course-cards/${course.id}.webp` : null;
 
   return (
     <article
@@ -17,9 +22,9 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
     >
       {/* Image with the overlapping track plate */}
       <button onClick={() => onSelect(course.id)} className="relative block text-left" aria-label={`View ${course.title}`}>
-        <div className="relative h-40 rounded-xl overflow-hidden">
-          <SafeImg src={course.thumbnail} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-evergreen/55 via-evergreen/5 to-transparent" />
+        <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-forest">
+          <SafeImg src={art || course.thumbnail} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
+          {!art && <div className="absolute inset-0 bg-gradient-to-t from-evergreen/55 via-evergreen/5 to-transparent" />}
           {isMine && <span className="absolute top-2.5 right-2.5 chip bg-ivory text-brand-900">Enrolled</span>}
           {isLocked && <span className="absolute top-2.5 right-2.5 chip bg-white/90 text-charcoal/70"><Lock className="w-3 h-3" /> Locked</span>}
         </div>

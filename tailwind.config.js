@@ -74,6 +74,8 @@ export default {
       fontFamily: {
         sans: ['DM Sans', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
         display: ['DM Serif Display', 'Georgia', 'Times New Roman', 'serif'],
+        // Home page type (Coursera-style humanist sans)
+        landing: ['"Source Sans 3"', 'Source Sans Pro', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       // Central type scale: display sizes are fluid, body sizes fixed for readability.

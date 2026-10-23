@@ -322,7 +322,7 @@ function AppShell() {
   switch (route.name) {
     case 'home':
       page = (
-        <>
+        <div className="landing-type">
           <HeroSection onExploreClick={() => goCourses()} onVerifyClick={() => navigate(paths.verify())} onRegisterClick={() => navigate(studentUser ? paths.dashboard() : paths.register())} courses={courses} />
           <PopularCourses
             courses={decoratedCourses}
@@ -333,7 +333,7 @@ function AppShell() {
           />
           <WhyLearnWithUs />
           <CtaSection onExploreClick={() => goCourses()} />
-        </>
+        </div>
       );
       break;
     case 'courses':

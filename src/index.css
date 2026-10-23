@@ -162,6 +162,12 @@
 .pdf-stamp { animation: pdf-stamp .55s cubic-bezier(.2, .9, .3, 1.2) .1s both; }
 
 /* Final-assessment celebration */
+/* Home page: Coursera-style type. Source Sans 3 everywhere on the landing page; headings that use
+   the serif display face elsewhere become bold, tightly set sans headlines here. */
+.landing-type { font-family: 'Source Sans 3', 'Source Sans Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.landing-type .font-display, .landing-type h1, .landing-type h2, .landing-type h3 { font-family: inherit; font-weight: 700; letter-spacing: -0.015em; }
+.landing-type h1 { letter-spacing: -0.025em; }
+
 /* live proctoring panel: red pulse while a detection is active */
 @keyframes proctor-alert { 0%, 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, .55); } 50% { box-shadow: 0 0 0 8px rgba(225, 29, 72, 0); } }
 .proctor-alert { animation: proctor-alert 1.2s ease-out infinite; }
