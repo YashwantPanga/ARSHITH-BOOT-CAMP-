@@ -22,7 +22,7 @@ import CategoriesPage from './pages/CategoriesPage';
 import { AboutPage, ContactPage } from './pages/AboutContactPages';
 import { VerifyEmailPage, ForgotPasswordPage, ResetPasswordPage, rememberDevMail } from './pages/AccountPages';
 
-import { api, getAdminToken } from './services/api';
+import { api, getAdminToken, setAdminToken } from './services/api';
 import { parseLocation, paths, examGuard } from './router';
 import { readStudent, writeStudent, userIdOf, enrolledCourseOf } from './utils/session';
 
@@ -139,11 +139,25 @@ function AppShell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // A saved admin login is checked with the server first; an expired or invalid one is cleared and
+  // the admin is sent to the login page (also when any admin call is rejected later).
+  const [adminChecked, setAdminChecked] = useState(() => !getAdminToken());
   useEffect(() => {
     const token = getAdminToken();
     if (!token) return;
-    api.getAdminProfile().then(res => res.success && setAdminUser(res.admin)).catch(() => setAdminUser(null));
+    api.getAdminProfile()
+      .then(res => { if (res.success) setAdminUser(res.admin); else { setAdminToken(null); setAdminUser(null); } })
+      .catch(() => { setAdminToken(null); setAdminUser(null); })
+      .finally(() => setAdminChecked(true));
   }, []);
+  useEffect(() => {
+    const expired = () => {
+      setAdminUser(null);
+      if (parseLocation().name === 'admin-dashboard') navigate(paths.adminLogin(), { replace: true });
+    };
+    window.addEventListener('arb:admin-session-expired', expired);
+    return () => window.removeEventListener('arb:admin-session-expired', expired);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ---------------- Per-learner progress (server is source of truth) ---------------- */
   const [progressByCourse, setProgressByCourse] = useState({});
@@ -262,11 +276,11 @@ function AppShell() {
       navigate(paths.login(here), { replace: true });
       return;
     }
-    if (route.name === 'admin-dashboard' && !adminUser && !getAdminToken()) {
+    if (route.name === 'admin-dashboard' && !adminUser && (!getAdminToken() || adminChecked)) {
       navigate(paths.adminLogin(), { replace: true });
       return;
     }
-    if (route.name === 'admin-login' && (adminUser || getAdminToken())) {
+    if (route.name === 'admin-login' && adminUser) {
       navigate(paths.adminDashboard(), { replace: true });
       return;
     }
@@ -284,7 +298,7 @@ function AppShell() {
       navigate(paths.dashboard(), { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [route, studentUser, adminUser, coursesLoaded, enrolledCourseId]);
+  }, [route, studentUser, adminUser, adminChecked, coursesLoaded, enrolledCourseId]);
 
   /* ---------------- Render ---------------- */
   const goCourses = (query) => navigate(paths.courses(query));
@@ -460,9 +474,12 @@ function AppShell() {
       page = <AdminLoginPage onLoginSuccess={handleAdminLoginSuccess} onGoHome={() => navigate('/')} />;
       break;
     case 'admin-dashboard':
-      page = (!adminUser && !getAdminToken())
-        ? <AdminLoginPage onLoginSuccess={handleAdminLoginSuccess} onGoHome={() => navigate('/')} />
-        : <AdminDashboard admin={adminUser} onLogout={handleAdminLogout} onCourseDataChanged={fetchCourses} />;
+      // The dashboard only shows for an admin the server has confirmed; otherwise the login form.
+      page = adminUser
+        ? <AdminDashboard admin={adminUser} onLogout={handleAdminLogout} onCourseDataChanged={fetchCourses} />
+        : adminChecked
+          ? <AdminLoginPage onLoginSuccess={handleAdminLoginSuccess} onGoHome={() => navigate('/')} />
+          : <PageLoader />;
       break;
     default:
       page = notFound();

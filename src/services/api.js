@@ -57,6 +57,10 @@ async function request(url, options = {}) {
       if (res.status === 401 && data.code === 'LEARNER_AUTH_REQUIRED') {
         window.dispatchEvent(new CustomEvent('arb:learner-session-expired'));
       }
+      if ((res.status === 401 || res.status === 403) && token && url.startsWith('/admin') && url !== '/admin/login') {
+        setAdminToken(null);
+        window.dispatchEvent(new CustomEvent('arb:admin-session-expired'));
+      }
       throw error;
     }
     return data;
@@ -69,10 +73,10 @@ async function request(url, options = {}) {
 
 export const api = {
   // Admin Auth
-  adminLogin: (adminId, password, remember = true) => 
+  adminLogin: (adminId, password, remember = false) => 
     request('/admin/login', {
       method: 'POST',
-      body: JSON.stringify({ adminId, password })
+      body: JSON.stringify({ adminId, password, remember })
     }).then(res => {
       if (res.token) setAdminToken(res.token, remember);
       return res;

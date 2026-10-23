@@ -90,11 +90,11 @@ router.post('/admin/login', (req, res) => {
     device: req.headers['user-agent'] || 'Browser'
   });
 
-  // Generate JWT token (expires in 24 hours)
+  // Admin session: 12 hours with "Remember me", otherwise 8 hours (the browser also forgets it on close)
   const token = jwt.sign(
     { adminId: admin.adminId, role: admin.role, name: admin.name },
     JWT_SECRET,
-    { expiresIn: '24h' }
+    { expiresIn: req.body?.remember ? '12h' : '8h' }
   );
 
   return res.json({

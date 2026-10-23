@@ -5,7 +5,7 @@ import { api } from '../services/api';
 export default function AdminLoginPage({ onLoginSuccess, onGoHome }) {
   const [adminId, setAdminId] = useState('');
   const [password, setPassword] = useState('');
-  const [remember, setRemember] = useState(true);
+  const [remember, setRemember] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');

@@ -121,6 +121,17 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
     refreshAllData();
   }, []);
 
+  // Automatic sign-out after 30 minutes without mouse, keyboard or touch activity.
+  useEffect(() => {
+    const IDLE_MS = 30 * 60 * 1000;
+    let last = Date.now();
+    const seen = () => { last = Date.now(); };
+    const evs = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
+    evs.forEach(e => window.addEventListener(e, seen, { passive: true }));
+    const t = setInterval(() => { if (Date.now() - last > IDLE_MS) { clearInterval(t); onLogout?.(); } }, 30000);
+    return () => { clearInterval(t); evs.forEach(e => window.removeEventListener(e, seen)); };
+  }, [onLogout]);
+
   // Students (and their live exam violations) refresh every 15 s while the dashboard is open.
   useEffect(() => {
     const t = setInterval(async () => {
