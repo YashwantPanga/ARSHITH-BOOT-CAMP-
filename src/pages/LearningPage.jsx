@@ -300,7 +300,8 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                 {(t.steps || []).map((st, k) => (
                   <li key={k} className="relative min-w-0">
                     <span className="absolute -left-[1.95rem] top-0 w-6 h-6 rounded-full bg-peach-500 text-white text-[11px] font-bold flex items-center justify-center">{st.step || k + 1}</span>
-                    <p className="text-sm font-medium text-slate-700">{cleanText(st.instruction)}</p>
+                    {st.title && <p className="text-sm font-semibold text-brand-900">{cleanText(st.title)}</p>}
+                    {st.instruction && <p className={`text-sm ${st.title ? 'text-slate-600 mt-0.5' : 'font-medium text-slate-700'}`}>{cleanText(st.instruction)}</p>}
                     {st.code && <div className="mt-2"><CodeBlock courseId={course.id} code={st.code} /></div>}
                     {st.explanation && <p className="text-sm text-slate-500 mt-2">{cleanText(st.explanation)}</p>}
                   </li>

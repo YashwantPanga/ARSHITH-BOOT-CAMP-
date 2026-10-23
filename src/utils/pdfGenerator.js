@@ -851,22 +851,27 @@ export async function generateCoursePDF(course, studentName = 'Student', { onPro
       }
 
       // 6. Step-by-Step Practical Tutorials
-      if (rm.tutorials && rm.tutorials.length > 0) {
+      // normalizeModule maps every stored step shape onto { step, title, instruction, code, explanation }
+      if (nm.tutorials.length > 0) {
         section("Step-by-Step Practical Tutorials");
-        rm.tutorials.forEach(tut => {
-          writeLabel(`Tutorial: ${cleanText(tut.title)}`, { size: 9.5, keep: 16, after: 1.2 });
+        nm.tutorials.forEach(tut => {
+          const total = tut.steps.length;
+          writeLabel(`Tutorial: ${cleanText(tut.title)}`, { size: 9.5, keep: 22, after: 0.6 });
+          writeText(`Follow these ${total} step${total === 1 ? '' : 's'} in order. Each step says what to do and why.`, { size: 8, color: [93, 87, 78], after: 1.6 });
 
-          if (tut.steps && Array.isArray(tut.steps)) {
-            tut.steps.forEach(st => {
-              writeText(`Step ${st.step}: ${cleanText(st.instruction)}`, { x: margin + 3, size: 8.6, style: "bold", color: [30, 81, 65], keep: 14, after: 0.8 });
-
-              if (st.code) {
-                renderCodeBox(`Step ${st.step}`, st.code, "code", st.explanation);
-              } else if (st.explanation) {
-                renderParagraph(st.explanation, 8, [93, 87, 78]);
-              }
-            });
-          }
+          tut.steps.forEach(st => {
+            // heading: "Step 2 of 5 - Title" (falls back to the instruction when a step has no title)
+            const head = st.title ? cleanText(st.title) : '';
+            writeText(`Step ${st.step} of ${total}${head ? ` - ${head}` : ''}`, { x: margin + 3, size: 9, style: "bold", color: [30, 81, 65], keep: 16, after: 0.6 });
+            if (st.instruction) writeText(cleanText(st.instruction), { x: margin + 6, size: 8.6, color: INK, after: 1.2 });
+            if (st.code) {
+              renderCodeBox(head || `Step ${st.step}`, st.code, detectLanguage(st.code, '', course.id), st.explanation);
+            } else if (st.explanation) {
+              writeText(`Why: ${cleanText(st.explanation)}`, { x: margin + 6, size: 8.2, color: [93, 87, 78], after: 1.4 });
+            }
+            y += 1.2;
+          });
+          y += 2;
         });
       }
 
@@ -904,6 +909,19 @@ export async function generateCoursePDF(course, studentName = 'Student', { onPro
           }
           y += 2;
         });
+      }
+
+      // 8b. Common mistakes stored as a plain list (Python and SQL modules)
+      if (nm.commonMistakes.length > 0) {
+        section("Common Mistakes & How to Avoid Them", [185, 28, 28]);
+        writeText("Watch out for these while you practise - each one is a frequent cause of bugs.", { size: 8, color: [93, 87, 78], after: 1.4 });
+        nm.commonMistakes.forEach((cm, i) => {
+          if (typeof cm === 'string') { renderBullet(`${i + 1}. ${cm}`, 2, "!"); return; }
+          writeLabel(`${i + 1}. ${cleanText(cm.mistake || cm.title || cm.error || '')}`, { size: 9, color: [185, 28, 28], keep: 12 });
+          const fix = cm.fix || cm.solution || cm.explanation;
+          if (fix) writeText(`How to avoid it: ${cleanText(fix)}`, { x: margin + 4, size: 8.6, after: 1 });
+        });
+        y += 2;
       }
 
       // 9. Best Practices & Industry Standards

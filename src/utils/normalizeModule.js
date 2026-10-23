@@ -56,10 +56,34 @@ export function normalizeSummary(rm) {
   return { takeaways: merged, quickReference, text };
 }
 
+/**
+ * Tutorials come in two shapes: { step, instruction, code, explanation } (AI course) and
+ * { stepNumber, title, description } (web course). Both become
+ * { step, title, instruction, code, explanation } with the step number always set.
+ * A repeated "Tutorial:" prefix in the tutorial title is removed.
+ */
+export function normalizeTutorials(list) {
+  if (!Array.isArray(list)) return [];
+  return list.filter(t => t && typeof t === 'object').map((t, ti) => ({
+    title: str(t.title).replace(/^\s*tutorial\s*:\s*/i, '') || `Tutorial ${ti + 1}`,
+    steps: (Array.isArray(t.steps) ? t.steps : []).map((st, i) => {
+      if (typeof st === 'string') return { step: i + 1, title: '', instruction: st, code: '', explanation: '' };
+      const n = Number(st.step ?? st.stepNumber);
+      return {
+        step: Number.isFinite(n) && n > 0 ? n : i + 1,
+        title: str(st.title),
+        instruction: str(st.instruction || st.description || st.text),
+        code: str(st.code),
+        explanation: str(st.explanation)
+      };
+    }).filter(st => st.title || st.instruction || st.code || st.explanation)
+  })).filter(t => t.steps.length);
+}
+
 /** Returns a normalised view of a module's reading material. */
 export function normalizeModule(module) {
   const rm = module?.readingMaterial || {};
-  const tutorials = Array.isArray(rm.tutorials) ? rm.tutorials : [];
+  const tutorials = normalizeTutorials(rm.tutorials);
   const miniTasks = [
     ...(rm.miniTask ? [rm.miniTask] : []),
     ...(Array.isArray(rm.miniTasks) ? rm.miniTasks.filter(isNonEmptyStr).map((t, i) => ({ title: `Mini task ${i + 1}`, objective: t })) : [])
