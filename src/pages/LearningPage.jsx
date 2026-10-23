@@ -504,6 +504,17 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   }, [current?.id, revealed, enr.status, enr.data, practiceDone]);
 
   const jumpTo = (id) => jumpToEl(`sec-${id}`);
+  // Learning-flow steps: scroll to the first section that exists for the step, then make it glow.
+  const flowGo = (ids) => {
+    const elId = ids.map(id => (id.startsWith('#') ? id.slice(1) : `sec-${id}`)).find(id => document.getElementById(id));
+    if (!elId) return;
+    setTimeout(() => {
+      jumpToEl(elId);
+      const el = document.getElementById(elId);
+      el.classList.remove('flow-arrive'); void el.offsetWidth; el.classList.add('flow-arrive');
+      setTimeout(() => el.classList.remove('flow-arrive'), 3000);
+    }, 260);
+  };
 
   if (!current) {
     return (
@@ -656,10 +667,10 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
             </div>
 
             <LearningFlow steps={[
-              { icon: BookOpen, title: 'Read & understand', text: 'Concepts and concept map', done: true },
-              { icon: Code, title: 'Run the examples', text: 'Press “Try it” on any code', done: false },
-              { icon: FlaskConical, title: 'Practice', text: 'Solve the exercise in the lab', done: false },
-              { icon: ListChecks, title: 'Take the quiz', text: 'Finishing it marks the module done', done: !!current.completed }
+              { icon: BookOpen, title: 'Read & understand', text: 'Concepts and concept map', done: true, onClick: () => flowGo(['intro', 'objectives', 'theory', 'map']) },
+              { icon: Code, title: 'Run the examples', text: 'Press “Try it” on any code', done: false, onClick: () => flowGo(['code', 'tutorials', 'theory']) },
+              { icon: FlaskConical, title: 'Practice', text: 'Solve the exercise in the lab', done: false, onClick: () => flowGo(['exercise', 'practice-q', 'knowledge']) },
+              { icon: ListChecks, title: 'Take the quiz', text: 'Finishing it marks the module done', done: !!current.completed, onClick: () => flowGo(['#quiz-cta']) }
             ]} />
 
             {/* Section jump list */}
@@ -684,7 +695,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
             ))}
 
             {/* Quiz call-to-action */}
-            <section className="rounded-3xl border-2 border-dashed border-peach-300 bg-white p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-5">
+            <section id="quiz-cta" className="rounded-3xl border-2 border-dashed border-peach-300 bg-white p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-5">
               <span className="w-14 h-14 rounded-2xl bg-peach-500 text-white flex items-center justify-center shrink-0"><ListChecks className="w-7 h-7" /></span>
               <div className="flex-1">
                 <p className="font-bold text-brand-900 text-lg">Module {currentIndex + 1} quiz</p>

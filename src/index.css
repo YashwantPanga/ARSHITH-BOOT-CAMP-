@@ -162,6 +162,16 @@
 .pdf-stamp { animation: pdf-stamp .55s cubic-bezier(.2, .9, .3, 1.2) .1s both; }
 
 /* Final-assessment celebration */
+/* learning-flow step click: ripple, sparks, number pop; target section glows on arrival */
+@keyframes flow-ripple { from { width: 0; height: 0; opacity: 1; } to { width: 520px; height: 520px; opacity: 0; } }
+.flow-ripple { transform: translate(-50%, -50%); animation: flow-ripple .75s ease-out forwards; }
+@keyframes flow-spark { 0% { transform: translate(-50%, -50%) rotate(var(--a)) translateX(0) scale(1); opacity: 1; } 100% { transform: translate(-50%, -50%) rotate(var(--a)) translateX(46px) scale(0); opacity: 0; } }
+.flow-spark { animation: flow-spark .6s cubic-bezier(.2, .7, .3, 1) forwards; }
+@keyframes flow-pop { 0% { transform: scale(1); } 35% { transform: scale(1.45) rotate(-12deg); } 70% { transform: scale(.9) rotate(4deg); } 100% { transform: scale(1); } }
+.flow-pop { animation: flow-pop .55s cubic-bezier(.3, 1.4, .5, 1); }
+@keyframes flow-arrive { 0% { box-shadow: 0 0 0 0 rgba(66, 101, 87, .55); } 40% { box-shadow: 0 0 0 10px rgba(66, 101, 87, .18); } 100% { box-shadow: 0 0 0 0 rgba(66, 101, 87, 0); } }
+.flow-arrive { animation: flow-arrive 1.4s ease-out 2; }
+
 @keyframes cel-rise { from { transform: translateY(24px) scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
 .cel-rise { animation: cel-rise .7s cubic-bezier(.2, .8, .2, 1) both; }
 @keyframes cel-seal-in { 0% { transform: scale(0) rotate(-120deg); } 70% { transform: scale(1.12) rotate(8deg); } 100% { transform: scale(1) rotate(0); } }
