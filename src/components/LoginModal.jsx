@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Mail, Lock, User, ArrowRight, ArrowLeft, Hash, Phone, KeyRound, AlertCircle, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
-import { Triangles } from './ui';
+import { AlertCircle, Eye, EyeOff, X } from 'lucide-react';
 import { readAccount } from '../utils/session';
 import { api } from '../services/api';
 
 /**
- * Full-page Login / Register screen (routes: /login and /register).
- * Accounts are stored in this browser; enrollment, quiz and exam results live on the server.
+ * Full-page Login / Register screen (routes: /login and /register): one centred card with a large
+ * title, labelled fields, a full-width primary button and a button to switch between the two modes.
+ * Accounts live on the server; new accounts verify their email before signing in.
  */
 export default function AuthPage({ mode = 'login', onSwitchMode, onBack, onHome, onSuccess, onNeedVerification, onForgotPassword }) {
   const isSignup = mode === 'signup';
@@ -73,109 +73,104 @@ export default function AuthPage({ mode = 'login', onSwitchMode, onBack, onHome,
   };
 
   return (
-    <div className="min-h-screen bg-white grid lg:grid-cols-2">
-      {/* Brand panel */}
-      <aside className="hidden lg:flex relative overflow-hidden bg-brand-900 text-white p-12 flex-col justify-between">
-        <Triangles />
-        <button onClick={onHome} className="relative self-start" aria-label="Home">
-          <img src="/arshith-bootcamp-logo-white.png" alt="Arshith Bootcamp" className="h-12 w-auto" />
+    <div className="landing-type min-h-screen relative overflow-hidden bg-ivory flex flex-col items-center px-4 py-8 sm:py-12">
+      {/* soft brand backdrop */}
+      <div className="absolute inset-0 texture-dots opacity-50 pointer-events-none" aria-hidden="true" />
+      <div className="absolute -top-40 -right-40 w-[520px] h-[520px] rounded-full bg-brand-100/60 blur-3xl pointer-events-none" aria-hidden="true" />
+      <div className="absolute -bottom-48 -left-40 w-[480px] h-[480px] rounded-full bg-[#E9DFC9]/70 blur-3xl pointer-events-none" aria-hidden="true" />
+
+      <button onClick={onHome} className="relative mb-6" aria-label="Arshith Bootcamp home">
+        <img src="/arshith-bootcamp-logo.png" alt="Arshith Bootcamp" className="h-11 w-auto" />
+      </button>
+
+      <div className={`relative w-full ${isSignup ? 'max-w-[540px]' : 'max-w-[460px]'} bg-white rounded-2xl shadow-[0_30px_80px_-30px_rgba(1,58,43,.35)] ring-1 ring-black/5 px-6 sm:px-10 pt-9 pb-8 animate-fade-up`}>
+        <button onClick={onBack} className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center text-charcoal/70 hover:bg-slate-100 hover:text-charcoal transition" aria-label="Close">
+          <X className="w-5 h-5" />
         </button>
-        <div className="relative max-w-md">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-peach-400">{isSignup ? 'Join the bootcamp' : 'Welcome back'}</p>
-          <h1 className="mt-3 text-4xl font-bold leading-tight">{isSignup ? 'Create your learner account in a minute.' : 'Pick up exactly where you left off.'}</h1>
-          <ul className="mt-8 space-y-3 text-brand-100">
-            {['One focused course per account', 'Quizzes after every module', 'Proctored final & unique certificate'].map(t => (
-              <li key={t} className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-mint-300" />{t}</li>
-            ))}
-          </ul>
-        </div>
-        <p className="relative text-xs text-brand-300">© {new Date().getFullYear()} Arshith Bootcamp</p>
-      </aside>
 
-      {/* Form */}
-      <div className="flex flex-col px-4 sm:px-8 py-6">
-        <div className="flex items-center justify-between max-w-lg w-full mx-auto">
-          <button onClick={onBack} className="btn-ghost px-3 -ml-3"><ArrowLeft className="w-4 h-4" /> Back</button>
-          <button onClick={onHome} className="lg:hidden" aria-label="Home">
-            <img src="/arshith-bootcamp-logo.png" alt="Arshith Bootcamp" className="h-10 w-auto" />
-          </button>
-        </div>
+        <h1 className="text-[28px] sm:text-[30px] font-bold leading-tight text-charcoal pr-8">{isSignup ? 'Create your account' : 'Log in to your account'}</h1>
+        <p className="mt-2 text-[16px] leading-relaxed text-charcoal/65">
+          {isSignup
+            ? 'Learn industry skills with free, mentor-written courses and earn a QR-verified certificate.'
+            : 'Learn on your own time with mentor-written courses and quizzes after every module.'}
+        </p>
 
-        <div className="flex-1 flex items-center">
-          <div className="w-full max-w-lg mx-auto py-8 animate-fade-up">
-            <div className="card p-6 sm:p-8">
-              <p className="eyebrow">{isSignup ? 'Register' : 'Log in'}</p>
-              <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-brand-900">{isSignup ? 'Create your account' : 'Sign in to continue'}</h2>
-              <p className="mt-1.5 text-sm text-slate-500">{isSignup ? 'All fields are required. Your registration number becomes your unique learner ID and is printed — with a QR code — on your certificate.' : 'Use the email, registration number and password you registered with.'}</p>
-
-              {error && (
-                <div role="alert" className="mt-5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex gap-2 animate-fade-in">
-                  <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />{error}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="mt-6 grid sm:grid-cols-2 gap-4" noValidate>
-                {isSignup && (
-                  <Field className="sm:col-span-2" label="Full name (exactly as on your government ID or college ID)" icon={User}
-                    hint="Your certificate shows this name, and the final exam checks it against your ID card - spell it exactly as printed on the ID.">
-                    <input className="input pl-11" autoComplete="name" placeholder="e.g. Panga Yashwant" value={form.name} onChange={set('name')} />
-                  </Field>
-                )}
-                <Field label="Registration number" icon={Hash} className={isSignup ? '' : 'sm:col-span-2'}>
-                  <input className="input pl-11 font-mono uppercase placeholder:normal-case" placeholder="e.g. 21A91A0501" value={form.regNo} onChange={set('regNo')} />
-                </Field>
-                {isSignup && (
-                  <Field label="Phone number" icon={Phone}>
-                    <input className="input pl-11" type="tel" autoComplete="tel" placeholder="+91 98765 43210" value={form.phone} onChange={set('phone')} />
-                  </Field>
-                )}
-                <Field className="sm:col-span-2" label="Email address" icon={Mail}>
-                  <input className="input pl-11" type="email" autoComplete="email" placeholder="name@example.com" value={form.email} onChange={set('email')} />
-                </Field>
-                <Field className={isSignup ? '' : 'sm:col-span-2'} label="Password" icon={Lock}>
-                  <input className="input pl-11 pr-11" type={showPw ? 'text' : 'password'} autoComplete={isSignup ? 'new-password' : 'current-password'} placeholder="••••••••" value={form.password} onChange={set('password')} />
-                  <button type="button" onClick={() => setShowPw(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-brand-900" aria-label={showPw ? 'Hide password' : 'Show password'}>
-                    {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </Field>
-                {!isSignup && (
-                  <p className="sm:col-span-2 -mt-2 text-right">
-                    <button type="button" onClick={() => onForgotPassword(form.email.trim())} className="text-xs font-semibold text-brand-900 hover:underline">Forgot password?</button>
-                  </p>
-                )}
-                {isSignup && (
-                  <Field label="Confirm password" icon={KeyRound}>
-                    <input className="input pl-11" type={showPw ? 'text' : 'password'} autoComplete="new-password" placeholder="••••••••" value={form.confirm} onChange={set('confirm')} />
-                  </Field>
-                )}
-                <button type="submit" disabled={busy} className="btn-primary sm:col-span-2 py-3.5 mt-1 group">
-                  {busy ? 'Please wait…' : isSignup ? 'Create account' : 'Sign in'} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </button>
-              </form>
-
-              <p className="mt-6 pt-5 border-t border-slate-100 text-sm text-slate-500 text-center">
-                {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
-                <button onClick={() => onSwitchMode(isSignup ? 'login' : 'signup')} className="font-semibold text-peach-500 hover:text-peach-600">
-                  {isSignup ? 'Log in' : 'Register now'}
-                </button>
-              </p>
-            </div>
+        {error && (
+          <div role="alert" className="mt-5 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-sm flex gap-2 animate-fade-in">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />{error}
           </div>
+        )}
+
+        <form onSubmit={handleSubmit} className={`mt-6 grid gap-4 ${isSignup ? 'sm:grid-cols-2' : ''}`} noValidate>
+          {isSignup && (
+            <Field className="sm:col-span-2" label="Full name" hint="Exactly as on your government ID or college ID - it is printed on your certificate and checked against your ID in the final exam.">
+              <input className="auth-input" autoComplete="name" placeholder="e.g. Panga Yashwant" value={form.name} onChange={set('name')} />
+            </Field>
+          )}
+          <Field label="Email" className={isSignup ? 'sm:col-span-2' : ''}>
+            <input className="auth-input" type="email" autoComplete="email" placeholder="name@email.com" value={form.email} onChange={set('email')} />
+          </Field>
+          <Field label="Registration number">
+            <input className="auth-input uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal" placeholder="e.g. 21A91A0501" value={form.regNo} onChange={set('regNo')} />
+          </Field>
+          {isSignup && (
+            <Field label="Phone number">
+              <input className="auth-input" type="tel" autoComplete="tel" placeholder="+91 98765 43210" value={form.phone} onChange={set('phone')} />
+            </Field>
+          )}
+          <Field
+            label="Password"
+            aside={!isSignup && (
+              <button type="button" onClick={() => onForgotPassword(form.email.trim())} className="text-[14px] font-semibold text-brand-900 underline underline-offset-2 hover:text-forest">Forgot password?</button>
+            )}
+          >
+            <span className="relative block">
+              <input className="auth-input pr-12" type={showPw ? 'text' : 'password'} autoComplete={isSignup ? 'new-password' : 'current-password'} placeholder={isSignup ? 'At least 6 characters' : 'Enter your password'} value={form.password} onChange={set('password')} />
+              <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-charcoal/45 hover:text-brand-900" aria-label={showPw ? 'Hide password' : 'Show password'}>
+                {showPw ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
+              </button>
+            </span>
+          </Field>
+          {isSignup && (
+            <Field label="Confirm password">
+              <input className="auth-input" type={showPw ? 'text' : 'password'} autoComplete="new-password" placeholder="Repeat password" value={form.confirm} onChange={set('confirm')} />
+            </Field>
+          )}
+
+          <button type="submit" disabled={busy} className={`${isSignup ? 'sm:col-span-2' : ''} mt-1 h-12 rounded-lg bg-brand-900 text-ivory text-[16px] font-bold hover:bg-forest active:scale-[.99] disabled:opacity-70 transition shadow-[0_10px_24px_-12px_rgba(1,58,43,.7)]`}>
+            {busy ? 'Please wait…' : isSignup ? 'Create account' : 'Continue'}
+          </button>
+        </form>
+
+        <div className="my-5 flex items-center gap-3 text-[13px] text-charcoal/50" aria-hidden="true">
+          <span className="h-px flex-1 bg-slate-200" />or<span className="h-px flex-1 bg-slate-200" />
         </div>
+
+        <button type="button" onClick={() => onSwitchMode(isSignup ? 'login' : 'signup')} className="w-full h-12 rounded-lg border border-charcoal/80 bg-white text-[16px] font-bold text-charcoal hover:bg-slate-50 transition">
+          {isSignup ? 'Log in to an existing account' : 'Create a new account'}
+        </button>
+
+        <p className="mt-6 text-[13px] leading-relaxed text-charcoal/60">
+          {isSignup
+            ? 'Your registration number becomes your learner ID and is printed with a QR code on your certificate. We will email you a code to verify your address.'
+            : 'Use the email, registration number and password you registered with. Having trouble? Use Forgot password to reset it.'}
+        </p>
       </div>
+
+      <p className="relative mt-6 text-[12px] text-charcoal/45">© {new Date().getFullYear()} Arshith Bootcamp</p>
     </div>
   );
 }
 
-function Field({ label, icon: Icon, className = '', hint, children }) {
+function Field({ label, className = '', hint, aside, children }) {
   return (
     <label className={`block ${className}`}>
-      <span className="block text-xs font-semibold text-slate-600 mb-1.5">{label}</span>
-      <span className="relative block">
-        <Icon className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
-        {children}
+      <span className="flex items-baseline justify-between gap-3 mb-1.5">
+        <span className="text-[15px] font-bold text-charcoal">{label} <span className="text-rose-600" aria-hidden="true">*</span></span>
+        {aside}
       </span>
-      {hint && <span className="block mt-1.5 text-[11.5px] leading-snug text-slate-500">{hint}</span>}
+      {children}
+      {hint && <span className="block mt-1.5 text-[12.5px] leading-snug text-charcoal/55">{hint}</span>}
     </label>
   );
 }
