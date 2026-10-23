@@ -35,7 +35,8 @@ const MUTED = [122, 116, 106];
 const SAGE = [66, 101, 87];
 const FOREST = [1, 58, 43];
 const LINE = [228, 224, 215];
-const ARROW = [95, 133, 116];
+const ARROW = [47, 93, 78];
+const HALO = [205, 223, 213];
 
 /* ------------------------------------------------------------------ shared figure parts */
 
@@ -99,15 +100,26 @@ function prism(doc, x, y, w, h, { face, edge, accent, depth = DEPTH }) {
   doc.line(x, y + h, x + depth, y + h + depth);
 }
 
+/* Bold connectors: a soft halo, a thick round-capped shaft and a solid swept arrowhead. */
+function boldLine(doc, x1, y1, x2, y2, color = ARROW) {
+  doc.setLineCap('round');
+  doc.setDrawColor(...HALO); doc.setLineWidth(1.5); doc.line(x1, y1, x2, y2);
+  doc.setDrawColor(...color); doc.setLineWidth(0.75); doc.line(x1, y1, x2, y2);
+  doc.setLineCap('butt');
+}
+function headAt(doc, tipX, tipY, dx, dy, color = ARROW, len = 2.5, half = 1.45) {
+  const bx = tipX - dx * len; const by = tipY - dy * len;
+  const nx = tipX - dx * len * 0.62; const ny = tipY - dy * len * 0.62; // notch for a swept look
+  doc.setFillColor(...color);
+  doc.lines([[bx - dy * half - tipX, by + dx * half - tipY], [nx - (bx - dy * half), ny - (by + dx * half)], [bx + dy * half - nx, by - dx * half - ny]], tipX, tipY, [1, 1], 'F', true);
+}
 function arrowDown(doc, x, y, len = 4, color = ARROW) {
-  doc.setDrawColor(...color); doc.setFillColor(...color); doc.setLineWidth(0.4);
-  doc.line(x, y, x, y + len - 1.5);
-  doc.triangle(x - 1.25, y + len - 1.7, x + 1.25, y + len - 1.7, x, y + len, 'F');
+  boldLine(doc, x, y, x, y + len - 1.8, color);
+  headAt(doc, x, y + len, 0, 1, color);
 }
 function arrowRight(doc, x, y, len = 4, color = ARROW) {
-  doc.setDrawColor(...color); doc.setFillColor(...color); doc.setLineWidth(0.4);
-  doc.line(x, y, x + len - 1.5, y);
-  doc.triangle(x + len - 1.7, y - 1.25, x + len - 1.7, y + 1.25, x + len, y, 'F');
+  boldLine(doc, x, y, x + len - 1.8, y, color);
+  headAt(doc, x + len, y, 1, 0, color);
 }
 
 /* ------------------------------------------------------------------ visual diagram cards */
@@ -354,9 +366,8 @@ export function drawVisualDiagram(ctx, def, figLabel = 'Figure') {
       const xs = s.columns.map((_, i) => m + i * (w + gap));
       if (s.source) {
         // a fan-out connector from the source to every column
-        doc.setDrawColor(...ARROW); doc.setLineWidth(0.4);
-        doc.line(m + cw / 2, y, m + cw / 2, y + 2.4);
-        doc.line(xs[0] + w / 2, y + 2.4, xs[k - 1] + w / 2, y + 2.4);
+        boldLine(doc, m + cw / 2, y, m + cw / 2, y + 2.4);
+        boldLine(doc, xs[0] + w / 2, y + 2.4, xs[k - 1] + w / 2, y + 2.4);
         xs.forEach(x => arrowDown(doc, x + w / 2, y + 2.4, 3.4));
         y += 6.4;
       }
@@ -381,9 +392,8 @@ export function drawVisualDiagram(ctx, def, figLabel = 'Figure') {
       }
       if (s.merge) {
         // a fan-in connector from every column into the merge card
-        doc.setDrawColor(...ARROW); doc.setLineWidth(0.4);
-        xs.forEach(x => doc.line(x + w / 2, y + 0.6, x + w / 2, y + 2.6));
-        doc.line(xs[0] + w / 2, y + 2.6, xs[k - 1] + w / 2, y + 2.6);
+        xs.forEach(x => boldLine(doc, x + w / 2, y + 0.6, x + w / 2, y + 2.6));
+        boldLine(doc, xs[0] + w / 2, y + 2.6, xs[k - 1] + w / 2, y + 2.6);
         arrowDown(doc, m + cw / 2, y + 2.6, 3.6);
         y += 6.8;
         const mw = cw * 0.72;
@@ -511,16 +521,16 @@ export function drawWorkflow(ctx, def, figLabel = 'Figure') {
   const oy = y + pad;
 
   // edges
+  doc.setLineCap('round'); doc.setLineJoin('round');
   routes.forEach(r => {
-    doc.setDrawColor(...ARROW); doc.setLineWidth(0.38);
-    if (r.back) doc.setLineDashPattern([1.3, 1], 0);
+    if (!r.back) { doc.setDrawColor(...HALO); doc.setLineWidth(1.5); strokeSvgPath(doc, r.d, ox, oy, s); }
+    doc.setDrawColor(...ARROW); doc.setLineWidth(0.72);
+    if (r.back) doc.setLineDashPattern([1.6, 1.2], 0);
     const { end, dir } = strokeSvgPath(doc, r.d, ox, oy, s);
     doc.setLineDashPattern([], 0);
-    const len = 1.9; const half = 0.95;
-    const bx = end[0] - dir[0] * len; const by = end[1] - dir[1] * len;
-    doc.setFillColor(...ARROW);
-    doc.triangle(end[0] + dir[0] * 0.3, end[1] + dir[1] * 0.3, bx - dir[1] * half, by + dir[0] * half, bx + dir[1] * half, by - dir[0] * half, 'F');
+    headAt(doc, end[0] + dir[0] * 0.4, end[1] + dir[1] * 0.4, dir[0], dir[1], ARROW, 2.6, 1.5);
   });
+  doc.setLineCap('butt'); doc.setLineJoin('miter');
   // edge labels
   routes.forEach(r => {
     if (!r.label) return;
@@ -528,7 +538,7 @@ export function drawWorkflow(ctx, def, figLabel = 'Figure') {
     const t = pdfSafe(r.label);
     const lw = doc.getTextWidth(t) + 3.6;
     const cx = ox + r.lx * s; const cy = oy + r.ly * s;
-    doc.setFillColor(255, 255, 255); doc.setDrawColor(188, 209, 198); doc.setLineWidth(0.2);
+    doc.setFillColor(255, 255, 255); doc.setDrawColor(150, 180, 166); doc.setLineWidth(0.3);
     doc.roundedRect(cx - lw / 2, cy - 1.9, lw, 3.8, 1.9, 1.9, 'FD');
     doc.setTextColor(...INK);
     doc.text(t, cx, cy + 0.85, { align: 'center' });

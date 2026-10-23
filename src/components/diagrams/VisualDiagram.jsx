@@ -27,13 +27,13 @@ export const ICONS = {
 
 // Static class strings so Tailwind keeps them in the build. Text colours meet WCAG AA on their tints.
 export const TONES = {
-  blue:   { card: 'bg-sky-50/70 border-sky-200',      badge: 'bg-sky-700 text-white',     icon: 'bg-sky-100 text-sky-700',       title: 'text-sky-900',     chip: 'bg-sky-100 text-sky-900',       ring: 'focus-visible:ring-sky-400',     arrow: 'text-sky-500' },
-  green:  { card: 'bg-emerald-50/70 border-emerald-200', badge: 'bg-emerald-700 text-white', icon: 'bg-emerald-100 text-emerald-700', title: 'text-emerald-900', chip: 'bg-emerald-100 text-emerald-900', ring: 'focus-visible:ring-emerald-400', arrow: 'text-emerald-500' },
-  purple: { card: 'bg-violet-50/70 border-violet-200',  badge: 'bg-violet-700 text-white',  icon: 'bg-violet-100 text-violet-700',  title: 'text-violet-900',  chip: 'bg-violet-100 text-violet-900',  ring: 'focus-visible:ring-violet-400',  arrow: 'text-violet-500' },
-  orange: { card: 'bg-amber-50/80 border-amber-200',    badge: 'bg-amber-700 text-white',   icon: 'bg-amber-100 text-amber-800',    title: 'text-amber-900',   chip: 'bg-amber-100 text-amber-900',    ring: 'focus-visible:ring-amber-400',   arrow: 'text-amber-500' },
-  teal:   { card: 'bg-teal-50/70 border-teal-200',      badge: 'bg-teal-700 text-white',    icon: 'bg-teal-100 text-teal-700',      title: 'text-teal-900',    chip: 'bg-teal-100 text-teal-900',      ring: 'focus-visible:ring-teal-400',    arrow: 'text-teal-500' },
-  rose:   { card: 'bg-rose-50/70 border-rose-200',      badge: 'bg-rose-700 text-white',    icon: 'bg-rose-100 text-rose-700',      title: 'text-rose-900',    chip: 'bg-rose-100 text-rose-900',      ring: 'focus-visible:ring-rose-400',    arrow: 'text-rose-500' },
-  slate:  { card: 'bg-white border-slate-200',          badge: 'bg-slate-700 text-white',   icon: 'bg-slate-100 text-slate-700',    title: 'text-slate-900',   chip: 'bg-slate-100 text-slate-800',    ring: 'focus-visible:ring-slate-400',   arrow: 'text-slate-400' }
+  blue:   { card: 'bg-sky-50/70 border-sky-200',      badge: 'bg-sky-700 text-white',     icon: 'bg-sky-100 text-sky-700',       title: 'text-sky-900',     chip: 'bg-sky-100 text-sky-900',       ring: 'focus-visible:ring-sky-400',     arrow: 'text-sky-600' },
+  green:  { card: 'bg-emerald-50/70 border-emerald-200', badge: 'bg-emerald-700 text-white', icon: 'bg-emerald-100 text-emerald-700', title: 'text-emerald-900', chip: 'bg-emerald-100 text-emerald-900', ring: 'focus-visible:ring-emerald-400', arrow: 'text-emerald-600' },
+  purple: { card: 'bg-violet-50/70 border-violet-200',  badge: 'bg-violet-700 text-white',  icon: 'bg-violet-100 text-violet-700',  title: 'text-violet-900',  chip: 'bg-violet-100 text-violet-900',  ring: 'focus-visible:ring-violet-400',  arrow: 'text-violet-600' },
+  orange: { card: 'bg-amber-50/80 border-amber-200',    badge: 'bg-amber-700 text-white',   icon: 'bg-amber-100 text-amber-800',    title: 'text-amber-900',   chip: 'bg-amber-100 text-amber-900',    ring: 'focus-visible:ring-amber-400',   arrow: 'text-amber-600' },
+  teal:   { card: 'bg-teal-50/70 border-teal-200',      badge: 'bg-teal-700 text-white',    icon: 'bg-teal-100 text-teal-700',      title: 'text-teal-900',    chip: 'bg-teal-100 text-teal-900',      ring: 'focus-visible:ring-teal-400',    arrow: 'text-teal-600' },
+  rose:   { card: 'bg-rose-50/70 border-rose-200',      badge: 'bg-rose-700 text-white',    icon: 'bg-rose-100 text-rose-700',      title: 'text-rose-900',    chip: 'bg-rose-100 text-rose-900',      ring: 'focus-visible:ring-rose-400',    arrow: 'text-rose-600' },
+  slate:  { card: 'bg-white border-slate-200',          badge: 'bg-slate-700 text-white',   icon: 'bg-slate-100 text-slate-700',    title: 'text-slate-900',   chip: 'bg-slate-100 text-slate-800',    ring: 'focus-visible:ring-slate-400',   arrow: 'text-slate-500' }
 };
 const ORDER = ['blue', 'green', 'purple', 'orange', 'teal', 'rose'];
 export const toneOf = (name, i = 0) => TONES[name] || TONES[ORDER[i % ORDER.length]];
@@ -84,16 +84,35 @@ export function DiagramCard({ node, n, toneName, index = 0, compact = false, fil
           ))}
         </div>
       )}
-      {hasMore && !open && <p className="mt-2 text-[11.5px] font-medium text-charcoal/45">Show technical detail</p>}
+      {hasMore && !open && <p className="mt-2.5 self-start inline-flex items-center gap-1 rounded-full bg-white/80 border border-black/5 px-2 py-0.5 text-[11px] font-semibold text-charcoal/55">+ Formula & technical detail</p>}
     </>
   );
   const cls = `block w-full ${fill ? 'h-full' : ''} text-left rounded-2xl border p-3.5 sm:p-4 shadow-[0_1px_2px_rgba(12,45,38,.05)] ${tone.card}`;
   return hasMore
-    ? <button type="button" onClick={() => setOpen(o => !o)} aria-expanded={open} className={`${cls} hover:shadow-md motion-safe:transition-shadow focus:outline-none focus-visible:ring-2 ${tone.ring}`}>{body}</button>
+    ? <button type="button" onClick={() => setOpen(o => !o)} aria-expanded={open} className={`${cls} flex flex-col justify-start hover:shadow-md motion-safe:transition-shadow focus:outline-none focus-visible:ring-2 ${tone.ring}`}>{body}</button>
     : <div className={cls}>{body}</div>;
 }
 
-const Down = ({ className = 'text-brand-300' }) => <div className="flex justify-center py-1.5" aria-hidden="true"><ArrowDown className={`w-5 h-5 ${className}`} /></div>;
+/**
+ * Thick connector with a solid arrowhead and light flowing along it towards the next step.
+ * dir: 'down' | 'right'. Colour comes from the text colour (tone.arrow classes).
+ */
+export function FlowArrow({ dir = 'down', className = 'text-forest/70' }) {
+  const down = dir === 'down';
+  const W = down ? 18 : 38;
+  const H = down ? 30 : 18;
+  const shaft = down ? 'M9,2 L9,19' : 'M2,9 L25,9';
+  const head = down ? 'M2.5,17 L9,28 L15.5,17 Q9,20 2.5,17 Z' : 'M23,2.5 L35,9 L23,15.5 Q26,9 23,2.5 Z';
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className={`flow-arrow shrink-0 overflow-visible ${className}`} aria-hidden="true">
+      <path d={shaft} stroke="currentColor" strokeWidth="4" strokeLinecap="round" fill="none" />
+      <path d={shaft} stroke="#fff" strokeOpacity=".85" strokeWidth="1.6" strokeLinecap="round" strokeDasharray="2 7" fill="none" className="flow-arrow-dash" />
+      <path d={head} fill="currentColor" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+const Down = ({ className = 'text-forest/70' }) => <div className="flex justify-center py-1.5" aria-hidden="true"><FlowArrow dir="down" className={className} /></div>;
 
 function SectionHead({ s, n }) {
   if (!s.title && !s.text) return null;
@@ -132,7 +151,7 @@ function Flow({ s }) {
           <li key={i} className={row ? 'lg:flex-1 lg:min-w-0 flex flex-col lg:flex-row lg:items-stretch' : ''}>
             <div className={row ? 'lg:flex-1 lg:min-w-0' : ''}><DiagramCard node={st} n={st.n ?? i + 1} index={i} compact={row} stacked={row && steps.length > 2} /></div>
             {i < steps.length - 1 && (row
-              ? <div className="flex items-center justify-center py-1.5 lg:py-0 lg:px-1.5" aria-hidden="true"><ArrowDown className="w-5 h-5 text-brand-300 lg:hidden" /><ArrowRight className="w-5 h-5 text-brand-300 hidden lg:block" /></div>
+              ? <div className="flex items-center justify-center py-1.5 lg:py-0 lg:px-1" aria-hidden="true"><span className="lg:hidden"><FlowArrow dir="down" className={toneOf(steps[i + 1].tone, i + 1).arrow} /></span><span className="hidden lg:flex"><FlowArrow dir="right" className={toneOf(steps[i + 1].tone, i + 1).arrow} /></span></div>
               : <Down />)}
           </li>
         ))}
@@ -239,7 +258,7 @@ export function DiagramBody({ def }) {
               <SectionHead s={s} n={def.sections.length > 1 ? i + 1 : undefined} />
               <C s={s} />
             </section>
-            {i < def.sections.length - 1 && <div className="flex justify-center py-2" aria-hidden="true"><span className="w-9 h-9 rounded-full bg-white border border-brand-900/10 shadow-sm flex items-center justify-center"><ArrowDown className="w-4 h-4 text-sage" /></span></div>}
+            {i < def.sections.length - 1 && <div className="flex justify-center py-2" aria-hidden="true"><span className="flow-hop w-11 h-11 rounded-full bg-gradient-to-br from-forest to-evergreen shadow-[0_8px_18px_-8px_rgba(1,58,43,.6)] ring-4 ring-white flex items-center justify-center"><ArrowDown className="w-5 h-5 text-ivory" strokeWidth={2.75} /></span></div>}
           </React.Fragment>
         );
       })}

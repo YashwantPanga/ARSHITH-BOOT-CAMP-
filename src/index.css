@@ -162,6 +162,14 @@
 .pdf-stamp { animation: pdf-stamp .55s cubic-bezier(.2, .9, .3, 1.2) .1s both; }
 
 /* Final-assessment celebration */
+/* diagram arrows: light flows along every connector toward the next step; section hops bob gently */
+@keyframes flow-arrow-dash { to { stroke-dashoffset: -18; } }
+.flow-arrow-dash { animation: flow-arrow-dash .9s linear infinite; }
+@keyframes flow-hop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+.flow-hop { animation: flow-hop 1.8s ease-in-out infinite; }
+@keyframes wf-flow { to { stroke-dashoffset: -32; } }
+.wf-flow { animation: wf-flow 1.2s linear infinite; }
+
 /* concept map: cards and hub enter, connectors draw in, light flows along them, hub rings pulse */
 @keyframes cm-card-in { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
 .cm-card-in { animation: cm-card-in .6s cubic-bezier(.2, .8, .2, 1) both; }

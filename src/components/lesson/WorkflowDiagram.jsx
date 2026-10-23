@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, ArrowDown, RefreshCw } from 'lucide-react';
-import { DiagramCard } from '../diagrams/VisualDiagram';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { DiagramCard, FlowArrow } from '../diagrams/VisualDiagram';
 import { validateDiagram } from '../../../shared/contentSchema.js';
 
 // Text metrics used to size boxes (DM Sans). Slightly generous so text never touches the border.
@@ -160,7 +160,7 @@ export function routeEdges(L) {
     return [x, y];
   };
   let loopIndex = 0;
-  return L.edges.map((e) => {
+  const routes = L.edges.map((e) => {
     const a = pos.get(e.from);
     const b = pos.get(e.to);
     let d;
@@ -210,7 +210,8 @@ export function routeEdges(L) {
         ly = (lane + ym) / 2;
       } else {
         d = `${start}${xd + turn(xd, x2)},${lane} L${x2 - turn(xd, x2)},${lane} Q${x2},${lane} ${x2},${lane + 10} L${x2},${b.y - 2}`;
-        lx = x2;
+        // beside the short drop into the target, so the pill never sits on the arrowhead
+        lx = x2 + edgeLabelWidth(e.label || '') / 2 + 10;
         ly = (lane + b.y) / 2;
       }
     } else {
@@ -232,14 +233,23 @@ export function routeEdges(L) {
         ly = top;
       }
     }
-    const lw = e.label ? edgeLabelWidth(e.label) : 0;
-    if (e.label) [lx, ly] = placeLabel(lx, ly, lw);
-    return { d, lx, ly, lw, label: e.label, back: e.back };
+    return { d, lx, ly, lw: e.label ? edgeLabelWidth(e.label) : 0, label: e.label, back: e.back };
   });
+  // Keep every arrowhead clear: reserve the last stretch of each arrow before placing any label.
+  routes.forEach(({ d }) => {
+    const nums = d.match(/-?\d+(?:\.\d+)?/g).map(Number);
+    const [ex, ey] = nums.slice(-2);
+    const [px, py] = nums.slice(-4, -2);
+    if (Math.abs(ex - px) < Math.abs(ey - py)) placed.push({ x: ex - 10, y: ey > py ? ey - 28 : ey, w: 20, h: 28 });
+    else placed.push({ x: ex > px ? ex - 28 : ex, y: ey - 10, w: 28, h: 20 });
+  });
+  routes.forEach(r => { if (r.label) [r.lx, r.ly] = placeLabel(r.lx, r.ly, r.lw); });
+  return routes;
 }
 
 export function DiagramSvg({ def, L }) {
   const routes = routeEdges(L);
+  const [reduced] = useState(() => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
   return (
     <svg
       viewBox={`0 0 ${L.width} ${L.height}`}
@@ -251,16 +261,28 @@ export function DiagramSvg({ def, L }) {
     >
       <title id="wf-title">{def.title || 'Workflow diagram'}</title>
       <defs>
-        <marker id="wf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M0,0 L10,5 L0,10 z" fill="#5F8574" />
+        {/* solid, slightly swept arrowhead sized in pixels so it stays bold at any line width */}
+        <marker id="wf-arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+          <path d="M1,1 L11,6 L1,11 Q4,6 1,1 Z" fill="#2F5D4E" stroke="#2F5D4E" strokeWidth="1" strokeLinejoin="round" />
         </marker>
       </defs>
       {routes.map(({ d, lx, ly, lw, label, back }, i) => (
         <g key={i}>
-          <path d={d} fill="none" stroke="#5F8574" strokeOpacity=".7" strokeWidth="1.8" strokeDasharray={back ? '5 4' : undefined} markerEnd="url(#wf-arrow)" />
+          {/* soft under-stroke, the bold line, then light flowing toward the arrowhead */}
+          <path d={d} fill="none" stroke="#90B1A2" strokeOpacity=".35" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={d} fill="none" stroke="#2F5D4E" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" strokeDasharray={back ? '7 5' : undefined} markerEnd="url(#wf-arrow)" />
+          {!reduced && (
+            <>
+              <path d={d} fill="none" stroke="#FFFFFF" strokeOpacity=".9" strokeWidth="1.3" strokeLinecap="round" strokeDasharray="3 13" className="wf-flow" />
+              <circle r="3.8" fill="#D9B44A" stroke="#FFFFFF" strokeWidth="1.3" visibility="hidden">
+                <set attributeName="visibility" to="visible" begin={`${0.4 + i * 0.35}s`} />
+                <animateMotion dur="2.6s" begin={`${0.4 + i * 0.35}s`} repeatCount="indefinite" path={d} />
+              </circle>
+            </>
+          )}
           {label && (
             <g transform={`translate(${lx},${ly})`}>
-              <rect x={-lw / 2} y="-9" width={lw} height="18" rx="9" fill="#FFFFFF" stroke="#BCD1C6" />
+              <rect x={-lw / 2} y="-9" width={lw} height="18" rx="9" fill="#FFFFFF" stroke="#2F5D4E" strokeOpacity=".35" strokeWidth="1.2" />
               <text textAnchor="middle" y="3.5" fontSize={EDGE_FONT} fill="#302B25" fontFamily="DM Sans, system-ui, sans-serif">{label}</text>
             </g>
           )}
@@ -300,7 +322,7 @@ function DiagramStack({ def, L }) {
               <DiagramCard node={{ title: n.label, text: n.detail }} n={n.step} index={n.step - 1} />
               {i < order.length - 1 && (
                 <div className="flex flex-col items-center py-1.5 text-[12px] text-charcoal/60" aria-hidden="true">
-                  <ArrowDown className="w-4 h-4 text-sage" />
+                  <FlowArrow dir="down" className="text-forest/75" />
                   {outs.length > 0 && <span className="text-center">{outs.map(e => e.label ? `${e.label} → ${label.get(e.to)}` : `→ ${label.get(e.to)}`).join(' · ')}</span>}
                 </div>
               )}

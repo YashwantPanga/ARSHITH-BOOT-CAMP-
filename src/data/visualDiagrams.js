@@ -288,7 +288,7 @@ export const VISUAL_DIAGRAMS = {
         type: 'flow',
         title: 'Split the data first',
         steps: [
-          { title: 'Raw dataset', subtitle: 'Features X, labels y', icon: 'database' },
+          { title: 'Raw dataset', subtitle: 'Features X, labels y', icon: 'database', text: 'All your examples: the inputs (features) and the answers you want to predict (labels).' },
           { title: 'Train / test split', subtitle: '80% train, 20% holdout test', icon: 'split', text: 'The test set is put aside and not touched until the very end.' }
         ]
       },
@@ -448,9 +448,9 @@ export const VISUAL_DIAGRAMS = {
         type: 'flow',
         title: 'Part A: artificial neural network (forward & backward pass)',
         steps: [
-          { title: 'Input layer', subtitle: 'x', icon: 'data' },
-          { title: 'Hidden layer 1', subtitle: 'ReLU activation', icon: 'neural', details: ['z1 = W1·x + b1', 'a1 = ReLU(z1)'] },
-          { title: 'Output layer', subtitle: 'ŷ (prediction)', icon: 'target', details: ['z2 = W2·a1 + b2 → ŷ'] },
+          { title: 'Input layer', subtitle: 'x', icon: 'data', text: 'Receives the raw feature values of one example.' },
+          { title: 'Hidden layer 1', subtitle: 'ReLU activation', icon: 'neural', text: 'Weighs the inputs, adds a bias and keeps only positive signals to learn patterns.', details: ['z1 = W1·x + b1', 'a1 = ReLU(z1)'] },
+          { title: 'Output layer', subtitle: 'ŷ (prediction)', icon: 'target', text: "Turns the hidden layer's signals into the network's prediction.", details: ['z2 = W2·a1 + b2 → ŷ'] },
           { title: 'Loss', subtitle: 'L(y, ŷ) = cross-entropy', icon: 'gauge', text: 'How wrong the prediction is.' }
         ],
         loops: [{ from: 'Loss', to: 'Input layer', label: 'Backpropagation: dL/dW = dL/dŷ · dŷ/dz · dz/dW sends the error backwards and updates every weight.' }]
@@ -469,17 +469,17 @@ export const VISUAL_DIAGRAMS = {
         type: 'flow',
         title: 'Attention computation',
         steps: [
-          { title: 'Scaled dot-product', subtitle: 'Uses Q and K', icon: 'sigma', details: ['S = Q · Kᵀ / √d_k'] },
+          { title: 'Scaled dot-product', subtitle: 'Uses Q and K', icon: 'sigma', text: 'Scores how well every query matches every key, scaled down to keep numbers stable.', details: ['S = Q · Kᵀ / √d_k'] },
           { title: 'Attention weights', subtitle: 'Softmax(S)', icon: 'pie', text: 'How much each token attends to every other token.' },
-          { title: 'Context output', subtitle: 'Uses the weights and V', icon: 'combine', tone: 'teal', details: ['Z = Attention_Weights · V'] }
+          { title: 'Context output', subtitle: 'Uses the weights and V', icon: 'combine', tone: 'teal', text: 'Mixes the values using the attention weights, giving each token context-aware meaning.', details: ['Z = Attention_Weights · V'] }
         ]
       },
       {
         type: 'branches',
         title: 'Part C: retrieval-augmented generation (RAG) pipeline',
         columns: [
-          { title: 'Indexing documents', tone: 'blue', icon: 'file', cards: [{ title: 'Documents' }, { title: 'Chunking' }, { title: 'Embedding model' }, { title: 'Vector DB', subtitle: 'FAISS / Chroma' }] },
-          { title: 'Answering a question', tone: 'orange', icon: 'chat', cards: [{ title: 'User query' }, { title: 'Embedding model' }, { title: 'ANN vector similarity search', text: 'Finds the closest chunks in the vector DB.' }, { title: 'Retrieved context + user prompt' }] }
+          { title: 'Indexing documents', tone: 'blue', icon: 'file', cards: [{ title: 'Documents', text: 'Your source files: PDFs, web pages, notes.' }, { title: 'Chunking', text: 'Splits each document into small, overlapping passages.' }, { title: 'Embedding model', text: 'Turns every chunk into a vector of numbers that captures its meaning.' }, { title: 'Vector DB', subtitle: 'FAISS / Chroma', text: 'Stores the vectors so similar ones can be found fast.' }] },
+          { title: 'Answering a question', tone: 'orange', icon: 'chat', cards: [{ title: 'User query', text: 'The question the user asks.' }, { title: 'Embedding model', text: 'Turns the question into a vector the same way as the chunks.' }, { title: 'ANN vector similarity search', text: 'Finds the closest chunks in the vector DB.' }, { title: 'Retrieved context + user prompt', text: 'The best-matching chunks are added to the question before it goes to the LLM.' }] }
         ],
         merge: { title: 'LLM (Claude / GPT / LLaMA)', icon: 'sparkles', text: 'Produces a grounded, factual response based on the retrieved context.' }
       }
@@ -496,16 +496,16 @@ export const VISUAL_DIAGRAMS = {
         title: 'Offline training environment',
         text: 'Jupyter / Python script.',
         steps: [
-          { title: 'Dataset', icon: 'database' },
-          { title: 'Pipeline', subtitle: 'Preprocess + model', icon: 'workflow' },
-          { title: 'Validation & tuning', icon: 'gauge' }
+          { title: 'Dataset', icon: 'database', text: 'Historical data with the answers the model should learn.' },
+          { title: 'Pipeline', subtitle: 'Preprocess + model', icon: 'workflow', text: 'Cleaning, scaling and the model bundled into one object.' },
+          { title: 'Validation & tuning', icon: 'gauge', text: 'Cross-validation picks the best settings before release.' }
         ]
       },
       {
         type: 'flow',
         title: 'Serialization & artifact storage',
         steps: [
-          { title: 'Save the pipeline', icon: 'filecode', details: ["joblib.dump(pipeline, 'model_v1.0.0.joblib')"] },
+          { title: 'Save the pipeline', icon: 'filecode', text: 'Writes the trained pipeline to a versioned file.', details: ["joblib.dump(pipeline, 'model_v1.0.0.joblib')"] },
           { title: 'S3 / cloud model registry', icon: 'cloud', text: 'Versioned storage for model files.' }
         ]
       },
@@ -519,9 +519,9 @@ export const VISUAL_DIAGRAMS = {
         type: 'flow',
         title: 'Containerization (Docker)',
         steps: [
-          { title: 'Dockerfile', icon: 'filecode' },
-          { title: 'Build image', icon: 'container', details: ['docker build -t ml-api:v1 .'] },
-          { title: 'Run container', icon: 'server', details: ['docker run -p 8000:8000'] }
+          { title: 'Dockerfile', icon: 'filecode', text: 'A recipe listing the Python version, libraries and start command.' },
+          { title: 'Build image', icon: 'container', text: 'Packages the code, model and libraries into one portable image.', details: ['docker build -t ml-api:v1 .'] },
+          { title: 'Run container', icon: 'server', text: 'Starts the API from the image so it can answer requests.', details: ['docker run -p 8000:8000'] }
         ]
       },
       {
