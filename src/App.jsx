@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import PopularCourses from './components/PopularCourses';
@@ -39,6 +39,7 @@ function AppShell() {
 
   /* ---------------- Routing ---------------- */
   const [route, setRoute] = useState(() => parseLocation());
+  const lastPageRef = useRef(null);
 
   const navigate = useCallback((to, { replace = false, scroll = true } = {}) => {
     const current = window.location.pathname + window.location.search;
@@ -302,7 +303,17 @@ function AppShell() {
 
   /* ---------------- Render ---------------- */
   const goCourses = (query) => navigate(paths.courses(query));
-  const isChromeless = ['learning', 'admin-login', 'admin-dashboard', 'login', 'register', 'verify-email', 'forgot-password', 'reset-password'].includes(route.name);
+  // Login, register and the account screens open as a modal card over the page the visitor was on
+  // (that page stays visible, faded, behind it). Opening one directly shows the home page behind.
+  const AUTH_ROUTES = ['login', 'register', 'verify-email', 'forgot-password', 'reset-password'];
+  const BACKDROP_ROUTES = ['home', 'courses', 'course-details', 'categories', 'about', 'contact', 'verify'];
+  const isAuthModal = AUTH_ROUTES.includes(route.name);
+  if (!isAuthModal && BACKDROP_ROUTES.includes(route.name)) {
+    lastPageRef.current = { route, path: window.location.pathname + window.location.search };
+  }
+  const displayRoute = isAuthModal ? (lastPageRef.current?.route || { name: 'home', params: {}, query: {} }) : route;
+  const closeAuthModal = () => navigate(lastPageRef.current?.path || '/');
+  const isChromeless = ['learning', 'admin-login', 'admin-dashboard'].includes(displayRoute.name);
 
   const loading = <PageLoader />;
 
@@ -318,6 +329,7 @@ function AppShell() {
     </div>
   );
 
+  const renderPage = (route) => {
   let page = null;
   switch (route.name) {
     case 'home':
@@ -422,9 +434,10 @@ function AppShell() {
     case 'register':
       page = (
         <AuthPage
+          asModal
           mode={route.name === 'register' ? 'signup' : 'login'}
           onSwitchMode={(m) => navigate((m === 'signup' ? paths.register : paths.login)(route.query.next), { replace: true })}
-          onBack={() => (window.history.length > 1 ? window.history.back() : navigate('/'))}
+          onBack={closeAuthModal}
           onHome={() => navigate('/')}
           onSuccess={handleAuthSuccess}
           onNeedVerification={(email, dev) => {
@@ -438,6 +451,7 @@ function AppShell() {
     case 'verify-email':
       page = (
         <VerifyEmailPage
+          asModal
           key={route.query.email || ''}
           email={route.query.email || ''}
           token={route.query.token || ''}
@@ -450,6 +464,7 @@ function AppShell() {
     case 'forgot-password':
       page = (
         <ForgotPasswordPage
+          asModal
           initialEmail={route.query.email || ''}
           onCodeSent={(email) => navigate(paths.resetPassword(email))}
           onBack={() => navigate(paths.login())}
@@ -460,6 +475,7 @@ function AppShell() {
     case 'reset-password':
       page = (
         <ResetPasswordPage
+          asModal
           key={`${route.query.email || ''}|${route.query.token || ''}`}
           email={route.query.email || ''}
           token={route.query.token || ''}
@@ -484,6 +500,10 @@ function AppShell() {
     default:
       page = notFound();
   }
+  return page;
+  };
+  const page = renderPage(displayRoute);
+  const authModal = isAuthModal ? renderPage(route) : null;
 
   return (
     <div className={`min-h-screen flex flex-col font-sans bg-ivory text-charcoal ${isChromeless ? '' : 'has-bottom-nav'}`}>
@@ -497,16 +517,18 @@ function AppShell() {
         />
       )}
 
-      <main className="flex-1" key={route.name === 'learning' ? `learn-${route.params.courseId}` : route.name}>
+      <main className="flex-1" key={displayRoute.name === 'learning' ? `learn-${displayRoute.params.courseId}` : displayRoute.name}>
         <div className={isChromeless ? '' : 'animate-fade-in'}>{page}</div>
       </main>
 
       {!isChromeless && <Footer navigate={navigate} />}
       {!isChromeless && (
-        <MobileBottomNav route={route} navigate={navigate} studentUser={studentUser} />
+        <MobileBottomNav route={displayRoute} navigate={navigate} studentUser={studentUser} />
       )}
 
-      {!['home', 'admin-dashboard'].includes(route.name) && (
+      {authModal && <AuthModalLayer onClose={closeAuthModal}>{authModal}</AuthModalLayer>}
+
+      {!isAuthModal && !['home', 'admin-dashboard'].includes(route.name) && (
         <HomeButton onClick={() => navigate(paths.home())} aboveBottomNav={!isChromeless} />
       )}
 
@@ -523,6 +545,28 @@ function AppShell() {
         onConfirm={confirmEnroll}
         onCancel={() => !enrolling && setEnrollTarget(null)}
       />
+    </div>
+  );
+}
+
+/**
+ * Faded, blurred backdrop over the current page with the auth card centred on top (Coursera-style).
+ * Closes on a click outside the card or Esc; page scrolling is paused while it is open.
+ */
+function AuthModalLayer({ onClose, children }) {
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [onClose]);
+  return (
+    <div className="fixed inset-0 z-[100] overflow-y-auto" role="dialog" aria-modal="true">
+      <div className="fixed inset-0 bg-[#0C2D26]/45 backdrop-blur-[3px] animate-fade-in" onClick={onClose} aria-hidden="true" />
+      <div className="relative min-h-full flex items-center justify-center p-4 sm:p-6 pointer-events-none">
+        <div className="pointer-events-auto w-full flex justify-center">{children}</div>
+      </div>
     </div>
   );
 }

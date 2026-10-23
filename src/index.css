@@ -187,6 +187,8 @@
 .auth-input::placeholder { color: #8A8F98; }
 .auth-input:hover { border-color: #6B7680; }
 .auth-input:focus { outline: none; border-color: #013A2B; box-shadow: 0 0 0 3px rgba(66, 101, 87, .22); }
+.auth-modal .auth-input { height: 44px; font-size: 15px; }
+.auth-modal form { gap: 14px; }
 
 /* Home page: Coursera-style type. Source Sans 3 everywhere on the landing page; headings that use
    the serif display face elsewhere become bold, tightly set sans headlines here. */

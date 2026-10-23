@@ -3,7 +3,19 @@ import { AlertCircle, CheckCircle2, Eye, EyeOff, RefreshCw, Info, X } from 'luci
 import { api } from '../services/api';
 
 /* Shared frame for the account screens: the same centred card as the login / register page. */
-function Frame({ title, subtitle, onBack, onHome, children }) {
+function Frame({ title, subtitle, onBack, onHome, asModal, children }) {
+  if (asModal) {
+    return (
+      <div className="auth-modal landing-type relative w-full max-w-[430px] bg-white rounded-2xl shadow-[0_40px_100px_-30px_rgba(0,0,0,.55)] ring-1 ring-black/5 px-6 sm:px-8 pt-8 pb-7 animate-fade-up">
+        <button onClick={onBack} className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center text-charcoal/70 hover:bg-slate-100 hover:text-charcoal transition" aria-label="Close">
+          <X className="w-5 h-5" />
+        </button>
+        <h1 className="text-[24px] sm:text-[26px] font-bold leading-tight text-charcoal pr-8">{title}</h1>
+        {subtitle && <p className="mt-2 text-[15px] leading-relaxed text-charcoal/65">{subtitle}</p>}
+        {children}
+      </div>
+    );
+  }
   return (
     <div className="landing-type min-h-screen relative overflow-hidden bg-ivory flex flex-col items-center px-4 py-8 sm:py-12">
       <div className="absolute inset-0 texture-dots opacity-50 pointer-events-none" aria-hidden="true" />
@@ -107,7 +119,7 @@ export const rememberDevMail = (info) => { try { sessionStorage.setItem('arb_dev
 /* ------------------------------------------------------------------ */
 /* Verify email                                                         */
 /* ------------------------------------------------------------------ */
-export function VerifyEmailPage({ email: initialEmail = '', token, onVerified, onBack, onHome }) {
+export function VerifyEmailPage({ email: initialEmail = '', token, onVerified, onBack, onHome, asModal }) {
   const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState('');
   const [state, setState] = useState({ status: token ? 'verifying' : 'idle' });
@@ -155,7 +167,7 @@ export function VerifyEmailPage({ email: initialEmail = '', token, onVerified, o
   };
 
   return (
-    <Frame title="Verify your email" subtitle={<>Enter the 6-digit code we sent{email ? <> to <strong className="font-semibold text-charcoal">{email}</strong></> : ''} to activate your account.</>} onBack={onBack} onHome={onHome}>
+    <Frame title="Verify your email" subtitle={<>Enter the 6-digit code we sent{email ? <> to <strong className="font-semibold text-charcoal">{email}</strong></> : ''} to activate your account.</>} onBack={onBack} onHome={onHome} asModal={asModal}>
       <DevNotice code={dev?.email === email ? dev.code : null} status={dev?.email === email ? dev.status : null} />
       <ErrorBox>{state.status === 'error' && state.message}</ErrorBox>
       <InfoBox>{state.status === 'sent' && state.message}</InfoBox>
@@ -182,7 +194,7 @@ export function VerifyEmailPage({ email: initialEmail = '', token, onVerified, o
 /* ------------------------------------------------------------------ */
 /* Forgot password                                                      */
 /* ------------------------------------------------------------------ */
-export function ForgotPasswordPage({ initialEmail = '', onCodeSent, onBack, onHome }) {
+export function ForgotPasswordPage({ initialEmail = '', onCodeSent, onBack, onHome, asModal }) {
   const [email, setEmail] = useState(initialEmail);
   const [state, setState] = useState({ status: 'idle' });
 
@@ -201,7 +213,7 @@ export function ForgotPasswordPage({ initialEmail = '', onCodeSent, onBack, onHo
   };
 
   return (
-    <Frame title="Reset your password" subtitle="Enter the email address of your account and we'll send you a 6-digit code to choose a new password." onBack={onBack} onHome={onHome}>
+    <Frame title="Reset your password" subtitle="Enter the email address of your account and we'll send you a 6-digit code to choose a new password." onBack={onBack} onHome={onHome} asModal={asModal}>
       <ErrorBox>{state.status === 'error' && state.message}</ErrorBox>
       <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
         <Field label="Email">
@@ -221,7 +233,7 @@ export function ForgotPasswordPage({ initialEmail = '', onCodeSent, onBack, onHo
 /* ------------------------------------------------------------------ */
 /* Reset password                                                       */
 /* ------------------------------------------------------------------ */
-export function ResetPasswordPage({ email: initialEmail = '', token, onDone, onResend, onBack, onHome }) {
+export function ResetPasswordPage({ email: initialEmail = '', token, onDone, onResend, onBack, onHome, asModal }) {
   const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState('');
   const [pw, setPw] = useState('');
@@ -251,6 +263,7 @@ export function ResetPasswordPage({ email: initialEmail = '', token, onDone, onR
       subtitle={token ? 'Your reset link is valid. Choose a new password below.' : <>Enter the code we sent{email ? <> to <strong className="font-semibold text-charcoal">{email}</strong></> : ''} and your new password.</>}
       onBack={onBack}
       onHome={onHome}
+      asModal={asModal}
     >
       {!token && <DevNotice code={dev?.kind === 'reset' && dev.email === email ? dev.code : null} status={dev?.kind === 'reset' && dev.email === email ? dev.status : null} />}
       {!token && !dev?.code && <InfoBox>If an account exists for this email, a reset code is on its way. It expires in 30 minutes.</InfoBox>}

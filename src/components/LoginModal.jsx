@@ -8,7 +8,7 @@ import { api } from '../services/api';
  * title, labelled fields, a full-width primary button and a button to switch between the two modes.
  * Accounts live on the server; new accounts verify their email before signing in.
  */
-export default function AuthPage({ mode = 'login', onSwitchMode, onBack, onHome, onSuccess, onNeedVerification, onForgotPassword }) {
+export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode, onBack, onHome, onSuccess, onNeedVerification, onForgotPassword }) {
   const isSignup = mode === 'signup';
   const [form, setForm] = useState({ name: '', regNo: '', phone: '', email: '', password: '', confirm: '' });
   const [showPw, setShowPw] = useState(false);
@@ -72,24 +72,14 @@ export default function AuthPage({ mode = 'login', onSwitchMode, onBack, onHome,
     }
   };
 
-  return (
-    <div className="landing-type min-h-screen relative overflow-hidden bg-ivory flex flex-col items-center px-4 py-8 sm:py-12">
-      {/* soft brand backdrop */}
-      <div className="absolute inset-0 texture-dots opacity-50 pointer-events-none" aria-hidden="true" />
-      <div className="absolute -top-40 -right-40 w-[520px] h-[520px] rounded-full bg-brand-100/60 blur-3xl pointer-events-none" aria-hidden="true" />
-      <div className="absolute -bottom-48 -left-40 w-[480px] h-[480px] rounded-full bg-[#E9DFC9]/70 blur-3xl pointer-events-none" aria-hidden="true" />
-
-      <button onClick={onHome} className="relative mb-6" aria-label="Arshith Bootcamp home">
-        <img src="/arshith-bootcamp-logo.png" alt="Arshith Bootcamp" className="h-11 w-auto" />
-      </button>
-
-      <div className={`relative w-full ${isSignup ? 'max-w-[540px]' : 'max-w-[460px]'} bg-white rounded-2xl shadow-[0_30px_80px_-30px_rgba(1,58,43,.35)] ring-1 ring-black/5 px-6 sm:px-10 pt-9 pb-8 animate-fade-up`}>
+  const card = (
+      <div className={`${asModal ? 'auth-modal landing-type' : ''} relative w-full ${isSignup ? (asModal ? 'max-w-[500px]' : 'max-w-[540px]') : (asModal ? 'max-w-[430px]' : 'max-w-[460px]')} bg-white rounded-2xl ${asModal ? 'shadow-[0_40px_100px_-30px_rgba(0,0,0,.55)] px-6 sm:px-8 pt-8 pb-7' : 'shadow-[0_30px_80px_-30px_rgba(1,58,43,.35)] px-6 sm:px-10 pt-9 pb-8'} ring-1 ring-black/5 animate-fade-up`}>
         <button onClick={onBack} className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center text-charcoal/70 hover:bg-slate-100 hover:text-charcoal transition" aria-label="Close">
           <X className="w-5 h-5" />
         </button>
 
-        <h1 className="text-[28px] sm:text-[30px] font-bold leading-tight text-charcoal pr-8">{isSignup ? 'Create your account' : 'Log in to your account'}</h1>
-        <p className="mt-2 text-[16px] leading-relaxed text-charcoal/65">
+        <h1 className={`${asModal ? 'text-[24px] sm:text-[26px]' : 'text-[28px] sm:text-[30px]'} font-bold leading-tight text-charcoal pr-8`}>{isSignup ? 'Create your account' : 'Log in to your account'}</h1>
+        <p className={`mt-2 ${asModal ? 'text-[15px]' : 'text-[16px]'} leading-relaxed text-charcoal/65`}>
           {isSignup
             ? 'Learn industry skills with free, mentor-written courses and earn a QR-verified certificate.'
             : 'Learn on your own time with mentor-written courses and quizzes after every module.'}
@@ -150,13 +140,25 @@ export default function AuthPage({ mode = 'login', onSwitchMode, onBack, onHome,
           {isSignup ? 'Log in to an existing account' : 'Create a new account'}
         </button>
 
-        <p className="mt-6 text-[13px] leading-relaxed text-charcoal/60">
+        <p className={`${asModal ? 'mt-5 text-[12.5px]' : 'mt-6 text-[13px]'} leading-relaxed text-charcoal/60`}>
           {isSignup
             ? 'Your registration number becomes your learner ID and is printed with a QR code on your certificate. We will email you a code to verify your address.'
             : 'Use the email, registration number and password you registered with. Having trouble? Use Forgot password to reset it.'}
         </p>
       </div>
+  );
 
+  if (asModal) return card;
+  return (
+    <div className="landing-type min-h-screen relative overflow-hidden bg-ivory flex flex-col items-center px-4 py-8 sm:py-12">
+      {/* soft brand backdrop */}
+      <div className="absolute inset-0 texture-dots opacity-50 pointer-events-none" aria-hidden="true" />
+      <div className="absolute -top-40 -right-40 w-[520px] h-[520px] rounded-full bg-brand-100/60 blur-3xl pointer-events-none" aria-hidden="true" />
+      <div className="absolute -bottom-48 -left-40 w-[480px] h-[480px] rounded-full bg-[#E9DFC9]/70 blur-3xl pointer-events-none" aria-hidden="true" />
+      <button onClick={onHome} className="relative mb-6" aria-label="Arshith Bootcamp home">
+        <img src="/arshith-bootcamp-logo.png" alt="Arshith Bootcamp" className="h-11 w-auto" />
+      </button>
+      {card}
       <p className="relative mt-6 text-[12px] text-charcoal/45">© {new Date().getFullYear()} Arshith Bootcamp</p>
     </div>
   );
