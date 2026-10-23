@@ -2,9 +2,9 @@
 // ever leaves the student's device - only the outcome of each check (e.g. "phone detected") is
 // reported with the exam submission.
 //
-//  - Faces:    @vladmandic/face-api (tiny face detector + 128-d face descriptors) counts faces and
+//  - Faces:    @vladmandic/face-api (SSD MobileNet detector, 68-point landmarks, 128-d descriptors) counts faces and
 //              compares the face on camera with the reference captured before the exam.
-//  - Phones:   MediaPipe object detector (EfficientDet-Lite0, COCO labels "cell phone", "person").
+//  - Phones:   MediaPipe object detector (EfficientDet-Lite2, COCO labels "cell phone", "person").
 //  - Hands:    MediaPipe hand landmarker.
 //  - Eyes:     MediaPipe face landmarker (iris points + eye-direction blendshapes) for looking down or
 //              away, measured against the student's own "looking at the screen" pose from calibration.
@@ -15,7 +15,9 @@ import wasmBinaryPath from '@mediapipe/tasks-vision/vision_wasm_internal.wasm?ur
 
 const FACE_MODELS = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model';
 const HAND_MODEL = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task';
-const OBJECT_MODEL = 'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite';
+// EfficientDet-Lite2: float16 build on the GPU; the int8 build on the CPU (int8 returns nothing on the GPU).
+const OBJECT_MODEL_GPU = 'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite2/float16/latest/efficientdet_lite2.tflite';
+const OBJECT_MODEL_CPU = 'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite2/int8/1/efficientdet_lite2.tflite';
 const FACE_MESH_MODEL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
 
 /**
@@ -44,7 +46,7 @@ export function loadProctorModels(onProgress = () => {}) {
     await faceapi.tf.ready();
     tick('Face detector runtime');
     await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODELS),
+      faceapi.nets.ssdMobilenetv1.loadFromUri(FACE_MODELS),
       faceapi.nets.faceLandmark68TinyNet.loadFromUri(FACE_MODELS)
     ]);
     tick('Face detection model');
@@ -57,13 +59,10 @@ export function loadProctorModels(onProgress = () => {}) {
       try { return await Cls.createFromOptions(fileset, { ...options, baseOptions: { ...options.baseOptions, delegate: 'GPU' } }); }
       catch { return Cls.createFromOptions(fileset, { ...options, baseOptions: { ...options.baseOptions, delegate: 'CPU' } }); }
     };
-    const objects = await make(ObjectDetector, {
-      baseOptions: { modelAssetPath: OBJECT_MODEL },
-      runningMode: 'VIDEO',
-      scoreThreshold: 0.35,
-      maxResults: 8,
-      categoryAllowlist: ['cell phone', 'person', 'book', 'laptop']
-    });
+    const objectOptions = { runningMode: 'VIDEO', scoreThreshold: 0.35, maxResults: 8, categoryAllowlist: ['cell phone', 'person', 'book', 'laptop'] };
+    let objects;
+    try { objects = await ObjectDetector.createFromOptions(fileset, { ...objectOptions, baseOptions: { modelAssetPath: OBJECT_MODEL_GPU, delegate: 'GPU' } }); }
+    catch { objects = await ObjectDetector.createFromOptions(fileset, { ...objectOptions, baseOptions: { modelAssetPath: OBJECT_MODEL_CPU, delegate: 'CPU' } }); }
     tick('Phone detection model');
     const hands = await make(HandLandmarker, { baseOptions: { modelAssetPath: HAND_MODEL }, runningMode: 'VIDEO', numHands: 2 });
     tick('Hand detection model');
@@ -71,13 +70,25 @@ export function loadProctorModels(onProgress = () => {}) {
     tick('Eye tracking model');
 
     engine = { faceapi, objects, hands, mesh };
+    // Warm-up: the first pass after loading compiles GPU shaders and can give unreliable results,
+    // so run every model once on a blank frame before anything real is measured.
+    const blank = document.createElement('canvas');
+    blank.width = 320; blank.height = 240;
+    const bctx = blank.getContext('2d');
+    bctx.fillStyle = '#777'; bctx.fillRect(0, 0, 320, 240);
+    try {
+      await faceapi.detectAllFaces(blank, faceOptions(faceapi)).withFaceLandmarks(true).withFaceDescriptors();
+      const t = performance.now();
+      objects.detectForVideo(blank, t); hands.detectForVideo(blank, t); mesh.detectForVideo(blank, t);
+    } catch { /* warm-up is best effort */ }
     return engine;
   })();
   loading.catch(() => { loading = null; });
   return loading;
 }
 
-const faceOptions = (faceapi, inputSize = 416) => new faceapi.TinyFaceDetectorOptions({ inputSize, scoreThreshold: 0.45 });
+// SSD MobileNet finds smaller, turned and partly lit faces far more reliably than the tiny detector.
+const faceOptions = (faceapi) => new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5, maxResults: 5 });
 
 /** Euclidean distance between two face descriptors. */
 export function faceDistance(a, b) {
@@ -90,9 +101,10 @@ export function faceDistance(a, b) {
 export const matchPercent = (distance) => Math.round(Math.max(0, Math.min(1, 1 - distance / (SAME_PERSON * 2.2))) * 100);
 
 /** All faces in the frame, largest first: [{ box, score, descriptor }]. */
-async function detectFaces(video, inputSize) {
+async function detectFaces(video) {
   const { faceapi } = engine;
-  const res = await faceapi.detectAllFaces(video, faceOptions(faceapi, inputSize)).withFaceLandmarks(true).withFaceDescriptors();
+  // tiny landmarks are only used to align the face for the descriptor - 5x faster, same matching quality
+  const res = await faceapi.detectAllFaces(video, faceOptions(faceapi)).withFaceLandmarks(true).withFaceDescriptors();
   return res
     .map(r => ({ box: r.detection.box, score: r.detection.score, descriptor: r.descriptor }))
     .sort((a, b) => b.box.width * b.box.height - a.box.width * a.box.height);
@@ -106,7 +118,7 @@ export async function captureReference(video, samples = 3) {
   await loadProctorModels();
   const descriptors = [];
   for (let i = 0; i < samples; i++) {
-    const faces = await detectFaces(video, 416);
+    const faces = await detectFaces(video);
     if (faces.length === 0) throw new Error('No face found. Sit in good light and look straight at the camera.');
     if (faces.length > 1) throw new Error('More than one face is visible. Only you should be in front of the camera.');
     if (faces[0].box.width < video.videoWidth * 0.18) throw new Error('Your face is too small in the frame. Move a little closer to the camera.');
@@ -125,27 +137,33 @@ export async function captureReference(video, samples = 3) {
  * { faces: [{ box, distance, same }], phones: [box], people, hands: [box], width, height }.
  * Boxes are { x, y, width, height } in video pixels.
  */
-export async function analyzeFrame(video, gallery) {
+export async function analyzeFrame(video, gallery, { identity = true, objects: runObjects = true } = {}) {
   const { objects, hands, mesh } = engine;
   const t = performance.now();
   const refs = !gallery ? null : Array.isArray(gallery) ? gallery : [gallery];
-  const raw = await detectFaces(video, 416);
+  const ms = {};
+  let c = performance.now();
+  const lap = (k) => { const n = performance.now(); ms[k] = Math.round(n - c); c = n; };
+  const raw = identity ? await detectFaces(video) : [];
+  lap('faces');
   const faces = raw.map(f => {
     const distance = refs ? Math.min(...refs.map(r => faceDistance(f.descriptor, r))) : null;
     return { box: f.box, distance, same: distance === null ? null : distance <= SAME_PERSON };
   });
   // learn new confident views of the same student (e.g. glasses put on) so later frames still match
-  if (Array.isArray(gallery) && raw.length === 1 && faces[0].distance < LEARN_BELOW && gallery.length < GALLERY_MAX
+  if (identity && Array.isArray(gallery) && raw.length === 1 && faces[0].distance < LEARN_BELOW && gallery.length < GALLERY_MAX
     && Math.min(...gallery.map(r => faceDistance(raw[0].descriptor, r))) > 0.15) {
     gallery.push(raw[0].descriptor);
   }
-  const objs = objects.detectForVideo(video, t).detections || [];
+  const objs = runObjects ? objects.detectForVideo(video, t).detections || [] : [];
+  lap('objects');
   const label = (d) => d.categories?.[0]?.categoryName;
   const score = (d) => d.categories?.[0]?.score || 0;
   const toBox = (b) => ({ x: b.originX, y: b.originY, width: b.width, height: b.height });
-  const phones = objs.filter(d => label(d) === 'cell phone' && score(d) >= 0.4).map(d => ({ ...toBox(d.boundingBox), score: score(d) }));
+  const phones = objs.filter(d => label(d) === 'cell phone' && score(d) >= 0.45).map(d => ({ ...toBox(d.boundingBox), score: score(d) }));
   const people = objs.filter(d => label(d) === 'person' && score(d) >= 0.5).length;
   const handRes = hands.detectForVideo(video, t + 1);
+  lap('hands');
   const W = video.videoWidth;
   const H = video.videoHeight;
   const handBoxes = (handRes.landmarks || []).map(pts => {
@@ -155,11 +173,18 @@ export async function analyzeFrame(video, gallery) {
     return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y };
   });
   const meshRes = mesh.detectForVideo(video, t + 2);
+  lap('mesh');
   const gaze = gazeMetrics(meshRes);
   if (gaze) gaze.irises = gaze.irises.map(p => ({ x: p.x * W, y: p.y * H }));
   // second opinion on how many faces are in view (the face mesh finds smaller / turned faces)
   const meshFaces = meshRes?.faceLandmarks?.length || 0;
-  return { faces, phones, people, hands: handBoxes, gaze, meshFaces, width: W, height: H };
+  // face boxes from the mesh (every frame) so hand-near-face and counting work between identity checks
+  const meshBoxes = (meshRes?.faceLandmarks || []).map(pts => {
+    const xs = pts.map(q => q.x * W); const ys = pts.map(q => q.y * H);
+    const x = Math.min(...xs); const y = Math.min(...ys);
+    return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y };
+  });
+  return { faces, identityChecked: identity, objectsChecked: runObjects, phones, people, hands: handBoxes, gaze, meshFaces, meshBoxes, width: W, height: H, ms };
 }
 
 const blend = (cats, name) => cats?.find(c => c.categoryName === name)?.score || 0;

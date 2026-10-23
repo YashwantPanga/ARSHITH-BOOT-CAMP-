@@ -35,9 +35,16 @@ function getTransport() {
   return transport;
 }
 
+const FREE_MAILBOX = /@(gmail|googlemail|yahoo|outlook|hotmail|live|icloud|rediffmail)./i;
+
 /** Opens the SMTP connection ahead of time so the first email is not delayed. Never throws. */
 export async function warmUpMailer() {
   if (!smtpConfigured()) return false;
+  const from = process.env.MAIL_FROM || process.env.SMTP_USER || '';
+  if (FREE_MAILBOX.test(from)) {
+    console.warn('[mail] Emails are sent from a free mailbox (' + from.replace(/^.*@/, '@') + '). Mail providers often put such codes in spam.'
+      + ' For inbox delivery send from your own domain, e.g. Brevo with MAIL_FROM=Arshith Bootcamp <no-reply@arshithgroup.com> (see .env.example).');
+  }
   try {
     await getTransport().verify();
     return true;

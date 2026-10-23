@@ -140,7 +140,7 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
           {models.state === 'loading' && (
             <div className="mt-1.5">
               <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden"><div className="h-full bg-gradient-to-r from-sage to-forest transition-[width] duration-500" style={{ width: `${Math.max(6, pct)}%` }} /></div>
-              <p className="mt-1 text-xs text-slate-500">Loading {models.label.toLowerCase()}… ({pct}%) - first time only, about 30 MB.</p>
+              <p className="mt-1 text-xs text-slate-500">Loading {models.label.toLowerCase()}… ({pct}%) - first time only, about 40 MB.</p>
             </div>
           )}
           {models.state === 'error' && (

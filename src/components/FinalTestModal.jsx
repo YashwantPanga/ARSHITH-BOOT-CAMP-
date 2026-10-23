@@ -10,7 +10,6 @@ import { cleanText, displayTitle } from '../utils/textUtils';
 import { QuestionCard, ReviewList } from './ModuleQuizModal';
 import { Spinner } from './ui';
 import IdentityCheck from './proctor/IdentityCheck';
-import ProctorPanel from './proctor/ProctorPanel';
 import { analyzeFrame, handNearFace, matchPercent, gazeState } from '../utils/aiProctor';
 import CertificateCelebration from './CertificateCelebration';
 
@@ -49,7 +48,6 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
   const [lockInfo, setLockInfo] = useState(null);
   const [identity, setIdentity] = useState({ ready: false, reference: null, gaze: null, idCard: null });
-  const [live, setLive] = useState(null);           // latest AI detection result
   const [liveAlert, setLiveAlert] = useState(null); // condition currently on camera { type, message, strike }
 
   const streamRef = useRef(null);
@@ -110,7 +108,6 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
     flagsRef.current = [];
     statsRef.current = { checks: 0, matched: 0, mismatched: 0, sum: 0 };
     setIdentity({ ready: false, reference: null, gaze: null, idCard: null });
-    setLive(null);
     setLiveAlert(null);
     setAgree(false);
     setLockInfo(null);
@@ -188,11 +185,11 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
     api.reportProctorEvent({ userId, courseId: course.id, sessionId: sid, event }).catch(() => {});
   }, [userId, course.id]);
 
-  const addViolation = useCallback((type, message) => {
+  const addViolation = useCallback((type, message, { debounce = true } = {}) => {
     if (phaseRef.current !== 'taking') return;
     const now = Date.now();
-    if (now - lastViolationAt.current < 2500) return; // one action often fires blur + visibility + fullscreen together
-    lastViolationAt.current = now;
+    if (debounce && now - lastViolationAt.current < 2500) return; // one action often fires blur + visibility + fullscreen together
+    if (debounce) lastViolationAt.current = now;
     const v = { type, message, at: new Date().toISOString() };
     violationsRef.current = [...violationsRef.current, v];
     reportLive({ type, message, strike: true });
@@ -280,21 +277,27 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
       } catch { /* frame not ready */ }
     }, 3000);
 
-    // AI proctoring loop. Each condition must persist for a few checks before it becomes a strike
-    // (the student sees it live first and can correct it); after a strike the same condition waits
-    // RULE_COOLDOWN before it can count again.
+    // AI proctoring loop (about 2-3 checks a second; nothing is shown to the student except warnings).
+    // A condition becomes a warning when it was seen in at least 75% of the checks during its hold time,
+    // so one bad frame never counts but a real problem is caught within a second or two. After a warning
+    // the same condition waits RULE_COOLDOWN before it can count again.
     const RULES = {
-      MULTIPLE_FACES: { after: 2, strike: true, msg: 'More than one person is in front of the camera.' },
-      IDENTITY_MISMATCH: { after: 3, strike: true, msg: 'The person on camera does not match the face captured before the exam.' },
-      PHONE_DETECTED: { after: 2, strike: true, msg: 'A mobile phone was detected on camera.' },
-      NO_FACE: { after: 4, strike: true, msg: 'Your face was not visible on camera.' },
-      LOOKING_DOWN: { after: 3, strike: true, msg: 'You are looking down, away from the screen.' },
-      LOOKING_AWAY: { after: 4, strike: true, msg: 'You are looking away from the screen.' },
-      HAND_NEAR_FACE: { after: 3, strike: false, msg: 'A hand is covering or near your face.' }
+      PHONE_DETECTED: { hold: 1200, strike: true, msg: 'A mobile phone was detected on camera.' },
+      MULTIPLE_FACES: { hold: 1500, strike: true, msg: 'More than one person is in front of the camera.' },
+      IDENTITY_MISMATCH: { hold: 3000, strike: true, msg: 'The person on camera does not match the face captured before the exam.' },
+      LOOKING_DOWN: { hold: 2500, strike: true, msg: 'You are looking down, away from the screen.' },
+      LOOKING_AWAY: { hold: 3000, strike: true, msg: 'You are looking away from the screen.' },
+      NO_FACE: { hold: 3000, strike: true, msg: 'Your face was not visible on camera.' },
+      HAND_NEAR_FACE: { hold: 3000, strike: false, msg: 'A hand is covering or near your face.' }
     };
     const RULE_COOLDOWN = 15000;
-    const streak = {};
+    const IDENTITY_EVERY = 1500;   // the face-identity model is heavier, so it runs every 1.5 s
+    const history = {};
     const lastStrike = {};
+    let lastIdentityAt = 0;
+    let identity = { faces: 0, same: null, at: 0 };
+    let objects = { phones: 0, people: 0, at: 0 }; // phone/person detection runs on every other check
+    let tick = 0;
     let alive = true;
     // identity gallery: starts with the captured face and learns confident new views (glasses on/off)
     const gallery = identityRef.current.reference ? [identityRef.current.reference] : null;
@@ -303,43 +306,56 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
       const t0 = performance.now();
       try {
         if (probe.videoWidth && !document.hidden) {
-          const r = await analyzeFrame(probe, gallery);
-          r.gazeState = gazeState(r.gaze, identityRef.current.gaze);
+          const doIdentity = !!gallery && Date.now() - lastIdentityAt >= IDENTITY_EVERY;
+          const doObjects = tick++ % 2 === 0 || objects.phones > 0 || objects.people > 1;
+          const r = await analyzeFrame(probe, gallery, { identity: doIdentity, objects: doObjects });
           if (!alive) return;
-          setLive(r);
-          const face = r.faces[0];
-          const st = statsRef.current;
-          if (r.faces.length === 1 && face.distance != null) {
-            st.checks += 1;
-            if (face.same) { st.matched += 1; st.sum += matchPercent(face.distance); } else st.mismatched += 1;
+          const now = Date.now();
+          if (doObjects) objects = { phones: r.phones.length, people: r.people, at: now };
+          if (doIdentity) {
+            lastIdentityAt = now;
+            const f = r.faces[0];
+            identity = { faces: r.faces.length, same: r.faces.length === 1 ? f.same : null, at: now };
+            const st = statsRef.current;
+            if (r.faces.length === 1 && f.distance != null) {
+              st.checks += 1;
+              if (f.same) { st.matched += 1; st.sum += matchPercent(f.distance); } else st.mismatched += 1;
+            }
           }
+          const gz = gazeState(r.gaze, identityRef.current.gaze);
+          const faceBox = r.meshBoxes[0] || r.faces[0]?.box;
+          const facesSeen = Math.max(r.meshFaces, doIdentity ? r.faces.length : 0);
           const active = {
-            MULTIPLE_FACES: Math.max(r.faces.length, r.meshFaces) > 1 || r.people > 1,
-            IDENTITY_MISMATCH: r.faces.length === 1 && face.same === false,
-            PHONE_DETECTED: r.phones.length > 0,
-            NO_FACE: r.faces.length === 0 && r.meshFaces === 0 && r.people === 0,
-            LOOKING_DOWN: r.faces.length > 0 && !!r.gazeState?.down,
-            LOOKING_AWAY: r.faces.length > 0 && !!r.gazeState?.away && !r.gazeState?.down,
-            HAND_NEAR_FACE: !!face && r.hands.some(h => handNearFace(h, face.box))
+            PHONE_DETECTED: objects.phones > 0,
+            MULTIPLE_FACES: facesSeen > 1 || objects.people > 1,
+            IDENTITY_MISMATCH: now - identity.at < IDENTITY_EVERY * 2 && identity.faces === 1 && identity.same === false,
+            LOOKING_DOWN: r.meshFaces > 0 && !!gz?.down,
+            LOOKING_AWAY: r.meshFaces > 0 && !!gz?.away && !gz?.down,
+            NO_FACE: facesSeen === 0 && objects.people === 0,
+            HAND_NEAR_FACE: !!faceBox && r.hands.some(h => handNearFace(h, faceBox))
           };
           let shown = null;
           for (const [type, on] of Object.entries(active)) {
             const rule = RULES[type];
-            streak[type] = on ? (streak[type] || 0) + 1 : 0;
-            if (on && !shown) shown = { type, message: rule.msg, strike: rule.strike };
-            if (streak[type] === rule.after && Date.now() - (lastStrike[type] || 0) > RULE_COOLDOWN) {
-              lastStrike[type] = Date.now();
-              streak[type] = 0;
-              if (rule.strike) addViolation(type, rule.msg);
+            const h = (history[type] ||= []);
+            h.push({ t: now, on });
+            while (h.length && now - h[0].t > rule.hold) h.shift();
+            const ratio = h.filter(x => x.on).length / h.length;
+            if (on && ratio >= 0.5 && !shown) shown = { type, message: rule.msg, strike: rule.strike };
+            const span = now - h[0].t;
+            if (on && span >= rule.hold * 0.8 && ratio >= 0.75 && now - (lastStrike[type] || 0) > RULE_COOLDOWN) {
+              lastStrike[type] = now;
+              h.length = 0;
+              if (rule.strike) addViolation(type, rule.msg, { debounce: false });
               else { flagsRef.current = [...flagsRef.current, { type, message: rule.msg, at: new Date().toISOString() }]; reportLive({ type, message: rule.msg, strike: false }); }
             }
           }
           setLiveAlert(shown);
         }
       } catch { /* a frame failed - try the next one */ }
-      if (alive) setTimeout(loop, Math.max(250, 1200 - (performance.now() - t0)));
+      if (alive) setTimeout(loop, Math.max(60, 400 - (performance.now() - t0)));
     };
-    setTimeout(loop, 800);
+    setTimeout(loop, 500);
 
     return () => {
       window.removeEventListener('popstate', onPop);
@@ -449,6 +465,9 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
         </div>
         {phase === 'taking' && (
           <>
+            <div className="hidden md:flex items-center gap-1.5 chip bg-brand-50 text-brand-900" title="Camera, identity, eye, phone and hand checks are running">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> AI proctoring on
+            </div>
             <div className={`hidden sm:flex items-center gap-1.5 chip ${violations.length ? 'bg-rose-50 text-rose-600' : 'bg-mint-50 text-mint-500'}`}>
               <Eye className="w-3.5 h-3.5" /> {violations.length}/{MAX_VIOLATIONS} warnings
             </div>
@@ -462,7 +481,6 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
         )}
       </header>
 
-      {phase === 'taking' && <ProctorPanel attachVideo={attachVideo} live={live} alert={liveAlert} />}
       {phase === 'taking' && liveAlert && (
         <div role="status" className={`fixed top-[72px] left-1/2 -translate-x-1/2 z-[116] max-w-[92vw] flex items-center gap-2.5 px-4 py-2.5 rounded-2xl shadow-xl text-sm font-semibold animate-fade-up ${liveAlert.strike ? 'bg-rose-600 text-white' : 'bg-amber-400 text-amber-950'}`}>
           <span className="relative flex w-2.5 h-2.5"><span className="absolute inset-0 rounded-full bg-white/80 animate-ping" /><span className="relative w-2.5 h-2.5 rounded-full bg-white" /></span>

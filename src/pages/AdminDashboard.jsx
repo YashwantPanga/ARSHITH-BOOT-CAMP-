@@ -1145,6 +1145,32 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
               })}
             </div>
 
+            {/* Exam proctoring at a glance (refreshes with the student list every 15 s) */}
+            {(() => {
+              const details = students.flatMap(st => (st.enrolledCourseDetails || []).filter(cd => !selectedProgressCourseId || cd.courseId === selectedProgressCourseId).map(cd => ({ st, cd })));
+              const live = details.filter(x => x.cd.liveExam);
+              const attempts = details.flatMap(x => x.cd.examAttempts || []);
+              const cards = [
+                { label: 'Exams running now', value: live.length, sub: live.length ? `${live.reduce((n, x) => n + x.cd.liveExam.violationCount, 0)} live warnings` : 'No exam in progress', tone: live.length ? 'text-rose-600' : 'text-slate-900', pulse: live.length > 0 },
+                { label: 'Warnings recorded', value: attempts.reduce((n, a) => n + (a.violationCount || 0), 0), sub: `across ${attempts.length} submitted attempt${attempts.length === 1 ? '' : 's'}`, tone: 'text-amber-600' },
+                { label: 'Ended by proctoring', value: attempts.filter(a => a.terminated).length, sub: '3 warnings reached', tone: 'text-rose-600' },
+                { label: 'ID flagged for review', value: attempts.filter(a => a.identity?.flaggedForReview).length, sub: 'name not matched or face mismatch', tone: 'text-amber-700' }
+              ];
+              return (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {cards.map(c => (
+                    <div key={c.label} className="bg-white rounded-2xl dark-bezel p-4">
+                      <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        {c.pulse && <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />}{c.label}
+                      </p>
+                      <p className={`mt-1 text-2xl font-black ${c.tone}`}>{c.value}</p>
+                      <p className="text-[11px] font-semibold text-slate-500">{c.sub}</p>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+
             {/* Students Enrolled in Selected Course */}
             <div className="bg-white rounded-3xl dark-bezel p-6 space-y-4">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
