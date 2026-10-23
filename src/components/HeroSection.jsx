@@ -27,48 +27,51 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
     <section className="relative overflow-hidden bg-ivory">
       <div className="absolute inset-0 texture-dots opacity-50 pointer-events-none" aria-hidden="true" />
 
+      {/* below lg the hero is a full-width forest band (mobile layout like Coursera's) */}
+      <div className="relative bg-[radial-gradient(120%_80%_at_20%_0%,#0E5C45,#013A2B_60%)] lg:bg-none">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8">
-        <nav className="text-sm text-charcoal/60" aria-label="Breadcrumb">Home <span className="mx-1.5 text-charcoal/30">›</span> <a href="https://arshithgroup.com" target="_blank" rel="noopener noreferrer" className="text-charcoal hover:underline">arshithgroup.com</a></nav>
+        <nav className="text-sm text-ivory/60 lg:text-charcoal/60" aria-label="Breadcrumb">Home <span className="mx-1.5 text-ivory/30 lg:text-charcoal/30">›</span> <a href="https://arshithgroup.com" target="_blank" rel="noopener noreferrer" className="text-ivory lg:text-charcoal hover:underline">arshithgroup.com</a></nav>
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-8 lg:gap-6 items-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-6 lg:gap-6 items-center">
         {/* Copy */}
-        <div className="relative z-10 pt-8 lg:pt-4 lg:pb-16 animate-fade-up">
-          <p className="text-[12px] font-bold uppercase tracking-[0.28em] text-sage">Arshith Bootcamp</p>
-          <h1 className="mt-4 font-display text-[44px] sm:text-[58px] lg:text-[66px] leading-[1.04] text-charcoal">
-            Achieve your career goals with <span className="text-brand-900">free online courses</span>
+        <div className="relative z-10 pt-6 lg:pt-4 lg:pb-16 animate-fade-up">
+          <p className="text-[12px] font-bold uppercase tracking-[0.28em] text-[#BCD1C6] lg:text-sage">Arshith Bootcamp</p>
+          <h1 className="mt-3 lg:mt-4 font-display text-[36px] sm:text-[52px] lg:text-[66px] leading-[1.06] text-ivory lg:text-charcoal">
+            Achieve your career goals with <span className="text-[#BCD1C6] lg:text-brand-900">free online courses</span>
           </h1>
-          <p className="mt-6 text-[16px] sm:text-[17px] text-charcoal/65 leading-relaxed max-w-md">
+          <p className="mt-4 lg:mt-6 text-[15.5px] sm:text-[17px] text-ivory/80 lg:text-charcoal/65 leading-relaxed max-w-md">
             Mentor-written programs in Python, SQL, Web Development and AI — with deep-dive modules, live code practice,
             quizzes after every module, a proctored final and a QR-verified certificate.
           </p>
 
-          <div className="mt-9 flex flex-wrap items-center gap-3">
-            <button onClick={onRegisterClick} className="inline-flex items-center gap-2 rounded-lg bg-brand-900 text-ivory px-7 py-4 text-[15px] font-semibold shadow-[0_14px_30px_-14px_rgba(1,58,43,.7)] hover:bg-forest hover:-translate-y-0.5 transition group">
+          <div className="mt-7 lg:mt-9 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
+            <button onClick={onRegisterClick} className="w-full sm:w-auto justify-center inline-flex items-center gap-2 rounded-lg bg-ivory text-brand-900 lg:bg-brand-900 lg:text-ivory px-7 py-4 text-[15px] font-semibold shadow-[0_14px_30px_-14px_rgba(0,0,0,.5)] lg:shadow-[0_14px_30px_-14px_rgba(1,58,43,.7)] hover:bg-white lg:hover:bg-forest hover:-translate-y-0.5 transition group">
               Start Learning for Free <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </button>
-            <button onClick={onExploreClick} className="inline-flex items-center rounded-lg border border-brand-900/20 bg-white/70 px-7 py-4 text-[15px] font-semibold text-brand-900 hover:bg-white hover:border-brand-900/40 transition">
+            <button onClick={onExploreClick} className="w-full sm:w-auto justify-center inline-flex items-center rounded-lg border border-ivory/40 text-ivory lg:border-brand-900/20 lg:bg-white/70 lg:text-brand-900 px-7 py-4 text-[15px] font-semibold hover:bg-white/10 lg:hover:bg-white lg:hover:border-brand-900/40 transition">
               Explore Courses
             </button>
           </div>
 
-          <button onClick={onVerifyClick} className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-sage hover:text-brand-900 transition-colors">
+          <button onClick={onVerifyClick} className="mt-5 lg:mt-6 inline-flex items-center gap-2 text-sm font-medium text-[#BCD1C6] lg:text-sage hover:text-white lg:hover:text-brand-900 transition-colors">
             <QrCode className="w-4 h-4" /> Have a certificate? Verify it by ID or QR scan
           </button>
         </div>
 
         {/* Visual */}
-        <div className="relative h-[460px] sm:h-[560px] lg:h-[600px] animate-fade-up" style={{ animationDelay: '120ms' }}>
+        <div className="relative h-[420px] sm:h-[540px] lg:h-[600px] animate-fade-up" style={{ animationDelay: '120ms' }}>
           {/* forest-green circle with the student standing in front of it (head rises above the circle) */}
-          <div className="absolute left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:right-10 bottom-10 w-[310px] h-[310px] sm:w-[420px] sm:h-[420px] lg:w-[450px] lg:h-[450px] rounded-full bg-[radial-gradient(circle_at_35%_30%,#0E5C45,#013A2B_70%)] shadow-[0_40px_80px_-40px_rgba(1,58,43,.65)]" aria-hidden="true" />
+          <div className="absolute left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:right-10 bottom-10 w-[310px] h-[310px] sm:w-[420px] sm:h-[420px] lg:w-[450px] lg:h-[450px] rounded-full bg-[radial-gradient(circle_at_35%_30%,#5F8574,#426557_70%)] lg:bg-[radial-gradient(circle_at_35%_30%,#0E5C45,#013A2B_70%)] shadow-[0_40px_80px_-40px_rgba(1,58,43,.65)]" aria-hidden="true" />
           <img
             src="/hero-student.webp"
             alt="A student learning online with a laptop and backpack"
             width="950" height="1000"
             fetchpriority="high"
-            className="absolute z-[1] left-1/2 -translate-x-[47%] lg:left-auto lg:translate-x-0 lg:right-[18px] bottom-10 h-[390px] sm:h-[520px] lg:h-[560px] w-auto max-w-none object-contain [mask-image:linear-gradient(to_bottom,#000_86%,transparent)]"
+            className="absolute z-[1] left-1/2 -translate-x-[47%] lg:left-auto lg:translate-x-0 lg:right-[18px] bottom-10 h-[370px] sm:h-[500px] lg:h-[560px] w-auto max-w-none object-contain [mask-image:linear-gradient(to_bottom,#000_86%,transparent)]"
           />
         </div>
+      </div>
       </div>
 
       {/* Free modules card (like the feedback card) + Our features */}

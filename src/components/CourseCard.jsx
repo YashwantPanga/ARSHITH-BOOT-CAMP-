@@ -8,6 +8,8 @@ import { hoursOf } from '../data/meta';
 // Certificate-style card art (1600x1000, 16:10) in public/course-cards/, by course id. Other courses
 // keep their own thumbnail.
 const CARD_ART = new Set(['python-programming', 'sql-mastery', 'web-development', 'data-science-ai']);
+/** The course's card image: certificate-style art when available, otherwise its thumbnail. */
+export const courseArt = (course) => (CARD_ART.has(course.id) ? `/course-cards/${course.id}.webp` : course.thumbnail);
 
 export default function CourseCard({ course, enrolledCourseId, onSelect, onEnroll, index = 0 }) {
   const isMine = enrolledCourseId === course.id;

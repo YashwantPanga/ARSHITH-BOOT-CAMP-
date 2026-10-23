@@ -60,7 +60,11 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
   return (
     <header className={`sticky top-0 z-50 bg-white/95 backdrop-blur-md transition-shadow duration-300 ${scrolled ? 'shadow-[0_8px_28px_-14px_rgba(1,58,43,.35)]' : 'border-b border-brand-900/5'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center h-[78px] gap-4 lg:gap-6">
+        <div className="flex items-center h-16 lg:h-[78px] gap-2 sm:gap-4 lg:gap-6">
+          {/* phones: menu button on the left of the logo (Coursera-style mobile header) */}
+          <button onClick={() => setOpen(o => !o)} className="lg:hidden -ml-1.5 p-2.5 rounded-xl text-brand-900 hover:bg-brand-50" aria-label="Menu" aria-expanded={open}>
+            {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
           <Logo onClick={() => go(paths.home())} />
 
           {/* Explore mega-menu */}
@@ -130,24 +134,22 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
           </div>
 
           <div className="flex lg:hidden items-center gap-1 ml-auto">
-            {studentUser ? (
+            <button onClick={() => { setOpen(true); setTimeout(() => document.getElementById('mobile-search')?.focus(), 60); }} className="p-2.5 rounded-xl text-brand-900 hover:bg-brand-50" aria-label="Search courses">
+              <Search className="w-[22px] h-[22px]" />
+            </button>
+            {studentUser && (
               <button onClick={() => go(paths.dashboard())} className="w-9 h-9 rounded-full bg-brand-900 text-ivory text-xs font-bold flex items-center justify-center" aria-label="Dashboard">
                 {initials}
               </button>
-            ) : (
-              <button onClick={() => go(paths.login())} className="btn-ghost px-3 py-2">Log in</button>
             )}
-            <button onClick={() => setOpen(o => !o)} className="p-2.5 rounded-xl text-brand-900 hover:bg-brand-50" aria-label="Menu" aria-expanded={open}>
-              {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
           </div>
         </div>
       </div>
 
       {open && (
-        <div className="lg:hidden border-t border-brand-900/10 bg-white px-4 pt-3 pb-6 space-y-3 animate-fade-in shadow-lg max-h-[calc(100vh-78px)] overflow-y-auto">
+        <div className="lg:hidden border-t border-brand-900/10 bg-white px-4 pt-3 pb-6 space-y-3 animate-fade-in shadow-lg max-h-[calc(100vh-64px)] overflow-y-auto">
           <form onSubmit={submitSearch} className="relative md:hidden">
-            <input type="search" placeholder="What do you want to learn today?" value={query} onChange={(e) => setQuery(e.target.value)} className="input pl-10" />
+            <input id="mobile-search" type="search" placeholder="What do you want to learn today?" value={query} onChange={(e) => setQuery(e.target.value)} className="input pl-10" />
             <Search className="w-4 h-4 text-charcoal/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
           </form>
           <div className="grid gap-1">
