@@ -1,32 +1,20 @@
 import React from 'react';
-import { ArrowRight, ShieldCheck, QrCode, BookOpen, Award, Layers, Timer, Code2, Database, Globe, BrainCircuit, Star } from 'lucide-react';
+import { ArrowRight, QrCode, BookOpen, Award, Layers, Timer, Code2, Database, Globe } from 'lucide-react';
 
-/* Track tiles (top of the visual) and their accent colours, in the site palette. */
+/* Track icons for the "Free learning" card, in the site palette. */
 const TRACKS = [
-  { key: 'python', label: 'Python', icon: Code2, color: 'text-[#2F6FB1]', bar: 'bg-[#2F6FB1]' },
-  { key: 'sql', label: 'SQL', icon: Database, color: 'text-[#B45309]', bar: 'bg-[#E0A458]' },
-  { key: 'web', label: 'Web', icon: Globe, color: 'text-[#0F766E]', bar: 'bg-sage' },
-  { key: 'ai', label: 'AI', icon: BrainCircuit, color: 'text-[#6D28D9]', bar: 'bg-forest' }
+  { key: 'python', icon: Code2, color: 'text-[#2F6FB1]' },
+  { key: 'sql', icon: Database, color: 'text-[#B45309]' },
+  { key: 'web', icon: Globe, color: 'text-[#0F766E]' }
 ];
-
-const trackOf = (c) => {
-  const t = `${c.id} ${c.title}`.toLowerCase();
-  if (t.includes('python')) return 'python';
-  if (t.includes('sql')) return 'sql';
-  if (t.includes('web')) return 'web';
-  return 'ai';
-};
 
 /**
  * Landing hero: headline and actions on the left; on the right a student in front of a large
- * forest-green circle, with floating cards for the tracks, modules per track, the QR-verified
- * certificate, the proctored final and the free modules; "Our features" underneath.
+ * forest-green circle; the free-modules card and "Our features" underneath.
  */
 export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyClick, courses = [] }) {
   const trackCount = courses.length || 4;
   const moduleCount = courses.reduce((n, c) => n + (c.modules?.length || 0), 0) || 60;
-  const perTrack = TRACKS.map(t => ({ ...t, modules: courses.filter(c => trackOf(c) === t.key).reduce((n, c) => n + (c.modules?.length || 0), 0) || 15 }));
-  const maxModules = Math.max(...perTrack.map(t => t.modules), 1);
 
   const features = [
     { icon: Layers, title: `${trackCount} career tracks`, text: 'Python, SQL, Web Development and AI with Data Science.' },
@@ -72,9 +60,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
         {/* Visual */}
         <div className="relative h-[460px] sm:h-[560px] lg:h-[600px] animate-fade-up" style={{ animationDelay: '120ms' }}>
           {/* forest-green circle with the student standing in front of it (head rises above the circle) */}
-          <div className="absolute left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:right-10 bottom-10 w-[310px] h-[310px] sm:w-[420px] sm:h-[420px] lg:w-[450px] lg:h-[450px] rounded-full bg-[radial-gradient(circle_at_35%_30%,#0E5C45,#013A2B_70%)] shadow-[0_40px_80px_-40px_rgba(1,58,43,.65)]" aria-hidden="true">
-            <span className="absolute inset-[-18px] rounded-full border border-dashed border-brand-900/15" />
-          </div>
+          <div className="absolute left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:right-10 bottom-10 w-[310px] h-[310px] sm:w-[420px] sm:h-[420px] lg:w-[450px] lg:h-[450px] rounded-full bg-[radial-gradient(circle_at_35%_30%,#0E5C45,#013A2B_70%)] shadow-[0_40px_80px_-40px_rgba(1,58,43,.65)]" aria-hidden="true" />
           <img
             src="/hero-student.webp"
             alt="A student learning online with a laptop and backpack"
@@ -82,54 +68,6 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
             fetchpriority="high"
             className="absolute z-[1] left-1/2 -translate-x-[47%] lg:left-auto lg:translate-x-0 lg:right-[18px] bottom-10 h-[390px] sm:h-[520px] lg:h-[560px] w-auto max-w-none object-contain [mask-image:linear-gradient(to_bottom,#000_86%,transparent)]"
           />
-
-          {/* track tiles (like the social icon tiles) */}
-          <div className="absolute z-[2] left-0 sm:left-6 lg:left-0 top-2 sm:top-6 grid grid-cols-2 gap-2.5 -rotate-[8deg] animate-drift" style={{ animationDuration: '9s' }} aria-label="Career tracks">
-            {TRACKS.map(({ key, label, icon: Icon, color }, i) => (
-              <span key={key} className={`w-[62px] h-[62px] sm:w-[74px] sm:h-[74px] rounded-2xl bg-white shadow-floating flex flex-col items-center justify-center gap-1 ${i % 2 ? 'translate-y-3' : ''}`}>
-                <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${color}`} aria-hidden="true" />
-                <span className="text-[10px] font-bold text-charcoal/60">{label}</span>
-              </span>
-            ))}
-          </div>
-
-          {/* modules per track (like the bar chart card) */}
-          <div className="absolute z-[2] left-2 sm:left-10 lg:left-6 top-[46%] w-[150px] sm:w-[168px] rounded-2xl bg-white shadow-floating px-4 pt-3.5 pb-3 animate-drift" style={{ animationDuration: '11s', animationDelay: '1.5s' }}>
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-[#F3E3A6] text-[#B45309] flex items-center justify-center"><Star className="w-3.5 h-3.5 fill-current" /></span>
-              <p className="text-[11px] font-bold text-charcoal">Modules per track</p>
-            </div>
-            <div className="mt-3 h-[78px] flex items-end justify-between gap-1.5">
-              {perTrack.map(t => (
-                <div key={t.key} className="flex-1 flex flex-col items-center gap-1">
-                  <span className={`w-full rounded-t-md ${t.bar}`} style={{ height: `${Math.max(18, (t.modules / maxModules) * 62)}px` }} />
-                  <span className="text-[9px] font-semibold text-charcoal/55">{t.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* QR-verified certificate (like the brand chip) */}
-          <div className="absolute z-[2] left-1/2 -translate-x-1/2 lg:left-[44%] bottom-0 rounded-2xl bg-white shadow-floating px-4 py-3 flex items-center gap-3 animate-drift" style={{ animationDuration: '10s', animationDelay: '.6s' }}>
-            <span className="w-9 h-9 rounded-xl bg-brand-900 text-ivory flex items-center justify-center"><QrCode className="w-5 h-5" /></span>
-            <div className="leading-tight">
-              <p className="text-[11px] text-charcoal/50">Certificate</p>
-              <p className="text-[15px] font-display text-brand-900">QR-verified &amp; unique</p>
-            </div>
-          </div>
-
-          {/* proctored final (like the reminder card) */}
-          <div className="absolute z-[2] right-0 sm:right-2 lg:-right-4 bottom-[12%] w-[170px] rounded-2xl bg-white shadow-floating ring-1 ring-peach-200/60 px-3.5 py-3 animate-drift" style={{ animationDuration: '12s', animationDelay: '2s' }}>
-            <div className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-full bg-brand-50 text-brand-900 flex items-center justify-center"><ShieldCheck className="w-4 h-4" /></span>
-              <p className="text-[11px] font-bold text-charcoal">Final assessment</p>
-            </div>
-            <p className="mt-1.5 text-[11px] text-charcoal/60 leading-snug">Proctored · 70% to pass</p>
-            <div className="mt-2 grid grid-cols-2 gap-1.5 text-[10px] font-semibold text-center">
-              <span className="rounded-md bg-ivory py-1 text-charcoal/70">45 min</span>
-              <span className="rounded-md bg-brand-900 py-1 text-ivory">Certificate</span>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -139,7 +77,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
           <p className="font-display text-xl text-brand-900">Free learning</p>
           <div className="mt-2 flex items-center gap-3">
             <span className="flex -space-x-2" aria-hidden="true">
-              {TRACKS.slice(0, 3).map(({ key, icon: Icon, color }) => (
+              {TRACKS.map(({ key, icon: Icon, color }) => (
                 <span key={key} className="w-8 h-8 rounded-full bg-white ring-2 ring-brand-100 flex items-center justify-center"><Icon className={`w-4 h-4 ${color}`} /></span>
               ))}
             </span>
