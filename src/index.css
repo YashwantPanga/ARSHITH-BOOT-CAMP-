@@ -162,6 +162,20 @@
 .pdf-stamp { animation: pdf-stamp .55s cubic-bezier(.2, .9, .3, 1.2) .1s both; }
 
 /* Final-assessment celebration */
+/* concept map: cards and hub enter, connectors draw in, light flows along them, hub rings pulse */
+@keyframes cm-card-in { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+.cm-card-in { animation: cm-card-in .6s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes cm-hub-in { 0% { opacity: 0; transform: scale(.6); } 70% { opacity: 1; transform: scale(1.04); } 100% { opacity: 1; transform: scale(1); } }
+.cm-hub-in { animation: cm-hub-in .8s cubic-bezier(.2, .9, .3, 1.1) both; }
+@keyframes cm-draw { from { opacity: 0; } to { opacity: 1; } }
+.cm-draw { animation: cm-draw .9s ease-out both; }
+@keyframes cm-flow { to { stroke-dashoffset: 28; } }
+@keyframes cm-flow-down { to { stroke-dashoffset: -28; } }
+.cm-flow-down { animation: cm-flow-down 1.4s linear infinite; }
+.cm-flow { animation: cm-flow 1.4s linear infinite; }
+@keyframes cm-ring { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(1.32); opacity: 0; } }
+.cm-ring { animation: cm-ring 2.8s ease-out infinite; }
+
 /* floating home button: drops in, then a slow halo pulse */
 @keyframes home-fab-in { from { transform: translateY(18px) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
 .home-fab { animation: home-fab-in .55s cubic-bezier(.2, .9, .3, 1.2) .3s both; }

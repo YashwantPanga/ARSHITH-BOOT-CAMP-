@@ -14,6 +14,7 @@ import { ProgressRing, ProgressBar, useToast, SafeImg } from '../components/ui';
 import PremiumCodeBlock from '../components/CodeBlock';
 import { PlaygroundProvider, usePlayground } from '../components/CodePlayground';
 import { ConceptMap, LearningFlow, BlueprintDiagram } from '../components/Diagrams';
+import { conceptLabel, conceptSummary, markdownConcepts } from '../utils/conceptSummary';
 import VisualDiagram from '../components/diagrams/VisualDiagram';
 import { visualDiagramFor } from '../data/visualDiagrams';
 import { detectLanguage } from '../utils/highlight';
@@ -220,15 +221,14 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
     });
 
     // Concept map: from structured section headings, or from the Markdown headings of `theory`.
-    const concepts = nm.sections.length
-      ? nm.sections.filter(sec => sec.heading).map((sec, i) => ({ id: `concept-${i}`, label: sec.heading }))
-      : (nm.theoryMarkdown.match(/^#{2,4}\s+.+$/gm) || []).map((h) => ({ id: 'sec-theory', label: h.replace(/^#+\s+/, '') }));
+    // Each concept gets a short title, an optional subtitle and a one-sentence summary of what it covers.
+    const concepts = (nm.sections.length
+      ? nm.sections.map((sec, i) => ({ id: `concept-${i}`, heading: sec.heading, body: sec.text })).filter(c => c.heading)
+      : markdownConcepts(nm.theoryMarkdown).map((c, i) => ({ id: `theory-h-${i}`, ...c }))
+    ).map(c => ({ id: c.id, ...conceptLabel(c.heading), summary: conceptSummary(c.body) }));
     if (concepts.length >= 2) s.push({
       id: 'map', title: 'Concept map', icon: Network, body: (
-        <div className="space-y-3">
-          <p className="text-sm text-charcoal/65">How the ideas in this module connect. Click a concept to jump to its explanation.</p>
-          <ConceptMap title={moduleTitle(current?.title || '')} concepts={concepts} onPick={(id) => jumpToEl(id)} />
-        </div>
+        <ConceptMap title={moduleTitle(current?.title || '')} concepts={concepts} onPick={(id) => jumpToEl(id)} />
       )
     });
 
@@ -260,7 +260,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
       )
     });
     else if (nm.theoryMarkdown) s.push({
-      id: 'theory', title: 'Concepts explained', icon: BookOpen, body: <Markdown source={nm.theoryMarkdown} courseId={course.id} />
+      id: 'theory', title: 'Concepts explained', icon: BookOpen, body: <Markdown source={nm.theoryMarkdown} courseId={course.id} headingIdPrefix="theory-h" />
     });
 
     // 4. Workflow & architecture: new structured diagram + the module's original ASCII diagram

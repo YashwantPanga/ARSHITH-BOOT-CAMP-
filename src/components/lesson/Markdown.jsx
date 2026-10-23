@@ -105,16 +105,22 @@ function parseBlocks(src) {
   return blocks;
 }
 
-export default function Markdown({ source, courseId }) {
+/**
+ * headingIdPrefix: when set, every level 2-4 heading gets id `${prefix}-${n}` (n counts those
+ * headings from 0), so other parts of the page - such as the concept map - can link to them.
+ */
+export default function Markdown({ source, courseId, headingIdPrefix }) {
   const blocks = useMemo(() => parseBlocks(source), [source]);
   if (!blocks.length) return null;
+  let headingNo = 0;
   return (
     <div className="space-y-3.5 text-[15px] leading-7 text-charcoal/80">
       {blocks.map((b, i) => {
         switch (b.type) {
           case 'heading': {
             const cls = b.level <= 3 ? 'font-display text-xl text-brand-900 mt-5 first:mt-0' : 'font-semibold text-charcoal mt-3';
-            return <h4 key={i} className={cls}><Inline text={b.text} /></h4>;
+            const id = headingIdPrefix && b.level >= 2 && b.level <= 4 ? `${headingIdPrefix}-${headingNo++}` : undefined;
+            return <h4 key={i} id={id} className={`${cls} scroll-mt-6`}><Inline text={b.text} /></h4>;
           }
           case 'code': return <CodeBlock key={i} code={b.text} language={b.lang} courseId={courseId} />;
           case 'math': return <MathTex key={i} tex={b.text} display />;
