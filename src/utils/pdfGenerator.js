@@ -1,7 +1,8 @@
 import jsPDF from 'jspdf';
 import { api } from '../services/api';
 import { visualDiagramFor } from '../data/visualDiagrams';
-import { drawVisualDiagram, drawWorkflow, workflowToPng } from './pdfDiagrams';
+import { drawVisualDiagram, drawWorkflow, measureWorkflow } from './pdfDiagrams';
+import { drawCodeCard, drawExplanationPanel } from './pdfCode';
 import { normalizeModule } from './normalizeModule';
 import { detectLanguage } from './highlight';
 import { displayTitle } from './textUtils';
@@ -115,7 +116,7 @@ async function prepareWorkflows(course) {
     try {
       const res = await api.getModuleEnrichment(course.id, mod.id);
       const wf = res?.enrichment?.workflow;
-      if (wf?.nodes?.length) out[mod.id] = { def: wf, png: await workflowToPng(wf) };
+      if (wf?.nodes?.length) out[mod.id] = { def: wf };
     } catch {
       // No workflow for this module, or it could not be loaded: the PDF simply leaves it out.
     }
@@ -129,7 +130,8 @@ export async function generateCoursePDF(course, studentName = 'Student') {
   const doc = new PDFDoc({
     orientation: 'portrait',
     unit: 'mm',
-    format: 'a4'
+    format: 'a4',
+    compress: true // much smaller files; the syntax-coloured code adds many small text runs
   });
 
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -154,7 +156,7 @@ export async function generateCoursePDF(course, studentName = 'Student') {
       doc.setTextColor(255, 255, 255);
     } else {
       if (typeof doc.setGState === 'function') {
-        doc.setGState(new doc.GState({ opacity: 0.06 }));
+        doc.setGState(new doc.GState({ opacity: 0.04 }));
       }
       doc.setTextColor(1, 58, 43);
     }
@@ -258,18 +260,26 @@ export async function generateCoursePDF(course, studentName = 'Student') {
   // Helper for Section Subheading
   const renderSubheading = (title, num = null, color = [30, 81, 65]) => {
     checkPageBreak(45); // keep the heading with the start of its section
-    y += 3;
+    y += 4;
+    const tx = num ? margin + 9.5 : margin;
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11.5);
+    doc.setFontSize(12);
+    const lines = doc.splitTextToSize(cleanText(title), contentWidth - (tx - margin));
+    if (num) {
+      doc.setFillColor(color[0], color[1], color[2]);
+      doc.roundedRect(margin, y - 4.6, 7, 6.4, 1.4, 1.4, 'F');
+      doc.setFontSize(8.6);
+      doc.setTextColor(255, 255, 255);
+      doc.text(String(num), margin + 3.5, y - 0.2, { align: "center" });
+      doc.setFontSize(12);
+    }
     doc.setTextColor(color[0], color[1], color[2]);
-    const headingText = num ? `${num}. ${cleanText(title)}` : cleanText(title);
-    const lines = doc.splitTextToSize(headingText, contentWidth);
-    doc.text(lines, margin, y);
-    y += (lines.length - 1) * 5.2 + 2;
-    doc.setDrawColor(color[0], color[1], color[2]);
-    doc.setLineWidth(0.35);
-    doc.line(margin, y, margin + 14, y);
-    y += 5;
+    doc.text(lines, tx, y);
+    y += (lines.length - 1) * 5.4 + 3.2;
+    doc.setDrawColor(228, 224, 215);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, margin + contentWidth, y);
+    y += 5.2;
   };
 
   // Helper for Text Paragraph
@@ -327,141 +337,22 @@ export async function generateCoursePDF(course, studentName = 'Student') {
   };
 
   // Helper for Code Block (with wrapping and line-by-line support)
+  // Code block: an editor-style card (title bar, language tag, line numbers, syntax colours) and,
+  // when there is one, a "How this code works" panel with the explanation and line-by-line notes.
+  // `language` may be a real language or a role tag ("buggy", "fixed", "solution", "snippet"...).
+  const codeCtx = { doc, margin, contentWidth, pageHeight, checkPageBreak, getY: () => y, setY: (v) => { y = v; } };
   const renderCodeBox = (title, codeString, language = "code", explanation = null, lineByLine = null) => {
-    checkPageBreak(25);
-
-    if (title) {
-      y += 2; // breathing room above the code title
-      // Show the language only when it is a real one (not an internal tag such as "buggy" or "schema").
-      const lang = String(language || '').toLowerCase();
-      const showLang = /^(python|javascript|js|typescript|sql|html|css|bash|shell|json|jsx|java|c\+\+|go)$/.test(lang);
-      const LANG_NAMES = { js: 'JavaScript', javascript: 'JavaScript', typescript: 'TypeScript', jsx: 'JSX', sql: 'SQL', html: 'HTML', css: 'CSS', json: 'JSON', python: 'Python', bash: 'Bash', shell: 'Shell', java: 'Java', go: 'Go', 'c++': 'C++' };
-      writeText(`${cleanText(title)}${showLang ? `  (${LANG_NAMES[lang] || lang})` : ''}`, { size: 9.2, style: "bold", color: [1, 58, 43], keep: 16, after: 0.8 });
+    const tag = String(language || '').toLowerCase();
+    const variant = tag === 'buggy' ? 'buggy' : tag === 'fixed' ? 'fixed' : 'default';
+    const realLang = /^(python|py|javascript|js|jsx|typescript|ts|sql|html|css|bash|shell|sh|json|java|go)$/.test(tag)
+      ? tag
+      : detectLanguage(codeString, '', course.id);
+    y += 1.5;
+    drawCodeCard(codeCtx, { title, code: codeString, language: realLang, variant });
+    if (explanation || (Array.isArray(lineByLine) && lineByLine.length)) {
+      drawExplanationPanel(codeCtx, { explanation, lineByLine, heading: variant === 'buggy' ? 'Why this is wrong' : 'How this code works' });
     }
-
-    // Code keeps its indentation (cleanText would collapse it). Lines are wrapped by character count
-    // (Courier is monospaced); a wrapped continuation keeps the line's indent plus two spaces.
-    doc.setFont("courier", "normal");
-    doc.setFontSize(8);
-    const charW = doc.getTextWidth("M");
-    const maxChars = Math.max(20, Math.floor((contentWidth - 12) / charW));
-    const wrappedLines = [];
-    String(codeString || '').split('\n').forEach(rawLine => {
-      const line = cleanCodeLine(rawLine);
-      if (line.length <= maxChars) { wrappedLines.push(line); return; }
-      const indent = ' '.repeat(Math.min(line.length - line.trimStart().length, 24) + 2);
-      let rest = line;
-      let first = true;
-      while (rest.length > 0) {
-        const room = first ? maxChars : maxChars - indent.length;
-        if (rest.length <= room) { wrappedLines.push(first ? rest : indent + rest); break; }
-        let cut = Math.max(rest.lastIndexOf(' ', room), rest.lastIndexOf(',', room - 1) + 1, rest.lastIndexOf('(', room - 1) + 1);
-        if (cut < room * 0.5) cut = room;
-        wrappedLines.push((first ? '' : indent) + rest.slice(0, cut).replace(/\s+$/, ''));
-        rest = rest.slice(cut).replace(/^\s+/, '');
-        first = false;
-      }
-    });
-    while (wrappedLines.length && !wrappedLines[wrappedLines.length - 1].trim()) wrappedLines.pop();
-    while (wrappedLines.length && !wrappedLines[0].trim()) wrappedLines.shift();
-
-    // Draw the box, splitting it across pages when needed. Each line sits at a fixed spacing that
-    // matches the box height, so there is no empty band at the bottom.
-    const CODE_LH = 3.7;
-    let lineIdx = 0;
-    while (lineIdx < wrappedLines.length) {
-      checkPageBreak(16);
-      const availableSpace = pageHeight - 22 - y;
-      const maxLinesCanFit = Math.max(3, Math.floor((availableSpace - 7) / CODE_LH));
-      const chunk = wrappedLines.slice(lineIdx, lineIdx + maxLinesCanFit);
-      const boxH = chunk.length * CODE_LH + 6;
-
-      doc.setFillColor(12, 45, 38); // Evergreen #0C2D26
-      doc.roundedRect(margin, y, contentWidth, boxH, 2, 2, 'F');
-
-      doc.setFont("courier", "normal");
-      doc.setFontSize(8);
-      doc.setTextColor(228, 224, 215); // Light slate text
-      chunk.forEach((l, k) => doc.text(l, margin + 6, y + 5 + k * CODE_LH));
-
-      y += boxH + 3.5;
-      lineIdx += chunk.length;
-    }
-
-    if (explanation) {
-      checkPageBreak(12);
-      doc.setFont("helvetica", "italic");
-      doc.setFontSize(8.5);
-      doc.setTextColor(122, 116, 106);
-      const expLines = doc.splitTextToSize(`Note: ${cleanText(explanation)}`, contentWidth);
-      expLines.forEach(l => {
-        checkPageBreak(5);
-        doc.text(l, margin, y);
-        y += 4;
-      });
-      y += 2;
-    }
-
-    // Line-by-Line Breakdown
-    if (lineByLine && Array.isArray(lineByLine) && lineByLine.length > 0) {
-      checkPageBreak(18);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8.5);
-      doc.setTextColor(66, 101, 87); // Teal
-      doc.text("Line-by-Line Code Annotation:", margin, y);
-      y += 4.5;
-
-      // Each annotation is stacked: number, the code line on a light strip, then the explanation
-      // underneath. `line` is usually the code itself (sometimes a line number with the code in `code`).
-      lineByLine.forEach((lbl, idx) => {
-        const isNumber = /^\s*\d+(\s*-\s*\d+)?\s*$/.test(String(lbl.line ?? ''));
-        const codeText = cleanText(isNumber ? lbl.code : (lbl.line || lbl.code));
-        const label = isNumber ? `Line ${String(lbl.line).trim()}` : String(idx + 1);
-        const indent = 9;
-        const innerW = contentWidth - indent - 4;
-
-        doc.setFont("courier", "bold");
-        doc.setFontSize(7.6);
-        const codeLines = codeText ? doc.splitTextToSize(codeText, innerW - 4) : [];
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        const expLines = lbl.explanation ? doc.splitTextToSize(cleanText(lbl.explanation), innerW) : [];
-
-        const codeH = codeLines.length ? codeLines.length * 3.5 + 2.6 : 0;
-        const expH = expLines.length * 3.6;
-        checkPageBreak(codeH + expH + 6);
-
-        // number badge
-        doc.setFillColor(1, 58, 43);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(isNumber ? 6 : 7);
-        const badgeW = Math.max(5.2, doc.getTextWidth(label) + 2.6);
-        doc.roundedRect(margin + 2, y - 0.2, badgeW, 4.6, 1.2, 1.2, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.text(label, margin + 2 + badgeW / 2, y + 3.05, { align: "center" });
-
-        let cy = y;
-        if (codeLines.length) {
-          doc.setFillColor(239, 244, 241);
-          doc.roundedRect(margin + indent, cy - 0.2, innerW + 4, codeH, 1.2, 1.2, 'F');
-          doc.setFont("courier", "bold");
-          doc.setFontSize(7.6);
-          doc.setTextColor(1, 58, 43);
-          codeLines.forEach((l, k) => doc.text(l, margin + indent + 2, cy + 3.1 + k * 3.5));
-          cy += codeH + 1.2;
-        }
-        if (expLines.length) {
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8);
-          doc.setTextColor(93, 87, 78);
-          expLines.forEach((l, k) => doc.text(l, margin + indent, cy + 2.9 + k * 3.6));
-          cy += expH;
-        }
-        y = Math.max(cy, y + 5) + 2.6;
-      });
-      y += 2;
-    }
-    y += 2;
+    y += 1.5;
   };
 
   // Renders the simple Markdown used in some modules' theory/tutorial text: ### headings, bullet and
@@ -758,7 +649,7 @@ export async function generateCoursePDF(course, studentName = 'Student') {
   // ==========================================
   // ALL 15 MODULES DETAILED CONTENT
   // ==========================================
-  course.modules.forEach((mod) => {
+  course.modules.forEach((mod, modIdx) => {
     // Each module begins on a fresh page
     doc.addPage();
     pageCount++;
@@ -768,45 +659,70 @@ export async function generateCoursePDF(course, studentName = 'Student') {
     const cleanTitle = cleanText(mod.title);
     const cleanDesc = cleanText(mod.description);
 
-    // Module Header Card
-    const boxInnerWidth = contentWidth - 14;
+    // Module opener: a solid chapter band with the module number, title, description and a summary
+    // of what the module contains.
+    const openerRm = mod.readingMaterial || {};
+    const openerNm = normalizeModule(mod);
+    const inside = [
+      openerNm.sections.length ? `${openerNm.sections.length} topics` : (openerNm.theoryMarkdown ? 'Concepts' : null),
+      (workflows[mod.id] || visualDiagramFor(mod.id)) ? `${(workflows[mod.id] ? 1 : 0) + (visualDiagramFor(mod.id) ? 1 : 0)} figure${(workflows[mod.id] && visualDiagramFor(mod.id)) ? 's' : ''}` : null,
+      openerNm.codeExamples.length ? `${openerNm.codeExamples.length} code example${openerNm.codeExamples.length > 1 ? 's' : ''}` : null,
+      openerNm.practiceExercise ? 'Practice exercise' : null,
+      openerRm.selfAssessment?.questions?.length ? `${openerRm.selfAssessment.questions.length}-question self check` : null
+    ].filter(Boolean);
+    const modNumber = (cleanTitle.match(/^Module\s*(\d+)/i) || [])[1] || String(modIdx + 1).padStart(2, '0');
+    const titleOnly = cleanTitle.replace(/^Module\s*\d+\s*[:\-–—]\s*/i, '');
+    const bandInnerW = contentWidth - 16;
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12.5);
-    const modTitleLines = doc.splitTextToSize(cleanTitle, boxInnerWidth);
-
+    doc.setFontSize(16);
+    const modTitleLines = doc.splitTextToSize(titleOnly, bandInnerW);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    const modDescLines = cleanDesc ? doc.splitTextToSize(cleanDesc, boxInnerWidth) : [];
+    const modDescLines = cleanDesc ? doc.splitTextToSize(cleanDesc, bandInnerW) : [];
+    const bandH = 12 + modTitleLines.length * 6.6 + (modDescLines.length ? modDescLines.length * 4.2 + 3 : 0) + (inside.length ? 9 : 0) + 4;
 
-    const titleH = modTitleLines.length * 5.2;
-    const descH = modDescLines.length * 4;
-    const headerBoxH = 10 + titleH + (modDescLines.length > 0 ? descH + 4 : 0);
-
-    doc.setFillColor(239, 244, 241); // Sage tint #EFF4F1
-    doc.roundedRect(margin, y, contentWidth, headerBoxH, 3, 3, 'F');
-    doc.setDrawColor(30, 81, 65);
-    doc.setLineWidth(0.6);
-    doc.roundedRect(margin, y, contentWidth, headerBoxH, 3, 3, 'S');
-
+    doc.setFillColor(1, 58, 43);
+    doc.roundedRect(margin, y, contentWidth, bandH, 3, 3, 'F');
+    doc.setFillColor(66, 101, 87);
+    doc.roundedRect(margin, y, 2.2, bandH, 1.1, 1.1, 'F');
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12.5);
-    doc.setTextColor(1, 58, 43);
-    doc.text(modTitleLines, margin + 7, y + 8);
-
-    if (modDescLines.length > 0) {
+    doc.setFontSize(7.4);
+    doc.setTextColor(188, 209, 198);
+    doc.text(`MODULE ${modNumber}`, margin + 8, y + 8);
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255);
+    doc.text(modTitleLines, margin + 8, y + 15.5);
+    let bandY = y + 15.5 + (modTitleLines.length - 1) * 6.6;
+    if (modDescLines.length) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
-      doc.setTextColor(48, 43, 37);
-      doc.text(modDescLines, margin + 7, y + 9 + titleH);
+      doc.setTextColor(214, 229, 221);
+      doc.text(modDescLines, margin + 8, bandY + 6);
+      bandY += 6 + (modDescLines.length - 1) * 4.2;
+    }
+    if (inside.length) {
+      let cx = margin + 8;
+      const cy = bandY + 4.6;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.8);
+      inside.forEach(label => {
+        const w = doc.getTextWidth(label) + 5;
+        if (cx + w > margin + contentWidth - 6) return;
+        doc.setFillColor(30, 81, 65);
+        doc.roundedRect(cx, cy, w, 4.8, 2.4, 2.4, 'F');
+        doc.setTextColor(221, 236, 228);
+        doc.text(label, cx + w / 2, cy + 3.25, { align: "center" });
+        cx += w + 2;
+      });
     }
 
-    y += headerBoxH + 8;
+    y += bandH + 9;
 
     const rm = mod.readingMaterial;
     // Modules store their reading material in a few different shapes; normalise like the lesson page does.
     const nm = normalizeModule(mod);
     let sectionNo = 0;
-    const section = (title, color = [30, 81, 65]) => renderSubheading(`${++sectionNo}. ${title}`, null, color);
+    const section = (title, color = [30, 81, 65]) => renderSubheading(title, ++sectionNo, color);
     if (rm) {
       // 1. Introduction
       if (rm.introduction) {
@@ -837,20 +753,20 @@ export async function generateCoursePDF(course, studentName = 'Student') {
       const wf = workflows[mod.id];
       const visual = visualDiagramFor(mod.id);
       const dg = nm.diagram;
+      // Figures are numbered per module: Figure 7.1, 7.2...
+      let figNo = 0;
+      const nextFigure = () => `Figure ${modIdx + 1}.${++figNo}`;
+      const diagramCtx = { doc, margin, contentWidth, pageHeight, checkPageBreak, renderCodeBox, getY: () => y, setY: (v) => { y = v; } };
       if (dg || wf) {
-        // Keep the heading on the same page as the first diagram.
-        if (wf) {
-          const imgW = Math.min(contentWidth, wf.png.width * 0.2);
-          checkPageBreak(Math.min(pageHeight - 50, (imgW * wf.png.height) / wf.png.width) + 32);
-        }
+        // keep the section heading on the same page as the first figure
+        checkPageBreak(wf ? Math.min(measureWorkflow(doc, wf.def, contentWidth, pageHeight) + 22, pageHeight - 45) : 70);
         section("Architecture & Visual Workflow Diagram");
-        const diagramCtx = { doc, margin, contentWidth, pageHeight, checkPageBreak, renderCodeBox, getY: () => y, setY: (v) => { y = v; } };
-        if (wf) drawWorkflow(diagramCtx, wf.def, wf.png);
+        if (wf) drawWorkflow(diagramCtx, wf.def, nextFigure());
       }
       if (dg && visual) {
-        drawVisualDiagram({ doc, margin, contentWidth, pageHeight, checkPageBreak, renderCodeBox, getY: () => y, setY: (v) => { y = v; } }, visual);
+        drawVisualDiagram(diagramCtx, visual, nextFigure());
         if (dg.explanation) {
-          renderParagraph(dg.explanation, 8.5, [93, 87, 78], "italic");
+          renderParagraph(dg.explanation, 8.6, [93, 87, 78]);
         }
       } else if (dg) {
         checkPageBreak(12);
@@ -974,7 +890,7 @@ export async function generateCoursePDF(course, studentName = 'Student') {
               writeText(`Step ${st.step}: ${cleanText(st.instruction)}`, { x: margin + 3, size: 8.6, style: "bold", color: [30, 81, 65], keep: 14, after: 0.8 });
 
               if (st.code) {
-                renderCodeBox(null, st.code, "code", st.explanation);
+                renderCodeBox(`Step ${st.step}`, st.code, "code", st.explanation);
               } else if (st.explanation) {
                 renderParagraph(st.explanation, 8, [93, 87, 78]);
               }

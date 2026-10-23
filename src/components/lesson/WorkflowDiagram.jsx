@@ -55,7 +55,7 @@ const edgeLabelWidth = (label) => label.length * EDGE_CHAR_W + 18;
 /* Layered left-to-right layout. Forward edges define layers (longest path); edges that point back
    to an earlier or same layer are drawn as loops underneath the diagram. Boxes are sized to fit the
    longest wrapped label, and gaps are wide enough for the edge labels. */
-export function layoutDiagram(def) {
+export function layoutDiagram(def, { maxRowW = MAX_ROW_W } = {}) {
   const nodes = def.nodes.map(n => ({ ...n, lines: wrapLabel(n.label) }));
   const byId = new Map(nodes.map(n => [n.id, n]));
   const edges = (def.edges || []).filter(e => byId.has(e.from) && byId.has(e.to) && e.from !== e.to);
@@ -97,7 +97,7 @@ export function layoutDiagram(def) {
   const maxRows = Math.max(...cols.map(c => c?.length || 0));
   const innerH = maxRows * NODE_H + (maxRows - 1) * GAP_Y;
   // Layers per row: as many as fit in MAX_ROW_W (at least 2), so long chains read like lines of text.
-  const perRow = Math.max(2, Math.floor((MAX_ROW_W + GAP_X) / (NODE_W + GAP_X)));
+  const perRow = Math.max(2, Math.floor((maxRowW + GAP_X) / (NODE_W + GAP_X)));
   const rowCount = Math.ceil(cols.length / perRow);
   const rowTop = (r) => PAD + r * (innerH + ROW_GAP);
   cols.forEach((col, l) => {
@@ -138,7 +138,11 @@ const NODE_TONES = [
   ['#FFF1F2', '#FECDD3', '#BE123C', '#881337']
 ];
 
-export function DiagramSvg({ def, L }) {
+/**
+ * Computes every edge as an SVG path (in layout pixels) plus a de-collided label position.
+ * Shared by the web drawing and the PDF, so both route arrows identically.
+ */
+export function routeEdges(L) {
   const pos = new Map(L.nodes.map(n => [n.id, n]));
   // A box directly below n in the same column (an arrow leaving or entering n from below would cross it).
   const hasBelow = (n) => L.nodes.some(m => m.layer === n.layer && m.y > n.y);
@@ -156,6 +160,86 @@ export function DiagramSvg({ def, L }) {
     return [x, y];
   };
   let loopIndex = 0;
+  return L.edges.map((e) => {
+    const a = pos.get(e.from);
+    const b = pos.get(e.to);
+    let d;
+    let lx;
+    let ly;
+    if (e.back && a.row === b.row && L.rowCount === 1) {
+      loopIndex += 1;
+      const yb = L.innerBottom + 18 + loopIndex * 14;
+      // Leave/enter from below when the column is free underneath, otherwise through the side gap.
+      const out = hasBelow(a)
+        ? `M${a.x + L.NODE_W},${a.y + L.NODE_H / 2} L${a.x + L.NODE_W + 14},${a.y + L.NODE_H / 2} L${a.x + L.NODE_W + 14},${yb}`
+        : `M${a.x + L.NODE_W / 2},${a.y + L.NODE_H} L${a.x + L.NODE_W / 2},${yb}`;
+      const xin = hasBelow(b) ? b.x - 14 : b.x + L.NODE_W / 2;
+      const inn = hasBelow(b)
+        ? ` L${xin},${yb} L${xin},${b.y + L.NODE_H / 2} L${b.x - 2},${b.y + L.NODE_H / 2}`
+        : ` L${xin},${yb} L${xin},${b.y + L.NODE_H + 2}`;
+      d = out + inn;
+      lx = ((hasBelow(a) ? a.x + L.NODE_W + 14 : a.x + L.NODE_W / 2) + xin) / 2;
+      ly = yb;
+    } else if (e.back) {
+      // Loop back across rows: down under the diagram, up the left margin, into the target from above.
+      loopIndex += 1;
+      const yb = L.innerBottom + 18 + loopIndex * 14;
+      const xm = 6 + loopIndex * 5;
+      const yt = L.rowTop(b.row) - 14 - loopIndex * 5;
+      const x1 = a.x + L.NODE_W / 2;
+      const x2 = b.x + L.NODE_W / 2;
+      d = `M${x1},${a.y + L.NODE_H} L${x1},${yb} L${xm},${yb} L${xm},${yt} L${x2},${yt} L${x2},${b.y - 2}`;
+      lx = (x1 + xm) / 2;
+      ly = yb;
+    } else if (a.row !== b.row) {
+      // Continues on the next row: down into the gap between rows, across, and down into the target.
+      const x1 = a.x + L.NODE_W / 2;
+      const x2 = b.x + L.NODE_W / 2;
+      const lane = L.rowTop(a.row) + L.innerH + ROW_GAP / 2;
+      const turn = (from, to) => (to < from ? -10 : 10);
+      const start = hasBelow(a)
+        ? `M${a.x + L.NODE_W},${a.y + L.NODE_H / 2} L${a.x + L.NODE_W + 14},${a.y + L.NODE_H / 2} L${a.x + L.NODE_W + 14},${lane - 10} Q${a.x + L.NODE_W + 14},${lane} `
+        : `M${x1},${a.y + L.NODE_H} L${x1},${lane - 10} Q${x1},${lane} `;
+      const xd = hasBelow(a) ? a.x + L.NODE_W + 14 : x1;
+      if (hasAbove(b)) {
+        // Another box sits above the target in its column: come down the gap on its left, enter from the side.
+        const xs = b.x - 14;
+        const ym = b.y + L.NODE_H / 2;
+        d = `${start}${xd + turn(xd, xs)},${lane} L${xs - turn(xd, xs)},${lane} Q${xs},${lane} ${xs},${lane + 10} L${xs},${ym - 10} Q${xs},${ym} ${xs + 10},${ym} L${b.x - 2},${ym}`;
+        lx = xs - edgeLabelWidth(e.label || '') / 2 - 6;
+        ly = (lane + ym) / 2;
+      } else {
+        d = `${start}${xd + turn(xd, x2)},${lane} L${x2 - turn(xd, x2)},${lane} Q${x2},${lane} ${x2},${lane + 10} L${x2},${b.y - 2}`;
+        lx = x2;
+        ly = (lane + b.y) / 2;
+      }
+    } else {
+      const x1 = a.x + L.NODE_W;
+      const y1 = a.y + L.NODE_H / 2;
+      const x2 = b.x - 2;
+      const y2 = b.y + L.NODE_H / 2;
+      const span = b.layer - a.layer;
+      if (span <= 1) {
+        const mx = (x1 + x2) / 2;
+        d = `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
+        lx = mx;
+        ly = (y1 + y2) / 2;
+      } else {
+        // Edge that skips layers: run along a lane above every box in the row so it never crosses one.
+        const top = L.rowTop(a.row) - 12;
+        d = `M${x1},${y1} C${x1 + 24},${y1} ${x1 + 24},${top} ${x1 + 48},${top} L${x2 - 48},${top} C${x2 - 24},${top} ${x2 - 24},${y2} ${x2},${y2}`;
+        lx = x1 + L.GAP_X / 2;
+        ly = top;
+      }
+    }
+    const lw = e.label ? edgeLabelWidth(e.label) : 0;
+    if (e.label) [lx, ly] = placeLabel(lx, ly, lw);
+    return { d, lx, ly, lw, label: e.label, back: e.back };
+  });
+}
+
+export function DiagramSvg({ def, L }) {
+  const routes = routeEdges(L);
   return (
     <svg
       viewBox={`0 0 ${L.width} ${L.height}`}
@@ -171,92 +255,17 @@ export function DiagramSvg({ def, L }) {
           <path d="M0,0 L10,5 L0,10 z" fill="#5F8574" />
         </marker>
       </defs>
-      {L.edges.map((e, i) => {
-        const a = pos.get(e.from);
-        const b = pos.get(e.to);
-        let d;
-        let lx;
-        let ly;
-        if (e.back && a.row === b.row && L.rowCount === 1) {
-          loopIndex += 1;
-          const yb = L.innerBottom + 18 + loopIndex * 14;
-          // Leave/enter from below when the column is free underneath, otherwise through the side gap.
-          const out = hasBelow(a)
-            ? `M${a.x + L.NODE_W},${a.y + L.NODE_H / 2} L${a.x + L.NODE_W + 14},${a.y + L.NODE_H / 2} L${a.x + L.NODE_W + 14},${yb}`
-            : `M${a.x + L.NODE_W / 2},${a.y + L.NODE_H} L${a.x + L.NODE_W / 2},${yb}`;
-          const xin = hasBelow(b) ? b.x - 14 : b.x + L.NODE_W / 2;
-          const inn = hasBelow(b)
-            ? ` L${xin},${yb} L${xin},${b.y + L.NODE_H / 2} L${b.x - 2},${b.y + L.NODE_H / 2}`
-            : ` L${xin},${yb} L${xin},${b.y + L.NODE_H + 2}`;
-          d = out + inn;
-          lx = ((hasBelow(a) ? a.x + L.NODE_W + 14 : a.x + L.NODE_W / 2) + xin) / 2;
-          ly = yb;
-        } else if (e.back) {
-          // Loop back across rows: down under the diagram, up the left margin, into the target from above.
-          loopIndex += 1;
-          const yb = L.innerBottom + 18 + loopIndex * 14;
-          const xm = 6 + loopIndex * 5;
-          const yt = L.rowTop(b.row) - 14 - loopIndex * 5;
-          const x1 = a.x + L.NODE_W / 2;
-          const x2 = b.x + L.NODE_W / 2;
-          d = `M${x1},${a.y + L.NODE_H} L${x1},${yb} L${xm},${yb} L${xm},${yt} L${x2},${yt} L${x2},${b.y - 2}`;
-          lx = (x1 + xm) / 2;
-          ly = yb;
-        } else if (a.row !== b.row) {
-          // Continues on the next row: down into the gap between rows, across, and down into the target.
-          const x1 = a.x + L.NODE_W / 2;
-          const x2 = b.x + L.NODE_W / 2;
-          const lane = L.rowTop(a.row) + L.innerH + ROW_GAP / 2;
-          const turn = (from, to) => (to < from ? -10 : 10);
-          const start = hasBelow(a)
-            ? `M${a.x + L.NODE_W},${a.y + L.NODE_H / 2} L${a.x + L.NODE_W + 14},${a.y + L.NODE_H / 2} L${a.x + L.NODE_W + 14},${lane - 10} Q${a.x + L.NODE_W + 14},${lane} `
-            : `M${x1},${a.y + L.NODE_H} L${x1},${lane - 10} Q${x1},${lane} `;
-          const xd = hasBelow(a) ? a.x + L.NODE_W + 14 : x1;
-          if (hasAbove(b)) {
-            // Another box sits above the target in its column: come down the gap on its left, enter from the side.
-            const xs = b.x - 14;
-            const ym = b.y + L.NODE_H / 2;
-            d = `${start}${xd + turn(xd, xs)},${lane} L${xs - turn(xd, xs)},${lane} Q${xs},${lane} ${xs},${lane + 10} L${xs},${ym - 10} Q${xs},${ym} ${xs + 10},${ym} L${b.x - 2},${ym}`;
-            lx = xs - edgeLabelWidth(e.label || '') / 2 - 6;
-            ly = (lane + ym) / 2;
-          } else {
-            d = `${start}${xd + turn(xd, x2)},${lane} L${x2 - turn(xd, x2)},${lane} Q${x2},${lane} ${x2},${lane + 10} L${x2},${b.y - 2}`;
-            lx = x2;
-            ly = (lane + b.y) / 2;
-          }
-        } else {
-          const x1 = a.x + L.NODE_W;
-          const y1 = a.y + L.NODE_H / 2;
-          const x2 = b.x - 2;
-          const y2 = b.y + L.NODE_H / 2;
-          const span = b.layer - a.layer;
-          if (span <= 1) {
-            const mx = (x1 + x2) / 2;
-            d = `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
-            lx = mx;
-            ly = (y1 + y2) / 2;
-          } else {
-            // Edge that skips layers: run along a lane above every box in the row so it never crosses one.
-            const top = L.rowTop(a.row) - 12;
-            d = `M${x1},${y1} C${x1 + 24},${y1} ${x1 + 24},${top} ${x1 + 48},${top} L${x2 - 48},${top} C${x2 - 24},${top} ${x2 - 24},${y2} ${x2},${y2}`;
-            lx = x1 + L.GAP_X / 2;
-            ly = top;
-          }
-        }
-        const lw = e.label ? edgeLabelWidth(e.label) : 0;
-        if (e.label) [lx, ly] = placeLabel(lx, ly, lw);
-        return (
-          <g key={i}>
-            <path d={d} fill="none" stroke="#5F8574" strokeOpacity=".7" strokeWidth="1.8" strokeDasharray={e.back ? '5 4' : undefined} markerEnd="url(#wf-arrow)" />
-            {e.label && (
-              <g transform={`translate(${lx},${ly})`}>
-                <rect x={-lw / 2} y="-9" width={lw} height="18" rx="9" fill="#FFFFFF" stroke="#BCD1C6" />
-                <text textAnchor="middle" y="3.5" fontSize={EDGE_FONT} fill="#302B25" fontFamily="DM Sans, system-ui, sans-serif">{e.label}</text>
-              </g>
-            )}
-          </g>
-        );
-      })}
+      {routes.map(({ d, lx, ly, lw, label, back }, i) => (
+        <g key={i}>
+          <path d={d} fill="none" stroke="#5F8574" strokeOpacity=".7" strokeWidth="1.8" strokeDasharray={back ? '5 4' : undefined} markerEnd="url(#wf-arrow)" />
+          {label && (
+            <g transform={`translate(${lx},${ly})`}>
+              <rect x={-lw / 2} y="-9" width={lw} height="18" rx="9" fill="#FFFFFF" stroke="#BCD1C6" />
+              <text textAnchor="middle" y="3.5" fontSize={EDGE_FONT} fill="#302B25" fontFamily="DM Sans, system-ui, sans-serif">{label}</text>
+            </g>
+          )}
+        </g>
+      ))}
       {L.nodes.map((n) => {
         const [fill, stroke, accent, ink] = NODE_TONES[(n.step - 1) % NODE_TONES.length];
         const firstBaseline = L.NODE_H / 2 - ((n.lines.length - 1) * LABEL_LINE_H) / 2 + 4.5;
