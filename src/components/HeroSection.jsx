@@ -1,6 +1,5 @@
 import React from 'react';
 import { ArrowRight, ShieldCheck, QrCode, BookOpen, Award, Layers, Timer, Code2, Database, Globe, BrainCircuit, Star } from 'lucide-react';
-import HeroSlideshow from './HeroSlideshow';
 
 /* Track tiles (top of the visual) and their accent colours, in the site palette. */
 const TRACKS = [
@@ -19,7 +18,7 @@ const trackOf = (c) => {
 };
 
 /**
- * Landing hero: headline and actions on the left; on the right the course slideshow inside a large
+ * Landing hero: headline and actions on the left; on the right a student in front of a large
  * forest-green circle, with floating cards for the tracks, modules per track, the QR-verified
  * certificate, the proctored final and the free modules; "Our features" underneath.
  */
@@ -72,14 +71,20 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
 
         {/* Visual */}
         <div className="relative h-[460px] sm:h-[560px] lg:h-[600px] animate-fade-up" style={{ animationDelay: '120ms' }}>
-          {/* green circle with the course slideshow */}
-          <div className="absolute right-1/2 translate-x-[56%] lg:right-0 lg:translate-x-0 bottom-0 w-[330px] h-[330px] sm:w-[440px] sm:h-[440px] lg:w-[480px] lg:h-[480px] rounded-full bg-forest" aria-hidden="true" />
-          <div className="absolute right-1/2 translate-x-1/2 lg:right-6 lg:translate-x-0 bottom-8 w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] lg:w-[440px] lg:h-[440px] rounded-full overflow-hidden ring-[10px] ring-ivory shadow-floating">
-            <HeroSlideshow className="!bg-forest" />
+          {/* forest-green circle with the student standing in front of it (head rises above the circle) */}
+          <div className="absolute left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:right-10 bottom-10 w-[310px] h-[310px] sm:w-[420px] sm:h-[420px] lg:w-[450px] lg:h-[450px] rounded-full bg-[radial-gradient(circle_at_35%_30%,#0E5C45,#013A2B_70%)] shadow-[0_40px_80px_-40px_rgba(1,58,43,.65)]" aria-hidden="true">
+            <span className="absolute inset-[-18px] rounded-full border border-dashed border-brand-900/15" />
           </div>
+          <img
+            src="/hero-student.webp"
+            alt="A student learning online with a laptop and backpack"
+            width="950" height="1000"
+            fetchpriority="high"
+            className="absolute z-[1] left-1/2 -translate-x-[47%] lg:left-auto lg:translate-x-0 lg:right-[18px] bottom-10 h-[390px] sm:h-[520px] lg:h-[560px] w-auto max-w-none object-contain [mask-image:linear-gradient(to_bottom,#000_86%,transparent)]"
+          />
 
           {/* track tiles (like the social icon tiles) */}
-          <div className="absolute z-10 left-0 sm:left-6 lg:left-0 top-2 sm:top-6 grid grid-cols-2 gap-2.5 -rotate-[8deg] animate-drift" style={{ animationDuration: '9s' }} aria-label="Career tracks">
+          <div className="absolute z-[2] left-0 sm:left-6 lg:left-0 top-2 sm:top-6 grid grid-cols-2 gap-2.5 -rotate-[8deg] animate-drift" style={{ animationDuration: '9s' }} aria-label="Career tracks">
             {TRACKS.map(({ key, label, icon: Icon, color }, i) => (
               <span key={key} className={`w-[62px] h-[62px] sm:w-[74px] sm:h-[74px] rounded-2xl bg-white shadow-floating flex flex-col items-center justify-center gap-1 ${i % 2 ? 'translate-y-3' : ''}`}>
                 <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${color}`} aria-hidden="true" />
@@ -89,7 +94,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
           </div>
 
           {/* modules per track (like the bar chart card) */}
-          <div className="absolute z-10 left-2 sm:left-10 lg:left-6 top-[46%] w-[150px] sm:w-[168px] rounded-2xl bg-white shadow-floating px-4 pt-3.5 pb-3 animate-drift" style={{ animationDuration: '11s', animationDelay: '1.5s' }}>
+          <div className="absolute z-[2] left-2 sm:left-10 lg:left-6 top-[46%] w-[150px] sm:w-[168px] rounded-2xl bg-white shadow-floating px-4 pt-3.5 pb-3 animate-drift" style={{ animationDuration: '11s', animationDelay: '1.5s' }}>
             <div className="flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-[#F3E3A6] text-[#B45309] flex items-center justify-center"><Star className="w-3.5 h-3.5 fill-current" /></span>
               <p className="text-[11px] font-bold text-charcoal">Modules per track</p>
@@ -105,7 +110,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
           </div>
 
           {/* QR-verified certificate (like the brand chip) */}
-          <div className="absolute z-10 left-1/2 -translate-x-1/2 lg:left-[44%] bottom-0 rounded-2xl bg-white shadow-floating px-4 py-3 flex items-center gap-3 animate-drift" style={{ animationDuration: '10s', animationDelay: '.6s' }}>
+          <div className="absolute z-[2] left-1/2 -translate-x-1/2 lg:left-[44%] bottom-0 rounded-2xl bg-white shadow-floating px-4 py-3 flex items-center gap-3 animate-drift" style={{ animationDuration: '10s', animationDelay: '.6s' }}>
             <span className="w-9 h-9 rounded-xl bg-brand-900 text-ivory flex items-center justify-center"><QrCode className="w-5 h-5" /></span>
             <div className="leading-tight">
               <p className="text-[11px] text-charcoal/50">Certificate</p>
@@ -114,7 +119,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
           </div>
 
           {/* proctored final (like the reminder card) */}
-          <div className="absolute z-10 right-0 sm:right-2 lg:-right-2 bottom-[22%] w-[170px] rounded-2xl bg-white shadow-floating ring-1 ring-peach-200/60 px-3.5 py-3 animate-drift" style={{ animationDuration: '12s', animationDelay: '2s' }}>
+          <div className="absolute z-[2] right-0 sm:right-2 lg:-right-4 bottom-[12%] w-[170px] rounded-2xl bg-white shadow-floating ring-1 ring-peach-200/60 px-3.5 py-3 animate-drift" style={{ animationDuration: '12s', animationDelay: '2s' }}>
             <div className="flex items-center gap-2">
               <span className="w-7 h-7 rounded-full bg-brand-50 text-brand-900 flex items-center justify-center"><ShieldCheck className="w-4 h-4" /></span>
               <p className="text-[11px] font-bold text-charcoal">Final assessment</p>
