@@ -1,6 +1,6 @@
 import React from 'react';
 import { Terminal, Code2, Database, Brain, ArrowRight } from 'lucide-react';
-import { Reveal, Triangles } from '../components/ui';
+import { Reveal, PageTop } from '../components/ui';
 
 const META = {
   Programming: { icon: Terminal, tone: 'bg-brand-900', text: 'Python from first principles to OOP, files, web data and databases.' },
@@ -9,19 +9,14 @@ const META = {
   'Artificial Intelligence & Data Science': { icon: Brain, tone: 'bg-[#1E5141]', text: 'Data wrangling, statistics, machine learning and model evaluation.' }
 };
 
-export default function CategoriesPage({ courses = [], onCategorySelect }) {
+export default function CategoriesPage({ courses = [], onCategorySelect, onHome }) {
   const categories = Object.keys(META);
 
   return (
     <div>
-      <section className="relative overflow-hidden bg-white border-b border-slate-100">
-        <Triangles />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <p className="eyebrow">Infographic</p>
-          <h1 className="mt-2 text-3xl sm:text-4xl font-bold text-brand-900">Explore by category</h1>
-          <p className="mt-2 text-slate-500 max-w-xl mx-auto">Four career tracks. Pick the one that fits your goal — you can enroll in one course per account.</p>
-        </div>
-      </section>
+      <PageTop eyebrow="Infographic" title="Explore by category" crumb="Categories" onHome={onHome}>
+        <p className="mt-3 text-charcoal/70 max-w-xl mx-auto">Four career tracks. Pick the one that fits your goal — you can enroll in one course per account.</p>
+      </PageTop>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid sm:grid-cols-2 gap-6">
         {categories.map((cat, i) => {
@@ -29,7 +24,7 @@ export default function CategoriesPage({ courses = [], onCategorySelect }) {
           const count = courses.filter(c => c.category === cat).length;
           return (
             <Reveal key={cat} delay={i * 80}>
-              <button onClick={() => onCategorySelect(cat)} className="card card-hover w-full text-left p-7 flex gap-5 items-start group">
+              <button onClick={() => onCategorySelect(cat)} className="edu-card card-hover w-full text-left p-7 flex gap-5 items-start group">
                 <span className={`w-14 h-14 rounded-2xl ${m.tone} text-white flex items-center justify-center shrink-0 shadow-lg [clip-path:polygon(25%_5%,75%_5%,100%_50%,75%_95%,25%_95%,0_50%)]`}>
                   <m.icon className="w-6 h-6" />
                 </span>

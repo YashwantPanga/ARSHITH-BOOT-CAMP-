@@ -19,23 +19,23 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
 
   return (
     <article
-      className={`group relative flex flex-col h-full bg-white rounded-2xl border border-brand-900/10 p-3 transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover hover:border-brand-300 ${isLocked ? 'opacity-80' : ''}`}
+      className={`edu-card group relative flex flex-col h-full overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_40px_-24px_rgba(1,58,43,.4)] hover:border-sage/50 ${isLocked ? 'opacity-80' : ''}`}
       style={{ animationDelay: `${index * 60}ms` }}
     >
       {/* Image with the overlapping track plate */}
       <button onClick={() => onSelect(course.id)} className="relative block text-left" aria-label={`View ${course.title}`}>
-        <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-forest">
+        <div className="relative aspect-[16/10] overflow-hidden bg-forest">
           <SafeImg src={art || course.thumbnail} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
           {!art && <div className="absolute inset-0 bg-gradient-to-t from-evergreen/55 via-evergreen/5 to-transparent" />}
           {isMine && <span className="absolute top-2.5 right-2.5 chip bg-ivory text-brand-900">Enrolled</span>}
           {isLocked && <span className="absolute top-2.5 right-2.5 chip bg-white/90 text-charcoal/70"><Lock className="w-3 h-3" /> Locked</span>}
         </div>
-        <TrackBadge type={course.iconType} className="absolute left-3 -bottom-5" />
+        <TrackBadge type={course.iconType} className="absolute left-5 -bottom-5" />
       </button>
 
-      <div className="px-1.5 pt-8 pb-1 flex flex-col flex-1">
-        <h3 className="font-sans text-[17px] font-semibold text-charcoal leading-snug">
-          <button onClick={() => onSelect(course.id)} className="text-left hover:text-brand-900 transition-colors">{displayTitle(course.title)}</button>
+      <div className="px-5 pt-8 pb-5 flex flex-col flex-1">
+        <h3 className="font-display text-[19px] font-semibold text-evergreen leading-snug">
+          <button onClick={() => onSelect(course.id)} className="text-left hover:text-sage transition-colors">{displayTitle(course.title)}</button>
         </h3>
         <p className="mt-1.5 text-sm text-charcoal/60 line-clamp-2">{cleanText(course.shortDescription || course.description)}</p>
 
@@ -44,9 +44,9 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
           <div className="mt-2 flex items-center gap-2 text-sm text-charcoal/70">
             <span className="flex items-center gap-1"><Star className="w-4 h-4 fill-[#E0B54A] text-[#E0B54A]" />{course.rating}</span>
             <span className="text-charcoal/30">•</span>
-            <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{hoursOf(course)}</span>
+            <span className="flex items-center gap-1"><Clock className="w-4 h-4 text-sage" />{hoursOf(course)}</span>
             <span className="text-charcoal/30">•</span>
-            <span className="flex items-center gap-1"><Users className="w-4 h-4" />{course.studentsCount}</span>
+            <span className="flex items-center gap-1"><Users className="w-4 h-4 text-sage" />{course.studentsCount}</span>
           </div>
 
           {isMine && (
@@ -56,15 +56,15 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
             </div>
           )}
 
-          <div className="mt-4">
+          <div className="mt-4 pt-4 border-t border-brand-900/10">
             {isMine ? (
-              <button onClick={() => onEnroll(course.id)} className="btn-primary w-full py-3"><PlayCircle className="w-4 h-4" /> Continue learning</button>
+              <button onClick={() => onEnroll(course.id)} className="btn-primary font-display w-full py-3 !rounded-md"><PlayCircle className="w-4 h-4" /> Continue learning</button>
             ) : isLocked ? (
-              <button disabled className="btn w-full py-3 bg-cream text-charcoal/50 border border-brand-900/10" title="Only one course is allowed per login">
+              <button disabled className="btn font-display w-full py-3 !rounded-md bg-cream text-charcoal/50 border border-brand-900/10" title="Only one course is allowed per login">
                 <Lock className="w-4 h-4" /> One course per login
               </button>
             ) : (
-              <button onClick={() => onEnroll(course.id)} className="btn-outline w-full py-3 group/btn">
+              <button onClick={() => onEnroll(course.id)} className="btn font-display w-full py-3 !rounded-md bg-cream text-forest border border-forest/20 hover:bg-forest hover:text-ivory hover:border-forest group/btn">
                 Enroll for Free <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
               </button>
             )}

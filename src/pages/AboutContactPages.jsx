@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Target, Eye, HeartHandshake, Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
-import { Reveal, SafeImg, Triangles } from '../components/ui';
+import { Reveal, SafeImg, PageTop } from '../components/ui';
 import { IMAGES } from '../data/meta';
 import { api } from '../services/api';
 
-export function AboutPage({ onExplore }) {
+export function AboutPage({ onExplore, onHome }) {
   const values = [
     { icon: Target, title: 'Mission', text: 'Make rigorous, job-ready technical education free and accessible to every learner.' },
     { icon: Eye, title: 'Vision', text: 'Certificates that mean something — earned through real assessments, verifiable by anyone.' },
@@ -12,18 +12,18 @@ export function AboutPage({ onExplore }) {
   ];
   return (
     <div>
-      <section className="relative overflow-hidden bg-white">
-        <Triangles />
+      <PageTop title="About" crumb="About" onHome={onHome} />
+      <section className="relative overflow-hidden bg-ivory">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid lg:grid-cols-2 gap-12 items-center">
           <Reveal className="grid grid-cols-2 gap-3">
-            <SafeImg src={IMAGES.heroStudents} alt="" className="rounded-3xl h-60 w-full object-cover" />
-            <SafeImg src={IMAGES.portrait} alt="" className="rounded-3xl h-60 w-full object-cover mt-10" />
+            <SafeImg src={IMAGES.heroStudents} alt="" className="rounded-[20px] h-60 w-full object-cover shadow-[0_24px_48px_-28px_rgba(1,58,43,.5)]" />
+            <SafeImg src={IMAGES.portrait} alt="" className="rounded-[20px] h-60 w-full object-cover mt-10 shadow-[0_24px_48px_-28px_rgba(1,58,43,.5)]" />
           </Reveal>
           <Reveal>
-            <p className="eyebrow">About us</p>
-            <h1 className="mt-2 text-3xl sm:text-4xl font-bold text-brand-900 leading-tight">We provide exclusive coaching courses &amp; life-building education</h1>
-            <p className="mt-4 text-slate-500 leading-relaxed">Arshith Bootcamp is an online academy built around complete, textbook-quality courses. Every module ends with a quiz, every course ends with a proctored final assessment, and every certificate carries the learner's real score and a unique verification ID.</p>
-            <button onClick={onExplore} className="btn-primary mt-7">Explore courses</button>
+            <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">About us</p>
+            <h2 className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight">We provide <b>exclusive coaching courses</b> &amp; life-building education</h2>
+            <p className="mt-4 text-charcoal/70 leading-relaxed">Arshith Bootcamp is an online academy built around complete, textbook-quality courses. Every module ends with a quiz, every course ends with a proctored final assessment, and every certificate carries the learner's real score and a unique verification ID.</p>
+            <button onClick={onExplore} className="btn-primary font-display !rounded-md mt-7 px-7 py-3.5 text-[15.5px]">Explore courses</button>
           </Reveal>
         </div>
       </section>
@@ -44,7 +44,7 @@ export function AboutPage({ onExplore }) {
   );
 }
 
-export function ContactPage() {
+export function ContactPage({ onHome }) {
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [err, setErr] = useState('');
@@ -52,19 +52,21 @@ export function ContactPage() {
   const valid = form.name.trim() && /\S+@\S+\.\S+/.test(form.email) && form.message.trim().length > 5;
 
   return (
+    <>
+    <PageTop title="Contact" crumb="Contact" onHome={onHome} />
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid lg:grid-cols-12 gap-10">
       <div className="lg:col-span-5">
-        <p className="eyebrow">Contact</p>
-        <h1 className="mt-2 text-3xl sm:text-4xl font-bold text-brand-900">Contact Arshith Bootcamp</h1>
-        <p className="mt-3 text-slate-500">Questions about a course, your assessment or a certificate? We usually reply within one working day.</p>
-        <div className="mt-8 bg-brand-900 text-white rounded-3xl p-7 space-y-5">
+        <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Contact</p>
+        <h2 className="edu-title mt-2 text-3xl sm:text-[38px]">Contact <b>Arshith Bootcamp</b></h2>
+        <p className="mt-3 text-charcoal/70">Questions about a course, your assessment or a certificate? We usually reply within one working day.</p>
+        <div className="mt-8 bg-forest text-white rounded-[20px] p-7 space-y-5">
           <p className="flex gap-3"><MapPin className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Headquarters</span>Bengaluru, Karnataka, India</span></p>
           <p className="flex gap-3"><Phone className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Phone</span>+91 86184 71444</span></p>
           <p className="flex gap-3"><Mail className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Email</span>careers@arshithgroup.com</span></p>
         </div>
       </div>
       <div className="lg:col-span-7">
-        <div className="card p-6 sm:p-8">
+        <div className="edu-card p-6 sm:p-8">
           {sent ? (
             <div className="text-center py-12 animate-scale-in">
               <CheckCircle2 className="w-12 h-12 text-mint-400 mx-auto" />
@@ -91,5 +93,6 @@ export function ContactPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -69,8 +69,8 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
 
           {/* Explore mega-menu */}
           <div ref={exploreRef} className="relative hidden md:block" onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-            <button onClick={() => setExplore(v => (openedByHover.current ? true : !v))} aria-expanded={explore} className={`h-12 px-4 rounded-lg flex items-center gap-2 text-[15px] font-medium transition ${explore ? 'bg-brand-900 text-ivory' : 'bg-brand-50 text-brand-900 hover:bg-brand-100'}`}>
-              <Menu className="w-5 h-5" /> Explore <ChevronDown className={`w-4 h-4 transition-transform ${explore ? 'rotate-180' : ''}`} />
+            <button onClick={() => setExplore(v => (openedByHover.current ? true : !v))} aria-expanded={explore} className={`edu-nav h-12 px-1 flex items-center gap-1.5 transition-colors ${explore ? 'text-sage' : 'text-evergreen hover:text-sage'}`}>
+              Explore <ChevronDown className={`w-4 h-4 transition-transform ${explore ? 'rotate-180' : ''}`} />
             </button>
             {explore && (
               <div className="absolute left-0 top-[calc(100%+10px)] before:absolute before:-top-3 before:inset-x-0 before:h-3 before:content-[''] w-[640px] bg-white rounded-2xl shadow-floating border border-brand-900/10 p-5 grid grid-cols-5 gap-5 animate-scale-in origin-top-left">
@@ -103,18 +103,26 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
             )}
           </div>
 
-          <form onSubmit={submitSearch} className="relative flex-1 hidden md:block max-w-xl">
+          <nav className="hidden xl:flex items-center gap-7" aria-label="Main">
+            {NAV.filter(l => ['home', 'courses', 'about', 'contact'].includes(l.id)).map(l => (
+              <button key={l.id} onClick={() => go(l.to)} className={`edu-nav relative py-2 transition-colors ${isActive(l.id) ? 'text-sage after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-0.5 after:rounded after:bg-sage' : 'text-evergreen hover:text-sage'}`}>
+                {l.id === 'courses' ? 'Courses' : l.name}
+              </button>
+            ))}
+          </nav>
+
+          <form onSubmit={submitSearch} className="relative flex-1 hidden md:block max-w-xl xl:max-w-[260px] xl:ml-auto">
             <Search className="w-5 h-5 text-charcoal/40 absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="search"
               placeholder="What do you want to learn today?"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full h-12 pl-12 pr-4 text-[15px] bg-brand-50/70 border border-transparent rounded-lg outline-none placeholder:text-charcoal/45 focus:bg-white focus:border-sage focus:ring-4 focus:ring-brand-100 transition"
+              className="w-full h-12 pl-12 pr-4 text-[15px] bg-cream border border-brand-900/10 rounded-full outline-none placeholder:text-charcoal/45 focus:bg-white focus:border-sage focus:ring-4 focus:ring-brand-100 transition"
             />
           </form>
 
-          <div className="hidden lg:flex items-center gap-3 ml-auto">
+          <div className="hidden lg:flex items-center gap-5 ml-auto xl:ml-2">
             {studentUser ? (
               <div className="flex items-center gap-2">
                 <button onClick={() => go(paths.dashboard())} className={`flex items-center gap-2 pl-1.5 pr-4 py-1.5 rounded-full border transition ${route.name === 'dashboard' ? 'border-brand-900 bg-brand-50' : 'border-brand-900/15 hover:border-brand-300'}`}>
@@ -127,8 +135,8 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
               </div>
             ) : (
               <>
-                <button onClick={() => go(paths.register())} className="btn-primary h-12 px-6 rounded-lg text-[15px]">Sign up</button>
-                <button onClick={() => go(paths.login())} className="btn-outline h-12 px-6 rounded-lg text-[15px]">Log in</button>
+                <button onClick={() => go(paths.login())} className="font-display text-[17px] font-semibold text-evergreen hover:text-sage transition-colors">Log in</button>
+                <button onClick={() => go(paths.register())} className="font-display h-12 px-7 rounded-md bg-forest text-ivory text-[15.5px] font-semibold border border-forest hover:bg-sage hover:border-sage transition-colors">Sign up</button>
               </>
             )}
           </div>

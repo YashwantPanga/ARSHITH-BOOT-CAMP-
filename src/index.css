@@ -15,12 +15,12 @@
     --color-forest: #013A2B; --color-evergreen: #0C2D26; --color-ivory: #FBF8F1; --color-cream: #F8F5EE;
     --color-sage: #426557; --color-charcoal: #302B25;
     --font-sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    --font-display: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+    --font-display: 'Jost', 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
     --radius-card: 1rem; --content-width: 72rem; --reading-width: 46rem;
   }
-  /* DM Serif Display ships one weight: never let the browser fake bold or italic glyphs. */
-  h1, h2, h3, .font-display { font-family: var(--font-display); font-weight: 400; font-synthesis: none; letter-spacing: -0.005em; text-wrap: balance; overflow-wrap: break-word; }
+  /* Headings in Jost (eduleb template type) */
+  h1, h2, h3, .font-display { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; overflow-wrap: break-word; }
   h4, h5, h6 { text-wrap: balance; overflow-wrap: break-word; }
   p, li, dd { text-wrap: pretty; overflow-wrap: break-word; }
   body { text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
@@ -192,9 +192,16 @@
 
 /* Home page: Coursera-style type. Source Sans 3 everywhere on the landing page; headings that use
    the serif display face elsewhere become bold, tightly set sans headlines here. */
-.landing-type { font-family: 'Source Sans 3', 'Source Sans Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
-.landing-type .font-display, .landing-type h1, .landing-type h2, .landing-type h3 { font-family: inherit; font-weight: 700; letter-spacing: -0.015em; }
-.landing-type h1 { letter-spacing: -0.025em; }
+.landing-type { font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.landing-type .font-display, .landing-type h1, .landing-type h2, .landing-type h3 { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em; }
+.landing-type h1 { font-weight: 700; letter-spacing: -0.02em; }
+
+/* eduleb-style building blocks */
+.edu-card { background: #fff; border: 1px solid rgba(66,101,87,.16); border-radius: 20px; box-shadow: 10px 15px 18px rgba(12,45,38,.04); }
+.edu-title { font-family: var(--font-display); font-weight: 600; color: #0C2D26; letter-spacing: -0.01em; }
+.edu-title b { color: #426557; font-weight: 600; }
+.edu-nav { font-family: var(--font-display); text-transform: uppercase; font-weight: 600; font-size: 15px; letter-spacing: .02em; }
+.edu-shape { background-image: radial-gradient(circle at 8% 18%, rgba(66,101,87,.10) 0 90px, transparent 91px), radial-gradient(circle at 94% 82%, rgba(1,58,43,.07) 0 130px, transparent 131px); }
 
 /* live proctoring panel: red pulse while a detection is active */
 @keyframes proctor-alert { 0%, 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, .55); } 50% { box-shadow: 0 0 0 8px rgba(225, 29, 72, 0); } }

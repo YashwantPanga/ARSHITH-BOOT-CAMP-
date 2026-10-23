@@ -335,7 +335,7 @@ function AppShell() {
     case 'home':
       page = (
         <div className="landing-type">
-          <HeroSection onExploreClick={() => goCourses()} onVerifyClick={() => navigate(paths.verify())} onRegisterClick={() => navigate(studentUser ? paths.dashboard() : paths.register())} courses={courses} />
+          <HeroSection onExploreClick={() => goCourses()} onSearch={(q) => goCourses(q ? { q } : undefined)} onVerifyClick={() => navigate(paths.verify())} onRegisterClick={() => navigate(studentUser ? paths.dashboard() : paths.register())} courses={courses} />
           <PopularCourses
             courses={decoratedCourses}
             enrolledCourseId={enrolledCourseId}
@@ -358,6 +358,7 @@ function AppShell() {
           onEnrollCourse={requestEnroll}
           initialSearch={route.query.q || ''}
           initialCategory={route.query.category || 'All Categories'}
+          onHome={() => navigate(paths.home())}
         />
       );
       break;
@@ -422,13 +423,13 @@ function AppShell() {
       page = <CertificateVerifyPage certId={route.params.certId} onSearch={(id) => navigate(paths.verify(id), { replace: true })} onHome={() => navigate('/')} />;
       break;
     case 'categories':
-      page = <CategoriesPage courses={courses} onCategorySelect={(cat) => goCourses({ category: cat })} />;
+      page = <CategoriesPage courses={courses} onCategorySelect={(cat) => goCourses({ category: cat })} onHome={() => navigate(paths.home())} />;
       break;
     case 'about':
-      page = <AboutPage onExplore={() => goCourses()} />;
+      page = <AboutPage onExplore={() => goCourses()} onHome={() => navigate(paths.home())} />;
       break;
     case 'contact':
-      page = <ContactPage />;
+      page = <ContactPage onHome={() => navigate(paths.home())} />;
       break;
     case 'login':
     case 'register':
