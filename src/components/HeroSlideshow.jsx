@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const U = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&crop=entropy&w=${w}&h=${h}&q=90`;
-const img = (id) => ({ src: U(id, 1080, 1350), srcSet: `${U(id, 760, 950)} 760w, ${U(id, 1080, 1350)} 1080w, ${U(id, 2160, 2700)} 2160w` });
+const U = (id, w, h, crop) => `https://images.unsplash.com/${id}?auto=format&fit=crop&crop=${crop}&w=${w}&h=${h}&q=90`;
+const img = (id, crop = 'entropy') => ({ src: U(id, 1080, 1350, crop), srcSet: `${U(id, 760, 950, crop)} 760w, ${U(id, 1080, 1350, crop)} 1080w, ${U(id, 2160, 2700, crop)} 2160w` });
 
-/** Course visuals for the hero arch. Swap the Unsplash ids to use your own artwork. */
+/** Course visuals for the hero arch: one dark, editorial set. Swap the Unsplash ids to use your own artwork. */
 export const HERO_SLIDES = [
-  { course: 'Python Programming', alt: 'A learner holding a note that reads Python in front of a monitor', ...img('photo-1526379095098-d400fd0bf935') },
-  { course: 'SQL & Databases', alt: 'Glowing 3D cubes connected by lines, like related tables in a database', ...img('photo-1639322537228-f710d846310a') },
-  { course: 'Web Development', alt: 'A responsive website shown on a desktop monitor, tablet and phone', ...img('photo-1547658719-da2b51169166') },
-  { course: 'AI & Data Science', alt: '3D isometric analytics charts and graphs', ...img('photo-1666875753105-c63a6f3bdc86') }
+  { course: 'Python Programming', alt: 'Colour-highlighted Python code on a dark editor screen', ...img('photo-1515879218367-8466d910aaa4') },
+  { course: 'SQL & Databases', alt: 'A data-centre server rack with neatly bundled glowing network cables', ...img('photo-1558494949-ef010cbdcc31') },
+  { course: 'Web Development', alt: 'JavaScript and React code on a dark monitor', ...img('photo-1633356122544-f134324a6cee') },
+  { course: 'AI & Data Science', alt: 'An analytics dashboard with charts and live metrics on a dark screen', ...img('photo-1551288049-bebda4e38f71', 'bottom') }
 ];
 
 const reducedMotion = () => {
