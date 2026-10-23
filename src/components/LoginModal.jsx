@@ -116,8 +116,9 @@ export default function AuthPage({ mode = 'login', onSwitchMode, onBack, onHome,
 
               <form onSubmit={handleSubmit} className="mt-6 grid sm:grid-cols-2 gap-4" noValidate>
                 {isSignup && (
-                  <Field className="sm:col-span-2" label="Full name" icon={User}>
-                    <input className="input pl-11" autoComplete="name" placeholder="e.g. Arshith Kumar" value={form.name} onChange={set('name')} />
+                  <Field className="sm:col-span-2" label="Full name (exactly as on your government ID or college ID)" icon={User}
+                    hint="Your certificate shows this name, and the final exam checks it against your ID card - spell it exactly as printed on the ID.">
+                    <input className="input pl-11" autoComplete="name" placeholder="e.g. Panga Yashwant" value={form.name} onChange={set('name')} />
                   </Field>
                 )}
                 <Field label="Registration number" icon={Hash} className={isSignup ? '' : 'sm:col-span-2'}>
@@ -166,7 +167,7 @@ export default function AuthPage({ mode = 'login', onSwitchMode, onBack, onHome,
   );
 }
 
-function Field({ label, icon: Icon, className = '', children }) {
+function Field({ label, icon: Icon, className = '', hint, children }) {
   return (
     <label className={`block ${className}`}>
       <span className="block text-xs font-semibold text-slate-600 mb-1.5">{label}</span>
@@ -174,6 +175,7 @@ function Field({ label, icon: Icon, className = '', children }) {
         <Icon className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
         {children}
       </span>
+      {hint && <span className="block mt-1.5 text-[11.5px] leading-snug text-slate-500">{hint}</span>}
     </label>
   );
 }

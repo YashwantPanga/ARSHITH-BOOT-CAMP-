@@ -105,6 +105,29 @@ export function computeStudentDetails(student, db) {
 
     const certificateStatus = cert ? 'Earned' : 'Not Earned';
 
+    // Final exam attempts with every proctoring violation, newest first
+    const isMine = (a) => String(a.userId || '').toLowerCase() === normEmail || a.studentId === studentId;
+    const examAttempts = finalAttempts.filter(a => isMine(a) && a.courseId === cId).map(a => ({
+      id: a.id,
+      attemptNumber: a.attemptNumber,
+      percentage: a.percentage,
+      passed: !!a.passed,
+      terminated: !!a.proctoring?.terminated,
+      submittedAt: a.submittedAt,
+      violationCount: a.proctoring?.violationCount ?? (a.proctoring?.violations || []).length,
+      violations: (a.proctoring?.violations || []).map(v => ({ type: v.type, message: v.message, at: v.at })),
+      flags: a.proctoring?.flags || [],
+      identity: a.proctoring?.identity || null
+    }));
+    // An exam that is running right now (live violations reported as they happen)
+    const live = Object.values(db.finalTestActiveSessions || {}).find(s => isMine(s) && s.courseId === cId && !s.submitted
+      && Date.now() - s.startedAt < ((s.durationSeconds || 2700) + 120) * 1000);
+    const liveExam = live ? {
+      startedAt: new Date(live.startedAt).toISOString(),
+      violationCount: (live.liveEvents || []).filter(e => e.strike).length,
+      events: live.liveEvents || []
+    } : null;
+
     return {
       courseId: cId,
       courseTitle: course.title,
@@ -122,7 +145,10 @@ export function computeStudentDetails(student, db) {
       certificateStatus,
       certificateId: cert?.certificateId || null,
       certificateIssueDate: cert?.issueDate || cert?.createdAt || null,
-      certificateGrade: cert?.grade || null
+      certificateGrade: cert?.grade || null,
+      examAttempts,
+      totalViolations: examAttempts.reduce((n, a) => n + (a.violationCount || 0), 0),
+      liveExam
     };
   });
 

@@ -9,6 +9,16 @@ import {
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { api } from '../services/api';
+
+// Readable names for proctoring events recorded during the final exam.
+const VIOLATION_LABEL = {
+  TAB_SWITCH: 'Switched tab', WINDOW_BLUR: 'Left the exam window', FULLSCREEN_EXIT: 'Exited full screen', NAVIGATION: 'Pressed Back',
+  CAMERA_OFF: 'Camera turned off', CAMERA_BLOCKED: 'Camera covered', NO_FACE: 'Face not visible', MULTIPLE_FACES: 'More than one person',
+  IDENTITY_MISMATCH: 'Different person on camera', PHONE_DETECTED: 'Phone detected', LOOKING_DOWN: 'Looking down', LOOKING_AWAY: 'Looking away',
+  HAND_NEAR_FACE: 'Hand near face (review)'
+};
+const violationLabel = (t) => VIOLATION_LABEL[t] || String(t || 'Event').replace(/_/g, ' ').toLowerCase().replace(/^./, c => c.toUpperCase());
+const warnTone = (n) => (n >= 3 ? 'bg-rose-50 text-rose-700 border-rose-200' : n > 0 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200');
 import AdminQuizManager from '../components/AdminQuizManager';
 import AdminQuizAnalytics from '../components/AdminQuizAnalytics';
 
@@ -110,6 +120,18 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
   useEffect(() => {
     refreshAllData();
   }, []);
+
+  // Students (and their live exam violations) refresh every 15 s while the dashboard is open.
+  useEffect(() => {
+    const t = setInterval(async () => {
+      if (document.hidden) return;
+      try { const r = await api.getStudents(); if (r.success) setStudents(r.students); } catch { /* next tick */ }
+    }, 15000);
+    return () => clearInterval(t);
+  }, []);
+  useEffect(() => {
+    setSelectedStudentDetail(cur => (cur ? students.find(st => st.id === cur.id) || cur : cur));
+  }, [students]);
 
   // Filtered and Sorted Students
   const filteredStudents = useMemo(() => {
@@ -1148,6 +1170,7 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
                       <th className="py-3 px-4">Modules Passed</th>
                       <th className="py-3 px-4">Progress</th>
                       <th className="py-3 px-4">Final Exam</th>
+                      <th className="py-3 px-4">Proctoring</th>
                       <th className="py-3 px-4">Certificate</th>
                       <th className="py-3 px-4 text-right">Action</th>
                     </tr>
@@ -1155,7 +1178,7 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
                   <tbody className="divide-y divide-slate-100 text-xs font-bold">
                     {students.filter(s => !selectedProgressCourseId || (s.enrolledCourses || []).includes(selectedProgressCourseId)).length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="py-12 text-center text-slate-400 font-semibold">
+                        <td colSpan={8} className="py-12 text-center text-slate-400 font-semibold">
                           <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                           <p className="text-sm font-bold text-slate-700">No enrolled students in this course yet.</p>
                         </td>
@@ -1196,6 +1219,27 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
                                 ) : (
                                   <span className="text-[11px] text-slate-400 font-medium">Pending</span>
                                 )}
+                              </td>
+                              <td className="py-4 px-4">
+                                {(() => {
+                                  const live = targetDetail.liveExam;
+                                  const last = (targetDetail.examAttempts || [])[0];
+                                  if (live) return (
+                                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-black rounded-full border ${warnTone(live.violationCount)}`}>
+                                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> LIVE · {live.violationCount} warning{live.violationCount === 1 ? '' : 's'}
+                                    </span>
+                                  );
+                                  if (!last) return <span className="text-[11px] text-slate-400 font-medium">No attempt</span>;
+                                  return (
+                                    <div className="space-y-1">
+                                      <span className={`inline-block px-2 py-0.5 text-[10px] font-black rounded-full border ${warnTone(last.violationCount)}`}>
+                                        {last.terminated ? 'Ended · ' : ''}{last.violationCount} warning{last.violationCount === 1 ? '' : 's'}
+                                      </span>
+                                      {last.identity?.flaggedForReview && <span className="block text-[10px] font-bold text-amber-700">ID flagged for review</span>}
+                                      {(targetDetail.examAttempts || []).length > 1 && <span className="block text-[10px] text-slate-400">{targetDetail.examAttempts.length} attempts · {targetDetail.totalViolations} total</span>}
+                                    </div>
+                                  );
+                                })()}
                               </td>
                               <td className="py-4 px-4">
                                 {getCertStatusBadge(targetDetail.certificateStatus, targetDetail.certificateId)}
@@ -1757,6 +1801,57 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
                       <span className="text-slate-400 font-medium">Not yet passed</span>
                     )}
                   </div>
+
+                  {/* Final exam proctoring: live exam + every attempt with each violation */}
+                  {(cd.liveExam || (cd.examAttempts || []).length > 0) && (
+                    <div className="space-y-2">
+                      <p className="text-[11px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                        <Shield className="w-3.5 h-3.5 text-brand-700" />
+                        <span>Exam proctoring ({cd.totalViolations || 0} warnings across {(cd.examAttempts || []).length} attempt{(cd.examAttempts || []).length === 1 ? '' : 's'})</span>
+                      </p>
+                      {cd.liveExam && (
+                        <div className="p-3 rounded-xl border-2 border-rose-200 bg-rose-50/60 space-y-1.5">
+                          <p className="text-xs font-black text-rose-800 flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" /> Exam in progress · started {new Date(cd.liveExam.startedAt).toLocaleTimeString()} · {cd.liveExam.violationCount}/3 warnings</p>
+                          {cd.liveExam.events.length === 0 && <p className="text-[11px] text-slate-500">No problems detected so far.</p>}
+                          {cd.liveExam.events.map((e, i) => (
+                            <div key={i} className="flex items-start justify-between gap-3 text-[11px]">
+                              <span className={e.strike ? 'font-bold text-rose-800' : 'text-amber-800'}>{e.strike ? `Warning ${cd.liveExam.events.filter((x, k) => x.strike && k <= i).length}: ` : 'Flag: '}{violationLabel(e.type)} - <span className="font-normal text-slate-600">{e.message}</span></span>
+                              <span className="text-slate-400 shrink-0">{new Date(e.at).toLocaleTimeString()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {(cd.examAttempts || []).map(a => (
+                        <div key={a.id} className="p-3 rounded-xl border border-slate-200 bg-white space-y-1.5">
+                          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                            <span className="font-black text-slate-900">Attempt {a.attemptNumber} · {a.percentage}% · {a.passed ? 'Passed' : a.terminated ? 'Ended by proctoring' : 'Not passed'}</span>
+                            <span className={`px-2 py-0.5 text-[10px] font-black rounded-full border ${warnTone(a.violationCount)}`}>{a.violationCount} warning{a.violationCount === 1 ? '' : 's'}</span>
+                          </div>
+                          <p className="text-[10.5px] text-slate-400">{a.submittedAt ? new Date(a.submittedAt).toLocaleString() : ''}</p>
+                          {a.identity && (
+                            <p className="text-[11px] text-slate-600">
+                              Identity: face {a.identity.faceCaptured ? 'captured' : 'not captured'} · ID name {a.identity.idCardMatched ? 'matched' : a.identity.idCardChecked ? 'not matched (flagged)' : 'not checked'}
+                              {a.identity.averageMatch != null && <> · avg face match {a.identity.averageMatch}%</>}
+                              {a.identity.mismatchedChecks > 0 && <> · {a.identity.mismatchedChecks} mismatched checks</>}
+                            </p>
+                          )}
+                          {a.violations.length === 0 && a.flags.length === 0 && <p className="text-[11px] text-emerald-700 font-semibold">Clean attempt - no violations.</p>}
+                          {a.violations.map((v, i) => (
+                            <div key={i} className="flex items-start justify-between gap-3 text-[11px]">
+                              <span className="text-rose-800 font-bold">Warning {i + 1}: {violationLabel(v.type)} - <span className="font-normal text-slate-600">{v.message}</span></span>
+                              <span className="text-slate-400 shrink-0">{v.at ? new Date(v.at).toLocaleTimeString() : ''}</span>
+                            </div>
+                          ))}
+                          {a.flags.map((f, i) => (
+                            <div key={`f${i}`} className="flex items-start justify-between gap-3 text-[11px]">
+                              <span className="text-amber-800">Flag: {violationLabel(f.type)}</span>
+                              <span className="text-slate-400 shrink-0">{f.at ? new Date(f.at).toLocaleTimeString() : ''}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

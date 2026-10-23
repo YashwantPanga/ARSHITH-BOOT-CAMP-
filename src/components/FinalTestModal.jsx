@@ -11,7 +11,7 @@ import { QuestionCard, ReviewList } from './ModuleQuizModal';
 import { Spinner } from './ui';
 import IdentityCheck from './proctor/IdentityCheck';
 import ProctorPanel from './proctor/ProctorPanel';
-import { analyzeFrame, handNearFace, matchPercent } from '../utils/aiProctor';
+import { analyzeFrame, handNearFace, matchPercent, gazeState } from '../utils/aiProctor';
 import CertificateCelebration from './CertificateCelebration';
 
 const MAX_VIOLATIONS = 3;
@@ -48,7 +48,7 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
   const [notice, setNotice] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
   const [lockInfo, setLockInfo] = useState(null);
-  const [identity, setIdentity] = useState({ ready: false, reference: null, idCard: null });
+  const [identity, setIdentity] = useState({ ready: false, reference: null, gaze: null, idCard: null });
   const [live, setLive] = useState(null);           // latest AI detection result
   const [liveAlert, setLiveAlert] = useState(null); // condition currently on camera { type, message, strike }
 
@@ -109,7 +109,7 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
     violationsRef.current = [];
     flagsRef.current = [];
     statsRef.current = { checks: 0, matched: 0, mismatched: 0, sum: 0 };
-    setIdentity({ ready: false, reference: null, idCard: null });
+    setIdentity({ ready: false, reference: null, gaze: null, idCard: null });
     setLive(null);
     setLiveAlert(null);
     setAgree(false);
@@ -181,6 +181,13 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
   }, [course.id, userId, studentName, onSubmitted]);
 
   /* ---------------- violations ---------------- */
+  // Tells the server about a warning / flag right away so the admin panel updates during the exam.
+  const reportLive = useCallback((event) => {
+    const sid = sessionRef.current?.sessionId;
+    if (!sid) return;
+    api.reportProctorEvent({ userId, courseId: course.id, sessionId: sid, event }).catch(() => {});
+  }, [userId, course.id]);
+
   const addViolation = useCallback((type, message) => {
     if (phaseRef.current !== 'taking') return;
     const now = Date.now();
@@ -188,13 +195,14 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
     lastViolationAt.current = now;
     const v = { type, message, at: new Date().toISOString() };
     violationsRef.current = [...violationsRef.current, v];
+    reportLive({ type, message, strike: true });
     setViolations(violationsRef.current);
     if (violationsRef.current.length >= MAX_VIOLATIONS) {
       executeSubmit({ terminated: true });
     } else {
       setWarning(v);
     }
-  }, [executeSubmit]);
+  }, [executeSubmit, reportLive]);
 
   /* ---------------- proctoring monitors (only while taking) ---------------- */
   useEffect(() => {
@@ -280,18 +288,23 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
       IDENTITY_MISMATCH: { after: 3, strike: true, msg: 'The person on camera does not match the face captured before the exam.' },
       PHONE_DETECTED: { after: 2, strike: true, msg: 'A mobile phone was detected on camera.' },
       NO_FACE: { after: 4, strike: true, msg: 'Your face was not visible on camera.' },
+      LOOKING_DOWN: { after: 3, strike: true, msg: 'You are looking down, away from the screen.' },
+      LOOKING_AWAY: { after: 4, strike: true, msg: 'You are looking away from the screen.' },
       HAND_NEAR_FACE: { after: 3, strike: false, msg: 'A hand is covering or near your face.' }
     };
     const RULE_COOLDOWN = 15000;
     const streak = {};
     const lastStrike = {};
     let alive = true;
+    // identity gallery: starts with the captured face and learns confident new views (glasses on/off)
+    const gallery = identityRef.current.reference ? [identityRef.current.reference] : null;
     const loop = async () => {
       if (!alive) return;
       const t0 = performance.now();
       try {
         if (probe.videoWidth && !document.hidden) {
-          const r = await analyzeFrame(probe, identityRef.current.reference);
+          const r = await analyzeFrame(probe, gallery);
+          r.gazeState = gazeState(r.gaze, identityRef.current.gaze);
           if (!alive) return;
           setLive(r);
           const face = r.faces[0];
@@ -301,10 +314,12 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
             if (face.same) { st.matched += 1; st.sum += matchPercent(face.distance); } else st.mismatched += 1;
           }
           const active = {
-            MULTIPLE_FACES: r.faces.length > 1 || r.people > 1,
+            MULTIPLE_FACES: Math.max(r.faces.length, r.meshFaces) > 1 || r.people > 1,
             IDENTITY_MISMATCH: r.faces.length === 1 && face.same === false,
             PHONE_DETECTED: r.phones.length > 0,
-            NO_FACE: r.faces.length === 0 && r.people === 0,
+            NO_FACE: r.faces.length === 0 && r.meshFaces === 0 && r.people === 0,
+            LOOKING_DOWN: r.faces.length > 0 && !!r.gazeState?.down,
+            LOOKING_AWAY: r.faces.length > 0 && !!r.gazeState?.away && !r.gazeState?.down,
             HAND_NEAR_FACE: !!face && r.hands.some(h => handNearFace(h, face.box))
           };
           let shown = null;
@@ -316,7 +331,7 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
               lastStrike[type] = Date.now();
               streak[type] = 0;
               if (rule.strike) addViolation(type, rule.msg);
-              else flagsRef.current = [...flagsRef.current, { type, message: rule.msg, at: new Date().toISOString() }];
+              else { flagsRef.current = [...flagsRef.current, { type, message: rule.msg, at: new Date().toISOString() }]; reportLive({ type, message: rule.msg, strike: false }); }
             }
           }
           setLiveAlert(shown);
@@ -348,7 +363,7 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
       window.history.back();
       setTimeout(release, 600);
     };
-  }, [phase, addViolation]);
+  }, [phase, addViolation, reportLive]);
 
   /* ---------------- timer ---------------- */
   useEffect(() => {
@@ -494,6 +509,7 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
                   [UserCheck, 'Identity is checked all the time', 'Before you start, your face is captured and the name on your photo ID must match your registered name. The person on camera is compared with your captured face throughout the exam.'],
                   [Users, 'Only you in the frame', 'Another person on camera counts as a warning.'],
                   [Smartphone, 'No phone', 'A mobile phone seen on camera counts as a warning. Hands covering your face are flagged for review.'],
+                  [Eye, 'Keep your eyes on the screen', 'Eye tracking is on. Looking down or away from the screen for more than a few seconds counts as a warning.'],
                   [Copy, 'No copy, paste or right-click', 'Clipboard, right-click and developer-tool shortcuts are disabled.'],
                   [Ban, `${MAX_VIOLATIONS} warnings end the exam`, `On the ${MAX_VIOLATIONS}rd warning the exam is submitted automatically and recorded as not passed.`],
                   [Clock, 'Timer cannot be paused', 'The clock runs on the server. When time is up your answers are submitted automatically.']

@@ -25,3 +25,14 @@ export function publicBase(req) {
   const ip = local ? lanAddress() : null;
   return { publicUrl: ip ? `http://${ip}:${port}` : `${req?.protocol || 'http'}://${host}`, source: ip ? 'lan' : 'request' };
 }
+
+/**
+ * True only for a real public HTTPS address. Mail providers treat links to localhost, bare IP
+ * addresses or plain http as a strong spam signal, so emails leave such links out and rely on the code.
+ */
+export function isEmailSafeUrl(url) {
+  try {
+    const u = new URL(url);
+    return u.protocol === 'https:' && !/^(localhost|\d{1,3}(\.\d{1,3}){3}|\[[0-9a-f:]+\])$/i.test(u.hostname) && u.hostname.includes('.');
+  } catch { return false; }
+}

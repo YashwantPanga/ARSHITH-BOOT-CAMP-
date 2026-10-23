@@ -168,6 +168,7 @@ export const api = {
 
   startFinalTest: (data = {}) => request('/final-test/start', { method: 'POST', body: JSON.stringify(data) }),
   submitFinalTest: (data) => request('/final-test/submit', { method: 'POST', body: JSON.stringify(data) }),
+  reportProctorEvent: (data) => request('/final-test/proctor-event', { method: 'POST', body: JSON.stringify(data) }),
   getFinalTestAttempts: (userId, courseId = '') =>
     request(`/final-test/attempts?userId=${encodeURIComponent(userId || '')}&courseId=${encodeURIComponent(courseId)}`),
 

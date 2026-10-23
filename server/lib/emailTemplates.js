@@ -18,30 +18,30 @@ const codeBox = (code) => `<p style="margin:18px 0;font-family:Consolas,Menlo,mo
 
 export function verificationEmail({ name, code, link }) {
   return {
-    subject: `Your Arshith Bootcamp verification code: ${code}`,
-    text: `Hi ${name},\n\nYour verification code is ${code}. It expires in 24 hours.\nOr open this link to verify your email: ${link}\n\nArshith Bootcamp`,
+    subject: `${code} is your Arshith Bootcamp verification code`,
+    text: `Hi ${name},\n\nWelcome to Arshith Bootcamp. Your verification code is:\n\n    ${code}\n\nEnter it on the verification screen to activate your account. The code expires in 24 hours.${link ? `\n\nYou can also verify with this link: ${link}` : ''}\n\nIf you did not create an account, you can ignore this email.\n\nArshith Bootcamp`,
     html: layout({
       title: 'Verify your email',
       preheader: `Your verification code is ${code}`,
       body: `<h1 style="margin:0 0 8px;font-family:Georgia,serif;font-weight:400;color:#013A2B;font-size:26px">Verify your email</h1>
 <p style="line-height:1.7;margin:0">Hi ${esc(name)}, welcome to Arshith Bootcamp! Enter this code on the verification screen to activate your account:</p>
 ${codeBox(code)}
-<p style="line-height:1.7;margin:0">Or verify with one click:</p>${button(link, 'Verify my email')}
-<p style="color:#7A746A;font-size:13px;margin:0">The code and link expire in 24 hours.</p>`
+${link ? `<p style="line-height:1.7;margin:0">Or verify with one click:</p>${button(link, 'Verify my email')}` : ''}
+<p style="color:#7A746A;font-size:13px;margin:0">The code expires in 24 hours. If you did not create an account, you can ignore this email.</p>`
     })
   };
 }
 
 export function resetEmail({ name, code, link }) {
   return {
-    subject: `Reset your Arshith Bootcamp password (code ${code})`,
-    text: `Hi ${name},\n\nUse code ${code} to reset your password, or open: ${link}\nThis expires in 30 minutes. If you did not request this, ignore this email.\n\nArshith Bootcamp`,
+    subject: `${code} is your Arshith Bootcamp password reset code`,
+    text: `Hi ${name},\n\nWe received a request to reset your password. Your reset code is:\n\n    ${code}\n\nEnter it on the reset screen. It expires in 30 minutes.${link ? `\n\nYou can also open: ${link}` : ''}\n\nIf you did not ask for this, ignore this email - your password will not change.\n\nArshith Bootcamp`,
     html: layout({
       title: 'Reset your password',
       preheader: `Your password reset code is ${code}`,
       body: `<h1 style="margin:0 0 8px;font-family:Georgia,serif;font-weight:400;color:#013A2B;font-size:26px">Reset your password</h1>
 <p style="line-height:1.7;margin:0">Hi ${esc(name)}, we received a request to reset your password. Enter this code on the reset screen:</p>
-${codeBox(code)}${button(link, 'Choose a new password')}
+${codeBox(code)}${link ? button(link, 'Choose a new password') : ''}
 <p style="color:#7A746A;font-size:13px;margin:0">This code expires in 30 minutes. If you didn't ask to reset your password, you can safely ignore this email — your password won't change.</p>`
     })
   };

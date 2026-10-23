@@ -37,7 +37,8 @@ describe('email verification', () => {
     expect(res.body.devCode).toMatch(/^\d{6}$/);
     devCode = res.body.devCode;
     expect(outboxText()).toContain(devCode);
-    expect(outboxText()).toContain('/verify-email?email=');
+    // no public HTTPS address in tests: links to localhost/IP addresses are left out (spam filters)
+    expect(outboxText()).not.toContain('/verify-email?email=');
     const db = JSON.parse(fs.readFileSync(tmp, 'utf8'));
     expect(JSON.stringify(db.learners[email])).not.toContain(devCode); // only a hash is stored
   });
@@ -88,7 +89,7 @@ describe('forgot and reset password', () => {
     expect(res.status).toBe(200);
     resetCode = res.body.devCode;
     expect(resetCode).toMatch(/^\d{6}$/);
-    expect(outboxText()).toContain('/reset-password?email=');
+    expect(outboxText()).not.toContain('/reset-password?email=');
   });
 
   it('rejects a wrong code and a short password', async () => {
@@ -133,5 +134,15 @@ describe('course completion email', () => {
     expect(text).toContain(`/verify/${certId}`);
     const after = JSON.parse(fs.readFileSync(tmp, 'utf8'));
     expect(after.certificates.find(c => c.certificateId === certId).completionEmail.status).toBe('saved-to-outbox');
+  });
+});
+
+describe('email links', () => {
+  it('are only used for a public HTTPS address', async () => {
+    const { isEmailSafeUrl } = await import('../server/lib/publicUrl.js');
+    expect(isEmailSafeUrl('https://learn.arshithbootcamp.com/verify-email?x=1')).toBe(true);
+    for (const u of ['http://learn.example.com/a', 'http://192.168.1.21:5000/a', 'https://192.168.1.21/a', 'http://localhost:5000/a', 'https://localhost/a', 'not a url']) {
+      expect(isEmailSafeUrl(u), u).toBe(false);
+    }
   });
 });

@@ -326,7 +326,8 @@ router.post('/final-test/start', (req, res) => {
       paperCode: paper?.paperCode || null,
       startedAt: now,
       durationSeconds: FINAL_DURATION_SECONDS,
-      submitted: false
+      submitted: false,
+      liveEvents: []
     };
     db.finalTestActiveSessions[sessionKey] = session;
     saveDb(db);
@@ -358,6 +359,29 @@ router.post('/final-test/start', (req, res) => {
     } : null,
     questions: questions.map(stripAnswer)
   });
+});
+
+// Live proctoring: the exam reports each warning / review flag the moment it happens, so the admin
+// panel shows violations while the exam is still running (the full list is also sent on submit).
+router.post('/final-test/proctor-event', (req, res) => {
+  const userId = normalizeUserId(req.body.userId);
+  const { courseId, sessionId, event = {} } = req.body;
+  if (!userId) return res.status(400).json({ success: false, message: 'Please sign in.' });
+  const db = getDb();
+  const course = findCourse(db, courseId);
+  if (!course) return res.status(404).json({ success: false, message: 'Course not found.' });
+  const session = db.finalTestActiveSessions?.[`${userId}::${course.id}::final`];
+  if (!session || session.sessionId !== sessionId || session.submitted) return res.status(409).json({ success: false, message: 'No running exam.' });
+  if (!Array.isArray(session.liveEvents)) session.liveEvents = [];
+  if (session.liveEvents.length >= 100) return res.json({ success: true, ignored: true });
+  session.liveEvents.push({
+    type: String(event.type || '').slice(0, 40),
+    message: String(event.message || '').slice(0, 200),
+    strike: Boolean(event.strike),
+    at: new Date().toISOString()
+  });
+  saveDb(db);
+  res.json({ success: true });
 });
 
 router.post('/final-test/submit', (req, res) => {

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, CreditCard, Loader2, ScanFace, ShieldAlert, Upload } from 'lucide-react';
-import { loadProctorModels, captureReference } from '../../utils/aiProctor';
+import { loadProctorModels, captureReference, calibrateGaze } from '../../utils/aiProctor';
 import { checkIdName, loadOcr } from '../../utils/idCardOcr';
 
 const MAX_ID_TRIES = 3;
@@ -17,10 +17,11 @@ const MAX_ID_TRIES = 3;
  */
 export default function IdentityCheck({ attachVideo, onChange, registeredName }) {
   const videoEl = useRef(null);
-  const [models, setModels] = useState({ state: 'loading', label: 'Starting', done: 0, total: 5 });
+  const [models, setModels] = useState({ state: 'loading', label: 'Starting', done: 0, total: 6 });
   const [face, setFace] = useState({ state: 'idle', msg: '', thumb: '' });
   const [idCard, setIdCard] = useState({ state: 'idle', msg: '', tries: 0, result: null });
   const refDesc = useRef(null);
+  const gazeBase = useRef(null);
 
   const load = () => {
     setModels(m => ({ ...m, state: 'loading', error: '' }));
@@ -46,10 +47,13 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
     setFace({ state: 'busy', msg: 'Look straight at the camera and hold still…', thumb: '' });
     try {
       refDesc.current = await captureReference(videoEl.current);
+      // the student is looking at the screen right now: this becomes their "eyes on screen" pose
+      gazeBase.current = await calibrateGaze(videoEl.current);
       setFace({ state: 'done', msg: '', thumb: snapshot() });
       loadOcr().catch(() => {}); // warm up the text reader for the ID step
     } catch (e) {
       refDesc.current = null;
+      gazeBase.current = null;
       setFace({ state: 'error', msg: e.message || 'Face capture failed. Try again.', thumb: '' });
     }
   };
@@ -100,6 +104,7 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
     onChange?.({
       ready,
       reference: face.state === 'done' ? refDesc.current : null,
+      gaze: face.state === 'done' ? gazeBase.current : null,
       idCard: { method: 'name', checked: idCard.state === 'done' || skipped, matched: idCard.state === 'done', percent: idCard.result?.percent ?? null, attempts: idTries, flaggedForReview: skipped }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -141,11 +146,11 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
           {models.state === 'error' && (
             <p className="mt-1 text-xs text-rose-600">The proctoring models could not load. Check your internet connection. <button type="button" onClick={load} className="underline font-semibold">Try again</button></p>
           )}
-          {models.state === 'ready' && <p className="text-xs text-slate-500">Face, identity, phone and hand detection are ready.</p>}
+          {models.state === 'ready' && <p className="text-xs text-slate-500">Face, identity, eye, phone and hand detection are ready.</p>}
         </Step>
 
         <Step n={2} title="Capture your face" state={face.state === 'done' ? 'done' : models.state === 'ready' ? 'active' : 'pending'}>
-          <p className="text-xs text-slate-500">Centre your face in the outline, in good light. This photo is your reference for the whole exam.</p>
+          <p className="text-xs text-slate-500">Centre your face in the outline, in good light, and look at the screen as you will during the exam. If you wear glasses, wear them now. This becomes your reference for identity and eye tracking.</p>
           {face.state === 'error' && <p className="mt-1 text-xs text-rose-600">{face.msg}</p>}
           {face.state === 'done'
             ? <div className="mt-2 flex items-center gap-2">{face.thumb && <img src={face.thumb} alt="Your captured face" className="w-12 h-9 rounded-md object-cover ring-1 ring-mint-300" />}<span className="text-xs text-mint-500 font-semibold">Face captured</span><button type="button" onClick={doFace} className="ml-auto text-xs underline text-slate-500">Retake</button></div>

@@ -20,3 +20,25 @@ describe('AI proctoring helpers', () => {
     expect(handNearFace({ x: 400, y: 300, width: 60, height: 60 }, face)).toBe(false);
   });
 });
+
+import { gazeState, GAZE_LIMITS } from '../src/utils/aiProctor';
+
+describe('eye and head tracking', () => {
+  const base = { pitch: 0.35, yaw: 0, down: 0.15, side: 0.05 };
+  const g = (over) => ({ pitch: 0.35, yaw: 0, down: 0.15, side: 0.05, closed: 0.1, irises: [], ...over });
+
+  it('stays on screen at the calibrated pose and while reading the lower screen', () => {
+    expect(gazeState(g({}), base)).toMatchObject({ down: false, away: false });
+    expect(gazeState(g({ down: 0.15 + GAZE_LIMITS.eyesDown - 0.05 }), base).down).toBe(false);
+  });
+
+  it('flags the head tipping down or the eyes looking well below the screen', () => {
+    expect(gazeState(g({ pitch: 0.35 + GAZE_LIMITS.headDown + 0.02 }), base).down).toBe(true);
+    expect(gazeState(g({ down: 0.15 + GAZE_LIMITS.eyesDown + 0.05 }), base).down).toBe(true);
+  });
+
+  it('flags turning away, and ignores eye direction during a blink', () => {
+    expect(gazeState(g({ yaw: GAZE_LIMITS.headTurn + 0.05 }), base).away).toBe(true);
+    expect(gazeState(g({ down: 0.9, closed: 0.8 }), base).down).toBe(false);
+  });
+});

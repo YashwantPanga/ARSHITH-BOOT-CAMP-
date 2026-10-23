@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, ChevronUp, Hand, ScanFace, Smartphone, UserCheck, Users } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Hand, ScanFace, Smartphone, UserCheck, Users } from 'lucide-react';
 import { handNearFace, matchPercent } from '../../utils/aiProctor';
 
 /**
@@ -36,14 +36,22 @@ export default function ProctorPanel({ attachVideo, live, alert }) {
     live.faces.forEach((f, i) => box(f.box, f.same === false || i > 0 ? '#E11D48' : '#10B981', i > 0 ? 'Extra person' : f.same === false ? 'Not you' : f.distance != null ? `You ${matchPercent(f.distance)}%` : 'Face'));
     live.phones.forEach(p => box(p, '#E11D48', 'Phone'));
     live.hands.forEach(h => box(h, '#F59E0B', live.faces[0] && handNearFace(h, live.faces[0].box) ? 'Hand near face' : 'Hand'));
+    // irises: cyan when the eyes are on the screen, red when looking down/away
+    const off = live.gazeState && (live.gazeState.down || live.gazeState.away);
+    (live.gaze?.irises || []).forEach(pt => {
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, lw * 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = off ? '#E11D48' : '#22D3EE'; ctx.fill();
+      ctx.lineWidth = lw * 0.8; ctx.strokeStyle = '#fff'; ctx.stroke();
+    });
   }, [live]);
 
   const face = live?.faces[0];
   const chips = live ? [
     { icon: ScanFace, label: live.faces.length ? 'Face visible' : 'No face', bad: !live.faces.length },
-    { icon: Users, label: `${Math.max(live.faces.length, live.people)} ${Math.max(live.faces.length, live.people) === 1 ? 'person' : 'people'}`, bad: live.faces.length > 1 || live.people > 1 },
+    { icon: Users, label: `${Math.max(live.faces.length, live.meshFaces || 0, live.people)} ${Math.max(live.faces.length, live.meshFaces || 0, live.people) === 1 ? 'person' : 'people'}`, bad: Math.max(live.faces.length, live.meshFaces || 0) > 1 || live.people > 1 },
     { icon: UserCheck, label: face?.distance != null ? `Identity ${matchPercent(face.distance)}%` : 'Identity -', bad: face?.same === false },
     { icon: Smartphone, label: live.phones.length ? 'Phone seen' : 'No phone', bad: live.phones.length > 0 },
+    { icon: Eye, label: !live.gazeState ? 'Eyes -' : live.gazeState.down ? 'Looking down' : live.gazeState.away ? 'Looking away' : 'Eyes on screen', bad: !!(live.gazeState?.down || live.gazeState?.away) },
     { icon: Hand, label: live.hands.length ? `${live.hands.length} hand${live.hands.length > 1 ? 's' : ''}` : 'No hands', warn: live.hands.length > 0 && face && live.hands.some(h => handNearFace(h, face.box)) }
   ] : [];
   const anyBad = !!alert;

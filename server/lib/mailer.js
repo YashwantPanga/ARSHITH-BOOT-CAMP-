@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 
 // Sends email through the SMTP server configured in the environment (see .env.example):
@@ -51,7 +52,15 @@ export async function sendMail({ to, subject, html, text }) {
   const from = process.env.MAIL_FROM || (process.env.SMTP_USER ? `Arshith Bootcamp <${process.env.SMTP_USER}>` : 'Arshith Bootcamp <no-reply@arshithbootcamp.local>');
   if (smtpConfigured()) {
     try {
-      await getTransport().sendMail({ from, to, subject, html, text });
+      await getTransport().sendMail({
+        from,
+        to,
+        replyTo: from,
+        subject,
+        text,
+        html,
+        headers: { 'X-Entity-Ref-ID': crypto.randomUUID(), 'Auto-Submitted': 'auto-generated' }
+      });
       return { delivered: true, mode: 'smtp' };
     } catch (err) {
       console.error(`[mail] SMTP delivery to ${to} failed:`, err.message);

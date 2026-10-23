@@ -5,7 +5,7 @@ import { getDb, saveDb } from '../db.js';
 import { signLearnerToken } from '../middleware/learnerAuth.js';
 import { sendMail, devCodesAllowed, smtpConfigured } from '../lib/mailer.js';
 import { verificationEmail, resetEmail, passwordChangedEmail } from '../lib/emailTemplates.js';
-import { publicBase } from '../lib/publicUrl.js';
+import { publicBase, isEmailSafeUrl } from '../lib/publicUrl.js';
 
 // Learner accounts live on the server (previously they were only in the browser's localStorage,
 // with plain-text passwords, so a learner could not sign in from another device).
@@ -80,7 +80,7 @@ const CODE_MESSAGES = {
 function issueVerification(req, learner) {
   const { code, token } = issueOneTimeCode(learner, 'emailVerification', VERIFY_TTL_MS);
   const link = `${publicBase(req).publicUrl}/verify-email?email=${encodeURIComponent(learner.email)}&token=${token}`;
-  return { mail: { to: learner.email, ...verificationEmail({ name: learner.name, code, link }) }, devCode: devCodesAllowed() ? code : undefined };
+  return { mail: { to: learner.email, ...verificationEmail({ name: learner.name, code, link: isEmailSafeUrl(link) ? link : null }) }, devCode: devCodesAllowed() ? code : undefined };
 }
 
 const mailStatus = (result) => (result.delivered ? 'sent' : result.mode === 'outbox' ? 'outbox' : 'failed');
@@ -206,7 +206,7 @@ router.post('/learners/forgot-password', async (req, res) => {
   const { code, token } = issueOneTimeCode(learner, 'passwordReset', RESET_TTL_MS);
   saveDb(db);
   const link = `${publicBase(req).publicUrl}/reset-password?email=${encodeURIComponent(email)}&token=${token}`;
-  const emailStatus = await dispatchMail({ to: email, ...resetEmail({ name: learner.name, code, link }) });
+  const emailStatus = await dispatchMail({ to: email, ...resetEmail({ name: learner.name, code, link: isEmailSafeUrl(link) ? link : null }) });
   res.json({ ...generic, emailStatus, ...(devCodesAllowed() ? { devCode: code } : {}) });
 });
 
