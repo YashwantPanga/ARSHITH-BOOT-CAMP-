@@ -110,28 +110,6 @@ export async function captureReference(video, samples = 3) {
 }
 
 /**
- * ID card check: the student holds a photo ID next to their face. The frame should show two faces -
- * the live face (largest) and the photo on the card (smaller). Returns { matched, distance, percent }.
- */
-export async function checkIdCard(video, reference) {
-  await loadProctorModels();
-  let best = null;
-  for (let i = 0; i < 4; i++) {
-    const faces = await detectFaces(video, 608);
-    // largest face = the student in front of the camera (must be the captured person); smaller ones = the card photo
-    if (faces.length >= 2 && faceDistance(faces[0].descriptor, reference) <= SAME_PERSON + 0.05) {
-      for (const f of faces.slice(1)) {
-        const d = faceDistance(f.descriptor, reference);
-        if (!best || d < best.distance) best = { distance: d };
-      }
-    }
-    await new Promise(r => setTimeout(r, 300));
-  }
-  if (!best) throw new Error('The photo on your ID card was not found. Hold the card beside your face, photo side towards the camera, close enough to fill about a quarter of the picture.');
-  return { matched: best.distance <= SAME_PERSON + 0.05, distance: Number(best.distance.toFixed(3)), percent: matchPercent(best.distance) };
-}
-
-/**
  * Analyses one video frame. Returns
  * { faces: [{ box, distance, same }], phones: [box], people, hands: [box], width, height }.
  * Boxes are { x, y, width, height } in video pixels.

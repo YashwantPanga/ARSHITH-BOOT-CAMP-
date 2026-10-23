@@ -27,7 +27,7 @@ const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 
  *  - The 3rd violation ends the exam automatically and it is recorded as a fail.
  *  - Copy / paste / right-click / dev-tools shortcuts are blocked.
  *  - AI proctoring (in the browser, nothing uploaded): before the exam the student's face is captured
- *    and checked against a photo ID; during the exam extra people, a different person, a phone or a
+ *    and the name on their photo ID is matched with the registered name; during the exam extra people, a different person, a phone or a
  *    missing face become violations after a short grace period, and hands near the face are flagged.
  *    Detections are shown live on screen as they happen.
  */
@@ -491,7 +491,7 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
                   [Maximize, 'Stay in full screen', 'The exam runs in full screen. Pressing Esc or leaving full screen counts as a warning.'],
                   [MonitorX, 'Do not switch tabs or apps', 'Switching tabs, minimising, or clicking another window counts as a warning.'],
                   [Video, 'Keep your camera on', 'Your face must stay visible. Covering or turning off the camera counts as a warning.'],
-                  [UserCheck, 'Identity is checked all the time', 'Your face is captured and matched with your photo ID before you start, then compared with the person on camera throughout the exam.'],
+                  [UserCheck, 'Identity is checked all the time', 'Before you start, your face is captured and the name on your photo ID must match your registered name. The person on camera is compared with your captured face throughout the exam.'],
                   [Users, 'Only you in the frame', 'Another person on camera counts as a warning.'],
                   [Smartphone, 'No phone', 'A mobile phone seen on camera counts as a warning. Hands covering your face are flagged for review.'],
                   [Copy, 'No copy, paste or right-click', 'Clipboard, right-click and developer-tool shortcuts are disabled.'],
@@ -510,7 +510,7 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
               <div className="card p-5">
                 <p className="text-sm font-semibold text-brand-900 flex items-center gap-2"><Camera className="w-4 h-4 text-peach-500" /> Camera & identity check</p>
                 {camState === 'ok'
-                  ? <div className="mt-3"><IdentityCheck attachVideo={attachVideo} onChange={setIdentity} /></div>
+                  ? <div className="mt-3"><IdentityCheck attachVideo={attachVideo} onChange={setIdentity} registeredName={studentName} /></div>
                   : <div className="mt-3 aspect-video rounded-xl bg-slate-900 overflow-hidden flex items-center justify-center"><Camera className="w-8 h-8 text-slate-600" /></div>}
                 {camState !== 'ok' && (
                   <button onClick={enableCamera} disabled={camState === 'asking'} className="btn-plum w-full mt-3">
