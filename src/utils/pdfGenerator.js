@@ -124,8 +124,19 @@ async function prepareWorkflows(course) {
   return out;
 }
 
-export async function generateCoursePDF(course, studentName = 'Student') {
+/**
+ * Builds and downloads the course manual. `onProgress({ step, total, label })` is called as the PDF is
+ * assembled (used by the download animation); the build yields between modules so the page can repaint.
+ */
+export async function generateCoursePDF(course, studentName = 'Student', { onProgress } = {}) {
+  const totalSteps = (course.modules?.length || 0) + 3;
+  const report = async (step, label) => {
+    onProgress?.({ step, total: totalSteps, label });
+    if (onProgress) await new Promise(r => setTimeout(r, 0));
+  };
+  await report(0, 'Collecting diagrams');
   const workflows = typeof window !== 'undefined' ? await prepareWorkflows(course) : {};
+  await report(1, 'Designing the cover and contents');
   const PDFDoc = (jsPDF && jsPDF.jsPDF) ? jsPDF.jsPDF : jsPDF;
   const doc = new PDFDoc({
     orientation: 'portrait',
@@ -649,7 +660,8 @@ export async function generateCoursePDF(course, studentName = 'Student') {
   // ==========================================
   // ALL 15 MODULES DETAILED CONTENT
   // ==========================================
-  course.modules.forEach((mod, modIdx) => {
+  for (const [modIdx, mod] of (course.modules || []).entries()) {
+    await report(2 + modIdx, `Typesetting module ${modIdx + 1} of ${course.modules.length}`);
     // Each module begins on a fresh page
     doc.addPage();
     pageCount++;
@@ -1076,7 +1088,9 @@ export async function generateCoursePDF(course, studentName = 'Student') {
         y += 4;
       }
     }
-  });
+  }
+
+  await report(totalSteps - 1, 'Adding projects, checklist and summary');
 
   // ==========================================
   // SECTION: COURSE PRACTICAL PROJECTS (3 MINI PROJECTS)
@@ -1395,6 +1409,8 @@ GET    /api/v1/jobs/:id/applicants -> Review candidate applications [Recruiter P
   doc.setFont("helvetica", "bold");
   doc.setTextColor(251, 248, 241); // Ivory accent
   doc.text("VERIFIED OFFICIAL COURSE DOCUMENT", margin + 15, y + 124);
+
+  await report(totalSteps, 'Saving your PDF');
 
   if (typeof doc.save === 'function' && typeof window !== 'undefined') {
     const filename = isWebDev

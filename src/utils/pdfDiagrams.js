@@ -76,6 +76,29 @@ function drawCaption(ctx, text, need) {
   ctx.setY(y + lines.length * LH(7.8) + 2.5);
 }
 
+/* 3D rectangular blocks: a flat front face plus a shaded right side and bottom edge, lit from the
+   top-left. Shading is mixed from the block's own colours so every tone keeps its identity. */
+const DEPTH = 1.6;
+const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+function prism(doc, x, y, w, h, { face, edge, accent, depth = DEPTH }) {
+  const side = mix(face, accent, 0.55);
+  const bottom = mix(face, accent, 0.32);
+  // right side
+  doc.setFillColor(...side);
+  doc.lines([[depth, depth], [0, h], [-depth, -depth]], x + w, y, [1, 1], 'F', true);
+  // bottom edge
+  doc.setFillColor(...bottom);
+  doc.lines([[w, 0], [depth, depth], [-w, 0]], x, y + h, [1, 1], 'F', true);
+  // front face
+  doc.setFillColor(...face); doc.setDrawColor(...edge); doc.setLineWidth(0.3);
+  doc.rect(x, y, w, h, 'FD');
+  // crisp edges where the faces meet
+  doc.setDrawColor(...mix(accent, [0, 0, 0], 0.1)); doc.setLineWidth(0.15);
+  doc.line(x + w, y, x + w + depth, y + depth);
+  doc.line(x + w, y + h, x + w + depth, y + h + depth);
+  doc.line(x, y + h, x + depth, y + h + depth);
+}
+
 function arrowDown(doc, x, y, len = 4, color = ARROW) {
   doc.setDrawColor(...color); doc.setFillColor(...color); doc.setLineWidth(0.4);
   doc.line(x, y, x, y + len - 1.5);
@@ -92,7 +115,8 @@ function arrowRight(doc, x, y, len = 4, color = ARROW) {
 const looksLikeFormula = (s) => /[=^|]|\b\w+\(|\bsum\b|_\w/.test(s);
 
 /** Measures a card (white, coloured accent edge) and returns its height plus draw(x, y). */
-function card(doc, node, w, n, tone, opts = {}) {
+function card(doc, node, outerW, n, tone, opts = {}) {
+  const w = outerW - DEPTH; // leave room for the 3D side
   const pad = 3.2;
   const accent = 1.3;
   const badge = n !== undefined && n !== null && n !== '';
@@ -147,12 +171,9 @@ function card(doc, node, w, n, tone, opts = {}) {
   const h = Math.max(pad + parts.reduce((s, p) => s + partH(p), 0) + pad - 0.6, badge ? 12 : 10);
 
   const draw = (x, y) => {
-    doc.setFillColor(255, 255, 255); doc.setDrawColor(...tone[1]); doc.setLineWidth(0.3);
-    doc.roundedRect(x, y, w, h, 2, 2, 'FD');
+    prism(doc, x, y, w, h, { face: [255, 255, 255], edge: tone[1], accent: tone[2] });
     doc.setFillColor(...tone[2]);
-    doc.roundedRect(x, y, accent + 0.9, h, 1, 1, 'F');
-    doc.setFillColor(255, 255, 255);
-    doc.rect(x + accent, y + 0.2, 0.9, h - 0.4, 'F');
+    doc.rect(x, y, accent, h, 'F');
     if (badge) {
       doc.setFillColor(...tone[2]); doc.circle(x + left + 2.8, y + pad + 2.8, 2.8, 'F');
       doc.setFont('helvetica', 'bold'); doc.setFontSize(7.4); doc.setTextColor(255, 255, 255);
@@ -205,7 +226,7 @@ function card(doc, node, w, n, tone, opts = {}) {
       }
     });
   };
-  return { h, draw };
+  return { h: h + DEPTH, draw };
 }
 
 /**
@@ -518,8 +539,7 @@ export function drawWorkflow(ctx, def, figLabel = 'Figure') {
     const [fill, stroke, accent, ink] = NODE_TONES[(n.step - 1) % NODE_TONES.length];
     const x = ox + n.x * s; const ny = oy + n.y * s;
     const w = L.NODE_W * s; const h = L.NODE_H * s;
-    doc.setFillColor(...fill); doc.setDrawColor(...stroke); doc.setLineWidth(0.3);
-    doc.roundedRect(x, ny, w, h, 2.2, 2.2, 'FD');
+    prism(doc, x, ny, w, h, { face: fill, edge: stroke, accent, depth: 1.4 });
     const r = Math.min(2.6, 11 * s);
     doc.setFillColor(...accent); doc.circle(x + 22 * s, ny + h / 2, r, 'F');
     doc.setFont('helvetica', 'bold'); doc.setFontSize(Math.max(6.4, r * 2.4)); doc.setTextColor(255, 255, 255);

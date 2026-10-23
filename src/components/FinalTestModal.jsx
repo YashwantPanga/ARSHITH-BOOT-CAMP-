@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   X, Clock, ShieldCheck, Camera, Maximize, AlertTriangle, CheckCircle2, XCircle, Lock, Award,
-  ArrowLeft, ArrowRight, RefreshCw, Eye, MonitorX, Copy, Ban, Trophy, Video
+  ArrowLeft, ArrowRight, RefreshCw, Eye, MonitorX, Copy, Ban, Video
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { api } from '../services/api';
 import { examGuard } from '../router';
 import { userIdOf, displayNameOf } from '../utils/session';
 import { cleanText, displayTitle } from '../utils/textUtils';
 import { QuestionCard, ReviewList } from './ModuleQuizModal';
 import { Spinner } from './ui';
+import CertificateCelebration from './CertificateCelebration';
 
 const MAX_VIOLATIONS = 3;
 const PASS = 70;
@@ -140,7 +140,6 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
       setResult({ ...res.result, terminated });
       setPhase('result');
       onSubmitted?.(res.result);
-      if (res.result.passed) confetti({ particleCount: 180, spread: 100, origin: { y: 0.55 }, colors: ['#426557', '#013A2B', '#5F8574', '#90B1A2'] });
     } catch (err) {
       setError(err.message || 'Submission failed. Check your connection and try again.');
       setPhase('submit-error');
@@ -509,9 +508,13 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
 
         {phase === 'result' && result && (
           <Centered wide>
-            <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center ${result.passed ? 'bg-mint-50 text-mint-400' : 'bg-rose-50 text-rose-500'}`}>
-              {result.passed ? <Trophy className="w-10 h-10" /> : <XCircle className="w-10 h-10" />}
-            </div>
+            {result.passed ? (
+              <CertificateCelebration name={studentName} courseTitle={displayTitle(course.title)} percentage={result.percentage} />
+            ) : (
+              <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center bg-rose-50 text-rose-500">
+                <XCircle className="w-10 h-10" />
+              </div>
+            )}
             <h2 className="mt-5 text-3xl font-bold text-brand-900">{result.passed ? 'Congratulations, you passed!' : result.terminated ? 'Exam ended by proctoring' : 'Not passed this time'}</h2>
             <p className="mt-2 text-slate-500">
               {result.passed ? 'Your certificate is ready and will show exactly this score.'

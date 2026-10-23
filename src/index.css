@@ -146,7 +146,35 @@
 /* Exam: block text selection during proctored final */
 .no-select, .no-select * { -webkit-user-select: none !important; user-select: none !important; }
 
+/* PDF download: pages fly into the book, the book breathes, then is stamped when done */
+@keyframes pdf-fly {
+  0% { transform: translate(-95px, -70px) rotate(-18deg) scale(.9); opacity: 0; }
+  15% { opacity: 1; }
+  70% { transform: translate(0, 18px) rotate(0deg) scale(.82); opacity: 1; }
+  100% { transform: translate(0, 34px) rotate(0deg) scale(.7); opacity: 0; }
+}
+.pdf-fly-page { animation: pdf-fly 1.8s cubic-bezier(.45, .05, .25, 1) infinite both; }
+@keyframes pdf-breathe { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-3px) rotate(1deg); } }
+.pdf-book-breathe { animation: pdf-breathe 2.4s ease-in-out infinite; }
+@keyframes pdf-book-done { 0% { transform: scale(1); } 40% { transform: scale(1.06) rotate(-2deg); } 100% { transform: scale(1); } }
+.pdf-book-done { animation: pdf-book-done .6s ease-out both; }
+@keyframes pdf-stamp { 0% { transform: scale(2.2) rotate(-25deg); opacity: 0; } 60% { transform: scale(.92) rotate(4deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+.pdf-stamp { animation: pdf-stamp .55s cubic-bezier(.2, .9, .3, 1.2) .1s both; }
+
+/* Final-assessment celebration */
+@keyframes cel-rise { from { transform: translateY(24px) scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
+.cel-rise { animation: cel-rise .7s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes cel-seal-in { 0% { transform: scale(0) rotate(-120deg); } 70% { transform: scale(1.12) rotate(8deg); } 100% { transform: scale(1) rotate(0); } }
+.cel-seal-in { animation: cel-seal-in .9s cubic-bezier(.2, .9, .25, 1.15) .25s both; }
+@keyframes cel-spin { to { transform: rotate(360deg); } }
+.cel-spin-slow { animation: cel-spin 18s linear infinite; }
+@keyframes cel-draw { from { stroke-dashoffset: var(--len, 300); } to { stroke-dashoffset: 0; } }
+.cel-draw { stroke-dasharray: var(--len, 300); animation: cel-draw 1.1s ease-out .6s both; }
+@keyframes cel-shine { 0% { transform: translateX(-130%) skewX(-20deg); } 100% { transform: translateX(230%) skewX(-20deg); } }
+.cel-shine { animation: cel-shine 2.4s ease-in-out 1.2s infinite; }
+
 @media (prefers-reduced-motion: reduce) {
+  .pdf-fly-page { display: none; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   .reveal { opacity: 1; transform: none; }
 }

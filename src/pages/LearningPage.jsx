@@ -9,6 +9,7 @@ import { cleanText, moduleTitle, displayTitle } from '../utils/textUtils';
 import ModuleQuizModal from '../components/ModuleQuizModal';
 import FinalTestModal from '../components/FinalTestModal';
 import CourseProjectsModal from '../components/CourseProjectsModal';
+import PdfBuildOverlay from '../components/PdfBuildOverlay';
 import { ProgressRing, ProgressBar, useToast, SafeImg } from '../components/ui';
 import PremiumCodeBlock from '../components/CodeBlock';
 import { PlaygroundProvider, usePlayground } from '../components/CodePlayground';
@@ -81,6 +82,20 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   const [finalOpen, setFinalOpen] = useState(false);
   const [projectsOpen, setProjectsOpen] = useState(false);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState(null);
+  const [pdfDone, setPdfDone] = useState(false);
+  const downloadPdf = async () => {
+    setPdfBusy(true); setPdfDone(false); setPdfProgress(null);
+    try {
+      await generateCoursePDF(course, studentName, { onProgress: setPdfProgress });
+      setPdfDone(true);
+      await new Promise(r => setTimeout(r, 1800)); // let the "ready" stamp play
+    } catch (err) {
+      toast(`Could not create the PDF: ${err.message}`, 'error');
+    } finally {
+      setPdfBusy(false); setPdfDone(false); setPdfProgress(null);
+    }
+  };
   const [drawer, setDrawer] = useState(false);
   const [revealed, setRevealed] = useState({});
   const mainRef = useRef(null);
@@ -308,12 +323,13 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
             const key = `lbl-${i}`;
             return (
               <div key={i} className="space-y-2.5">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-brand-900 min-w-0">{cleanText(ex.title)}</p>
-                  {ex.language && <span className="chip bg-brand-50 text-brand-700 uppercase text-[10px] shrink-0">{ex.language}</span>}
-                </div>
-                <CodeBlock courseId={course.id} language={ex.language} code={ex.code} />
-                {ex.explanation && <p className="text-sm text-slate-500"><strong className="text-slate-600">Note:</strong> {cleanText(ex.explanation)}</p>}
+                <CodeBlock courseId={course.id} language={ex.language} code={ex.code} title={cleanText(ex.title)} />
+                {ex.explanation && (
+                  <div className="rounded-xl border border-brand-100 bg-brand-50/60 px-4 py-3">
+                    <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-brand-600">How this code works</p>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-600">{cleanText(ex.explanation)}</p>
+                  </div>
+                )}
                 {ex.lineByLine?.length > 0 && (
                   <div>
                     <button onClick={() => toggle(key)} className="text-sm font-semibold text-peach-500 hover:text-peach-600">{revealed[key] ? 'Hide' : 'Show'} line-by-line explanation</button>
@@ -576,10 +592,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         </div>
         <button onClick={() => playground?.open()} className="btn-ghost px-3 py-2 border border-brand-900/10" title="Open the Practice Lab"><FlaskConical className="w-4 h-4" /><span className="hidden xl:inline">Practice Lab</span></button>
         <button
-          onClick={async () => {
-            setPdfBusy(true);
-            try { await generateCoursePDF(course, studentName); } catch (err) { toast(`Could not create the PDF: ${err.message}`, 'error'); } finally { setPdfBusy(false); }
-          }}
+          onClick={downloadPdf}
           disabled={pdfBusy}
           className="btn-outline px-3 py-2"
           title="Download course PDF"
@@ -721,6 +734,8 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         onSubmitted={() => onProgressChanged()}
         onViewCertificate={() => { setFinalOpen(false); onViewCertificate(); }}
       />
+
+      <PdfBuildOverlay open={pdfBusy} progress={pdfProgress} done={pdfDone} courseTitle={displayTitle(course.title)} />
 
       <CourseProjectsModal
         isOpen={projectsOpen}
