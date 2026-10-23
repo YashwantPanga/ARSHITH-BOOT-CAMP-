@@ -162,6 +162,10 @@
 .pdf-stamp { animation: pdf-stamp .55s cubic-bezier(.2, .9, .3, 1.2) .1s both; }
 
 /* Final-assessment celebration */
+/* live proctoring panel: red pulse while a detection is active */
+@keyframes proctor-alert { 0%, 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, .55); } 50% { box-shadow: 0 0 0 8px rgba(225, 29, 72, 0); } }
+.proctor-alert { animation: proctor-alert 1.2s ease-out infinite; }
+
 /* diagram arrows: light flows along every connector toward the next step; section hops bob gently */
 @keyframes flow-arrow-dash { to { stroke-dashoffset: -18; } }
 .flow-arrow-dash { animation: flow-arrow-dash .9s linear infinite; }

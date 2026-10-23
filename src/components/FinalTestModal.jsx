@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   X, Clock, ShieldCheck, Camera, Maximize, AlertTriangle, CheckCircle2, XCircle, Lock, Award,
-  ArrowLeft, ArrowRight, RefreshCw, Eye, MonitorX, Copy, Ban, Video
+  ArrowLeft, ArrowRight, RefreshCw, Eye, MonitorX, Copy, Ban, Video, Users, Smartphone, UserCheck
 } from 'lucide-react';
 import { api } from '../services/api';
 import { examGuard } from '../router';
@@ -9,6 +9,9 @@ import { userIdOf, displayNameOf } from '../utils/session';
 import { cleanText, displayTitle } from '../utils/textUtils';
 import { QuestionCard, ReviewList } from './ModuleQuizModal';
 import { Spinner } from './ui';
+import IdentityCheck from './proctor/IdentityCheck';
+import ProctorPanel from './proctor/ProctorPanel';
+import { analyzeFrame, handNearFace, matchPercent } from '../utils/aiProctor';
 import CertificateCelebration from './CertificateCelebration';
 
 const MAX_VIOLATIONS = 3;
@@ -23,6 +26,10 @@ const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 
  *    covering/turning off the camera, and pressing Back are violations.
  *  - The 3rd violation ends the exam automatically and it is recorded as a fail.
  *  - Copy / paste / right-click / dev-tools shortcuts are blocked.
+ *  - AI proctoring (in the browser, nothing uploaded): before the exam the student's face is captured
+ *    and checked against a photo ID; during the exam extra people, a different person, a phone or a
+ *    missing face become violations after a short grace period, and hands near the face are flagged.
+ *    Detections are shown live on screen as they happen.
  */
 export default function FinalTestModal({ isOpen, onClose, course, studentUser, locked, projectReq, passedFinal, onSubmitted, onViewCertificate }) {
   const [phase, setPhase] = useState('intro');
@@ -41,6 +48,9 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
   const [notice, setNotice] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
   const [lockInfo, setLockInfo] = useState(null);
+  const [identity, setIdentity] = useState({ ready: false, reference: null, idCard: null });
+  const [live, setLive] = useState(null);           // latest AI detection result
+  const [liveAlert, setLiveAlert] = useState(null); // condition currently on camera { type, message, strike }
 
   const streamRef = useRef(null);
   const phaseRef = useRef(phase);
@@ -51,6 +61,10 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
   const sessionRef = useRef(null);
   const submittingRef = useRef(false);
   const noticeTimer = useRef(null);
+  const identityRef = useRef(identity);
+  const flagsRef = useRef([]);                      // cautions that are not strikes (hand near face)
+  const statsRef = useRef({ checks: 0, matched: 0, mismatched: 0, sum: 0 });
+  identityRef.current = identity;
 
   phaseRef.current = phase;
   answersRef.current = answers;
@@ -76,7 +90,7 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
     if (!navigator.mediaDevices?.getUserMedia) { setCamState('unsupported'); return; }
     setCamState('asking');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240, facingMode: 'user' }, audio: false });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false });
       streamRef.current = stream;
       setCamState('ok');
     } catch {
@@ -93,6 +107,11 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
     setWarning(null);
     setViolations([]);
     violationsRef.current = [];
+    flagsRef.current = [];
+    statsRef.current = { checks: 0, matched: 0, mismatched: 0, sum: 0 };
+    setIdentity({ ready: false, reference: null, idCard: null });
+    setLive(null);
+    setLiveAlert(null);
     setAgree(false);
     setLockInfo(null);
     if (passedFinal) setPhase('passed');
@@ -132,7 +151,20 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
         courseId: course.id,
         sessionId: sessionRef.current.sessionId,
         answers: answersRef.current,
-        proctoring: { terminated, autoSubmitted: auto, cameraVerified: true, violations: violationsRef.current }
+        proctoring: {
+          terminated,
+          autoSubmitted: auto,
+          cameraVerified: true,
+          violations: violationsRef.current,
+          flags: flagsRef.current.slice(0, 50),
+          identity: {
+            faceCaptured: !!identityRef.current.reference,
+            idCard: identityRef.current.idCard,
+            liveChecks: statsRef.current.checks,
+            mismatchedChecks: statsRef.current.mismatched,
+            averageMatch: statsRef.current.matched ? Math.round(statsRef.current.sum / statsRef.current.matched) : null
+          }
+        }
       });
       try { localStorage.removeItem(`arb_final_${sessionRef.current.sessionId}`); } catch { /* ignore */ }
       exitFullscreen();
@@ -220,10 +252,8 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
     const probe = document.createElement('video');
     probe.muted = true; probe.playsInline = true;
     if (streamRef.current) { probe.srcObject = streamRef.current; probe.play().catch(() => {}); }
-    const detector = 'FaceDetector' in window ? new window.FaceDetector({ fastMode: true, maxDetectedFaces: 3 }) : null;
     let darkStreak = 0;
-    let noFaceStreak = 0;
-    const camTimer = setInterval(async () => {
+    const camTimer = setInterval(() => {
       if (!ctx || !probe.videoWidth) return;
       try {
         ctx.drawImage(probe, 0, 0, canvas.width, canvas.height);
@@ -239,14 +269,62 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
         darkStreak = (mean < 16 || sd < 4) ? darkStreak + 1 : 0;
         if (darkStreak === 2) addViolation('CAMERA_BLOCKED', 'Your camera appears to be covered or blocked.');
         if (darkStreak > 6) darkStreak = 0;
-        if (detector) {
-          const faces = await detector.detect(probe);
-          if (faces.length > 1) addViolation('MULTIPLE_FACES', 'More than one person was detected on camera.');
-          noFaceStreak = faces.length === 0 ? noFaceStreak + 1 : 0;
-          if (noFaceStreak === 3) { addViolation('NO_FACE', 'Your face was not visible on camera.'); noFaceStreak = 0; }
-        }
       } catch { /* frame not ready */ }
     }, 3000);
+
+    // AI proctoring loop. Each condition must persist for a few checks before it becomes a strike
+    // (the student sees it live first and can correct it); after a strike the same condition waits
+    // RULE_COOLDOWN before it can count again.
+    const RULES = {
+      MULTIPLE_FACES: { after: 2, strike: true, msg: 'More than one person is in front of the camera.' },
+      IDENTITY_MISMATCH: { after: 3, strike: true, msg: 'The person on camera does not match the face captured before the exam.' },
+      PHONE_DETECTED: { after: 2, strike: true, msg: 'A mobile phone was detected on camera.' },
+      NO_FACE: { after: 4, strike: true, msg: 'Your face was not visible on camera.' },
+      HAND_NEAR_FACE: { after: 3, strike: false, msg: 'A hand is covering or near your face.' }
+    };
+    const RULE_COOLDOWN = 15000;
+    const streak = {};
+    const lastStrike = {};
+    let alive = true;
+    const loop = async () => {
+      if (!alive) return;
+      const t0 = performance.now();
+      try {
+        if (probe.videoWidth && !document.hidden) {
+          const r = await analyzeFrame(probe, identityRef.current.reference);
+          if (!alive) return;
+          setLive(r);
+          const face = r.faces[0];
+          const st = statsRef.current;
+          if (r.faces.length === 1 && face.distance != null) {
+            st.checks += 1;
+            if (face.same) { st.matched += 1; st.sum += matchPercent(face.distance); } else st.mismatched += 1;
+          }
+          const active = {
+            MULTIPLE_FACES: r.faces.length > 1 || r.people > 1,
+            IDENTITY_MISMATCH: r.faces.length === 1 && face.same === false,
+            PHONE_DETECTED: r.phones.length > 0,
+            NO_FACE: r.faces.length === 0 && r.people === 0,
+            HAND_NEAR_FACE: !!face && r.hands.some(h => handNearFace(h, face.box))
+          };
+          let shown = null;
+          for (const [type, on] of Object.entries(active)) {
+            const rule = RULES[type];
+            streak[type] = on ? (streak[type] || 0) + 1 : 0;
+            if (on && !shown) shown = { type, message: rule.msg, strike: rule.strike };
+            if (streak[type] === rule.after && Date.now() - (lastStrike[type] || 0) > RULE_COOLDOWN) {
+              lastStrike[type] = Date.now();
+              streak[type] = 0;
+              if (rule.strike) addViolation(type, rule.msg);
+              else flagsRef.current = [...flagsRef.current, { type, message: rule.msg, at: new Date().toISOString() }];
+            }
+          }
+          setLiveAlert(shown);
+        }
+      } catch { /* a frame failed - try the next one */ }
+      if (alive) setTimeout(loop, Math.max(250, 1200 - (performance.now() - t0)));
+    };
+    setTimeout(loop, 800);
 
     return () => {
       window.removeEventListener('popstate', onPop);
@@ -261,6 +339,8 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
       window.removeEventListener('beforeunload', onUnload);
       track?.removeEventListener('ended', onEnded);
       clearInterval(camTimer);
+      alive = false;
+      setLiveAlert(null);
       probe.srcObject = null;
       // Drop the history entry we pushed, then release the Back-button guard.
       const release = () => { examGuard.active = false; window.removeEventListener('popstate', release); };
@@ -360,16 +440,20 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
             <div className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-mono font-semibold text-sm ${remaining < 300 ? 'bg-rose-50 text-rose-600 animate-pulse' : 'bg-brand-50 text-brand-900'}`}>
               <Clock className="w-4 h-4" />{fmt(remaining)}
             </div>
-            <div className="relative w-16 h-12 sm:w-20 sm:h-14 rounded-lg overflow-hidden bg-slate-900 ring-2 ring-mint-300 shrink-0" title="Camera is being monitored">
-              <video ref={attachVideo} autoPlay muted playsInline className="w-full h-full object-cover -scale-x-100" />
-              <span className="absolute top-1 left-1 w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-            </div>
           </>
         )}
         {canClose && (
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-100" aria-label="Close"><X className="w-5 h-5 text-slate-500" /></button>
         )}
       </header>
+
+      {phase === 'taking' && <ProctorPanel attachVideo={attachVideo} live={live} alert={liveAlert} />}
+      {phase === 'taking' && liveAlert && (
+        <div role="status" className={`fixed top-[72px] left-1/2 -translate-x-1/2 z-[116] max-w-[92vw] flex items-center gap-2.5 px-4 py-2.5 rounded-2xl shadow-xl text-sm font-semibold animate-fade-up ${liveAlert.strike ? 'bg-rose-600 text-white' : 'bg-amber-400 text-amber-950'}`}>
+          <span className="relative flex w-2.5 h-2.5"><span className="absolute inset-0 rounded-full bg-white/80 animate-ping" /><span className="relative w-2.5 h-2.5 rounded-full bg-white" /></span>
+          <span>{liveAlert.message} {liveAlert.strike ? 'Fix this now or it will count as a warning.' : 'This is being recorded for review.'}</span>
+        </div>
+      )}
 
       {/* Body */}
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain bg-white">
@@ -407,6 +491,9 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
                   [Maximize, 'Stay in full screen', 'The exam runs in full screen. Pressing Esc or leaving full screen counts as a warning.'],
                   [MonitorX, 'Do not switch tabs or apps', 'Switching tabs, minimising, or clicking another window counts as a warning.'],
                   [Video, 'Keep your camera on', 'Your face must stay visible. Covering or turning off the camera counts as a warning.'],
+                  [UserCheck, 'Identity is checked all the time', 'Your face is captured and matched with your photo ID before you start, then compared with the person on camera throughout the exam.'],
+                  [Users, 'Only you in the frame', 'Another person on camera counts as a warning.'],
+                  [Smartphone, 'No phone', 'A mobile phone seen on camera counts as a warning. Hands covering your face are flagged for review.'],
                   [Copy, 'No copy, paste or right-click', 'Clipboard, right-click and developer-tool shortcuts are disabled.'],
                   [Ban, `${MAX_VIOLATIONS} warnings end the exam`, `On the ${MAX_VIOLATIONS}rd warning the exam is submitted automatically and recorded as not passed.`],
                   [Clock, 'Timer cannot be paused', 'The clock runs on the server. When time is up your answers are submitted automatically.']
@@ -421,18 +508,15 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
 
             <div className="lg:col-span-2 space-y-4">
               <div className="card p-5">
-                <p className="text-sm font-semibold text-brand-900 flex items-center gap-2"><Camera className="w-4 h-4 text-peach-500" /> Camera check</p>
-                <div className="mt-3 aspect-video rounded-xl bg-slate-900 overflow-hidden flex items-center justify-center">
-                  {camState === 'ok'
-                    ? <video ref={attachVideo} autoPlay muted playsInline className="w-full h-full object-cover -scale-x-100" />
-                    : <Camera className="w-8 h-8 text-slate-600" />}
-                </div>
+                <p className="text-sm font-semibold text-brand-900 flex items-center gap-2"><Camera className="w-4 h-4 text-peach-500" /> Camera & identity check</p>
+                {camState === 'ok'
+                  ? <div className="mt-3"><IdentityCheck attachVideo={attachVideo} onChange={setIdentity} /></div>
+                  : <div className="mt-3 aspect-video rounded-xl bg-slate-900 overflow-hidden flex items-center justify-center"><Camera className="w-8 h-8 text-slate-600" /></div>}
                 {camState !== 'ok' && (
                   <button onClick={enableCamera} disabled={camState === 'asking'} className="btn-plum w-full mt-3">
                     {camState === 'asking' ? 'Waiting for permission…' : 'Enable camera'}
                   </button>
                 )}
-                {camState === 'ok' && <p className="mt-3 text-sm text-mint-500 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Camera ready</p>}
                 {camState === 'denied' && <p className="mt-2 text-xs text-rose-600">Camera access was blocked. Allow camera access for this site in your browser's address bar, then try again.</p>}
                 {camState === 'unsupported' && <p className="mt-2 text-xs text-rose-600">This browser can't access a camera. Use a recent Chrome, Edge or Firefox on a device with a webcam.</p>}
               </div>
@@ -445,7 +529,8 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
                   I have read the rules and I agree to be proctored during this assessment.
                 </label>
                 {error && <p className="text-sm text-rose-600 bg-rose-50 rounded-xl p-3">{error}</p>}
-                <button onClick={start} disabled={camState !== 'ok' || !agree} className="btn-primary w-full py-3.5">
+                {camState === 'ok' && !identity.ready && <p className="text-xs text-slate-500">Finish the identity check above to start.</p>}
+                <button onClick={start} disabled={camState !== 'ok' || !identity.ready || !agree} className="btn-primary w-full py-3.5">
                   <Maximize className="w-4 h-4" /> Start proctored exam
                 </button>
               </div>

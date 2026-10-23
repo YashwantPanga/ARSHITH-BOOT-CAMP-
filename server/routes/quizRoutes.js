@@ -413,6 +413,21 @@ router.post('/final-test/submit', (req, res) => {
   const attemptNumber = db.finalTestAttempts.filter(a => a.userId === userId && a.courseId === course.id).length + 1;
 
   const violations = Array.isArray(proctoring.violations) ? proctoring.violations.slice(0, 50) : [];
+  // AI proctoring results from the browser (no images are ever sent): cautions and identity checks.
+  const flags = Array.isArray(proctoring.flags) ? proctoring.flags.slice(0, 50).map(f => ({ type: String(f?.type || '').slice(0, 40), message: String(f?.message || '').slice(0, 200), at: String(f?.at || '').slice(0, 40) })) : [];
+  const id = proctoring.identity && typeof proctoring.identity === 'object' ? proctoring.identity : {};
+  const num = (v, max) => (Number.isFinite(Number(v)) ? Math.max(0, Math.min(max, Math.round(Number(v)))) : null);
+  const identity = {
+    faceCaptured: Boolean(id.faceCaptured),
+    idCardChecked: Boolean(id.idCard?.checked),
+    idCardMatched: Boolean(id.idCard?.matched),
+    idCardMatchPercent: num(id.idCard?.percent, 100),
+    idCardAttempts: num(id.idCard?.attempts, 20) || 0,
+    flaggedForReview: Boolean(id.idCard?.flaggedForReview) || violations.some(v => v?.type === 'IDENTITY_MISMATCH'),
+    liveChecks: num(id.liveChecks, 100000) || 0,
+    mismatchedChecks: num(id.mismatchedChecks, 100000) || 0,
+    averageMatch: num(id.averageMatch, 100)
+  };
   const attempt = {
     id: `ftest-attempt-${now}`,
     sessionId,
@@ -436,7 +451,9 @@ router.post('/final-test/submit', (req, res) => {
       violationCount: violations.length,
       terminated,
       cameraVerified: Boolean(proctoring.cameraVerified),
-      violations
+      violations,
+      flags,
+      identity
     }
   };
 
