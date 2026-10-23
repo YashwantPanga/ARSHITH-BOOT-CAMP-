@@ -508,186 +508,165 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
     { id: 'settings', label: 'Admin Settings', icon: Settings },
   ];
 
+  // Sidebar groups (TailwindAdmin-style headings)
+  const menuGroups = [
+    { heading: 'Home', ids: ['dashboard'] },
+    { heading: 'Learners', ids: ['students', 'progress', 'projects'] },
+    { heading: 'Certificates', ids: ['certificates', 'export'] },
+    { heading: 'Content', ids: ['courses'] },
+    { heading: 'Account', ids: ['settings'] }
+  ];
+  const pageTitle = builderCourse ? `Course Content Builder — ${builderCourse.title}` :
+    activeSection === 'dashboard' ? 'Dashboard' :
+    activeSection === 'students' ? 'Students' :
+    activeSection === 'progress' ? 'Course Progress' :
+    activeSection === 'projects' ? 'Project Submissions' :
+    activeSection === 'certificates' ? 'Certificates' :
+    activeSection === 'export' ? 'Export Reports' :
+    activeSection === 'courses' ? 'Course Catalog' : 'Admin Settings';
+  const pageSubtitle = builderCourse ? 'Edit modules, lessons and quizzes for this course' :
+    activeSection === 'dashboard' ? 'Overview of learners, projects and certificates' :
+    activeSection === 'students' ? 'Student management & records' :
+    activeSection === 'progress' ? 'Module scores, final exams and proctoring' :
+    activeSection === 'projects' ? 'Review GitHub project submissions' :
+    activeSection === 'certificates' ? 'Certificate management & verification' :
+    activeSection === 'export' ? 'Download student data as Excel' :
+    activeSection === 'courses' ? 'Manage the course catalog' : 'Admin account & security';
+  const go = (id) => { setActiveSection(id); setBuilderCourse(null); setMobileSidebarOpen(false); };
+
   return (
-    <div className="min-h-screen bg-[#FAFDFB] font-sans flex flex-col md:flex-row text-slate-900">
-      
+    <div className="admin-ui min-h-screen bg-[#F8F5EE] font-sans flex text-[#302B25]">
+
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-xl border-2 flex items-center gap-3 text-xs font-bold animate-bounce ${
-          toast.type === 'error' 
-            ? 'bg-rose-50 border-rose-300 text-rose-800' 
-            : 'bg-emerald-50 border-emerald-300 text-emerald-900'
+        <div className={`fixed top-5 right-5 z-[70] px-4 py-3 rounded-[10px] shadow-lg border flex items-center gap-3 text-sm font-semibold animate-fade-in ${
+          toast.type === 'error'
+            ? 'bg-rose-50 border-rose-200 text-rose-800'
+            : 'bg-white border-[#E6E1D6] text-[#013A2B]'
         }`}>
-          {toast.type === 'error' ? <AlertCircle className="w-5 h-5 text-rose-600" /> : <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
+          {toast.type === 'error' ? <AlertCircle className="w-5 h-5 text-rose-600" /> : <CheckCircle2 className="w-5 h-5 text-[#426557]" />}
           <span>{toast.message}</span>
         </div>
       )}
 
-      {/* Mobile Sidebar Toggle Header */}
-      <div className="md:hidden bg-brand-900 text-white px-4 py-3 border-b-2 border-brand-800 flex items-center justify-between sticky top-0 z-40">
-        <div className="flex items-center gap-2">
-          <Shield className="w-5 h-5 text-emerald-400" />
-          <span className="font-black text-sm">Arshith Admin Portal</span>
-        </div>
-        <button
-          onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-          className="p-2 text-slate-200 hover:bg-brand-800 rounded-xl"
-        >
-          <Menu className="w-6 h-6" />
-        </button>
-      </div>
+      {/* mobile overlay */}
+      {mobileSidebarOpen && <div className="fixed inset-0 z-40 bg-[#0C2D26]/40 backdrop-blur-[1px] lg:hidden" onClick={() => setMobileSidebarOpen(false)} />}
 
       {/* Admin Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-brand-900 text-slate-300 flex flex-col border-r-4 border-brand-800 transform transition-transform duration-200 md:static md:translate-x-0 ${
-        mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      <aside className={`fixed inset-y-0 left-0 z-50 w-[270px] shrink-0 bg-white border-r border-[#E6E1D6] flex flex-col transform transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${
+        mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
-        
-        {/* Brand Header */}
-        <div className="p-6 border-b border-brand-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-brand-800 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 shadow-md">
-              <Shield className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-base font-black text-white tracking-tight">
-                Arshith <span className="text-emerald-400">Admin</span>
-              </h2>
-              <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block -mt-0.5">
-                Portal Console
-              </span>
-            </div>
-          </div>
-          <button onClick={() => setMobileSidebarOpen(false)} className="md:hidden p-1 text-slate-400 hover:text-white">
+        <div className="h-[70px] px-6 flex items-center justify-between shrink-0">
+          <button onClick={() => go('dashboard')} className="flex items-center gap-2" aria-label="Admin dashboard">
+            <img src="/arshith-bootcamp-logo.png" alt="Arshith Bootcamp" className="h-9 w-auto" />
+            <span className="px-1.5 py-0.5 rounded-md bg-[#E8EFEA] text-[#013A2B] text-[10px] font-bold uppercase tracking-wider">Admin</span>
+          </button>
+          <button onClick={() => setMobileSidebarOpen(false)} className="lg:hidden p-1.5 rounded-full text-[#302B25]/60 hover:bg-[#E8EFEA]" aria-label="Close menu">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Administrator Profile Card */}
-        <div className="px-6 py-4 bg-brand-950/60 border-b border-brand-800 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-brand-700 text-white font-black flex items-center justify-center text-xs border border-brand-600">
-            {admin?.name ? admin.name.charAt(0) : 'A'}
-          </div>
-          <div className="overflow-hidden">
-            <p className="text-xs font-black text-white truncate">{admin?.name || 'Admin User'}</p>
-            <p className="text-[10px] font-extrabold text-emerald-400 tracking-wider uppercase truncate">
-              ID: {admin?.adminId || 'ARB-ADMIN-001'}
-            </p>
-          </div>
-        </div>
-
-        {/* Navigation Menu Links */}
-        <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeSection === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveSection(item.id);
-                  setBuilderCourse(null);
-                  setMobileSidebarOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all ${
-                  isActive
-                    ? 'bg-emerald-500 text-brand-950 font-black shadow-md border-2 border-emerald-400 scale-[1.02]'
-                    : 'text-slate-300 hover:bg-brand-800/80 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className={`w-4.5 h-4.5 ${isActive ? 'text-brand-950' : 'text-slate-400'}`} />
-                  <span>{item.label}</span>
-                </div>
-                {item.badge !== undefined && item.badge > 0 && (
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                    isActive ? 'bg-brand-900 text-emerald-300' : 'bg-brand-800 text-emerald-400'
-                  }`}>
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto px-6 pb-4">
+          {menuGroups.map(g => (
+            <div key={g.heading} className="mt-5 first:mt-2">
+              <p className="mb-1.5 text-[12px] font-bold uppercase leading-[21px] text-[#302B25]/80">{g.heading}</p>
+              {g.ids.map(id => {
+                const item = menuItems.find(m => m.id === id);
+                if (!item) return null;
+                const Icon = item.icon;
+                const isActive = activeSection === item.id && !builderCourse;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => go(item.id)}
+                    className={`group w-full mt-0.5 flex items-center gap-3 px-3.5 h-11 rounded-[7px] text-[14.5px] transition-colors ${
+                      isActive ? 'bg-[#013A2B] text-white shadow-[0_9px_17.5px_rgba(1,58,43,.18)]' : 'text-[#302B25] hover:bg-[#E8EFEA] hover:text-[#013A2B]'
+                    }`}
+                  >
+                    <Icon className={`w-[19px] h-[19px] shrink-0 ${isActive ? 'text-white' : 'text-[#426557] group-hover:text-[#013A2B]'}`} />
+                    <span className="flex-1 text-left truncate">{item.label}</span>
+                    {item.badge !== undefined && item.badge > 0 && (
+                      <span className={`min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-semibold flex items-center justify-center ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-[#E8EFEA] text-[#013A2B]'
+                      }`}>{item.badge}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
-        {/* Logout Footer Button */}
-        <div className="p-4 border-t border-brand-800">
-          <button
-            onClick={onLogout}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold text-rose-300 bg-rose-950/40 border border-rose-900/60 hover:bg-rose-900/80 hover:text-white transition-all cursor-pointer"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Sign Out Admin</span>
+        {/* profile + sign out */}
+        <div className="m-4 mt-0 p-3 rounded-[10px] bg-[#F8F5EE] border border-[#E6E1D6] flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-[#013A2B] text-white font-semibold flex items-center justify-center shrink-0">
+            {admin?.name ? admin.name.charAt(0) : 'A'}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-[#302B25] truncate">{admin?.name || 'Admin User'}</p>
+            <p className="text-[11px] text-[#302B25]/55 truncate">{admin?.adminId || 'ARB-ADMIN-001'}</p>
+          </div>
+          <button onClick={onLogout} className="p-2 rounded-full text-[#302B25]/60 hover:text-rose-600 hover:bg-rose-50 transition" title="Sign out" aria-label="Sign out">
+            <LogOut className="w-[18px] h-[18px]" />
           </button>
         </div>
-
       </aside>
 
-      {/* Main Admin Portal Content */}
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 overflow-y-auto">
-        
-        {/* Top Header Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl dark-bezel shadow-sm">
-          <div>
-            <span className="px-3 py-1 bg-brand-50 text-brand-700 text-[10px] font-black rounded-full uppercase tracking-wider border border-brand-200 inline-block mb-1">
-              Real Database Backend Synchronized
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              {builderCourse ? `Course Content Builder — ${builderCourse.title}` : 
-                activeSection === 'dashboard' ? 'Admin Overview Dashboard' :
-                activeSection === 'students' ? 'Student Management & Records' :
-                activeSection === 'progress' ? 'Course Completion & Progress' :
-                activeSection === 'projects' ? 'GitHub Project Submission Reviews' :
-                activeSection === 'certificates' ? 'Certificate Management & Verification' :
-                activeSection === 'export' ? 'Student Data Export Center' :
-                activeSection === 'courses' ? 'Course Catalog Management' :
-                'Admin Account Security'}
-            </h1>
+      {/* Main column */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 h-[70px] bg-white/95 backdrop-blur border-b border-[#E6E1D6] px-4 sm:px-6 lg:px-8 flex items-center gap-3">
+          <button onClick={() => setMobileSidebarOpen(true)} className="lg:hidden p-2 -ml-1 rounded-full text-[#302B25] hover:bg-[#E8EFEA] hover:text-[#013A2B]" aria-label="Open menu">
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="min-w-0">
+            <p className="text-[12px] text-[#302B25]/55 hidden sm:block">Admin <span className="mx-1">/</span> <span className="text-[#426557]">{pageTitle}</span></p>
+            <h1 className="text-[17px] sm:text-[18px] font-semibold text-[#302B25] leading-tight truncate">{pageTitle}</h1>
           </div>
-
-          <div className="flex items-center gap-3 self-start sm:self-auto flex-wrap">
+          <div className="ml-auto flex items-center gap-2">
             <button
               onClick={refreshAllData}
-              className="p-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-2xl transition-all"
-              title="Refresh Real Application Data"
+              className="w-10 h-10 rounded-full flex items-center justify-center text-[#302B25]/70 hover:bg-[#E8EFEA] hover:text-[#013A2B] transition"
+              title="Refresh data"
+              aria-label="Refresh data"
             >
-              <RefreshCw className={`w-4.5 h-4.5 ${loadingData ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-[18px] h-[18px] ${loadingData ? 'animate-spin' : ''}`} />
             </button>
-
-            {/* Quick Export to Excel Button visible everywhere */}
             <button
               onClick={() => handleExportToExcel()}
-              className="px-4 py-2.5 text-xs font-black text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-full border-2 border-emerald-300 shadow-sm transition-all flex items-center gap-2 cursor-pointer"
-              title="Export Current Student Data to Excel"
+              className="hidden sm:inline-flex h-10 px-4 rounded-[7px] border border-[#426557]/40 text-[#013A2B] text-sm font-semibold hover:bg-[#E8EFEA] transition items-center gap-2"
+              title="Export current student data to Excel"
             >
-              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-              <span>Export to Excel</span>
+              <FileSpreadsheet className="w-4 h-4" />
+              <span>Export</span>
             </button>
-
             {activeSection === 'courses' && !builderCourse && (
               <button
-                onClick={() => {
-                  setEditingCourse(null);
-                  setCourseModalOpen(true);
-                }}
-                className="px-5 py-2.5 text-xs font-black text-white bg-brand-600 hover:bg-brand-700 rounded-full border-2 border-brand-900 shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                onClick={() => { setEditingCourse(null); setCourseModalOpen(true); }}
+                className="h-10 px-4 rounded-[7px] bg-[#013A2B] text-white text-sm font-semibold hover:bg-[#0C2D26] shadow-[0_9px_17.5px_rgba(1,58,43,.15)] transition inline-flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
-                <span>Create New Course</span>
+                <span className="hidden sm:inline">New course</span>
               </button>
             )}
-
             {activeSection === 'certificates' && (
               <button
                 onClick={() => setCertModalOpen(true)}
-                className="px-5 py-2.5 text-xs font-black text-white bg-brand-600 hover:bg-brand-700 rounded-full border-2 border-brand-900 shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                className="h-10 px-4 rounded-[7px] bg-[#013A2B] text-white text-sm font-semibold hover:bg-[#0C2D26] shadow-[0_9px_17.5px_rgba(1,58,43,.15)] transition inline-flex items-center gap-2"
               >
-                <Award className="w-4 h-4 text-emerald-400" />
-                <span>Generate Certificate</span>
+                <Award className="w-4 h-4" />
+                <span className="hidden sm:inline">Generate certificate</span>
               </button>
             )}
+            <div className="hidden md:flex items-center gap-2 pl-2 ml-1 border-l border-[#E6E1D6]">
+              <div className="w-9 h-9 rounded-full bg-[#013A2B] text-white text-sm font-semibold flex items-center justify-center">{admin?.name ? admin.name.charAt(0) : 'A'}</div>
+            </div>
           </div>
-        </div>
+        </header>
+
+      {/* Main Admin Portal Content */}
+      <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-[30px] space-y-[30px]">
+        <p className="-mb-4 text-sm text-[#302B25]/60">{pageSubtitle}</p>
 
         {/* ============================================================== */}
         {/* SECTION 1: DASHBOARD OVERVIEW */}
@@ -695,69 +674,22 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
         {activeSection === 'dashboard' && !builderCourse && (
           <div className="space-y-8">
             
-            {/* The 5 Required Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              
-              {/* 1. Total Registered Students */}
-              <div className="bg-white p-5 rounded-3xl dark-bezel flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-brand-50 border-2 border-brand-200 text-brand-700 flex items-center justify-center shrink-0">
-                  <Users className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Registered Students</p>
-                  <p className="text-2xl font-black text-slate-900">{analytics?.totalStudents || students.length}</p>
-                  <span className="text-[10px] font-extrabold text-emerald-600">Database Verified</span>
-                </div>
-              </div>
-
-              {/* 2. Active Students */}
-              <div className="bg-white p-5 rounded-3xl dark-bezel flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 border-2 border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0">
-                  <UserCheck className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Active Students</p>
-                  <p className="text-2xl font-black text-slate-900">{analytics?.activeStudents || students.filter(s => s.status === 'active').length}</p>
-                  <span className="text-[10px] font-extrabold text-emerald-600">Currently Enrolled</span>
-                </div>
-              </div>
-
-              {/* 3. Course Completions */}
-              <div className="bg-white p-5 rounded-3xl dark-bezel flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-teal-50 border-2 border-teal-200 text-teal-600 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Course Completions</p>
-                  <p className="text-2xl font-black text-slate-900">{analytics?.courseCompletions || 0}</p>
-                  <span className="text-[10px] font-extrabold text-teal-600">Passed Quizzes & Final</span>
-                </div>
-              </div>
-
-              {/* 4. Projects Submitted */}
-              <div className="bg-white p-5 rounded-3xl dark-bezel flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 border-2 border-amber-200 text-amber-600 flex items-center justify-center shrink-0">
-                  <FolderCheck className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Projects Submitted</p>
-                  <p className="text-2xl font-black text-slate-900">{analytics?.projectsSubmitted || projectSubmissions.length}</p>
-                  <span className="text-[10px] font-extrabold text-amber-600">GitHub Repos</span>
-                </div>
-              </div>
-
-              {/* 5. Certificates Earned */}
-              <div className="bg-white p-5 rounded-3xl dark-bezel flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-purple-50 border-2 border-purple-200 text-purple-600 flex items-center justify-center shrink-0">
-                  <Award className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Certificates Earned</p>
-                  <p className="text-2xl font-black text-slate-900">{analytics?.certificatesEarned || certificates.filter(c => c.status === 'active').length}</p>
-                  <span className="text-[10px] font-extrabold text-purple-600">QR Code Verified</span>
-                </div>
-              </div>
-
+            {/* Summary cards (tinted, TailwindAdmin style) */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6">
+              {[
+                { label: 'Registered students', value: analytics?.totalStudents || students.length, note: 'Database verified', icon: Users, tint: 'bg-[#E8EFEA]', ink: 'text-[#013A2B]', go: 'students' },
+                { label: 'Active students', value: analytics?.activeStudents || students.filter(s => s.status === 'active').length, note: 'Currently enrolled', icon: UserCheck, tint: 'bg-[#EEF3F0]', ink: 'text-[#426557]', go: 'students' },
+                { label: 'Course completions', value: analytics?.courseCompletions || 0, note: 'Quizzes & final passed', icon: CheckCircle2, tint: 'bg-[#F3EFE3]', ink: 'text-[#7A5A12]', go: 'progress' },
+                { label: 'Projects submitted', value: analytics?.projectsSubmitted || projectSubmissions.length, note: 'GitHub repositories', icon: FolderCheck, tint: 'bg-[#F6EFE6]', ink: 'text-[#8A4B1C]', go: 'projects' },
+                { label: 'Certificates earned', value: analytics?.certificatesEarned || certificates.filter(c => c.status === 'active').length, note: 'QR-code verified', icon: Award, tint: 'bg-[#EFEDE9]', ink: 'text-[#302B25]', go: 'certificates' }
+              ].map(c => (
+                <button key={c.label} onClick={() => setActiveSection(c.go)} className={`${c.tint} rounded-[12px] p-5 text-left hover:-translate-y-0.5 hover:shadow-md transition`}>
+                  <span className={`w-11 h-11 rounded-[10px] bg-white flex items-center justify-center ${c.ink}`}><c.icon className="w-[22px] h-[22px]" /></span>
+                  <p className={`mt-4 text-[14px] font-semibold ${c.ink}`}>{c.label}</p>
+                  <p className="mt-0.5 text-[26px] font-semibold text-[#302B25] leading-tight">{c.value}</p>
+                  <p className="text-[12px] text-[#302B25]/55">{c.note}</p>
+                </button>
+              ))}
             </div>
 
             {/* Quick Overview Table Snapshots */}
@@ -1709,6 +1641,7 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
         )}
 
       </main>
+      </div>
 
       {/* ============================================================== */}
       {/* STUDENT DETAILS MODAL (SPECIFICATION REQUIREMENT 4) */}
