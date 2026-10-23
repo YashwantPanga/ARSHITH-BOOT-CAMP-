@@ -41,6 +41,15 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
 
   const isActive = (id) => route.name === id || (id === 'courses' && route.name === 'course-details');
   const go = (to) => { setOpen(false); setExplore(false); navigate(to); };
+
+  // Explore opens on hover with a mouse (short delay before closing so the pointer can travel into
+  // the menu); click / tap / keyboard still toggle it.
+  const hoverTimer = useRef(null);
+  const openedByHover = useRef(false);
+  const canHover = () => typeof window !== 'undefined' && window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
+  const hoverIn = () => { if (!canHover()) return; clearTimeout(hoverTimer.current); openedByHover.current = true; setExplore(true); };
+  const hoverOut = () => { if (!canHover()) return; clearTimeout(hoverTimer.current); hoverTimer.current = setTimeout(() => { openedByHover.current = false; setExplore(false); }, 180); };
+  useEffect(() => () => clearTimeout(hoverTimer.current), []);
   const submitSearch = (e) => {
     e.preventDefault();
     setOpen(false);
@@ -55,12 +64,12 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
           <Logo onClick={() => go(paths.home())} />
 
           {/* Explore mega-menu */}
-          <div ref={exploreRef} className="relative hidden md:block">
-            <button onClick={() => setExplore(v => !v)} aria-expanded={explore} className={`h-12 px-4 rounded-lg flex items-center gap-2 text-[15px] font-medium transition ${explore ? 'bg-brand-900 text-ivory' : 'bg-brand-50 text-brand-900 hover:bg-brand-100'}`}>
+          <div ref={exploreRef} className="relative hidden md:block" onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+            <button onClick={() => setExplore(v => (openedByHover.current ? true : !v))} aria-expanded={explore} className={`h-12 px-4 rounded-lg flex items-center gap-2 text-[15px] font-medium transition ${explore ? 'bg-brand-900 text-ivory' : 'bg-brand-50 text-brand-900 hover:bg-brand-100'}`}>
               <Menu className="w-5 h-5" /> Explore <ChevronDown className={`w-4 h-4 transition-transform ${explore ? 'rotate-180' : ''}`} />
             </button>
             {explore && (
-              <div className="absolute left-0 top-[calc(100%+10px)] w-[640px] bg-white rounded-2xl shadow-floating border border-brand-900/10 p-5 grid grid-cols-5 gap-5 animate-scale-in origin-top-left">
+              <div className="absolute left-0 top-[calc(100%+10px)] before:absolute before:-top-3 before:inset-x-0 before:h-3 before:content-[''] w-[640px] bg-white rounded-2xl shadow-floating border border-brand-900/10 p-5 grid grid-cols-5 gap-5 animate-scale-in origin-top-left">
                 <div className="col-span-3">
                   <p className="eyebrow mb-3">Courses</p>
                   <div className="space-y-1">
