@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Search, SlidersHorizontal, Lock, BookOpen } from 'lucide-react';
 import { CourseTile } from '../components/CourseCard';
+import { LaptopScene, ExamScene } from '../components/StudyScenes';
 
 import { CATEGORIES } from '../data/meta';
 
@@ -27,8 +28,10 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
     <div className="bg-ivory">
       {/* eduleb "section-top" banner */}
       <section className="relative overflow-hidden bg-cream border-b border-brand-900/10">
-        <div className="absolute inset-0 edu-shape pointer-events-none" aria-hidden="true" />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 text-center">
+        {/* animated study scenes fill the banner's sides on wide screens */}
+        <LaptopScene className="hidden xl:block absolute left-[2%] 2xl:left-[5%] bottom-0 w-[250px] 2xl:w-[330px] pointer-events-none" />
+        <ExamScene className="hidden xl:block absolute right-[2%] 2xl:right-[5%] bottom-0 w-[250px] 2xl:w-[330px] pointer-events-none" />
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10 sm:pt-20 xl:pb-20 text-center">
           <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Our services</p>
           <h1 className="mt-2 text-[34px] sm:text-[48px] font-bold leading-tight text-evergreen">Online courses for focused learners</h1>
           <p className="mt-3 text-charcoal/70 max-w-2xl mx-auto">Choose one course and master it. Every account can enroll in exactly one course.</p>
@@ -36,11 +39,15 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
             {onHome ? <button onClick={onHome} className="font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
             <span className="mx-2 text-charcoal/40">/</span>Courses
           </nav>
+          <div className="xl:hidden mt-6 flex justify-center gap-3 sm:gap-8" aria-hidden="true">
+            <LaptopScene className="w-[46%] max-w-[230px]" />
+            <ExamScene className="w-[46%] max-w-[230px]" />
+          </div>
         </div>
       </section>
 
       {/* eduleb "home_course" section: toolbar, then the course grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-14 sm:pt-12 sm:pb-20">
         <div className="edu-card p-4 sm:p-5">
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
             <div className="relative flex-1">

@@ -261,3 +261,59 @@
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   .reveal { opacity: 1; transform: none; }
 }
+
+/* Study scenes (src/components/StudyScenes.jsx) */
+.ss-spin { transform-box: fill-box; transform-origin: center; animation: ss-spin 40s linear infinite; }
+.ss-breathe { transform-box: fill-box; transform-origin: bottom center; animation: ss-breathe 3.6s ease-in-out infinite; }
+.ss-blink { transform-box: fill-box; transform-origin: center; animation: ss-blink 4.5s infinite; }
+.ss-type { animation: ss-type .32s ease-in-out infinite alternate; }
+.ss-code { transform-box: fill-box; transform-origin: left center; animation: ss-code 4.8s ease-out infinite; }
+.ss-c2 { animation-name: ss-code2; } .ss-c3 { animation-name: ss-code3; } .ss-c4 { animation-name: ss-code4; }
+.ss-caret { animation: ss-caret 1s steps(1) infinite; }
+.ss-steam { animation: ss-steam 2.6s ease-in-out infinite; }
+.ss-float { animation: ss-float 4s ease-in-out infinite; }
+.ss-d2 { animation-delay: -1.6s; }
+.ss-tilt { transform-box: fill-box; transform-origin: bottom center; animation: ss-tilt 6s ease-in-out infinite; }
+.ss-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: ss-l1 6s linear infinite; }
+.ss-l2 { animation-name: ss-l2; } .ss-l3 { animation-name: ss-l3; } .ss-l4 { animation-name: ss-l4; }
+.ss-tick { opacity: 0; animation: ss-t1 6s infinite; }
+.ss-t2 { animation-name: ss-t2; } .ss-t3 { animation-name: ss-t3; } .ss-t4 { animation-name: ss-t4; }
+.ss-pen { animation: ss-pen 6s ease-in-out infinite; }
+.ss-pop { transform-box: fill-box; transform-origin: center; animation: ss-pop 6s ease-out infinite; }
+.ss-clock-m { transform-origin: 62px 52px; animation: ss-spin 6s linear infinite; }
+.ss-clock-h { transform-origin: 62px 52px; animation: ss-spin 72s linear infinite; }
+
+@keyframes ss-spin { to { transform: rotate(360deg); } }
+@keyframes ss-breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes ss-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+@keyframes ss-type { from { transform: translateY(0); } to { transform: translateY(-2.5px); } }
+@keyframes ss-code { 0% { transform: scaleX(0); } 12%, 90% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+@keyframes ss-code2 { 0%, 18% { transform: scaleX(0); } 30%, 90% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+@keyframes ss-code3 { 0%, 36% { transform: scaleX(0); } 48%, 90% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+@keyframes ss-code4 { 0%, 54% { transform: scaleX(0); } 66%, 90% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+@keyframes ss-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes ss-steam { 0% { opacity: 0; transform: translateY(4px); } 40% { opacity: .9; } 100% { opacity: 0; transform: translateY(-8px); } }
+@keyframes ss-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@keyframes ss-tilt { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-1.5deg); } }
+@keyframes ss-l1 { 0% { stroke-dashoffset: 1; } 18%, 95% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1; } }
+@keyframes ss-l2 { 0%, 22% { stroke-dashoffset: 1; } 40%, 95% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1; } }
+@keyframes ss-l3 { 0%, 44% { stroke-dashoffset: 1; } 62%, 95% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1; } }
+@keyframes ss-l4 { 0%, 66% { stroke-dashoffset: 1; } 84%, 95% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1; } }
+@keyframes ss-t1 { 0%, 18% { opacity: 0; } 20%, 95% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ss-t2 { 0%, 40% { opacity: 0; } 42%, 95% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ss-t3 { 0%, 62% { opacity: 0; } 64%, 95% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ss-t4 { 0%, 84% { opacity: 0; } 86%, 95% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ss-pen {
+  0% { transform: translate(0, 0); } 18% { transform: translate(40px, 0); }
+  21% { transform: translate(0, 17px); } 40% { transform: translate(40px, 17px); }
+  43% { transform: translate(0, 34px); } 62% { transform: translate(40px, 34px); }
+  65% { transform: translate(0, 51px); } 84% { transform: translate(40px, 51px); }
+  92% { transform: translate(52px, 30px); } 100% { transform: translate(0, 0); }
+}
+@keyframes ss-pop { 0%, 85% { transform: scale(0); opacity: 0; } 90% { transform: scale(1.15); opacity: 1; } 94%, 97% { transform: scale(1); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="ss-"] { animation: none !important; }
+  .ss-line { stroke-dashoffset: 0; }
+  .ss-tick, .ss-pop { opacity: 1; transform: none; }
+}
