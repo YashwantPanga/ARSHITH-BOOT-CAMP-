@@ -31058,6 +31058,16 @@
   "projectSubmissions": [],
   "activityLogs": [
     {
+      "id": "log-1792668047040-348",
+      "adminId": "ARB-ADMIN-001",
+      "action": "ADMIN_LOGOUT",
+      "target": "Admin Portal",
+      "details": "Administrator logged out",
+      "timestamp": "2026-10-22T11:20:47.040Z",
+      "ipAddress": "::1",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0"
+    },
+    {
       "id": "log-1792666880685-123",
       "adminId": "ARB-ADMIN-001",
       "action": "ADMIN_LOGIN",
