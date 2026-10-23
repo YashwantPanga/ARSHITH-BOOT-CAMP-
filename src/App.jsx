@@ -4,6 +4,7 @@ import HeroSection from './components/HeroSection';
 import PopularCourses from './components/PopularCourses';
 import WhyLearnWithUs from './components/WhyLearnWithUs';
 import CtaSection from './components/CtaSection';
+import HomeButton from './components/HomeButton';
 import Footer from './components/Footer';
 import MobileBottomNav from './components/MobileBottomNav';
 import AuthPage from './components/LoginModal';
@@ -486,6 +487,10 @@ function AppShell() {
       {!isChromeless && <Footer navigate={navigate} />}
       {!isChromeless && (
         <MobileBottomNav route={route} navigate={navigate} studentUser={studentUser} />
+      )}
+
+      {!['home', 'admin-dashboard'].includes(route.name) && (
+        <HomeButton onClick={() => navigate(paths.home())} aboveBottomNav={!isChromeless} />
       )}
 
       <ConfirmDialog

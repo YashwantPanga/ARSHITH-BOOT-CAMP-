@@ -162,6 +162,12 @@
 .pdf-stamp { animation: pdf-stamp .55s cubic-bezier(.2, .9, .3, 1.2) .1s both; }
 
 /* Final-assessment celebration */
+/* floating home button: drops in, then a slow halo pulse */
+@keyframes home-fab-in { from { transform: translateY(18px) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+.home-fab { animation: home-fab-in .55s cubic-bezier(.2, .9, .3, 1.2) .3s both; }
+@keyframes home-fab-halo { 0% { box-shadow: 0 0 0 0 rgba(66, 101, 87, .45); } 70%, 100% { box-shadow: 0 0 0 12px rgba(66, 101, 87, 0); } }
+.home-fab-halo { animation: home-fab-halo 2.8s ease-out 1.2s infinite; }
+
 /* learning-flow step click: ripple, sparks, number pop; target section glows on arrival */
 @keyframes flow-ripple { from { width: 0; height: 0; opacity: 1; } to { width: 520px; height: 520px; opacity: 0; } }
 .flow-ripple { transform: translate(-50%, -50%); animation: flow-ripple .75s ease-out forwards; }
