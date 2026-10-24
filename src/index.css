@@ -317,3 +317,22 @@
   .ss-line { stroke-dashoffset: 0; }
   .ss-tick, .ss-pop { opacity: 1; transform: none; }
 }
+
+/* ID card scan (IdentityCheck) */
+.id-frame-scan { border: 2px solid rgba(188,209,198,.9); box-shadow: 0 0 0 9999px rgba(12,45,38,.35), inset 0 0 24px rgba(188,209,198,.45); }
+.id-frame-ok { border: 3px solid #2F7A5C; box-shadow: 0 0 0 9999px rgba(12,45,38,.25), 0 0 30px rgba(47,122,92,.7); }
+.id-scan-line { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, #BCD1C6 15%, #fff 50%, #BCD1C6 85%, transparent); box-shadow: 0 0 12px 2px rgba(188,209,198,.9); animation: id-scan 1.8s ease-in-out infinite alternate; }
+.id-scan-glow { position: absolute; left: 0; right: 0; top: 0; height: 38%; background: linear-gradient(to bottom, transparent, rgba(188,209,198,.25)); animation: id-scan-glow 1.8s ease-in-out infinite alternate; }
+.id-corner { position: absolute; width: 22px; height: 22px; border: 0 solid #fff; }
+.id-frame-ok .id-corner { border-color: #7DB59A; }
+.id-corner.tl { top: -3px; left: -3px; border-top-width: 4px; border-left-width: 4px; border-top-left-radius: 12px; }
+.id-corner.tr { top: -3px; right: -3px; border-top-width: 4px; border-right-width: 4px; border-top-right-radius: 12px; }
+.id-corner.bl { bottom: -3px; left: -3px; border-bottom-width: 4px; border-left-width: 4px; border-bottom-left-radius: 12px; }
+.id-corner.br { bottom: -3px; right: -3px; border-bottom-width: 4px; border-right-width: 4px; border-bottom-right-radius: 12px; }
+.id-frame-scan .id-corner { animation: id-corner 1.2s ease-in-out infinite; }
+.id-ok-badge { animation: id-badge .45s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes id-scan { from { top: 0; } to { top: calc(100% - 2px); } }
+@keyframes id-scan-glow { from { top: -38%; } to { top: 62%; } }
+@keyframes id-corner { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+@keyframes id-badge { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .id-scan-line, .id-scan-glow, .id-corner, .id-ok-badge { animation: none !important; } }

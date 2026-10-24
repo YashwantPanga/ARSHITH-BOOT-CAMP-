@@ -33,6 +33,21 @@ describe('ID card name matching', () => {
     expect(r.missing).toEqual(['KUMAR']);
   });
 
+  it('ignores letter case on either side', () => {
+    expect(matchNameInText('yashwant panga', 'Name: PANGA YASHWANT').matched).toBe(true);
+    expect(matchNameInText('YASHWANT PANGA', 'name: yashwant panga').matched).toBe(true);
+    expect(matchNameInText('YaShWaNt PaNgA', 'Yashwant Panga').matched).toBe(true);
+  });
+
+  it('reads digits OCR put inside a name as letters', () => {
+    expect(matchNameInText('Yashwant Panga', 'Y4SHWANT PANG4  DOB 14/02/2002').matched).toBe(true);
+    expect(matchNameInText('Vullas Reddy', 'VULLA5 REDDY').matched).toBe(true);
+  });
+
+  it('finds a name OCR split into three pieces', () => {
+    expect(matchNameInText('Yashwant Panga', 'YA SH WANT PANGA').matched).toBe(true);
+  });
+
   it('does not let short words match loosely', () => {
     expect(matchNameInText('Ram Das', 'RAM DAS').matched).toBe(true);
     expect(matchNameInText('Ram Das', 'RAJ DAN').matched).toBe(false);

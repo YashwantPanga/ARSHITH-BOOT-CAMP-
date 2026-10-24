@@ -4,6 +4,9 @@ import { loadProctorModels, captureReference, calibrateGaze } from '../../utils/
 import { checkIdName, loadOcr } from '../../utils/idCardOcr';
 
 const MAX_ID_TRIES = 3;
+const SCAN_SECONDS = 12;               // one scan keeps reading camera frames for up to this long
+// The part of the camera frame inside the on-screen card outline (a little generous on each side).
+const CARD_CROP = { x: 0.06, y: 0.03, w: 0.88, h: 0.94 };
 
 /**
  * Pre-exam identity check, shown once the camera is on:
@@ -22,6 +25,10 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
   const [idCard, setIdCard] = useState({ state: 'idle', msg: '', tries: 0, result: null });
   const refDesc = useRef(null);
   const gazeBase = useRef(null);
+  const [scanTime, setScanTime] = useState(0);
+  const [matchFlash, setMatchFlash] = useState(false);
+  const alive = useRef(true);
+  useEffect(() => () => { alive.current = false; }, []);
 
   const load = () => {
     setModels(m => ({ ...m, state: 'loading', error: '' }));
@@ -58,18 +65,26 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
     }
   };
 
-  // Reads the card and looks for the registered name. source: the camera frame or an uploaded image.
-  const runId = async (getSource, busyMsg) => {
+  // Reads the card and looks for the registered name, frame after frame, stopping at the first match.
+  // getSource(i) returns the i-th image to read (null when there are no more); crop limits the
+  // camera frame to the card outline.
+  const runId = async (getSource, busyMsg, { crop = null, seconds = 0 } = {}) => {
     setIdCard(s => ({ ...s, state: 'busy', msg: busyMsg }));
+    setScanTime(0);
+    const started = performance.now();
+    const timer = setInterval(() => alive.current && setScanTime((performance.now() - started) / 1000), 100);
     try {
       let r = null;
-      for (let i = 0; i < 2 && !r?.matched; i++) {   // a second camera frame often reads better
+      for (let i = 0; !r?.matched && alive.current; i++) {
+        if (i > 0 && (!seconds || performance.now() - started > seconds * 1000)) break;
         const src = await getSource(i);
         if (!src) break;
-        const next = await checkIdName(src, registeredName);
-        if (!r || next.found > r.found) r = next;
+        const next = await checkIdName(src, registeredName, { crop, attempt: i });
+        if (!r || next.found > r.found || (next.found === r.found && next.text.length > r.text.length)) r = next;
       }
+      if (!alive.current) return;
       if (!r) throw new Error('No image to read.');
+      if (r.matched) { setMatchFlash(true); setTimeout(() => alive.current && setMatchFlash(false), 2600); }
       const nothing = r.text.replace(/[^A-Za-z]/g, '').length < 6;
       setIdCard(s => ({
         state: r.matched ? 'done' : 'mismatch',
@@ -80,20 +95,27 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
           : `Your registered name was not found on the card${r.missing.length ? ` (missing: ${r.missing.join(', ')})` : ''}. Make sure the card shows your full name as registered, then try again.`
       }));
     } catch (e) {
-      setIdCard(s => ({ ...s, state: 'error', tries: s.tries + 1, msg: e.message || 'The card could not be read. Try again.' }));
+      if (alive.current) setIdCard(s => ({ ...s, state: 'error', tries: s.tries + 1, msg: e.message || 'The card could not be read. Try again.' }));
+    } finally {
+      clearInterval(timer);
     }
   };
-  const scanId = () => runId(async (i) => { if (i) await new Promise(r => setTimeout(r, 700)); return videoEl.current; }, 'Hold your ID card close to the camera so it fills the picture…');
+  const scanId = () => runId(async (i) => { if (i) await new Promise(r => setTimeout(r, 120)); return videoEl.current; },
+    'Hold your ID card inside the frame, flat and close…', { crop: CARD_CROP, seconds: SCAN_SECONDS });
   const uploadId = (file) => {
     if (!file) return;
+    let img = null;
     runId(async (i) => {
-      if (i) return null;
-      const img = new Image();
-      img.src = URL.createObjectURL(file);
-      await img.decode();
+      if (i > 1) return null;          // an uploaded photo is read twice: normal and black-and-white
+      if (!img) {
+        img = new Image();
+        img.src = URL.createObjectURL(file);
+        await img.decode();
+      }
       return img;
-    }, 'Reading the name on your ID photo…');
+    }, 'Reading the name on your ID photo…', { seconds: 30 });
   };
+  const scanning = idCard.state === 'busy';
 
   const idTries = idCard.tries;
   const canSkipId = idTries >= MAX_ID_TRIES && idCard.state !== 'done';
@@ -129,9 +151,20 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
         <video ref={setVideo} autoPlay muted playsInline className="w-full h-full object-cover -scale-x-100" />
         {/* face guide */}
         {face.state !== 'done' && <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[38%] aspect-[3/4] rounded-[45%] border-2 border-dashed border-white/60" aria-hidden="true" />}
-        {face.state === 'done' && idCard.state !== 'done' && !skipped && <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[78%] aspect-[1.586] rounded-xl border-2 border-dashed border-white/60" aria-hidden="true"><span className="absolute -top-5 left-0 text-[10px] font-semibold text-white/80">Fit your ID card here</span></div>}
+        {face.state === 'done' && ((idCard.state !== 'done' && !skipped) || matchFlash) && (
+          <div className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[78%] max-h-[86%] aspect-[1.586] rounded-xl ${matchFlash ? 'id-frame-ok' : scanning ? 'id-frame-scan' : 'border-2 border-dashed border-white/60'}`} aria-hidden="true">
+            {!matchFlash && <span className="absolute -top-5 left-0 text-[10px] font-semibold text-white/85">{scanning ? 'Scanning - hold still' : 'Fit your ID card here'}</span>}
+            {(scanning || matchFlash) && <><i className="id-corner tl" /><i className="id-corner tr" /><i className="id-corner bl" /><i className="id-corner br" /></>}
+            {scanning && <span className="absolute inset-0 overflow-hidden rounded-xl"><span className="id-scan-glow" /><span className="id-scan-line" /></span>}
+            {matchFlash && (
+              <span className="absolute inset-0 flex items-center justify-center">
+                <span className="id-ok-badge flex items-center gap-1.5 rounded-full bg-white text-forest text-sm font-bold px-4 py-2 shadow-lg"><CheckCircle2 className="w-5 h-5 text-mint-400" /> Name matched</span>
+              </span>
+            )}
+          </div>
+        )}
         {(face.state === 'busy' || idCard.state === 'busy') && (
-          <div className="absolute inset-x-0 bottom-0 bg-black/55 text-white text-xs px-3 py-2 flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />{face.state === 'busy' ? face.msg : idCard.msg}</div>
+          <div className="absolute inset-x-0 bottom-0 bg-black/55 text-white text-xs px-3 py-2 flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />{face.state === 'busy' ? face.msg : idCard.msg}{scanning && <span className="ml-auto tabular-nums text-white/70">{scanTime.toFixed(1)}s</span>}</div>
         )}
       </div>
 

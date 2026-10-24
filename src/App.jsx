@@ -7,6 +7,7 @@ import CtaSection from './components/CtaSection';
 import HomeButton from './components/HomeButton';
 import Footer from './components/Footer';
 import MobileBottomNav from './components/MobileBottomNav';
+import DesktopNotice from './components/DesktopNotice';
 import AuthPage from './components/LoginModal';
 import { ToastProvider, useToast, ConfirmDialog, PageLoader } from './components/ui';
 
@@ -244,7 +245,7 @@ function AppShell() {
     toast(isNew
       ? `Account created! Your learner ID is ${user.learnerId} — it will appear on your certificate.`
       : `Welcome${user.name ? `, ${user.name.split(' ')[0]}` : ''}!`, 'success', isNew ? 6500 : 3800);
-    const next = route.query.next && route.query.next.startsWith('/') ? route.query.next : paths.dashboard();
+    const next = route.query.next && route.query.next.startsWith('/') ? route.query.next : paths.home();
     navigate(next, { replace: true });
   };
 
@@ -296,7 +297,7 @@ function AppShell() {
       }
     }
     if ((route.name === 'login' || route.name === 'register') && studentUser) {
-      navigate(paths.dashboard(), { replace: true });
+      navigate(paths.home(), { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route, studentUser, adminUser, adminChecked, coursesLoaded, enrolledCourseId]);
@@ -528,6 +529,7 @@ function AppShell() {
       )}
 
       {authModal && <AuthModalLayer onClose={closeAuthModal}>{authModal}</AuthModalLayer>}
+      {!route.name.startsWith('admin') && <DesktopNotice />}
 
       {!isAuthModal && !['home', 'admin-dashboard'].includes(route.name) && (
         <HomeButton onClick={() => navigate(paths.home())} aboveBottomNav={!isChromeless} />
