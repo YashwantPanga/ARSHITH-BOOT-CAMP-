@@ -21,6 +21,7 @@ import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import CategoriesPage from './pages/CategoriesPage';
 import { AboutPage, ContactPage } from './pages/AboutContactPages';
+import { TermsPage, PrivacyPage } from './pages/LegalPages';
 import { VerifyEmailPage, ForgotPasswordPage, ResetPasswordPage, rememberDevMail } from './pages/AccountPages';
 
 import { api, getAdminToken, setAdminToken } from './services/api';
@@ -307,7 +308,7 @@ function AppShell() {
   // Login, register and the account screens open as a modal card over the page the visitor was on
   // (that page stays visible, faded, behind it). Opening one directly shows the home page behind.
   const AUTH_ROUTES = ['login', 'register', 'verify-email', 'forgot-password', 'reset-password'];
-  const BACKDROP_ROUTES = ['home', 'courses', 'course-details', 'categories', 'about', 'contact', 'verify'];
+  const BACKDROP_ROUTES = ['home', 'courses', 'course-details', 'categories', 'about', 'contact', 'verify', 'terms', 'privacy'];
   const isAuthModal = AUTH_ROUTES.includes(route.name);
   if (!isAuthModal && BACKDROP_ROUTES.includes(route.name)) {
     lastPageRef.current = { route, path: window.location.pathname + window.location.search };
@@ -373,6 +374,7 @@ function AppShell() {
           onBack={() => navigate(paths.courses())}
           onEnroll={() => requestEnroll(course.id)}
           onContinue={(moduleId) => navigate(paths.learn(course.id, moduleId))}
+          onHome={() => navigate(paths.home())}
         />
       );
       break;
@@ -431,6 +433,12 @@ function AppShell() {
       break;
     case 'contact':
       page = <ContactPage onHome={() => navigate(paths.home())} />;
+      break;
+    case 'terms':
+      page = <TermsPage onHome={() => navigate(paths.home())} />;
+      break;
+    case 'privacy':
+      page = <PrivacyPage onHome={() => navigate(paths.home())} />;
       break;
     case 'login':
     case 'register':

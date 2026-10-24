@@ -13,6 +13,8 @@ export function parseLocation(loc = window.location) {
     case 'categories': return { name: 'categories', params: {}, query };
     case 'about': return { name: 'about', params: {}, query };
     case 'contact': return { name: 'contact', params: {}, query };
+    case 'terms': return { name: 'terms', params: {}, query };
+    case 'privacy': return { name: 'privacy', params: {}, query };
     case 'course': return a ? { name: 'course-details', params: { courseId: a }, query } : { name: 'courses', params: {}, query };
     case 'learn': return a ? { name: 'learning', params: { courseId: a, moduleId: b || null }, query } : { name: 'dashboard', params: {}, query };
     case 'dashboard': return { name: 'dashboard', params: {}, query };
@@ -39,6 +41,8 @@ export const paths = {
   categories: () => '/categories',
   about: () => '/about',
   contact: () => '/contact',
+  terms: () => '/terms',
+  privacy: () => '/privacy',
   course: (id) => `/course/${encodeURIComponent(id)}`,
   learn: (id, moduleId) => `/learn/${encodeURIComponent(id)}${moduleId ? `/${encodeURIComponent(moduleId)}` : ''}`,
   dashboard: () => '/dashboard',

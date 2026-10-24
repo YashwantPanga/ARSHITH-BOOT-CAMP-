@@ -130,6 +130,11 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
           <button type="submit" disabled={busy} className={`${isSignup ? 'sm:col-span-2' : ''} mt-1 h-12 rounded-lg bg-brand-900 text-ivory text-[16px] font-bold hover:bg-forest active:scale-[.99] disabled:opacity-70 transition shadow-[0_10px_24px_-12px_rgba(1,58,43,.7)]`}>
             {busy ? 'Please wait…' : isSignup ? 'Create account' : 'Continue'}
           </button>
+          {isSignup && (
+            <p className="sm:col-span-2 text-center text-[12.5px] text-charcoal/60">
+              By creating an account you agree to our <a href="/terms" target="_blank" rel="noopener" className="font-semibold text-forest underline">Terms of Use</a> and <a href="/privacy" target="_blank" rel="noopener" className="font-semibold text-forest underline">Privacy Policy</a>.
+            </p>
+          )}
         </form>
 
         <div className="my-5 flex items-center gap-3 text-[13px] text-charcoal/50" aria-hidden="true">

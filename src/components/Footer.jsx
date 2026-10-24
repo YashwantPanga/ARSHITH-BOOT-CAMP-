@@ -83,6 +83,8 @@ export default function Footer({ navigate }) {
             <ul className="space-y-2.5">
               {link('About us', paths.about())}
               {link('Contact', paths.contact())}
+              {link('Terms of Use', paths.terms())}
+              {link('Privacy Policy', paths.privacy())}
               {link('My dashboard', paths.dashboard())}
             </ul>
           </div>
@@ -116,9 +118,13 @@ export default function Footer({ navigate }) {
 
       {/* Bottom Bar */}
       <div className="bg-forest">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 text-[13px] text-ivory/75 flex flex-col sm:flex-row gap-2 justify-between items-center">
-          <span>© {new Date().getFullYear()} Arshith Bootcamp. All rights reserved.</span>
-          <span>Made for learners, everywhere.</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 text-[13px] text-ivory/75 flex flex-col md:flex-row gap-3 md:gap-6 justify-between items-center text-center md:text-left">
+          <span>© 2026 Arshith Group. All rights reserved. Course content, code and certificates may not be copied or redistributed.</span>
+          <span className="flex items-center gap-4 shrink-0">
+            <button onClick={() => navigate(paths.terms())} className="hover:text-ivory transition-colors">Terms of Use</button>
+            <span className="text-ivory/30">|</span>
+            <button onClick={() => navigate(paths.privacy())} className="hover:text-ivory transition-colors">Privacy Policy</button>
+          </span>
         </div>
       </div>
     </footer>
