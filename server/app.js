@@ -17,6 +17,9 @@ import { learnerGuard } from './middleware/learnerAuth.js';
 import { adminGate } from './middleware/auth.js';
 
 const app = express();
+// Behind Nginx on the same machine: take the visitor's address from X-Forwarded-For, so per-address
+// login limits apply to each visitor rather than to everyone at once.
+app.set('trust proxy', 'loopback');
 
 // Enable CORS
 app.use(cors({
