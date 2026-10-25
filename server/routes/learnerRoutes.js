@@ -1,8 +1,11 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { getDb, saveDb } from '../db.js';
+import jwt from 'jsonwebtoken';
+import { getDb, saveDb, logActivity } from '../db.js';
 import { signLearnerToken } from '../middleware/learnerAuth.js';
+import { JWT_SECRET } from '../middleware/auth.js';
+import { KNOWN_DEFAULT_PASSWORDS } from './authRoutes.js';
 import { sendMail, devCodesAllowed, smtpConfigured } from '../lib/mailer.js';
 import { verificationEmail, resetEmail, passwordChangedEmail } from '../lib/emailTemplates.js';
 import { publicBase, isEmailSafeUrl } from '../lib/publicUrl.js';
@@ -230,31 +233,63 @@ router.post('/learners/reset-password', async (req, res) => {
   res.json({ success: true, message: 'Your password has been changed. Please sign in with your new password.' });
 });
 
+// Every failed sign-in gets this same answer and status, whatever was wrong.
+const LOGIN_FAILED = 'Incorrect email, registration number or password.';
+// Compared against when there is no account, so every attempt costs one password check.
+const DUMMY_HASH = bcrypt.hashSync(crypto.randomBytes(16).toString('hex'), 10);
+// Failed sign-ins per address (email lockout above is per account; this one slows spraying many emails).
+const ipFails = new Map();
+const IP_LIMIT = 20, IP_WINDOW_MS = 15 * 60 * 1000;
+
+const adminEmail = (db) => normEmail(process.env.ADMIN_EMAIL || db.admin?.email || '');
+
 router.post('/learners/login', (req, res) => {
   const email = normEmail(req.body.email);
   const regNo = normReg(req.body.regNo);
   const password = String(req.body.password || '');
-  if (!email || !regNo || !password) return res.status(400).json({ success: false, message: 'Email, registration number and password are required.' });
+  const ip = req.ip || '0.0.0.0';
 
   const a = attempts.get(email) || { count: 0, until: 0 };
-  if (Date.now() < a.until) {
-    return res.status(429).json({ success: false, message: `Too many attempts. Try again in ${Math.ceil((a.until - Date.now()) / 1000)} seconds.` });
+  const ipA = ipFails.get(ip);
+  if (Date.now() < a.until || (ipA && ipA.count >= IP_LIMIT && Date.now() - ipA.since < IP_WINDOW_MS)) {
+    return res.status(429).json({ success: false, message: 'Too many attempts. Please wait a few minutes and try again.' });
   }
 
-  const db = getDb();
-  const learner = db.learners?.[email];
-  if (!learner) return res.status(404).json({ success: false, code: 'NOT_FOUND', message: 'No account found for this email. Please register first.' });
-
-  const fail = (message) => {
+  const fail = () => {
     a.count += 1;
     if (a.count >= 6) { a.until = Date.now() + 5 * 60 * 1000; a.count = 0; }
-    attempts.set(email, a);
-    return res.status(401).json({ success: false, message });
+    if (email) attempts.set(email, a);
+    const cur = ipFails.get(ip);
+    ipFails.set(ip, cur && Date.now() - cur.since < IP_WINDOW_MS ? { count: cur.count + 1, since: cur.since } : { count: 1, since: Date.now() });
+    return res.status(401).json({ success: false, message: LOGIN_FAILED });
   };
-  if (learner.regNo !== regNo) return fail('Registration number does not match this account.');
-  if (!bcrypt.compareSync(password, learner.passwordHash)) return fail('Incorrect password. Please try again.');
+
+  const db = getDb();
+  const admin = db.admin;
+  const isAdmin = !!email && !!admin?.passwordHash && email === adminEmail(db);
+  const learner = isAdmin ? null : db.learners?.[email];
+
+  // exactly one password comparison on every path
+  let passwordOk = false;
+  try { passwordOk = bcrypt.compareSync(password, isAdmin ? admin.passwordHash : (learner?.passwordHash || DUMMY_HASH)); } catch { passwordOk = false; }
+  if (!email || !password) return fail();
+
+  if (isAdmin) {
+    // the admin needs no registration number
+    if (!passwordOk || KNOWN_DEFAULT_PASSWORDS.includes(password)) return fail();
+    attempts.delete(email);
+    ipFails.delete(ip);
+    admin.lastLogin = new Date().toISOString();
+    saveDb(db);
+    logActivity({ adminId: admin.adminId, action: 'ADMIN_LOGIN', target: 'Portal', details: 'Signed in', ipAddress: ip, device: req.headers['user-agent'] || 'Browser' });
+    const staffToken = jwt.sign({ adminId: admin.adminId, role: admin.role, name: admin.name }, JWT_SECRET, { expiresIn: '8h' });
+    return res.json({ success: true, learner: { name: admin.name, email: admin.email, staff: true }, token: null, staffToken });
+  }
+
+  if (!learner || !passwordOk || !regNo || learner.regNo !== regNo) return fail();
 
   attempts.delete(email);
+  ipFails.delete(ip);
   if (learner.emailVerified === false) {
     return res.status(403).json({ success: false, code: 'EMAIL_NOT_VERIFIED', email, message: 'Please verify your email address first. Enter the 6-digit code we emailed you.' });
   }

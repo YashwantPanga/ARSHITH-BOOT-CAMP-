@@ -5,10 +5,10 @@ import {
   Copy, Eye, CheckCircle2, XCircle, AlertTriangle, Search, Filter, RefreshCw, 
   UserCheck, Shield, ChevronRight, ChevronLeft, Lock, Save, ExternalLink, Download, FileSpreadsheet, FileCheck,
   Check, X, AlertCircle, Clock, Calendar, CheckSquare, Sparkles, User, ArrowUpRight, Menu,
-  ArrowUpDown, TrendingUp, Users, Github, Mail, Phone, Hash
+  ArrowUpDown, TrendingUp, Users, Github, Mail, Phone, Hash, ArrowLeft
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { api } from '../services/api';
+import { api } from '../services/adminApi';
 
 // Readable names for proctoring events recorded during the final exam.
 const VIOLATION_LABEL = {
@@ -22,9 +22,13 @@ const warnTone = (n) => (n >= 3 ? 'bg-rose-50 text-rose-700 border-rose-200' : n
 import AdminQuizManager from '../components/AdminQuizManager';
 import AdminQuizAnalytics from '../components/AdminQuizAnalytics';
 
-export default function AdminDashboard({ admin, onLogout, onCourseDataChanged }) {
+// embedded: shown inside the normal site (under its header) on the profile page. initialSection opens a
+// sidebar section directly (e.g. from the tool bar on a course page).
+export default function AdminDashboard({ admin: adminProp, profile, onLogout, onCourseDataChanged, embedded = false, initialSection }) {
   // Sidebar tab state: 'dashboard' | 'students' | 'progress' | 'projects' | 'certificates' | 'export' | 'courses' | 'content' | 'assessments' | 'settings'
-  const [activeSection, setActiveSection] = useState('dashboard');
+  const admin = profile || adminProp;
+  const [activeSection, setActiveSection] = useState(initialSection || 'dashboard');
+  useEffect(() => { if (initialSection) setActiveSection(initialSection); }, [initialSection]);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Core Database Data States
@@ -49,6 +53,15 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
 
   // Selected Student Profile Modal State
   const [selectedStudentDetail, setSelectedStudentDetail] = useState(null);
+  // While it is open: Esc closes it and the page behind does not scroll
+  useEffect(() => {
+    if (!selectedStudentDetail) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setSelectedStudentDetail(null); };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [selectedStudentDetail]);
 
   // Course Progress View Selection State
   const [selectedProgressCourseId, setSelectedProgressCourseId] = useState('');
@@ -535,7 +548,7 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
   const go = (id) => { setActiveSection(id); setBuilderCourse(null); setMobileSidebarOpen(false); };
 
   return (
-    <div className="admin-ui min-h-screen bg-[#F8F5EE] font-sans flex text-[#302B25]">
+    <div className={`admin-ui ${embedded ? "min-h-[calc(100vh-64px)] lg:min-h-[calc(100vh-78px)]" : "min-h-screen"} bg-[#F8F5EE] font-sans flex text-[#302B25]`}>
 
       {/* Toast Notification */}
       {toast && (
@@ -553,7 +566,7 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
       {mobileSidebarOpen && <div className="fixed inset-0 z-40 bg-[#0C2D26]/40 backdrop-blur-[1px] lg:hidden" onClick={() => setMobileSidebarOpen(false)} />}
 
       {/* Admin Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-[270px] shrink-0 bg-white border-r border-[#E6E1D6] flex flex-col transform transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${
+      <aside className={`fixed inset-y-0 left-0 z-50 w-[270px] shrink-0 bg-white border-r border-[#E6E1D6] flex flex-col transform transition-transform duration-200 ${embedded ? "lg:sticky lg:top-[78px] lg:h-[calc(100vh-78px)]" : "lg:sticky lg:top-0 lg:h-screen"} lg:translate-x-0 ${
         mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="h-[70px] px-6 flex items-center justify-between shrink-0">
@@ -615,7 +628,7 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
       {/* Main column */}
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 h-[70px] bg-white/95 backdrop-blur border-b border-[#E6E1D6] px-4 sm:px-6 lg:px-8 flex items-center gap-3">
+        <header className={`sticky ${embedded ? "top-16 lg:top-[78px]" : "top-0"} z-30 h-[70px] bg-white/95 backdrop-blur border-b border-[#E6E1D6] px-4 sm:px-6 lg:px-8 flex items-center gap-3`}>
           <button onClick={() => setMobileSidebarOpen(true)} className="lg:hidden p-2 -ml-1 rounded-full text-[#302B25] hover:bg-[#E8EFEA] hover:text-[#013A2B]" aria-label="Open menu">
             <Menu className="w-5 h-5" />
           </button>
@@ -1647,16 +1660,25 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
       {/* STUDENT DETAILS MODAL (SPECIFICATION REQUIREMENT 4) */}
       {/* ============================================================== */}
       {selectedStudentDetail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/75 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 dark-bezel relative max-h-[92vh] overflow-y-auto space-y-6 shadow-2xl">
-            
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedStudentDetail(null)}
-              className="absolute top-5 right-5 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-slate-950/75 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedStudentDetail(null)}>
+          <div className="bg-white rounded-3xl max-w-3xl w-full px-6 pb-6 sm:px-8 sm:pb-8 dark-bezel relative max-h-[92vh] overflow-y-auto overscroll-contain space-y-6 shadow-2xl animate-scale-in" role="dialog" aria-modal="true" aria-label="Student details" onClick={(e) => e.stopPropagation()}>
+
+            {/* Back / close bar - stays at the top while the details scroll */}
+            <div className="sticky top-0 z-10 -mx-6 sm:-mx-8 px-4 sm:px-6 py-3 bg-white/95 border-b border-slate-100 flex items-center justify-between">
+              <button
+                onClick={() => setSelectedStudentDetail(null)}
+                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-sm font-semibold text-[#013A2B] hover:bg-[#E8EFEA] transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" /> Back to students
+              </button>
+              <button
+                onClick={() => setSelectedStudentDetail(null)}
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
             {/* Student Header */}
             <div className="flex items-start gap-4 pb-4 border-b border-slate-100">
@@ -1942,7 +1964,7 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
       {/* PROJECT REVIEW MODAL */}
       {/* ============================================================== */}
       {reviewModalOpen && selectedSubmission && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 dark-bezel relative space-y-4 shadow-2xl">
             <button onClick={() => setReviewModalOpen(false)} className="absolute top-4 right-4 p-1 text-slate-400 hover:text-slate-700">
               <X className="w-5 h-5" />
@@ -2020,7 +2042,7 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
       {/* GENERATE CERTIFICATE MODAL */}
       {/* ============================================================== */}
       {certModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 dark-bezel relative space-y-4 shadow-2xl">
             <button onClick={() => setCertModalOpen(false)} className="absolute top-4 right-4 p-1 text-slate-400 hover:text-slate-700">
               <X className="w-5 h-5" />
@@ -2093,7 +2115,7 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
       {/* COURSE CREATION / EDIT MODAL */}
       {/* ============================================================== */}
       {courseModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 dark-bezel relative max-h-[90vh] overflow-y-auto shadow-2xl">
             <button
               onClick={() => setCourseModalOpen(false)}
@@ -2180,7 +2202,7 @@ export default function AdminDashboard({ admin, onLogout, onCourseDataChanged })
 
       {/* CONFIRMATION DELETE MODAL */}
       {deleteConfirmModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 dark-bezel text-center space-y-4 shadow-2xl">
             <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto" />
             <h3 className="text-base font-black text-slate-900">Are you sure?</h3>

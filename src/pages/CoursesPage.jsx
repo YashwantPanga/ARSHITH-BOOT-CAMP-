@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Search, SlidersHorizontal, Lock, BookOpen } from 'lucide-react';
 import { CourseTile } from '../components/CourseCard';
 import { LaptopScene, ExamScene } from '../components/StudyScenes';
+import { Reveal } from '../components/ui';
 
 import { CATEGORIES } from '../data/meta';
 
@@ -92,9 +93,9 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
         ) : (
           <div className="mt-8 grid sm:grid-cols-2 xl:grid-cols-4 gap-6">
             {list.map((c, i) => (
-              <div key={c.id} className="animate-fade-up" style={{ animationDelay: `${i * 60}ms` }}>
+              <Reveal key={c.id} delay={(i % 4) * 80} className="h-full">
                 <CourseTile course={c} enrolledCourseId={enrolledCourseId} onSelect={onSelectCourse} onEnroll={onEnrollCourse} />
-              </div>
+              </Reveal>
             ))}
           </div>
         )}

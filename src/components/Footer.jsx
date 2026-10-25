@@ -94,15 +94,15 @@ export default function Footer({ navigate }) {
             <h4 className="font-display text-[20px] font-bold text-evergreen mb-5">Contact</h4>
             <ul className="space-y-4 text-[15px] text-charcoal/75">
               <li>
-                <a href="mailto:careers@arshithgroup.com" className="flex items-start gap-2.5 hover:text-sage transition-colors group">
+                <a href="mailto:bootcamp@arshithgroup.com" className="flex items-start gap-2.5 hover:text-sage transition-colors group">
                   <Mail className="w-4 h-4 mt-0.5 text-sage shrink-0 group-hover:text-forest transition-colors" />
-                  <span className="break-all">careers@arshithgroup.com</span>
+                  <span className="break-all">bootcamp@arshithgroup.com</span>
                 </a>
               </li>
               <li>
-                <a href="tel:+918618471444" className="flex items-center gap-2.5 hover:text-sage transition-colors group">
+                <a href="tel:+918217729744" className="flex items-center gap-2.5 hover:text-sage transition-colors group">
                   <Phone className="w-4 h-4 text-sage shrink-0 group-hover:text-forest transition-colors" />
-                  <span>+91 86184 71444</span>
+                  <span>+91 82177 29744</span>
                 </a>
               </li>
               <li>

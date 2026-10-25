@@ -81,8 +81,9 @@ describe('admin-only content editing', () => {
   it('rejects a user without admin permission', async () => {
     const r1 = await request(app).put('/api/admin/courses/python-programming').send({ title: 'Hacked' });
     const r2 = await request(app).put('/api/admin/courses/python-programming').set('X-Learner-Token', token).send({ title: 'Hacked' });
-    expect(r1.status).toBe(401);
-    expect(r2.status).toBe(401);
+    // the admin API is hidden: non-admins get the same 404 as for a route that does not exist
+    expect(r1.status).toBe(404);
+    expect(r2.status).toBe(404);
   });
 });
 

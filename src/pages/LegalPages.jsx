@@ -2,7 +2,7 @@ import React from 'react';
 import { PageTop } from '../components/ui';
 
 const UPDATED = '24 October 2026';
-const CONTACT = 'careers@arshithgroup.com';
+const CONTACT = 'bootcamp@arshithgroup.com';
 
 /** One legal document: banner, a sticky contents list and numbered sections in a card. */
 function LegalDoc({ title, intro, sections, onHome }) {

@@ -23,7 +23,7 @@ beforeAll(async () => {
   process.env.ADMIN_PASSWORD = 'Proctor-test-9';
   app = (await import('../server/app.js')).default;
   (await import('../server/lib/adminSetup.js')).applyAdminSettings();
-  adminToken = (await request(app).post('/api/admin/login').send({ adminId: 'proctor-admin@example.test', password: 'Proctor-test-9' })).body.token;
+  adminToken = (await request(app).post('/api/learners/login').send({ email: 'proctor-admin@example.test', password: 'Proctor-test-9', regNo: '' })).body.staffToken;
 
   const reg = await request(app).post('/api/learners/register').send({ name: 'Proctor Tester', regNo: 'PROC0001', phone: '9876543210', email, password: 'secret123' });
   token = (await request(app).post('/api/learners/verify-email').send({ email, code: reg.body.devCode })).body.token;

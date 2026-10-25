@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import PopularCourses from './components/PopularCourses';
@@ -8,6 +8,10 @@ import HomeButton from './components/HomeButton';
 import Footer from './components/Footer';
 import MobileBottomNav from './components/MobileBottomNav';
 import DesktopNotice from './components/DesktopNotice';
+import EnrollCelebration from './components/EnrollCelebration';
+
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminCourseBar = lazy(() => import('./components/staff/AdminCourseBar'));
 import AuthPage from './components/LoginModal';
 import { ToastProvider, useToast, ConfirmDialog, PageLoader } from './components/ui';
 
@@ -17,8 +21,6 @@ import LearningPage from './pages/LearningPage';
 import CertificatePage from './pages/CertificatePage';
 import CertificateVerifyPage from './pages/CertificateVerifyPage';
 import StudentDashboard from './pages/StudentDashboard';
-import AdminLoginPage from './pages/AdminLoginPage';
-import AdminDashboard from './pages/AdminDashboard';
 import CategoriesPage from './pages/CategoriesPage';
 import { AboutPage, ContactPage } from './pages/AboutContactPages';
 import { TermsPage, PrivacyPage } from './pages/LegalPages';
@@ -142,25 +144,23 @@ function AppShell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // A saved admin login is checked with the server first; an expired or invalid one is cleared and
-  // the admin is sent to the login page (also when any admin call is rejected later).
+  // Staff sessions sign in through the normal login form. A saved one is confirmed with the server
+  // before any staff tools load; an expired or invalid one is cleared.
   const [adminChecked, setAdminChecked] = useState(() => !getAdminToken());
-  useEffect(() => {
-    const token = getAdminToken();
-    if (!token) return;
-    api.getAdminProfile()
-      .then(res => { if (res.success) setAdminUser(res.admin); else { setAdminToken(null); setAdminUser(null); } })
-      .catch(() => { setAdminToken(null); setAdminUser(null); })
+  const confirmStaff = () => {
+    if (!getAdminToken()) { setAdminChecked(true); return; }
+    import('./services/adminApi')
+      .then(m => m.confirmSession())
+      .then(profile => { setAdminUser(profile); if (!profile) setAdminToken(null); })
+      .catch(() => setAdminUser(null))
       .finally(() => setAdminChecked(true));
-  }, []);
+  };
+  useEffect(confirmStaff, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    const expired = () => {
-      setAdminUser(null);
-      if (parseLocation().name === 'admin-dashboard') navigate(paths.adminLogin(), { replace: true });
-    };
-    window.addEventListener('arb:admin-session-expired', expired);
-    return () => window.removeEventListener('arb:admin-session-expired', expired);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const expired = () => setAdminUser(null);
+    window.addEventListener('arb:staff-session-expired', expired);
+    return () => window.removeEventListener('arb:staff-session-expired', expired);
+  }, []);
 
   /* ---------------- Per-learner progress (server is source of truth) ---------------- */
   const [progressByCourse, setProgressByCourse] = useState({});
@@ -199,6 +199,7 @@ function AppShell() {
   /* ---------------- Enrollment (one course per login) ---------------- */
   const [enrollTarget, setEnrollTarget] = useState(null);
   const [enrolling, setEnrolling] = useState(false);
+  const [celebrate, setCelebrate] = useState(null); // course just enrolled in
 
   const requestEnroll = useCallback((courseId) => {
     const course = courses.find(c => c.id === courseId);
@@ -225,10 +226,9 @@ function AppShell() {
     try {
       await api.enroll(userId, enrollTarget.id);
       saveUser({ ...studentUser, enrolledCourseIds: [enrollTarget.id] });
-      toast(`Enrolled in ${enrollTarget.title}. Happy learning!`, 'success');
-      const id = enrollTarget.id;
+      // the celebration takes over from here; Start learning opens the first module
+      setCelebrate(findCourse(enrollTarget.id) || enrollTarget);
       setEnrollTarget(null);
-      navigate(paths.learn(id));
     } catch (err) {
       if (err.status === 409 && err.data?.courseId) {
         saveUser({ ...studentUser, enrolledCourseIds: [err.data.courseId] });
@@ -242,6 +242,16 @@ function AppShell() {
 
   /* ---------------- Auth ---------------- */
   const handleAuthSuccess = (user, { isNew = false } = {}) => {
+    if (user.staff) {
+      saveUser(null);
+      setAdminChecked(false);
+      confirmStaff();
+      toast(`Welcome${user.name ? `, ${user.name.split(' ')[0]}` : ''}!`, 'success', 3800);
+      navigate(paths.dashboard(), { replace: true }); // staff go straight to their tools
+      return;
+    }
+    setAdminToken(null);
+    setAdminUser(null);
     saveUser(user);
     toast(isNew
       ? `Account created! Your learner ID is ${user.learnerId} — it will appear on your certificate.`
@@ -257,15 +267,12 @@ function AppShell() {
     navigate(paths.home());
   };
 
-  const handleAdminLoginSuccess = (adminData) => {
-    setAdminUser(adminData);
-    navigate(paths.adminDashboard(), { replace: true });
-  };
-
-  const handleAdminLogout = async () => {
-    try { await api.adminLogout(); } catch { /* ignore */ }
+  const handleStaffLogout = async () => {
+    try { await (await import('./services/adminApi')).endSession(); } catch { /* ignore */ }
+    setAdminToken(null);
     setAdminUser(null);
-    navigate(paths.adminLogin(), { replace: true });
+    toast('You have been signed out.', 'info');
+    navigate(paths.home());
   };
 
   /* ---------------- Route guards ---------------- */
@@ -274,17 +281,9 @@ function AppShell() {
   useEffect(() => {
     // Ignore stale runs (e.g. StrictMode re-run after we already redirected).
     if (parseLocation().name !== route.name) return;
-    if (needsLogin && !studentUser) {
+    if (needsLogin && !studentUser && !(route.name === 'dashboard' && (adminUser || !adminChecked))) {
       const here = window.location.pathname + window.location.search;
       navigate(paths.login(here), { replace: true });
-      return;
-    }
-    if (route.name === 'admin-dashboard' && !adminUser && (!getAdminToken() || adminChecked)) {
-      navigate(paths.adminLogin(), { replace: true });
-      return;
-    }
-    if (route.name === 'admin-login' && adminUser) {
-      navigate(paths.adminDashboard(), { replace: true });
       return;
     }
     if (route.name === 'learning' && studentUser && coursesLoaded) {
@@ -297,7 +296,7 @@ function AppShell() {
         navigate(paths.course(id), { replace: true });
       }
     }
-    if ((route.name === 'login' || route.name === 'register') && studentUser) {
+    if ((route.name === 'login' || route.name === 'register') && (studentUser || adminUser)) {
       navigate(paths.home(), { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -315,7 +314,7 @@ function AppShell() {
   }
   const displayRoute = isAuthModal ? (lastPageRef.current?.route || { name: 'home', params: {}, query: {} }) : route;
   const closeAuthModal = () => navigate(lastPageRef.current?.path || '/');
-  const isChromeless = ['learning', 'admin-login', 'admin-dashboard'].includes(displayRoute.name);
+  const isChromeless = displayRoute.name === 'learning';
 
   const loading = <PageLoader />;
 
@@ -395,6 +394,14 @@ function AppShell() {
       break;
     }
     case 'dashboard':
+      if (!studentUser && adminUser) {
+        page = (
+          <Suspense fallback={loading}>
+            <AdminDashboard embedded initialSection={route.query.section} profile={adminUser} onLogout={handleStaffLogout} onCourseDataChanged={fetchCourses} />
+          </Suspense>
+        );
+        break;
+      }
       page = !studentUser ? loading : (
         <StudentDashboard
           studentUser={studentUser}
@@ -496,17 +503,6 @@ function AppShell() {
         />
       );
       break;
-    case 'admin-login':
-      page = <AdminLoginPage onLoginSuccess={handleAdminLoginSuccess} onGoHome={() => navigate('/')} />;
-      break;
-    case 'admin-dashboard':
-      // The dashboard only shows for an admin the server has confirmed; otherwise the login form.
-      page = adminUser
-        ? <AdminDashboard admin={adminUser} onLogout={handleAdminLogout} onCourseDataChanged={fetchCourses} />
-        : adminChecked
-          ? <AdminLoginPage onLoginSuccess={handleAdminLoginSuccess} onGoHome={() => navigate('/')} />
-          : <PageLoader />;
-      break;
     default:
       page = notFound();
   }
@@ -521,14 +517,20 @@ function AppShell() {
         <Header
           route={route}
           navigate={navigate}
-          studentUser={studentUser}
-          onLogout={handleLogout}
+          studentUser={studentUser || (adminUser && { name: adminUser.name, email: adminUser.email })}
+          onLogout={adminUser && !studentUser ? handleStaffLogout : handleLogout}
           courses={courses}
         />
       )}
 
       <main className="flex-1" key={displayRoute.name === 'learning' ? `learn-${displayRoute.params.courseId}` : displayRoute.name}>
-        <div className={isChromeless ? '' : 'animate-fade-in'}>{page}</div>
+        {adminUser && displayRoute.name === 'course-details' && (
+          <Suspense fallback={null}>
+            <AdminCourseBar courseId={displayRoute.params.courseId} onOpen={(section) => navigate(`${paths.dashboard()}?section=${section}`)} />
+          </Suspense>
+        )}
+        {/* no fade wrapper on the staff page: its animation would keep the page's pop-ups under the header */}
+        <div className={isChromeless || (adminUser && displayRoute.name === 'dashboard') ? '' : 'animate-fade-in'}>{page}</div>
       </main>
 
       {!isChromeless && <Footer navigate={navigate} />}
@@ -537,9 +539,9 @@ function AppShell() {
       )}
 
       {authModal && <AuthModalLayer onClose={closeAuthModal}>{authModal}</AuthModalLayer>}
-      {!route.name.startsWith('admin') && <DesktopNotice />}
+      {!adminUser && <DesktopNotice />}
 
-      {!isAuthModal && !['home', 'admin-dashboard'].includes(route.name) && (
+      {!isAuthModal && route.name !== 'home' && !(adminUser && route.name === 'dashboard') && (
         <HomeButton onClick={() => navigate(paths.home())} aboveBottomNav={!isChromeless} />
       )}
 
@@ -556,6 +558,14 @@ function AppShell() {
         onConfirm={confirmEnroll}
         onCancel={() => !enrolling && setEnrollTarget(null)}
       />
+      {celebrate && (
+        <EnrollCelebration
+          course={celebrate}
+          learnerName={studentUser?.name}
+          onStart={() => { const id = celebrate.id; setCelebrate(null); navigate(paths.learn(id)); }}
+          onClose={() => setCelebrate(null)}
+        />
+      )}
     </div>
   );
 }

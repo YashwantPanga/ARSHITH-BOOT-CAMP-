@@ -4,6 +4,8 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // on-demand chunks are named by content hash only, so file names do not describe what they hold
+  build: { rollupOptions: { output: { chunkFileNames: 'assets/c-[hash].js' } } },
   test: {
     include: ['tests/**/*.test.{js,jsx}'],
     environment: 'node',

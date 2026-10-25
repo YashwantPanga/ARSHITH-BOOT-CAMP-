@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AlertCircle, Eye, EyeOff, X } from 'lucide-react';
 import { readAccount } from '../utils/session';
-import { api } from '../services/api';
+import { api, setAdminToken } from '../services/api';
 
 /**
  * Full-page Login / Register screen (routes: /login and /register): one centred card with a large
@@ -33,10 +33,10 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
     const phone = form.phone.trim();
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setError('Please enter a valid email address.');
-    if (!regNo) return setError('Registration Number is required.');
     if (!form.password) return setError('Password is required.');
 
     if (isSignup) {
+      if (!regNo) return setError('Registration Number is required.');
       if (name.length < 2) return setError('Please enter your full name.');
       if (phone.replace(/\D/g, '').length < 10) return setError('Please enter a valid phone number (at least 10 digits).');
       if (form.password.length < 6) return setError('Password must be at least 6 characters.');
@@ -53,7 +53,12 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
       }
       try {
         const res = await api.learnerLogin({ email, regNo, password: form.password });
-        onSuccess({ ...res.learner, token: res.token });
+        if (res.staffToken) {
+          setAdminToken(res.staffToken);
+          onSuccess({ ...res.learner, staff: true });
+        } else {
+          onSuccess({ ...res.learner, token: res.token });
+        }
       } catch (err) {
         // One-time migration for accounts created by the old browser-only login.
         const saved = readAccount(email);

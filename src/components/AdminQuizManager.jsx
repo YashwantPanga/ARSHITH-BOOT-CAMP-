@@ -3,7 +3,7 @@ import {
   Plus, Edit, Trash2, CheckCircle, XCircle, RefreshCw, 
   Search, Filter, BookOpen, AlertCircle, Save, X, Eye, EyeOff
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api } from '../services/adminApi';
 
 export default function AdminQuizManager() {
   const [questions, setQuestions] = useState([]);
@@ -308,7 +308,7 @@ export default function AdminQuizManager() {
 
       {/* CREATE / EDIT QUESTION MODAL */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
           <div className="bg-slate-900 border-2 border-brand-800 rounded-3xl p-6 sm:p-8 max-w-2xl w-full space-y-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-lg font-black text-white">

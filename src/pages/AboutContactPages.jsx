@@ -61,8 +61,8 @@ export function ContactPage({ onHome }) {
         <p className="mt-3 text-charcoal/70">Questions about a course, your assessment or a certificate? We usually reply within one working day.</p>
         <div className="mt-8 bg-forest text-white rounded-[20px] p-7 space-y-5">
           <p className="flex gap-3"><MapPin className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Headquarters</span>Bengaluru, Karnataka, India</span></p>
-          <p className="flex gap-3"><Phone className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Phone</span>+91 86184 71444</span></p>
-          <p className="flex gap-3"><Mail className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Email</span>careers@arshithgroup.com</span></p>
+          <p className="flex gap-3"><Phone className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Phone</span>+91 82177 29744</span></p>
+          <p className="flex gap-3"><Mail className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Email</span>bootcamp@arshithgroup.com</span></p>
         </div>
       </div>
       <div className="lg:col-span-7">

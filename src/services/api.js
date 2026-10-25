@@ -4,27 +4,27 @@ import { readStudent } from '../utils/session';
 
 const API_BASE = '/api';
 
-let adminToken = localStorage.getItem('arb_admin_token') || null;
+let adminToken = localStorage.getItem('arb_staff') || null;
 
 export function setAdminToken(token, remember = true) {
   adminToken = token;
   if (token) {
     if (remember) {
-      localStorage.setItem('arb_admin_token', token);
+      localStorage.setItem('arb_staff', token);
     } else {
-      sessionStorage.setItem('arb_admin_token', token);
+      sessionStorage.setItem('arb_staff', token);
     }
   } else {
-    localStorage.removeItem('arb_admin_token');
-    sessionStorage.removeItem('arb_admin_token');
+    localStorage.removeItem('arb_staff');
+    sessionStorage.removeItem('arb_staff');
   }
 }
 
 export function getAdminToken() {
-  return adminToken || localStorage.getItem('arb_admin_token') || sessionStorage.getItem('arb_admin_token');
+  return adminToken || localStorage.getItem('arb_staff') || sessionStorage.getItem('arb_staff');
 }
 
-async function request(url, options = {}) {
+export async function request(url, options = {}) {
   const token = getAdminToken();
   const headers = {
     'Content-Type': 'application/json',
@@ -57,10 +57,6 @@ async function request(url, options = {}) {
       if (res.status === 401 && data.code === 'LEARNER_AUTH_REQUIRED') {
         window.dispatchEvent(new CustomEvent('arb:learner-session-expired'));
       }
-      if ((res.status === 401 || res.status === 403) && token && url.startsWith('/admin') && url !== '/admin/login') {
-        setAdminToken(null);
-        window.dispatchEvent(new CustomEvent('arb:admin-session-expired'));
-      }
       throw error;
     }
     return data;
@@ -72,98 +68,10 @@ async function request(url, options = {}) {
 }
 
 export const api = {
-  // Admin Auth
-  adminLogin: (adminId, password, remember = false) => 
-    request('/admin/login', {
-      method: 'POST',
-      body: JSON.stringify({ adminId, password, remember })
-    }).then(res => {
-      if (res.token) setAdminToken(res.token, remember);
-      return res;
-    }),
-
-  adminLogout: () => 
-    request('/admin/logout', { method: 'POST' })
-      .finally(() => setAdminToken(null)),
-
-  getAdminProfile: () => request('/admin/me'),
-
-  changeAdminPassword: (currentPassword, newPassword, confirmPassword) =>
-    request('/admin/change-password', {
-      method: 'POST',
-      body: JSON.stringify({ currentPassword, newPassword, confirmPassword })
-    }),
-
-  updateAdminProfile: (name, email) =>
-    request('/admin/profile', {
-      method: 'PUT',
-      body: JSON.stringify({ name, email })
-    }),
-
   // Public Courses
   getPublicCourses: () => request('/courses'),
   getPublicCourse: (id) => request(`/courses/${id}`),
-
-  // Admin Courses
-  getAdminCourses: () => request('/admin/courses'),
-  createCourse: (courseData) => request('/admin/courses', { method: 'POST', body: JSON.stringify(courseData) }),
-  updateCourse: (id, courseData) => request(`/admin/courses/${id}`, { method: 'PUT', body: JSON.stringify(courseData) }),
-  duplicateCourse: (id) => request(`/admin/courses/${id}/duplicate`, { method: 'POST' }),
-  deleteCourse: (id, archiveOnly = false) => request(`/admin/courses/${id}?archiveOnly=${archiveOnly}`, { method: 'DELETE' }),
-
-  // Modules & Content
-  addModule: (courseId, moduleData) => request(`/admin/courses/${courseId}/modules`, { method: 'POST', body: JSON.stringify(moduleData) }),
-  updateModule: (courseId, moduleId, moduleData) => request(`/admin/courses/${courseId}/modules/${moduleId}`, { method: 'PUT', body: JSON.stringify(moduleData) }),
-  deleteModule: (courseId, moduleId) => request(`/admin/courses/${courseId}/modules/${moduleId}`, { method: 'DELETE' }),
-  updateQuiz: (courseId, moduleId, quizData) => request(`/admin/courses/${courseId}/modules/${moduleId}/quiz`, { method: 'PUT', body: JSON.stringify(quizData) }),
-  updateFinalTest: (courseId, testData) => request(`/admin/courses/${courseId}/final-test`, { method: 'PUT', body: JSON.stringify(testData) }),
-  updateFinalProject: (courseId, projectData) => request(`/admin/courses/${courseId}/final-project`, { method: 'PUT', body: JSON.stringify(projectData) }),
-
-  // Students & Enrollments
-  getStudents: () => request('/admin/students'),
-  getStudentDetails: (id) => request(`/admin/students/${id}`),
-  updateStudentStatus: (id, status) => request(`/admin/students/${id}/status`, { method: 'POST', body: JSON.stringify({ status }) }),
-  resetStudentPassword: (id) => request(`/admin/students/${id}/reset-password`, { method: 'POST' }),
-  enrollStudent: (studentId, courseId) => request('/admin/enrollments', { method: 'POST', body: JSON.stringify({ studentId, courseId }) }),
-  removeEnrollment: (studentId, courseId) => request(`/admin/enrollments/${studentId}/${courseId}`, { method: 'DELETE' }),
-  exportStudentsExcel: (params = {}) => {
-    const qs = new URLSearchParams(params).toString();
-    const token = getAdminToken();
-    return fetch(`/api/admin/export/students${qs ? '?' + qs : ''}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    }).then(res => {
-      if (!res.ok) throw new Error('Excel export failed');
-      return res.blob();
-    });
-  },
-
-  // Project Submissions
-  getProjectSubmissions: () => request('/admin/projects/submissions'),
-  reviewProjectSubmission: (id, status, score, feedback) => 
-    request(`/admin/projects/submissions/${id}/review`, {
-      method: 'POST',
-      body: JSON.stringify({ status, score, feedback })
-    }),
-
-  // Certificates
-  getCertificates: () => request('/admin/certificates'),
-  checkCertificateEligibility: (studentId, courseId) => 
-    request('/admin/certificates/check-eligibility', {
-      method: 'POST',
-      body: JSON.stringify({ studentId, courseId })
-    }),
-  generateCertificate: (studentId, courseId, grade, forceOverride = false) =>
-    request('/admin/certificates/generate', {
-      method: 'POST',
-      body: JSON.stringify({ studentId, courseId, grade, forceOverride })
-    }),
-  revokeCertificate: (id) => request(`/admin/certificates/${id}/revoke`, { method: 'POST' }),
-  restoreCertificate: (id) => request(`/admin/certificates/${id}/restore`, { method: 'POST' }),
   verifyPublicCertificate: (id) => request(`/certificates/verify/${id}`),
-
-  // Analytics & Audit Logs
-  getAnalytics: () => request('/admin/analytics'),
-  getActivityLogs: () => request('/admin/activity-logs'),
 
   // Module Quizzes & Final Test System
   getModuleQuiz: (moduleId) => request(`/quizzes/module/${moduleId}`),
@@ -200,12 +108,6 @@ export const api = {
   getMyProjects: (userId, courseId) =>
     request(`/projects/mine?userId=${encodeURIComponent(userId || '')}&courseId=${encodeURIComponent(courseId)}`),
   getPracticeProgress: (userId, courseId) =>
-    request(`/practice/progress?userId=${encodeURIComponent(userId || '')}&courseId=${encodeURIComponent(courseId)}`),
+    request(`/practice/progress?userId=${encodeURIComponent(userId || '')}&courseId=${encodeURIComponent(courseId)}`)
 
-  // Admin Quiz System Management & Analytics
-  getAdminQuestions: () => request('/admin/questions'),
-  createAdminQuestion: (questionData) => request('/admin/questions', { method: 'POST', body: JSON.stringify(questionData) }),
-  updateAdminQuestion: (id, questionData) => request(`/admin/questions/${id}`, { method: 'PUT', body: JSON.stringify(questionData) }),
-  deleteAdminQuestion: (id) => request(`/admin/questions/${id}`, { method: 'DELETE' }),
-  getQuizAnalytics: () => request('/admin/quiz-analytics')
 };

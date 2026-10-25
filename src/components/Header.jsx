@@ -58,7 +58,7 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
   const initials = (studentUser?.name || studentUser?.email || '?').split(/\s+/).map(s => s[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <header className={`sticky top-0 z-50 bg-white/95 backdrop-blur-md transition-shadow duration-300 ${scrolled ? 'shadow-[0_8px_28px_-14px_rgba(1,58,43,.35)]' : 'border-b border-brand-900/5'}`}>
+    <header className={`sticky top-0 z-50 bg-white transition-shadow duration-300 ${scrolled ? 'shadow-[0_8px_28px_-14px_rgba(1,58,43,.35)]' : 'border-b border-brand-900/5'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-16 lg:h-[78px] gap-2 sm:gap-4 lg:gap-6">
           {/* phones: menu button on the left of the logo (Coursera-style mobile header) */}

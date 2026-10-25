@@ -14,6 +14,7 @@ import quizRoutes from './routes/quizRoutes.js';
 import learnerRoutes from './routes/learnerRoutes.js';
 import practiceRoutes from './routes/practiceRoutes.js';
 import { learnerGuard } from './middleware/learnerAuth.js';
+import { adminGate } from './middleware/auth.js';
 
 const app = express();
 
@@ -41,6 +42,9 @@ app.get('/api/health', (req, res) => {
 
 // Public address used in certificate QR codes and emails (see server/lib/publicUrl.js).
 app.get('/api/site-info', (req, res) => res.json({ success: true, ...publicBase(req) }));
+
+// Admin endpoints exist only for a signed-in admin; everyone else gets a plain 404
+app.use('/api/admin', adminGate);
 
 // Learner-owned endpoints require a signed learner session
 app.use('/api', learnerGuard);

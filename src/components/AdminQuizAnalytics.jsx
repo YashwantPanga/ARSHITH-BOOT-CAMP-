@@ -3,7 +3,7 @@ import {
   BarChart2, Award, CheckCircle, XCircle, Users, 
   TrendingUp, RefreshCw, AlertCircle, Clock, BookOpen
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api } from '../services/adminApi';
 
 export default function AdminQuizAnalytics() {
   const [analytics, setAnalytics] = useState(null);
