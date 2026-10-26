@@ -1,4 +1,5 @@
 import express from 'express';
+import { enrolledCourseIds } from '../lib/enrolledCourses.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
@@ -31,7 +32,7 @@ function makeLearnerId(db) {
 }
 
 function publicLearner(db, l) {
-  const enrolled = db.learnerEnrollments?.[l.email]?.courseId;
+  const enrolled = enrolledCourseIds(db, l.email);
   return {
     learnerId: l.learnerId,
     name: l.name,
@@ -39,7 +40,7 @@ function publicLearner(db, l) {
     regNo: l.regNo,
     phone: l.phone,
     createdAt: l.createdAt,
-    enrolledCourseIds: enrolled ? [enrolled] : [],
+    enrolledCourseIds: enrolled,
     // the name is printed on certificates, so it cannot be edited once one exists
     nameLocked: (db.certificates || []).some(c => normEmail(c.userId) === l.email && c.status !== 'revoked')
   };
@@ -148,7 +149,7 @@ router.post('/learners/register', async (req, res) => {
       avatar: '',
       joinDate: learner.createdAt.slice(0, 10),
       lastActivity: learner.createdAt,
-      enrolledCourses: db.learnerEnrollments?.[email]?.courseId ? [db.learnerEnrollments[email].courseId] : [],
+      enrolledCourses: enrolledCourseIds(db, email),
       progressMap: {}
     });
   }

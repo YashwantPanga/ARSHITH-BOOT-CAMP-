@@ -65,8 +65,8 @@ export default function PopularCourses({ courses, enrolledCourseId, offer, onSel
 
 /** One course as a compact row: image on the left, title and key facts on the right. */
 function CourseRow({ course, enrolledCourseId, offer, onSelect }) {
-  const isMine = enrolledCourseId === course.id;
-  const isLocked = !!enrolledCourseId && !isMine && !offer?.canEnrollNew;
+  const isMine = offer?.enrolledIds ? offer.enrolledIds.includes(course.id) : enrolledCourseId === course.id;
+  const isLocked = false;
   return (
     <button onClick={() => onSelect(course.id)} className={`edu-card w-full flex gap-3 p-2.5 !rounded-2xl text-left active:scale-[.99] transition ${isLocked ? 'opacity-80' : ''}`}>
       <span className="relative shrink-0 w-[112px] aspect-[16/10] rounded-lg overflow-hidden bg-forest">
@@ -79,7 +79,7 @@ function CourseRow({ course, enrolledCourseId, offer, onSelect }) {
           <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 fill-[#E0B54A] text-[#E0B54A]" />{course.rating}</span>
           <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{hoursOf(course)}</span>
           {isMine && <span className="ml-auto px-2 py-0.5 rounded-full bg-brand-50 text-brand-900 text-[11px] font-semibold">Enrolled</span>}
-          {isLocked && <span className="ml-auto flex items-center gap-1 text-[11px]"><Lock className="w-3 h-3" />Locked</span>}
+          {!isMine && offer?.price > 0 && <span className="ml-auto px-2 py-0.5 rounded-full bg-cream text-forest text-[11px] font-semibold">₹{offer.price}</span>}
         </span>
       </span>
     </button>

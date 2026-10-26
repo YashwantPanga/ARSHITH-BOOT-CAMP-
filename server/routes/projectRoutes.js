@@ -1,4 +1,5 @@
 import express from 'express';
+import { isEnrolled } from '../lib/enrolledCourses.js';
 import { getDb, saveDb, logActivity } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
 import { GITHUB_REPO_RE, projectRequirement } from '../lib/projects.js';
@@ -83,8 +84,7 @@ router.post('/projects/submit', (req, res) => {
   const course = (db.courses || []).find(c => c.id === courseId);
   const project = course?.projects?.find(p => p.id === projectId);
   if (!course || !project) return res.status(404).json({ success: false, message: 'Project not found.' });
-  const enrolled = db.learnerEnrollments?.[userId]?.courseId;
-  if (enrolled !== course.id) return res.status(403).json({ success: false, message: 'Enroll in this course before submitting its projects.' });
+  if (!isEnrolled(db, userId, course.id)) return res.status(403).json({ success: false, message: 'Enroll in this course before submitting its projects.' });
 
   if (!db.projectSubmissions) db.projectSubmissions = [];
   const learner = db.learners?.[userId];

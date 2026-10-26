@@ -7,10 +7,10 @@ import { cleanText, displayTitle } from '../utils/textUtils';
 
 export default function CourseDetailsPage({ course, enrolledCourseId, offer, isLoggedIn, onBack, onEnroll, onContinue, onHome }) {
   const [open, setOpen] = useState(() => new Set([course.modules?.[0]?.id]));
-  const isMine = enrolledCourseId === course.id;
+  const isMine = offer?.enrolledIds ? offer.enrolledIds.includes(course.id) : enrolledCourseId === course.id;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const slides = useMemo(() => slidesForCourse(course), [course.id, course.thumbnail]);
-  const isLocked = !!enrolledCourseId && !isMine && !offer?.canEnrollNew;
+  const isLocked = false;
   const price = offer?.price > 0 ? offer.price : 0;
   const done = course.modules?.filter(m => m.completed).length || 0;
   const total = course.modules?.length || 0;
@@ -30,7 +30,7 @@ export default function CourseDetailsPage({ course, enrolledCourseId, offer, isL
       <p className="text-xs text-charcoal/55 text-center">Finish your current course first (pass its final or use both attempts).</p>
     </div>
   ) : (
-    <button onClick={onEnroll} className="btn font-display !rounded-md w-full py-3.5 text-[15.5px] bg-forest text-ivory hover:bg-sage shadow-[0_14px_28px_-16px_rgba(1,58,43,.8)]">{!isLoggedIn ? 'Sign in to enroll' : price ? `Enroll for ₹${price}` : 'Enroll in this course'}</button>
+    <button onClick={onEnroll} className="btn font-display !rounded-md w-full py-3.5 text-[15.5px] bg-forest text-ivory hover:bg-sage shadow-[0_14px_28px_-16px_rgba(1,58,43,.8)]">{!isLoggedIn ? 'Sign in to enroll' : price ? `Unlock for ₹${price}` : 'Enroll in this course'}</button>
   );
 
   // eduleb "course details" side list
@@ -145,7 +145,7 @@ export default function CourseDetailsPage({ course, enrolledCourseId, offer, isL
             <div className="bg-forest px-6 py-5 flex items-center justify-between">
               <div>
                 <p className="text-[12px] uppercase tracking-[0.2em] text-[#BCD1C6]">Course fee</p>
-                <p className="font-display text-[34px] font-bold leading-none text-ivory mt-1">{price ? `₹${price}` : 'Free'}</p>
+                <p className="font-display text-[34px] font-bold leading-none text-ivory mt-1">{isMine ? 'Unlocked' : price ? `₹${price}` : 'Free'}</p>
               </div>
               <span className="rounded-full bg-ivory/15 text-ivory text-[12.5px] font-semibold px-3 py-1.5 inline-flex items-center gap-1.5"><Award className="w-3.5 h-3.5" /> Certificate included</span>
             </div>

@@ -5,11 +5,14 @@ import { courseArt } from '../components/CourseCard';
 import { cleanText, displayTitle } from '../utils/textUtils';
 import { api } from '../services/api';
 
-export default function StudentDashboard({ studentUser, courses, coursesLoaded, enrolledCourseId, onOpenCourse, onContinue, onViewCertificate, onExploreCourses, onRefresh, onHome, onProfileSaved, initialTab = 'learning', enrollState }) {
+export default function StudentDashboard({ studentUser, courses, coursesLoaded, enrolledCourseId, onOpenCourse, onContinue, onViewCertificate, onExploreCourses, onRefresh, onHome, onProfileSaved, initialTab = 'learning', enrollState, enrolledIds = [] }) {
   useEffect(() => { onRefresh?.(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
   const [tab, setTab] = useState(initialTab === 'profile' ? 'profile' : 'learning');
 
-  const course = courses.find(c => c.id === enrolledCourseId);
+  // several courses can be open; the chips above the course card switch between them
+  const myIds = enrolledIds.length ? enrolledIds : (enrolledCourseId ? [enrolledCourseId] : []);
+  const [selectedId, setSelectedId] = useState(null);
+  const course = courses.find(c => c.id === (myIds.includes(selectedId) ? selectedId : myIds[0]));
   const firstName = (studentUser.name || studentUser.email).split(' ')[0];
   const initials = (studentUser.name || studentUser.email || '?').split(/\s+/).map(s => s[0]).join('').slice(0, 2).toUpperCase();
   const lp = course?.learnerProgress;
@@ -25,7 +28,8 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
   const attemptsUsed = lp?.finalAttemptsUsed ?? lp?.finalAttempts?.length ?? 0;
   const titleOf = (id) => displayTitle(courses.find(c => c.id === id)?.title || id);
   const history = enrollState?.history || [];
-  const canStartNext = !!enrollState?.canEnrollNew && !!course;
+  const courseState = course ? enrollState?.courses?.[course.id] : null;
+  const canStartNext = courseState === 'passed' || courseState === 'failed';
   const nextPrice = enrollState?.nextPrice || 0;
 
   const stats = [
@@ -94,6 +98,17 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
               <button onClick={onExploreCourses} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage mt-6 px-6 py-3">Browse courses <ArrowRight className="w-4 h-4" /></button>
             </div>
           ) : (
+            <>
+            {myIds.length > 1 && (
+              <div className="mb-6 flex gap-2 overflow-x-auto no-scrollbar" role="tablist" aria-label="My courses">
+                {myIds.map(id => (
+                  <button key={id} role="tab" aria-selected={course?.id === id} onClick={() => setSelectedId(id)}
+                    className={`font-display shrink-0 h-11 px-5 rounded-full border text-[14.5px] font-medium transition ${course?.id === id ? 'bg-forest border-forest text-ivory' : 'bg-white border-brand-900/15 text-charcoal/75 hover:border-sage'}`}>
+                    {titleOf(id)}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="grid lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
                 <div className="edu-card overflow-hidden grid sm:grid-cols-5">
@@ -132,8 +147,8 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
               <div className="space-y-6">
                 {canStartNext && (
                   <div className="edu-card p-6 border-sage/40 bg-brand-50/60">
-                    <h3 className="font-display text-[18px] font-semibold text-evergreen">{enrollState.status === 'passed' ? 'Ready for your next course' : 'This course is closed'}</h3>
-                    <p className="mt-1.5 text-sm text-charcoal/70">{enrollState.status === 'passed' ? 'Well done! Pick your next course - it is free.' : `You used both final attempts. You can take any course - this one again too, with two fresh attempts - for ₹${nextPrice}.`}</p>
+                    <h3 className="font-display text-[18px] font-semibold text-evergreen">{courseState === 'passed' ? 'Ready for your next course' : 'This course is closed'}</h3>
+                    <p className="mt-1.5 text-sm text-charcoal/70">{courseState === 'passed' ? 'Well done! Pick your next course - it is free.' : `You used both final attempts. You can take any course - this one again too, with two fresh attempts - for ₹${nextPrice}.`}</p>
                     <button onClick={onExploreCourses} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage w-full mt-4 py-3">Choose a course <ArrowRight className="w-4 h-4" /></button>
                   </div>
                 )}
@@ -190,6 +205,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                 </div>
               </div>
             </div>
+            </>
           )}
         </div>
       </div>

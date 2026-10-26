@@ -1,4 +1,5 @@
 import express from 'express';
+import { enrolledCourseIds } from '../lib/enrolledCourses.js';
 import XLSX from 'xlsx';
 import { getDb, saveDb, logActivity } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
@@ -29,7 +30,7 @@ router.get('/admin/analytics', verifyAdminToken, (req, res) => {
           avatar: '',
           joinDate: l.createdAt ? l.createdAt.slice(0, 10) : '',
           lastActivity: l.createdAt || '',
-          enrolledCourses: db.learnerEnrollments?.[email]?.courseId ? [db.learnerEnrollments[email].courseId] : [],
+          enrolledCourses: enrolledCourseIds(db, email),
           progressMap: {}
         });
         existingEmails.add(email);
@@ -144,7 +145,7 @@ router.get('/admin/export/students', verifyAdminToken, (req, res) => {
           avatar: '',
           joinDate: l.createdAt ? l.createdAt.slice(0, 10) : '',
           lastActivity: l.createdAt || '',
-          enrolledCourses: db.learnerEnrollments?.[email]?.courseId ? [db.learnerEnrollments[email].courseId] : [],
+          enrolledCourses: enrolledCourseIds(db, email),
           progressMap: {}
         });
         existingEmails.add(email);

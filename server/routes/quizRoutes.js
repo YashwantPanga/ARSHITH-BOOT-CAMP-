@@ -1,4 +1,5 @@
 import express from 'express';
+import { enrolmentRecord, isEnrolled } from '../lib/enrolledCourses.js';
 import { getDb, saveDb, logActivity } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
 import { projectRequirement } from '../lib/projects.js';
@@ -21,8 +22,7 @@ export function finalAttemptsTotal(db, userId, courseId) {
 
 /** Tries used in the current enrolment (buying the same course again starts a fresh set). */
 export function finalAttemptsUsed(db, userId, courseId) {
-  const enr = db.learnerEnrollments?.[userId];
-  const offset = enr?.courseId === courseId ? (enr.attemptOffset || 0) : 0;
+  const offset = enrolmentRecord(db, userId, courseId)?.attemptOffset || 0;
   return Math.max(0, finalAttemptsTotal(db, userId, courseId) - offset);
 }
 const FINAL_DURATION_SECONDS = 45 * 60;
@@ -102,13 +102,8 @@ function getFinalQuestions(course, paperCode) {
 
 /** Returns an error message when the learner is locked into a different course. */
 function enrollmentConflict(db, userId, courseId) {
-  const enrolled = db.learnerEnrollments?.[userId]?.courseId;
-  if (!enrolled) return 'Enroll in this course first.';
-  if (courseId && enrolled !== courseId) {
-    const title = findCourse(db, enrolled)?.title || enrolled;
-    return `Your current course is "${title}". Open that course to continue.`;
-  }
-  return null;
+  if (!courseId || isEnrolled(db, userId, courseId)) return null;
+  return 'Unlock this course first to continue.';
 }
 
 function formatDuration(totalSeconds) {

@@ -97,20 +97,23 @@ function AppShell() {
   const [studentUser, setStudentUser] = useState(() => readStudent());
   const [adminUser, setAdminUser] = useState(null);
   const userId = userIdOf(studentUser);
+  // a learner can hold several courses; enrolledCourseId is the most recent one
+  const enrolledIds = useMemo(() => studentUser?.enrolledCourseIds || [], [studentUser]);
   const enrolledCourseId = enrolledCourseOf(studentUser);
-  // what this learner may enrol in next, from the server: { canEnrollNew, nextPrice, status, history }
+  // from the server: { courseIds, courses: { id: status }, nextPrice, history }
   const [enrollState, setEnrollState] = useState(null);
   const courseOffer = useMemo(() => ({
-    canEnrollNew: studentUser ? (enrollState ? enrollState.canEnrollNew : !enrolledCourseId) : true,
-    price: studentUser ? (enrollState?.nextPrice || 0) : 0
-  }), [studentUser, enrollState, enrolledCourseId]);
+    canEnrollNew: true,
+    enrolledIds,
+    price: studentUser ? (enrollState ? enrollState.nextPrice || 0 : (enrolledIds.length ? 99 : 0)) : 0
+  }), [studentUser, enrollState, enrolledIds]);
 
   const saveUser = useCallback((u) => {
     setStudentUser(u);
     writeStudent(u);
   }, []);
 
-  // Sync the one-course enrollment with the server whenever a learner signs in.
+  // Sync the learner's courses with the server whenever they sign in.
   useEffect(() => {
     if (!studentUser?.email) return;
     let cancelled = false;
@@ -119,14 +122,9 @@ function AppShell() {
         const res = await api.getEnrollment(userIdOf(studentUser));
         if (cancelled) return;
         setEnrollState(res);
-        const local = enrolledCourseOf(studentUser);
-        if (res.courseId && res.courseId !== local) {
-          saveUser({ ...studentUser, enrolledCourseIds: [res.courseId] });
-        } else if (!res.courseId && local) {
-          await api.enroll(userIdOf(studentUser), local).catch(() => {});
-        } else if ((studentUser.enrolledCourseIds || []).length > 1) {
-          saveUser({ ...studentUser, enrolledCourseIds: [local] });
-        }
+        const serverIds = res.courseIds || (res.courseId ? [res.courseId] : []);
+        const localIds = studentUser.enrolledCourseIds || [];
+        if (serverIds.join('|') !== localIds.join('|')) saveUser({ ...studentUser, enrolledCourseIds: serverIds });
       } catch {
         /* offline – keep local state */
       }
@@ -184,10 +182,12 @@ function AppShell() {
     }
   }, [userId]);
 
+  const enrolledKey = enrolledIds.join('|');
   useEffect(() => {
     setProgressByCourse({});
-    if (enrolledCourseId) refreshProgress(enrolledCourseId);
-  }, [userId, enrolledCourseId, refreshProgress]);
+    enrolledIds.forEach(id => refreshProgress(id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, enrolledKey, refreshProgress]);
 
   const decoratedCourses = useMemo(() => courses.map(c => {
     const p = progressByCourse[c.id];
@@ -217,13 +217,8 @@ function AppShell() {
       navigate(paths.login(paths.course(courseId)));
       return;
     }
-    if (enrolledCourseId === courseId) {
+    if (enrolledIds.includes(courseId)) {
       navigate(paths.learn(courseId));
-      return;
-    }
-    if (enrolledCourseId && !courseOffer.canEnrollNew) {
-      const current = courses.find(c => c.id === enrolledCourseId);
-      toast(`Finish "${current?.title || enrolledCourseId}" first - pass its final assessment or use both attempts - then you can start another course.`, 'error', 5600);
       return;
     }
     if (courseOffer.price > 0) {
@@ -231,7 +226,7 @@ function AppShell() {
       return;
     }
     setEnrollTarget(course || { id: courseId, title: courseId });
-  }, [studentUser, enrolledCourseId, courses, navigate, toast, courseOffer]);
+  }, [studentUser, enrolledIds, courses, navigate, toast, courseOffer]);
 
   const confirmEnroll = async () => {
     if (!enrollTarget || !studentUser) return;
@@ -239,14 +234,11 @@ function AppShell() {
     try {
       const res = await api.enroll(userId, enrollTarget.id);
       setEnrollState(res);
-      saveUser({ ...studentUser, enrolledCourseIds: [enrollTarget.id] });
+      saveUser({ ...studentUser, enrolledCourseIds: res.courseIds || [enrollTarget.id, ...enrolledIds.filter(id => id !== enrollTarget.id)] });
       // the celebration takes over from here; Start learning opens the first module
       setCelebrate(findCourse(enrollTarget.id) || enrollTarget);
       setEnrollTarget(null);
     } catch (err) {
-      if (err.status === 409 && err.data?.courseId) {
-        saveUser({ ...studentUser, enrolledCourseIds: [err.data.courseId] });
-      }
       if (err.status === 402) setPaymentFor({ course: enrollTarget, price: err.data?.price || 99 });
       else toast(err.message || 'Could not enroll right now. Please try again.', 'error', 5200);
       setEnrollTarget(null);
@@ -304,7 +296,7 @@ function AppShell() {
     if (route.name === 'learning' && studentUser && coursesLoaded) {
       const id = route.params.courseId;
       if (!courses.some(c => c.id === id)) return; // not-found screen handles it
-      if (enrolledCourseId !== id) {
+      if (!enrolledIds.includes(id)) {
         toast('Enroll in this course to start learning.', 'info', 4800);
         navigate(paths.course(id), { replace: true });
       }
@@ -313,7 +305,7 @@ function AppShell() {
       navigate(paths.home(), { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [route, studentUser, adminUser, adminChecked, coursesLoaded, enrolledCourseId]);
+  }, [route, studentUser, adminUser, adminChecked, coursesLoaded, enrolledKey]);
 
   /* ---------------- Render ---------------- */
   const goCourses = (query) => navigate(paths.courses(query));
@@ -396,7 +388,7 @@ function AppShell() {
     }
     case 'learning': {
       const course = findCourse(route.params.courseId);
-      page = !coursesLoaded || !studentUser ? loading : !course ? notFound('Course not found') : enrolledCourseId !== course.id ? loading : (
+      page = !coursesLoaded || !studentUser ? loading : !course ? notFound('Course not found') : !enrolledIds.includes(course.id) ? loading : (
         <LearningPage
           course={course}
           studentUser={studentUser}
@@ -428,7 +420,8 @@ function AppShell() {
           onContinue={(id, moduleId) => navigate(paths.learn(id, moduleId))}
           onViewCertificate={(id) => navigate(paths.certificate(id))}
           onExploreCourses={() => goCourses()}
-          onRefresh={() => { if (enrolledCourseId) refreshProgress(enrolledCourseId); api.getEnrollment(userId).then(setEnrollState).catch(() => {}); }}
+          onRefresh={() => { enrolledIds.forEach(id => refreshProgress(id)); api.getEnrollment(userId).then(setEnrollState).catch(() => {}); }}
+          enrolledIds={enrolledIds}
           enrollState={enrollState}
           onHome={() => navigate(paths.home())}
           onProfileSaved={(changes) => saveUser({ ...studentUser, ...changes })}
@@ -570,7 +563,7 @@ function AppShell() {
         title={`Enroll in ${enrollTarget?.title || 'this course'}?`}
         message={
           <>
-            <p>This course is <strong>free</strong>. You study one course at a time: finish it - pass the final assessment or use both attempts - before starting another. Courses stay free while you keep passing; after failing a final twice, further courses cost ₹99.</p>
+            <p>This course is <strong>free</strong>. You can unlock more courses for ₹99 each at any time. Pass this course's final assessment and your next course is free too.</p>
           </>
         }
         confirmLabel="Yes, enroll me"

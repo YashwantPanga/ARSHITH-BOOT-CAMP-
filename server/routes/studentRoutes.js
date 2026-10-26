@@ -1,4 +1,5 @@
 import express from 'express';
+import { enrolledCourseIds } from '../lib/enrolledCourses.js';
 import { enrolmentState, enrol } from '../lib/enrollment.js';
 import { getDb, saveDb, logActivity } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
@@ -11,10 +12,7 @@ export function computeStudentDetails(student, db) {
 
   // Find enrolled course IDs from student record or learnerEnrollments
   let enrolledIds = Array.isArray(student.enrolledCourses) ? [...student.enrolledCourses] : [];
-  const learnerEnrollmentCourseId = db.learnerEnrollments?.[normEmail]?.courseId;
-  if (learnerEnrollmentCourseId && !enrolledIds.includes(learnerEnrollmentCourseId)) {
-    enrolledIds.push(learnerEnrollmentCourseId);
-  }
+  for (const id of enrolledCourseIds(db, normEmail)) if (!enrolledIds.includes(id)) enrolledIds.push(id);
   if (enrolledIds.length === 0 && student.progressMap) {
     enrolledIds = Object.keys(student.progressMap);
   }
@@ -225,7 +223,7 @@ router.get('/admin/students', verifyAdminToken, (req, res) => {
           avatar: '',
           joinDate: l.createdAt ? l.createdAt.slice(0, 10) : '',
           lastActivity: l.createdAt || '',
-          enrolledCourses: db.learnerEnrollments?.[email]?.courseId ? [db.learnerEnrollments[email].courseId] : [],
+          enrolledCourses: enrolledCourseIds(db, email),
           progressMap: {}
         });
         existingEmails.add(email);
@@ -256,7 +254,7 @@ router.get('/admin/students/:id', verifyAdminToken, (req, res) => {
         avatar: '',
         joinDate: l.createdAt ? l.createdAt.slice(0, 10) : '',
         lastActivity: l.createdAt || '',
-        enrolledCourses: db.learnerEnrollments?.[l.email]?.courseId ? [db.learnerEnrollments[l.email].courseId] : [],
+        enrolledCourses: enrolledCourseIds(db, l.email) || [],
         progressMap: {}
       };
     }
@@ -375,11 +373,7 @@ router.post('/enrollment', (req, res) => {
   if (!course) return res.status(404).json({ success: false, message: 'Course not found.' });
 
   const state = enrolmentState(db, userId);
-  if (state.courseId === courseId && state.status === 'active') return res.json({ success: true, ...state });
-  if (!state.canEnrollNew) {
-    const title = (db.courses || []).find(c => c.id === state.courseId)?.title || state.courseId;
-    return res.status(409).json({ success: false, courseId: state.courseId, message: `Finish "${title}" first - pass its final assessment or use both attempts - then you can start another course.` });
-  }
+  if (state.courses[courseId] === 'active') return res.json({ success: true, ...state });
   if (state.passedCourseIds.includes(courseId)) {
     return res.status(409).json({ success: false, message: 'You have already passed this course. Your certificate is in your dashboard.' });
   }
@@ -412,7 +406,7 @@ router.post('/admin/enrollments', verifyAdminToken, (req, res) => {
   // sets the student's real enrolment, moving any current course to their history.
   const email = normId(student.email);
   const state = enrolmentState(db, email);
-  if (state.courseId === courseId && state.status === 'active') return res.json({ success: true, message: `${student.name} is already studying ${course.title}` });
+  if (state.courses[courseId] === 'active') return res.json({ success: true, message: `${student.name} is already studying ${course.title}` });
   enrol(db, email, courseId, { paid: state.nextPrice > 0, by: 'admin' });
   saveDb(db);
 
