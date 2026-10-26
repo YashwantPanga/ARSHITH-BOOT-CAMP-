@@ -99,18 +99,18 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
         <form onSubmit={handleSubmit} className={`mt-6 grid gap-4 ${isSignup ? 'sm:grid-cols-2' : ''}`} noValidate>
           {isSignup && (
             <Field className="sm:col-span-2" label="Full name" hint="Exactly as on your government ID or college ID - it is printed on your certificate and checked against your ID in the final exam.">
-              <input className="auth-input" autoComplete="name" placeholder="e.g. Panga Yashwant" value={form.name} onChange={set('name')} />
+              <input className="auth-input" autoComplete="name" value={form.name} onChange={set('name')} />
             </Field>
           )}
           <Field label="Email" className={isSignup ? 'sm:col-span-2' : ''}>
-            <input className="auth-input" type="email" autoComplete="email" placeholder="name@email.com" value={form.email} onChange={set('email')} />
+            <input className="auth-input" type="email" autoComplete="email" value={form.email} onChange={set('email')} />
           </Field>
           <Field label="Registration number">
-            <input className="auth-input uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal" placeholder="e.g. 21A91A0501" value={form.regNo} onChange={set('regNo')} />
+            <input className="auth-input uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal" value={form.regNo} onChange={set('regNo')} />
           </Field>
           {isSignup && (
             <Field label="Phone number">
-              <input className="auth-input" type="tel" autoComplete="tel" placeholder="+91 98765 43210" value={form.phone} onChange={set('phone')} />
+              <input className="auth-input" type="tel" autoComplete="tel" value={form.phone} onChange={set('phone')} />
             </Field>
           )}
           <Field
@@ -120,7 +120,7 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
             )}
           >
             <span className="relative block">
-              <input className="auth-input pr-12" type={showPw ? 'text' : 'password'} autoComplete={isSignup ? 'new-password' : 'current-password'} placeholder={isSignup ? 'At least 6 characters' : 'Enter your password'} value={form.password} onChange={set('password')} />
+              <input className="auth-input pr-12" type={showPw ? 'text' : 'password'} autoComplete={isSignup ? 'new-password' : 'current-password'} value={form.password} onChange={set('password')} />
               <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-charcoal/45 hover:text-brand-900" aria-label={showPw ? 'Hide password' : 'Show password'}>
                 {showPw ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
               </button>
@@ -128,7 +128,7 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
           </Field>
           {isSignup && (
             <Field label="Confirm password">
-              <input className="auth-input" type={showPw ? 'text' : 'password'} autoComplete="new-password" placeholder="Repeat password" value={form.confirm} onChange={set('confirm')} />
+              <input className="auth-input" type={showPw ? 'text' : 'password'} autoComplete="new-password" value={form.confirm} onChange={set('confirm')} />
             </Field>
           )}
 

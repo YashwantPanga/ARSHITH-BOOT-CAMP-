@@ -72,7 +72,7 @@ function CodeInput({ value, onChange, autoFocus }) {
         inputMode="numeric"
         autoComplete="one-time-code"
         maxLength={6}
-        placeholder="••••••"
+       
         aria-label="6-digit code"
         value={value}
         autoFocus={autoFocus}
@@ -82,10 +82,10 @@ function CodeInput({ value, onChange, autoFocus }) {
   );
 }
 
-function PasswordInput({ value, onChange, show, onToggle, placeholder }) {
+function PasswordInput({ value, onChange, show, onToggle }) {
   return (
     <span className="relative block">
-      <input className="auth-input pr-12" type={show ? 'text' : 'password'} autoComplete="new-password" value={value} onChange={onChange} placeholder={placeholder} />
+      <input className="auth-input pr-12" type={show ? 'text' : 'password'} autoComplete="new-password" value={value} onChange={onChange} />
       {onToggle && (
         <button type="button" onClick={onToggle} className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-charcoal/45 hover:text-brand-900" aria-label={show ? 'Hide password' : 'Show password'}>
           {show ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
@@ -174,7 +174,7 @@ export function VerifyEmailPage({ email: initialEmail = '', token, onVerified, o
       <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
         {!initialEmail && (
           <Field label="Email">
-            <input className="auth-input" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@email.com" />
+            <input className="auth-input" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </Field>
         )}
         <CodeInput value={code} onChange={setCode} autoFocus />
@@ -217,7 +217,7 @@ export function ForgotPasswordPage({ initialEmail = '', onCodeSent, onBack, onHo
       <ErrorBox>{state.status === 'error' && state.message}</ErrorBox>
       <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
         <Field label="Email">
-          <input className="auth-input" type="email" autoComplete="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@email.com" />
+          <input className="auth-input" type="email" autoComplete="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} />
         </Field>
         <button type="submit" disabled={state.status === 'sending'} className={`${primaryBtn} mt-1`}>
           {state.status === 'sending' ? 'Sending…' : 'Send reset code'}
@@ -271,15 +271,15 @@ export function ResetPasswordPage({ email: initialEmail = '', token, onDone, onR
       <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
         {!initialEmail && (
           <Field label="Email">
-            <input className="auth-input" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@email.com" />
+            <input className="auth-input" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </Field>
         )}
         {!token && <CodeInput value={code} onChange={setCode} autoFocus />}
         <Field label="New password">
-          <PasswordInput value={pw} onChange={(e) => setPw(e.target.value)} show={show} onToggle={() => setShow(s => !s)} placeholder="At least 6 characters" />
+          <PasswordInput value={pw} onChange={(e) => setPw(e.target.value)} show={show} onToggle={() => setShow(s => !s)} />
         </Field>
         <Field label="Confirm new password">
-          <PasswordInput value={confirm} onChange={(e) => setConfirm(e.target.value)} show={show} placeholder="Repeat the password" />
+          <PasswordInput value={confirm} onChange={(e) => setConfirm(e.target.value)} show={show} />
         </Field>
         <button type="submit" disabled={state.status === 'saving'} className={`${primaryBtn} mt-1`}>
           {state.status === 'saving' ? 'Saving…' : 'Change password'}

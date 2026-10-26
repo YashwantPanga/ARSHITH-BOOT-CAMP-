@@ -12,7 +12,31 @@ import nodemailer from 'nodemailer';
 const OUTBOX = process.env.ARB_OUTBOX_DIR || path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'data', 'outbox');
 let transport = null;
 
-export const smtpConfigured = () => Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+// BREVO_API_KEY sends through Brevo's HTTPS API (port 443), for servers whose network blocks SMTP ports.
+const brevoApi = () => Boolean(process.env.BREVO_API_KEY);
+export const smtpConfigured = () => brevoApi() || Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+/** 'brevo-api' | 'smtp' | 'outbox' - how email is sent with the current settings. */
+export const mailMode = () => (brevoApi() ? 'brevo-api' : smtpConfigured() ? 'smtp' : 'outbox');
+
+/** "Name <a@b.c>" or "a@b.c" -> { name, email } */
+function parseAddress(value) {
+  const m = String(value || '').match(/^\s*"?([^"<]*?)"?\s*<([^>]+)>\s*$/);
+  return m ? { name: m[1].trim() || undefined, email: m[2].trim() } : { email: String(value || '').trim() };
+}
+
+async function sendViaBrevoApi({ from, to, subject, html, text }) {
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: { 'api-key': process.env.BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' },
+    body: JSON.stringify({ sender: parseAddress(from), to: [{ email: to }], replyTo: parseAddress(from), subject, htmlContent: html, textContent: text }),
+    signal: AbortSignal.timeout(15000)
+  });
+  if (!res.ok) {
+    let detail = '';
+    try { const body = await res.json(); detail = body.message || body.code || ''; } catch { /* no body */ }
+    throw new Error(`Brevo API ${res.status}${detail ? ': ' + detail : ''}`);
+  }
+}
 
 /** In development without SMTP, APIs may return verification/reset codes so the flow can be tested. */
 export const devCodesAllowed = () => !smtpConfigured() && process.env.NODE_ENV !== 'production';
@@ -40,6 +64,7 @@ const FREE_MAILBOX = /@(gmail|googlemail|yahoo|outlook|hotmail|live|icloud|redif
 /** Opens the SMTP connection ahead of time so the first email is not delayed. Never throws. */
 export async function warmUpMailer() {
   if (!smtpConfigured()) return false;
+  if (brevoApi()) return true; // nothing to open ahead of time for the HTTPS API
   const from = process.env.MAIL_FROM || process.env.SMTP_USER || '';
   if (FREE_MAILBOX.test(from)) {
     console.warn('[mail] Emails are sent from a free mailbox (' + from.replace(/^.*@/, '@') + '). Mail providers often put such codes in spam.'
@@ -54,9 +79,18 @@ export async function warmUpMailer() {
   }
 }
 
-/** Returns { delivered, mode: 'smtp' | 'outbox', error? }. Never throws. */
+/** Returns { delivered, mode: 'brevo-api' | 'smtp' | 'outbox', error? }. Never throws. */
 export async function sendMail({ to, subject, html, text }) {
   const from = process.env.MAIL_FROM || (process.env.SMTP_USER ? `Arshith Bootcamp <${process.env.SMTP_USER}>` : 'Arshith Bootcamp <no-reply@arshithbootcamp.local>');
+  if (brevoApi()) {
+    try {
+      await sendViaBrevoApi({ from, to, subject, html, text });
+      return { delivered: true, mode: 'brevo-api' };
+    } catch (err) {
+      console.error(`[mail] Brevo API delivery to ${to} failed:`, err.message);
+      return { delivered: false, mode: 'brevo-api', error: err.message };
+    }
+  }
   if (smtpConfigured()) {
     try {
       await getTransport().sendMail({
