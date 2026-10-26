@@ -367,3 +367,15 @@
 @keyframes li-cert { 0% { opacity: 0; transform: translateY(60px) rotate(-12deg) scale(.6); } 60% { opacity: 1; transform: translateY(-8px) rotate(3deg) scale(1.04); } 100% { opacity: 1; transform: translateY(0) rotate(-2deg) scale(1); } }
 @keyframes li-badge { from { opacity: 0; transform: scale(.2) rotate(-30deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
 @media (prefers-reduced-motion: reduce) { .li-cert, .li-badge { animation: none !important; } }
+
+/* "press this next" cue on the exam identity check */
+.cta-pulse { position: relative; animation: cta-pulse 1.6s ease-out infinite; }
+.cta-pulse:hover { animation-play-state: paused; }
+.cta-nudge { animation: cta-nudge 1s ease-in-out infinite; display: inline-block; }
+.cta-arrow { display: inline-block; animation: cta-bounce 1s ease-in-out infinite; }
+.cta-hint { animation: cta-hint .4s ease-out both; }
+@keyframes cta-pulse { 0% { box-shadow: 0 0 0 0 rgba(66,101,87,.65); transform: scale(1); } 50% { transform: scale(1.04); } 70% { box-shadow: 0 0 0 12px rgba(66,101,87,0); } 100% { box-shadow: 0 0 0 0 rgba(66,101,87,0); transform: scale(1); } }
+@keyframes cta-nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-6px); } }
+@keyframes cta-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+@keyframes cta-hint { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .cta-pulse, .cta-nudge, .cta-arrow, .cta-hint { animation: none !important; } .cta-pulse { box-shadow: 0 0 0 3px rgba(66,101,87,.5); } }

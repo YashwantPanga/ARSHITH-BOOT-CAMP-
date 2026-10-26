@@ -151,6 +151,20 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
     <div className="space-y-4">
       <div className="relative aspect-video rounded-xl bg-slate-900 overflow-hidden">
         <video ref={setVideo} autoPlay muted playsInline className="w-full h-full object-cover -scale-x-100" />
+        {/* next action, shown on the camera itself */}
+        {(() => {
+          const faceNext = models.state === 'ready' && face.state === 'idle';
+          const faceRetry = face.state === 'error';
+          const idNext = face.state === 'done' && !skipped && (idCard.state === 'idle' || idCard.state === 'mismatch' || (idCard.state === 'error' && !idCard.stale));
+          const text = faceNext || faceRetry ? 'Look at the camera, then press "Capture my face" below' : idNext ? 'Hold your ID inside the frame, then press "Scan my ID" below' : '';
+          return text ? (
+            <div className="pointer-events-none absolute inset-x-0 top-0 p-2 flex justify-center" aria-live="polite">
+              <span className="cta-hint inline-flex items-center gap-1.5 rounded-full bg-black/60 text-white text-[12px] font-semibold px-3 py-1.5">
+                <span className="cta-arrow" aria-hidden="true">↓</span>{text}
+              </span>
+            </div>
+          ) : null;
+        })()}
         {/* face guide */}
         {face.state !== 'done' && <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[38%] aspect-[3/4] rounded-[45%] border-2 border-dashed border-white/60" aria-hidden="true" />}
         {face.state === 'done' && ((idCard.state !== 'done' && !skipped) || matchFlash) && (
@@ -189,7 +203,13 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
           {face.state === 'error' && <p className="mt-1 text-xs text-rose-600">{face.msg}</p>}
           {face.state === 'done'
             ? <div className="mt-2 flex items-center gap-2">{face.thumb && <img src={face.thumb} alt="Your captured face" className="w-12 h-9 rounded-md object-cover ring-1 ring-mint-300" />}<span className="text-xs text-mint-500 font-semibold">Face captured</span><button type="button" onClick={doFace} className="ml-auto text-xs underline text-slate-500">Retake</button></div>
-            : <button type="button" onClick={doFace} disabled={models.state !== 'ready' || face.state === 'busy'} className="btn-plum mt-2 text-sm py-2 px-3"><ScanFace className="w-4 h-4" /> {face.state === 'busy' ? 'Capturing…' : 'Capture my face'}</button>}
+            : (
+              <div className="mt-2 flex items-center gap-3">
+                <button type="button" onClick={doFace} disabled={models.state !== 'ready' || face.state === 'busy'} className={`btn-plum text-sm py-2.5 px-4 ${models.state === 'ready' && face.state !== 'busy' ? 'cta-pulse' : ''}`}><ScanFace className="w-4 h-4" /> {face.state === 'busy' ? 'Capturing…' : face.state === 'error' ? 'Try again' : 'Capture my face'}</button>
+                {models.state === 'ready' && face.state !== 'busy' && <span className="cta-nudge text-xs font-semibold text-brand-900">← Press to continue</span>}
+                {models.state !== 'ready' && <span className="text-xs text-slate-400">Available once proctoring is ready</span>}
+              </div>
+            )}
         </Step>
 
         <Step n={3} title="Verify the name on your ID" state={idCard.state === 'done' || skipped ? 'done' : face.state === 'done' ? 'active' : 'pending'}>
@@ -200,7 +220,7 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
           {skipped && <p className="mt-1 text-xs text-amber-700 flex items-center gap-1"><ShieldAlert className="w-3.5 h-3.5" /> Continuing without a name match - this attempt will be reviewed.</p>}
           {idCard.state !== 'done' && !skipped && (
             <div className="mt-2 flex flex-wrap gap-2">
-              <button type="button" onClick={scanId} disabled={face.state !== 'done' || idCard.state === 'busy'} className="btn-plum text-sm py-2 px-3"><CreditCard className="w-4 h-4" /> {idCard.state === 'busy' ? 'Reading…' : idTries ? 'Scan again' : 'Scan my ID'}</button>
+              <button type="button" onClick={scanId} disabled={face.state !== 'done' || idCard.state === 'busy'} className={`btn-plum text-sm py-2.5 px-4 ${face.state === 'done' && idCard.state !== 'busy' ? 'cta-pulse' : ''}`}><CreditCard className="w-4 h-4" /> {idCard.state === 'busy' ? 'Reading…' : idTries ? 'Scan again' : 'Scan my ID'}</button>
               <label className={`btn-outline text-sm py-2 px-3 ${face.state !== 'done' || idCard.state === 'busy' ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`}>
                 <Upload className="w-4 h-4" /> Upload ID photo
                 <input type="file" accept="image/*" className="sr-only" onChange={(e) => { uploadId(e.target.files?.[0]); e.target.value = ''; }} />
