@@ -294,6 +294,44 @@ router.post('/admin/students/:id/status', verifyAdminToken, (req, res) => {
   res.json({ success: true, message: `Student status set to ${status}`, student });
 });
 
+// Delete a student's account and everything recorded for it: sign-in, enrolment, quiz and exam
+// attempts, practice progress, project submissions and certificates. Cannot be undone.
+router.delete('/admin/students/:id', verifyAdminToken, (req, res) => {
+  const db = getDb();
+  const student = (db.students || []).find(s => s.id === req.params.id);
+  const email = String(student?.email || Object.values(db.learners || {}).find(l => l.learnerId === req.params.id)?.email || '').trim().toLowerCase();
+  if (!email) return res.status(404).json({ success: false, message: 'Student not found' });
+
+  const mine = (v) => String(v || '').trim().toLowerCase() === email;
+  const removed = {
+    quizAttempts: (db.quizAttempts || []).filter(a => mine(a.userId)).length,
+    finalAttempts: (db.finalTestAttempts || []).filter(a => mine(a.userId)).length,
+    projects: (db.projectSubmissions || []).filter(s => mine(s.userId) || mine(s.studentEmail)).length,
+    certificates: (db.certificates || []).filter(c => mine(c.userId)).length
+  };
+  const name = student?.name || db.learners?.[email]?.name || email;
+
+  if (db.learners) delete db.learners[email];
+  if (db.learnerEnrollments) delete db.learnerEnrollments[email];
+  if (db.practiceProgress) delete db.practiceProgress[email];
+  db.students = (db.students || []).filter(s => !mine(s.email));
+  db.quizAttempts = (db.quizAttempts || []).filter(a => !mine(a.userId));
+  db.finalTestAttempts = (db.finalTestAttempts || []).filter(a => !mine(a.userId));
+  db.projectSubmissions = (db.projectSubmissions || []).filter(s => !mine(s.userId) && !mine(s.studentEmail));
+  db.certificates = (db.certificates || []).filter(c => !mine(c.userId));
+  for (const key of Object.keys(db.finalTestActiveSessions || {})) if (key.startsWith(`${email}::`)) delete db.finalTestActiveSessions[key];
+  for (const key of Object.keys(db.finalTestAbandoned || {})) if (key.startsWith(`${email}::`)) delete db.finalTestAbandoned[key];
+  saveDb(db);
+
+  logActivity({
+    adminId: req.admin.adminId,
+    action: 'STUDENT_DELETED',
+    target: `Student: ${name} (${email})`,
+    details: `Account deleted with ${removed.quizAttempts} quiz attempts, ${removed.finalAttempts} final attempts, ${removed.projects} project submissions and ${removed.certificates} certificates`
+  });
+  res.json({ success: true, message: `${name}'s account was deleted.`, removed });
+});
+
 // Reset student password securely
 router.post('/admin/students/:id/reset-password', verifyAdminToken, (req, res) => {
   const db = getDb();

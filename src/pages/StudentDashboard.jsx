@@ -136,7 +136,9 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                   {passedFinal ? (
                     <p className="mt-2 text-sm text-charcoal/70">Passed with <strong className="text-forest">{passedFinal.percentage}%</strong>.</p>
                   ) : allPassed ? (
-                    <p className="mt-2 text-sm text-charcoal/70">Unlocked! 45 minutes, proctored, pass mark 70%.{lastFinal ? ` Last attempt: ${lastFinal.percentage}%.` : ''}</p>
+                    <p className="mt-2 text-sm text-charcoal/70">Unlocked! 45 minutes, proctored, pass mark 70%.{lastFinal ? ` Last attempt: ${lastFinal.percentage}%.` : ''}
+                      <span className="block mt-1 font-semibold text-evergreen">{(lp?.finalAttempts?.length || 0) >= 2 ? 'Both attempts used.' : `Attempts left: ${2 - (lp?.finalAttempts?.length || 0)} of 2`}</span>
+                    </p>
                   ) : (
                     <div className="mt-2 text-sm text-charcoal/60 space-y-1">
                       <p className="flex gap-2"><Lock className="w-4 h-4 mt-0.5 shrink-0" />Unlocks when both are done:</p>
@@ -144,7 +146,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                       {projectReq.required > 0 && <p className="pl-6">Project GitHub repos submitted: <strong className="text-evergreen">{projectReq.submitted}/{projectReq.required}</strong></p>}
                     </div>
                   )}
-                  {!passedFinal && allPassed && <button onClick={() => onContinue(course.id, nextModule?.id)} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage w-full mt-4 py-3">Go to final assessment</button>}
+                  {!passedFinal && allPassed && (lp?.finalAttempts?.length || 0) < 2 && <button onClick={() => onContinue(course.id, nextModule?.id)} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage w-full mt-4 py-3">Go to final assessment</button>}
                 </div>
 
                 <div className="edu-card p-6">

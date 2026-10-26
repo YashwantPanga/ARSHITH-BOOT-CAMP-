@@ -51,6 +51,7 @@ export const api = {
   getStudents: () => staffRequest('/admin/students'),
   getStudentDetails: (id) => staffRequest(`/admin/students/${id}`),
   updateStudentStatus: (id, status) => staffRequest(`/admin/students/${id}/status`, { method: 'POST', body: JSON.stringify({ status }) }),
+  deleteStudent: (id) => staffRequest(`/admin/students/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   resetStudentPassword: (id) => staffRequest(`/admin/students/${id}/reset-password`, { method: 'POST' }),
   enrollStudent: (studentId, courseId) => staffRequest('/admin/enrollments', { method: 'POST', body: JSON.stringify({ studentId, courseId }) }),
   removeEnrollment: (studentId, courseId) => staffRequest(`/admin/enrollments/${studentId}/${courseId}`, { method: 'DELETE' }),

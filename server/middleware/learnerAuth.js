@@ -54,9 +54,11 @@ const PROTECTED = [
 export function learnerGuard(req, res, next) {
   const rule = PROTECTED.find(([method, re]) => method === req.method && re.test(req.path));
   if (!rule) return next();
-  if (isAdminRequest(req)) return next();
 
+  // A learner session always wins, even when the same browser also holds an admin session; admins
+  // without a learner session pass through and name the learner in the request themselves.
   const email = learnerFromRequest(req);
+  if (!email && isAdminRequest(req)) return next();
   if (!email) {
     return res.status(401).json({ success: false, code: 'LEARNER_AUTH_REQUIRED', message: 'Your session has expired. Please sign in again.' });
   }

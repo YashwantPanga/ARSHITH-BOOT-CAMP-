@@ -70,7 +70,8 @@ router.post('/projects/submit', (req, res) => {
   const { courseId, projectId } = req.body;
   const githubUrl = String(req.body.githubUrl || '').trim();
   const liveProjectUrl = String(req.body.liveProjectUrl || '').trim();
-  if (!userId || !courseId || !projectId) return res.status(400).json({ success: false, message: 'courseId and projectId are required.' });
+  if (!userId) return res.status(401).json({ success: false, code: 'LEARNER_AUTH_REQUIRED', message: 'Your session has expired. Please sign in again.' });
+  if (!courseId || !projectId) return res.status(400).json({ success: false, message: 'Choose a project before submitting.' });
   if (!GITHUB_REPO_RE.test(githubUrl)) {
     return res.status(400).json({ success: false, field: 'githubUrl', message: 'Enter the link to a public GitHub repository, e.g. https://github.com/your-name/project-name' });
   }

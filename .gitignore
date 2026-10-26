@@ -5,6 +5,7 @@ dist
 *.log
 scratch/
 server/data/outbox/
+server/data/cert-images/
 
 *.zip
 backups/

@@ -1,4 +1,5 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import LinkedInShare from '../components/LinkedInShare';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
@@ -107,10 +108,10 @@ export default function CertificatePage({ course, studentUser, onBack, onVerify,
   const qr = useCertificateQr(cert?.certificateId);
   const verifyUrl = useVerifyUrl(cert?.certificateId);
 
-  const render = async () => {
+  const render = async (scale = 3) => {
     await document.fonts?.ready;
     return html2canvas(certRef.current, {
-      scale: 3, useCORS: true, backgroundColor: IVORY, width: W, height: H, windowWidth: W, windowHeight: H, logging: false,
+      scale, useCORS: true, backgroundColor: IVORY, width: W, height: H, windowWidth: W, windowHeight: H, logging: false,
       onclone: (doc) => {
         const node = doc.querySelector('[data-cert]');
         if (node) { node.style.transform = 'none'; node.parentElement.style.width = `${W}px`; node.parentElement.style.height = `${H}px`; }
@@ -162,10 +163,11 @@ export default function CertificatePage({ course, studentUser, onBack, onVerify,
     }
   };
 
-  const shareLinkedIn = () => {
-    const url = `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(cert.courseTitle)}&organizationName=${encodeURIComponent('Arshith Bootcamp')}&certId=${encodeURIComponent(cert.certificateId)}&certUrl=${encodeURIComponent(verifyUrl)}`;
-    window.open(url, '_blank', 'noopener');
-  };
+  // LinkedIn: animated share window; the certificate picture is rendered at 1600 px wide for the post
+  const [sharing, setSharing] = useState(false);
+  const shareLinkedIn = () => setSharing(true);
+  const renderForPost = useCallback(() => render(1.6), [cert]); // eslint-disable-line react-hooks/exhaustive-deps
+  const closeShare = useCallback(() => setSharing(false), []);
 
   const copyId = async () => {
     try {
@@ -177,13 +179,14 @@ export default function CertificatePage({ course, studentUser, onBack, onVerify,
 
   return (
     <div className="bg-cream min-h-[70vh] py-8">
+      {sharing && cert && <LinkedInShare cert={cert} verifyUrl={verifyUrl} renderCanvas={renderForPost} onClose={closeShare} />}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <button onClick={onBack} className="btn-ghost -ml-3"><ArrowLeft className="w-4 h-4" /> Dashboard</button>
           {state.status === 'ok' && (
             <div className="flex flex-wrap gap-2">
               <button onClick={() => onVerify(cert.certificateId)} className="btn-ghost border border-brand-900/15"><ShieldCheck className="w-4 h-4" /> Verify online</button>
-              <button onClick={shareLinkedIn} className="btn-ghost border border-brand-900/15"><Linkedin className="w-4 h-4" /> Add to LinkedIn</button>
+              <button onClick={shareLinkedIn} className="btn-ghost border border-brand-900/15"><Linkedin className="w-4 h-4" /> Share on LinkedIn</button>
               <button onClick={downloadPng} disabled={!!downloading} className="btn-outline"><ImageIcon className="w-4 h-4" />{downloading === 'png' ? 'Preparing…' : 'PNG'}</button>
               <button onClick={downloadPdf} disabled={!!downloading || !qr} className="btn-primary"><Download className="w-4 h-4" />{downloading === 'pdf' ? 'Preparing PDF…' : 'Download PDF'}</button>
             </div>

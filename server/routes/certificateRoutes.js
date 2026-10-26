@@ -1,4 +1,9 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import express from 'express';
+import { publicBase } from '../lib/publicUrl.js';
+import { learnerFromRequest } from '../middleware/learnerAuth.js';
 import { getDb, saveDb, logActivity } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
 import { ensureCertificate, makeUniqueCertificateId, sendCompletionEmail } from '../lib/certificates.js';
@@ -79,6 +84,38 @@ router.get('/certificates/verify/:id', (req, res) => {
       skills: cert.skills || []
     }
   });
+});
+
+// ==========================================
+// CERTIFICATE PICTURE FOR LINKEDIN POSTS
+// The learner's browser renders the certificate and uploads it here; the verify page links it as its
+// preview image (og:image), so a LinkedIn post of the verify link shows the certificate itself.
+// ==========================================
+export const CERT_IMAGE_DIR = process.env.ARB_CERT_IMAGE_DIR || path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'data', 'cert-images');
+const certFileName = (id) => `${String(id).toUpperCase().replace(/[^A-Z0-9-]/g, '')}.jpg`;
+export const certImagePath = (id) => path.join(CERT_IMAGE_DIR, certFileName(id));
+
+router.post('/certificates/:id/image', (req, res) => {
+  const email = learnerFromRequest(req);
+  if (!email) return res.status(401).json({ success: false, code: 'LEARNER_AUTH_REQUIRED', message: 'Please sign in again.' });
+  const db = getDb();
+  const id = String(req.params.id).trim().toUpperCase();
+  const cert = (db.certificates || []).find(c => String(c.certificateId).toUpperCase() === id);
+  if (!cert || String(cert.userId || '').toLowerCase() !== email) return res.status(404).json({ success: false, message: 'Certificate not found.' });
+  const m = String(req.body?.image || '').match(/^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/);
+  if (!m) return res.status(400).json({ success: false, message: 'Send the certificate as a JPEG image.' });
+  const buf = Buffer.from(m[1], 'base64');
+  if (buf.length < 10_000 || buf.length > 4_000_000 || buf[0] !== 0xFF || buf[1] !== 0xD8) return res.status(400).json({ success: false, message: 'The certificate image is not valid.' });
+  fs.mkdirSync(CERT_IMAGE_DIR, { recursive: true });
+  fs.writeFileSync(certImagePath(id), buf);
+  res.json({ success: true, imageUrl: `${publicBase(req).publicUrl}/api/certificates/${encodeURIComponent(id)}/image.jpg` });
+});
+
+router.get('/certificates/:id/image.jpg', (req, res) => {
+  const file = certImagePath(req.params.id);
+  if (!fs.existsSync(file)) return res.status(404).json({ success: false, message: 'No image for this certificate.' });
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.type('image/jpeg').sendFile(file);
 });
 
 // ==========================================

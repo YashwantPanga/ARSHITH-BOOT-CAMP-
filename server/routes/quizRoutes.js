@@ -8,6 +8,16 @@ const router = express.Router();
 
 // Every module quiz and every final assessment uses the same pass mark.
 export const PASS_PERCENTAGE = 70;
+// Each learner gets this many tries at a course's final assessment. An exam that was started and
+// then left until its time ran out (never submitted) also uses a try.
+export const MAX_FINAL_ATTEMPTS = 2;
+
+/** Tries used so far at a course's final: submitted attempts plus abandoned (expired, unsubmitted) exams. */
+export function finalAttemptsUsed(db, userId, courseId) {
+  const submitted = (db.finalTestAttempts || []).filter(a => a.userId === userId && a.courseId === courseId).length;
+  const abandoned = db.finalTestAbandoned?.[`${userId}::${courseId}`] || 0;
+  return submitted + abandoned;
+}
 const FINAL_DURATION_SECONDS = 45 * 60;
 const SUBMIT_GRACE_SECONDS = 90;
 
@@ -316,7 +326,26 @@ router.post('/final-test/start', (req, res) => {
   let session = db.finalTestActiveSessions[sessionKey];
 
   const expired = session && (now - session.startedAt) / 1000 > FINAL_DURATION_SECONDS + SUBMIT_GRACE_SECONDS;
-  if (!session || session.submitted || expired) {
+  if (session && !session.submitted && expired) {
+    // started earlier and never submitted: that exam counts as a used try
+    if (!db.finalTestAbandoned) db.finalTestAbandoned = {};
+    const k = `${userId}::${course.id}`;
+    db.finalTestAbandoned[k] = (db.finalTestAbandoned[k] || 0) + 1;
+    session.submitted = true;
+    session.abandoned = true;
+    saveDb(db);
+  }
+  const used = finalAttemptsUsed(db, userId, course.id);
+  if ((!session || session.submitted) && used >= MAX_FINAL_ATTEMPTS) {
+    return res.status(403).json({
+      success: false,
+      code: 'FINAL_ATTEMPTS_USED',
+      attemptsUsed: used,
+      maxAttempts: MAX_FINAL_ATTEMPTS,
+      message: `You have used both attempts at this final assessment (${MAX_FINAL_ATTEMPTS} of ${MAX_FINAL_ATTEMPTS}).`
+    });
+  }
+  if (!session || session.submitted) {
     const paper = getPaperSetForStudent(studentName, course.finalTest?.questionPapers || []);
     session = {
       sessionId: `session-${now}-${Math.floor(Math.random() * 1e6)}`,
@@ -349,6 +378,8 @@ router.post('/final-test/start', (req, res) => {
     remainingSeconds,
     totalQuestions: questions.length,
     passingScore: PASS_PERCENTAGE,
+    attemptNumber: finalAttemptsUsed(db, userId, course.id) + 1,
+    maxAttempts: MAX_FINAL_ATTEMPTS,
     courseTitle: course.title,
     assignedPaper: paper ? {
       id: paper.id,
@@ -400,7 +431,7 @@ router.post('/final-test/submit', (req, res) => {
   }
   if (session.submitted) {
     const last = (db.finalTestAttempts || []).find(a => a.sessionId === sessionId);
-    if (last) return res.json({ success: true, message: 'Already submitted', result: { ...attemptSummary(last), questionsReview: last.questionsReview || [] } });
+    if (last) return res.json({ success: true, message: 'Already submitted', result: { ...attemptSummary(last), attemptsLeft: Math.max(0, MAX_FINAL_ATTEMPTS - finalAttemptsUsed(db, userId, course.id)) } });
     return res.status(400).json({ success: false, message: 'This exam session was already submitted.' });
   }
 
@@ -499,7 +530,7 @@ router.post('/final-test/submit', (req, res) => {
   res.json({
     success: true,
     message: passed ? 'Final Assessment Passed!' : 'Final Assessment Not Passed',
-    result: { ...attemptSummary(attempt), isAutoSubmitted, questionsReview }
+    result: { ...attemptSummary(attempt), isAutoSubmitted, attemptsLeft: Math.max(0, MAX_FINAL_ATTEMPTS - finalAttemptsUsed(getDb(), userId, course.id)) }
   });
 });
 

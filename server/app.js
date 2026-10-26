@@ -15,6 +15,8 @@ import learnerRoutes from './routes/learnerRoutes.js';
 import practiceRoutes from './routes/practiceRoutes.js';
 import { learnerGuard } from './middleware/learnerAuth.js';
 import { adminGate } from './middleware/auth.js';
+import { getDb } from './db.js';
+import { certImagePath } from './routes/certificateRoutes.js';
 
 const app = express();
 // Behind Nginx on the same machine: take the visitor's address from X-Forwarded-For, so per-address
@@ -75,6 +77,29 @@ if (fs.existsSync(path.join(distDir, 'index.html'))) {
       else if (file.includes(`${path.sep}assets${path.sep}`)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     }
   }));
+  // /verify/<id>: same page, plus preview tags (title, description, certificate picture) so a link
+  // shared on LinkedIn or WhatsApp shows the certificate.
+  app.get('/verify/:id', (req, res, next) => {
+    try {
+      const db = getDb();
+      const id = String(req.params.id).trim().toUpperCase();
+      const cert = (db.certificates || []).find(c => String(c.certificateId).toUpperCase() === id && c.status !== 'revoked');
+      if (!cert) return next();
+      const base = publicBase(req).publicUrl;
+      const esc = (v) => String(v || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+      const title = `${cert.studentName} - ${cert.courseTitle} | Arshith Bootcamp certificate`;
+      const desc = `Verified certificate of completion${cert.percentage != null ? ` with ${cert.percentage}%` : ''}. Certificate ID ${cert.certificateId}.`;
+      const image = fs.existsSync(certImagePath(id)) ? `${base}/api/certificates/${encodeURIComponent(id)}/image.jpg` : `${base}/hero-student.webp`;
+      const tags = [
+        ['og:type', 'website'], ['og:site_name', 'Arshith Bootcamp'], ['og:title', title], ['og:description', desc],
+        ['og:url', `${base}/verify/${encodeURIComponent(id)}`], ['og:image', image], ['og:image:width', '1600'], ['og:image:height', '1131']
+      ].map(([k, v]) => `<meta property="${k}" content="${esc(v)}" />`).join('')
+        + `<meta name="twitter:card" content="summary_large_image" /><meta name="twitter:image" content="${esc(image)}" />`;
+      const html = fs.readFileSync(path.join(distDir, 'index.html'), 'utf8').replace('</head>', `${tags}</head>`);
+      noCache(res);
+      res.type('html').send(html);
+    } catch { next(); }
+  });
   app.get(/^\/(?!api\/).*/, (req, res) => { noCache(res); res.sendFile(path.join(distDir, 'index.html')); });
 }
 

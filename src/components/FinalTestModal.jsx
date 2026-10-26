@@ -7,7 +7,7 @@ import { api } from '../services/api';
 import { examGuard } from '../router';
 import { userIdOf, displayNameOf } from '../utils/session';
 import { cleanText, displayTitle } from '../utils/textUtils';
-import { QuestionCard, ReviewList } from './ModuleQuizModal';
+import { QuestionCard } from './ModuleQuizModal';
 import { Spinner } from './ui';
 import IdentityCheck from './proctor/IdentityCheck';
 import { analyzeFrame, handNearFace, matchPercent, gazeState } from '../utils/aiProctor';
@@ -646,24 +646,21 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
               <ResultStat label="Time taken" value={result.timeTakenFormatted?.replace(' minutes', 'm').replace(' minute', 'm').replace(' seconds', 's').replace(' second', 's') || '—'} />
               <ResultStat label="Warnings" value={`${result.proctorViolations ?? violations.length}/${MAX_VIOLATIONS}`} />
             </div>
+            {!result.passed && result.attemptsLeft !== undefined && (
+              <p className={`mt-6 text-sm font-semibold ${result.attemptsLeft > 0 ? 'text-brand-900' : 'text-rose-600'}`}>
+                {result.attemptsLeft > 0 ? `You have ${result.attemptsLeft} attempt${result.attemptsLeft === 1 ? '' : 's'} left.` : 'You have used both attempts at this final assessment.'}
+              </p>
+            )}
             <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <button onClick={() => setPhase('review')} className="btn-outline">Review answers</button>
               {result.passed
                 ? <button onClick={onViewCertificate} className="btn-plum"><Award className="w-4 h-4" /> Get my certificate</button>
-                : <button onClick={() => { setPhase('intro'); setAgree(false); setCamState('idle'); }} className="btn-primary"><RefreshCw className="w-4 h-4" /> Retake assessment</button>}
+                : result.attemptsLeft === 0
+                  ? <button onClick={onClose} className="btn-outline">Close</button>
+                  : <button onClick={() => { setPhase('intro'); setAgree(false); setCamState('idle'); }} className="btn-primary"><RefreshCw className="w-4 h-4" /> Retake assessment</button>}
             </div>
           </Centered>
         )}
 
-        {phase === 'review' && result && (
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-5">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-xl font-bold text-brand-900">Answer review · {result.percentage}%</h2>
-              <button onClick={() => setPhase('result')} className="btn-outline"><ArrowLeft className="w-4 h-4" /> Result</button>
-            </div>
-            <ReviewList items={result.questionsReview} />
-          </div>
-        )}
       </div>
 
       {/* Toast-style notice for blocked actions */}
