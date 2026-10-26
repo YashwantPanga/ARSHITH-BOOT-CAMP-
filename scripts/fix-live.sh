@@ -40,16 +40,17 @@ setv ADMIN_EMAIL bootcamp@arshithgroup.com
 
 echo
 read -rsp "Paste the Brevo SMTP key (the SMTP_PASS line from the .env on your PC), then Enter: " SMTP_KEY; echo
-[ -n "$SMTP_KEY" ] && setv SMTP_PASS "$SMTP_KEY"
+if [ -n "$SMTP_KEY" ]; then setv SMTP_PASS "$SMTP_KEY"; echo "   received ${#SMTP_KEY} characters"; else echo "   nothing pasted - keeping the current value"; fi
 read -rsp "Type the admin password for bootcamp@arshithgroup.com, then Enter: " ADMIN_PW; echo
-[ -n "$ADMIN_PW" ] && setv ADMIN_PASSWORD "$ADMIN_PW"
+if [ -n "$ADMIN_PW" ]; then setv ADMIN_PASSWORD "$ADMIN_PW"; echo "   received ${#ADMIN_PW} characters"; else echo "   nothing typed - keeping the current value"; fi
 unset SMTP_KEY ADMIN_PW
 chmod 600 .env
 
-for k in SUPABASE_URL SUPABASE_SERVICE_KEY JWT_SECRET SMTP_PASS ADMIN_PASSWORD; do
-  grep -q "^$k=." .env || echo "!! $k is empty in $NEW/.env - fill it in (nano $NEW/.env) and run this again."
+for k in SMTP_PASS ADMIN_PASSWORD; do
+  grep -q "^$k=." .env || echo "!! $k is empty - run this again and enter it when asked."
 done
-PORT="$(grep -E '^PORT=' .env | cut -d= -f2 | tr -d ' ')"; PORT="${PORT:-5000}"
+grep -q "^SUPABASE_URL=." .env && echo "   data: Supabase" || echo "   data: file on this server (server/data/db.json) - no Supabase settings, as before"
+PORT="$(grep -E '^PORT=' .env | cut -d= -f2 | tr -d ' ' || true)"; PORT="${PORT:-5000}"
 
 echo "==> Build"
 npm ci
