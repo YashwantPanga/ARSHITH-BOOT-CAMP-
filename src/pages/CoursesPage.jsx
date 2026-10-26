@@ -6,7 +6,7 @@ import { Reveal } from '../components/ui';
 
 import { CATEGORIES } from '../data/meta';
 
-export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse, onEnrollCourse, initialSearch = '', initialCategory = 'All Categories', onHome }) {
+export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse, onEnrollCourse, initialSearch = '', initialCategory = 'All Categories', onHome, offer }) {
   const [search, setSearch] = useState(initialSearch);
   const [category, setCategory] = useState(CATEGORIES.includes(initialCategory) ? initialCategory : 'All Categories');
   const [sort, setSort] = useState('popular');
@@ -35,7 +35,7 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10 sm:pt-20 xl:pb-20 text-center">
           <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Our services</p>
           <h1 className="mt-2 text-[34px] sm:text-[48px] font-bold leading-tight text-evergreen">Online courses for focused learners</h1>
-          <p className="mt-3 text-charcoal/70 max-w-2xl mx-auto">Choose one course and master it. Every account can enroll in exactly one course.</p>
+          <p className="mt-3 text-charcoal/70 max-w-2xl mx-auto">Your first course is free. Study one course at a time and keep learning free while you pass.</p>
           <nav aria-label="Breadcrumb" className="mt-5 font-display text-[15.5px] text-evergreen">
             {onHome ? <button onClick={onHome} className="font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
             <span className="mx-2 text-charcoal/40">/</span>Courses
@@ -73,10 +73,10 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
           </div>
         </div>
 
-        {enrolledCourseId && (
+        {enrolledCourseId && !offer?.canEnrollNew && (
           <div className="mt-5 flex items-start gap-3 p-4 rounded-2xl bg-brand-50 border border-brand-200 text-sm text-brand-900">
             <Lock className="w-4 h-4 mt-0.5 text-sage shrink-0" />
-            <p>You are enrolled in <strong>{enrolledTitle || enrolledCourseId}</strong>. Other courses are locked for this login (one course per account).</p>
+            <p>You are enrolled in <strong>{enrolledTitle || enrolledCourseId}</strong>. Finish it - pass the final assessment or use both attempts - to start another course.</p>
           </div>
         )}
 
@@ -94,7 +94,7 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
           <div className="mt-8 grid sm:grid-cols-2 xl:grid-cols-4 gap-6">
             {list.map((c, i) => (
               <Reveal key={c.id} delay={(i % 4) * 80} className="h-full">
-                <CourseTile course={c} enrolledCourseId={enrolledCourseId} onSelect={onSelectCourse} onEnroll={onEnrollCourse} />
+                <CourseTile course={c} enrolledCourseId={enrolledCourseId} offer={offer} onSelect={onSelectCourse} onEnroll={onEnrollCourse} />
               </Reveal>
             ))}
           </div>

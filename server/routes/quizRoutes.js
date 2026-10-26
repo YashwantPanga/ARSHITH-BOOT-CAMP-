@@ -12,11 +12,18 @@ export const PASS_PERCENTAGE = 70;
 // then left until its time ran out (never submitted) also uses a try.
 export const MAX_FINAL_ATTEMPTS = 2;
 
-/** Tries used so far at a course's final: submitted attempts plus abandoned (expired, unsubmitted) exams. */
-export function finalAttemptsUsed(db, userId, courseId) {
+/** All tries ever at a course's final: submitted attempts plus abandoned (expired, unsubmitted) exams. */
+export function finalAttemptsTotal(db, userId, courseId) {
   const submitted = (db.finalTestAttempts || []).filter(a => a.userId === userId && a.courseId === courseId).length;
   const abandoned = db.finalTestAbandoned?.[`${userId}::${courseId}`] || 0;
   return submitted + abandoned;
+}
+
+/** Tries used in the current enrolment (buying the same course again starts a fresh set). */
+export function finalAttemptsUsed(db, userId, courseId) {
+  const enr = db.learnerEnrollments?.[userId];
+  const offset = enr?.courseId === courseId ? (enr.attemptOffset || 0) : 0;
+  return Math.max(0, finalAttemptsTotal(db, userId, courseId) - offset);
 }
 const FINAL_DURATION_SECONDS = 45 * 60;
 const SUBMIT_GRACE_SECONDS = 90;
@@ -96,9 +103,10 @@ function getFinalQuestions(course, paperCode) {
 /** Returns an error message when the learner is locked into a different course. */
 function enrollmentConflict(db, userId, courseId) {
   const enrolled = db.learnerEnrollments?.[userId]?.courseId;
-  if (enrolled && courseId && enrolled !== courseId) {
+  if (!enrolled) return 'Enroll in this course first.';
+  if (courseId && enrolled !== courseId) {
     const title = findCourse(db, enrolled)?.title || enrolled;
-    return `Your account is enrolled in "${title}". Only one course is allowed per login.`;
+    return `Your current course is "${title}". Open that course to continue.`;
   }
   return null;
 }
@@ -154,6 +162,8 @@ router.get('/progress/:courseId', (req, res) => {
     passedModuleIds: getPassedModuleIds(db, userId, course.id),
     moduleScores: getBestModuleScores(db, userId, course.id),
     finalAttempts: finalAttempts.map(attemptSummary),
+    finalAttemptsUsed: finalAttemptsUsed(db, userId, course.id),
+    maxFinalAttempts: MAX_FINAL_ATTEMPTS,
     passedFinal: attemptSummary(passedFinal),
     projects: projectRequirement(db, userId, course),
     certificateId: certificate?.certificateId || null

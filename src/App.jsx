@@ -9,6 +9,7 @@ import Footer from './components/Footer';
 import MobileBottomNav from './components/MobileBottomNav';
 import DesktopNotice from './components/DesktopNotice';
 import EnrollCelebration from './components/EnrollCelebration';
+import PaymentNotice from './components/PaymentNotice';
 
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminCourseBar = lazy(() => import('./components/staff/AdminCourseBar'));
@@ -97,6 +98,12 @@ function AppShell() {
   const [adminUser, setAdminUser] = useState(null);
   const userId = userIdOf(studentUser);
   const enrolledCourseId = enrolledCourseOf(studentUser);
+  // what this learner may enrol in next, from the server: { canEnrollNew, nextPrice, status, history }
+  const [enrollState, setEnrollState] = useState(null);
+  const courseOffer = useMemo(() => ({
+    canEnrollNew: studentUser ? (enrollState ? enrollState.canEnrollNew : !enrolledCourseId) : true,
+    price: studentUser ? (enrollState?.nextPrice || 0) : 0
+  }), [studentUser, enrollState, enrolledCourseId]);
 
   const saveUser = useCallback((u) => {
     setStudentUser(u);
@@ -111,6 +118,7 @@ function AppShell() {
       try {
         const res = await api.getEnrollment(userIdOf(studentUser));
         if (cancelled) return;
+        setEnrollState(res);
         const local = enrolledCourseOf(studentUser);
         if (res.courseId && res.courseId !== local) {
           saveUser({ ...studentUser, enrolledCourseIds: [res.courseId] });
@@ -196,8 +204,9 @@ function AppShell() {
 
   const findCourse = (id) => decoratedCourses.find(c => c.id === id || c.slug === id) || null;
 
-  /* ---------------- Enrollment (one course per login) ---------------- */
+  /* ---------------- Enrollment (rules in server/lib/enrollment.js) ---------------- */
   const [enrollTarget, setEnrollTarget] = useState(null);
+  const [paymentFor, setPaymentFor] = useState(null); // { course, price } when a course needs payment
   const [enrolling, setEnrolling] = useState(false);
   const [celebrate, setCelebrate] = useState(null); // course just enrolled in
 
@@ -212,19 +221,24 @@ function AppShell() {
       navigate(paths.learn(courseId));
       return;
     }
-    if (enrolledCourseId) {
+    if (enrolledCourseId && !courseOffer.canEnrollNew) {
       const current = courses.find(c => c.id === enrolledCourseId);
-      toast(`You're already enrolled in "${current?.title || enrolledCourseId}". Only one course is allowed per login.`, 'error', 5200);
+      toast(`Finish "${current?.title || enrolledCourseId}" first - pass its final assessment or use both attempts - then you can start another course.`, 'error', 5600);
+      return;
+    }
+    if (courseOffer.price > 0) {
+      setPaymentFor({ course: course || { id: courseId, title: courseId }, price: courseOffer.price });
       return;
     }
     setEnrollTarget(course || { id: courseId, title: courseId });
-  }, [studentUser, enrolledCourseId, courses, navigate, toast]);
+  }, [studentUser, enrolledCourseId, courses, navigate, toast, courseOffer]);
 
   const confirmEnroll = async () => {
     if (!enrollTarget || !studentUser) return;
     setEnrolling(true);
     try {
-      await api.enroll(userId, enrollTarget.id);
+      const res = await api.enroll(userId, enrollTarget.id);
+      setEnrollState(res);
       saveUser({ ...studentUser, enrolledCourseIds: [enrollTarget.id] });
       // the celebration takes over from here; Start learning opens the first module
       setCelebrate(findCourse(enrollTarget.id) || enrollTarget);
@@ -233,7 +247,8 @@ function AppShell() {
       if (err.status === 409 && err.data?.courseId) {
         saveUser({ ...studentUser, enrolledCourseIds: [err.data.courseId] });
       }
-      toast(err.message || 'Could not enroll right now. Please try again.', 'error', 5200);
+      if (err.status === 402) setPaymentFor({ course: enrollTarget, price: err.data?.price || 99 });
+      else toast(err.message || 'Could not enroll right now. Please try again.', 'error', 5200);
       setEnrollTarget(null);
     } finally {
       setEnrolling(false);
@@ -290,9 +305,7 @@ function AppShell() {
       const id = route.params.courseId;
       if (!courses.some(c => c.id === id)) return; // not-found screen handles it
       if (enrolledCourseId !== id) {
-        toast(enrolledCourseId
-          ? 'This course is locked for your account — only one course is allowed per login.'
-          : 'Enroll in this course to start learning.', enrolledCourseId ? 'error' : 'info', 4800);
+        toast('Enroll in this course to start learning.', 'info', 4800);
         navigate(paths.course(id), { replace: true });
       }
     }
@@ -340,6 +353,7 @@ function AppShell() {
           <PopularCourses
             courses={decoratedCourses}
             enrolledCourseId={enrolledCourseId}
+            offer={courseOffer}
             onSelectCourse={(id) => navigate(paths.course(id))}
             onEnrollCourse={requestEnroll}
             onViewAllCourses={() => goCourses()}
@@ -355,6 +369,7 @@ function AppShell() {
           key={`${route.query.q || ''}|${route.query.category || ''}`}
           courses={decoratedCourses}
           enrolledCourseId={enrolledCourseId}
+          offer={courseOffer}
           onSelectCourse={(id) => navigate(paths.course(id))}
           onEnrollCourse={requestEnroll}
           initialSearch={route.query.q || ''}
@@ -369,6 +384,7 @@ function AppShell() {
         <CourseDetailsPage
           course={course}
           enrolledCourseId={enrolledCourseId}
+          offer={courseOffer}
           isLoggedIn={!!studentUser}
           onBack={() => navigate(paths.courses())}
           onEnroll={() => requestEnroll(course.id)}
@@ -412,7 +428,8 @@ function AppShell() {
           onContinue={(id, moduleId) => navigate(paths.learn(id, moduleId))}
           onViewCertificate={(id) => navigate(paths.certificate(id))}
           onExploreCourses={() => goCourses()}
-          onRefresh={() => enrolledCourseId && refreshProgress(enrolledCourseId)}
+          onRefresh={() => { if (enrolledCourseId) refreshProgress(enrolledCourseId); api.getEnrollment(userId).then(setEnrollState).catch(() => {}); }}
+          enrollState={enrollState}
           onHome={() => navigate(paths.home())}
           onProfileSaved={(changes) => saveUser({ ...studentUser, ...changes })}
           initialTab={route.query.tab}
@@ -553,7 +570,7 @@ function AppShell() {
         title={`Enroll in ${enrollTarget?.title || 'this course'}?`}
         message={
           <>
-            <p>Each Arshith Bootcamp login can be enrolled in <strong>only one course</strong>. After you enroll, other courses will be locked for this account.</p>
+            <p>This course is <strong>free</strong>. You study one course at a time: finish it - pass the final assessment or use both attempts - before starting another. Courses stay free while you keep passing; after failing a final twice, further courses cost ₹99.</p>
           </>
         }
         confirmLabel="Yes, enroll me"
@@ -561,6 +578,7 @@ function AppShell() {
         onConfirm={confirmEnroll}
         onCancel={() => !enrolling && setEnrollTarget(null)}
       />
+      {paymentFor && <PaymentNotice course={paymentFor.course} price={paymentFor.price} onClose={() => setPaymentFor(null)} />}
       {celebrate && (
         <EnrollCelebration
           course={celebrate}

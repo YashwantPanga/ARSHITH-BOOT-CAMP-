@@ -1,4 +1,5 @@
 import express from 'express';
+import { enrolmentState, enrol } from '../lib/enrollment.js';
 import { getDb, saveDb, logActivity } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
 
@@ -353,8 +354,7 @@ router.post('/admin/students/:id/reset-password', verifyAdminToken, (req, res) =
 });
 
 // ==========================================
-// LEARNER: SINGLE-COURSE ENROLLMENT LOCK
-// One login = one course. The first course a learner enrolls in is permanent.
+// LEARNER ENROLMENT (rules in server/lib/enrollment.js)
 // ==========================================
 const normId = (id) => String(id || '').trim().toLowerCase();
 
@@ -362,7 +362,7 @@ router.get('/enrollment', (req, res) => {
   const userId = normId(req.query.userId);
   if (!userId) return res.status(400).json({ success: false, message: 'userId is required.' });
   const db = getDb();
-  res.json({ success: true, courseId: db.learnerEnrollments?.[userId]?.courseId || null });
+  res.json({ success: true, ...enrolmentState(db, userId) });
 });
 
 router.post('/enrollment', (req, res) => {
@@ -374,28 +374,26 @@ router.post('/enrollment', (req, res) => {
   const course = (db.courses || []).find(c => c.id === courseId);
   if (!course) return res.status(404).json({ success: false, message: 'Course not found.' });
 
-  if (!db.learnerEnrollments) db.learnerEnrollments = {};
-  const existing = db.learnerEnrollments[userId];
-  if (existing && existing.courseId !== courseId) {
-    const existingTitle = (db.courses || []).find(c => c.id === existing.courseId)?.title || existing.courseId;
-    return res.status(409).json({
+  const state = enrolmentState(db, userId);
+  if (state.courseId === courseId && state.status === 'active') return res.json({ success: true, ...state });
+  if (!state.canEnrollNew) {
+    const title = (db.courses || []).find(c => c.id === state.courseId)?.title || state.courseId;
+    return res.status(409).json({ success: false, courseId: state.courseId, message: `Finish "${title}" first - pass its final assessment or use both attempts - then you can start another course.` });
+  }
+  if (state.passedCourseIds.includes(courseId)) {
+    return res.status(409).json({ success: false, message: 'You have already passed this course. Your certificate is in your dashboard.' });
+  }
+  if (state.nextPrice > 0) {
+    return res.status(402).json({
       success: false,
-      courseId: existing.courseId,
-      message: `Your account is already enrolled in "${existingTitle}". Only one course is allowed per login.`
+      code: 'PAYMENT_REQUIRED',
+      price: state.nextPrice,
+      message: `This course costs ₹${state.nextPrice}. Online payment is coming soon - to enrol now, contact us at bootcamp@arshithgroup.com or +91 82177 29744.`
     });
   }
-  if (!existing) {
-    db.learnerEnrollments[userId] = { courseId, enrolledAt: new Date().toISOString() };
-    // Keep the admin student record in sync with the learner's enrollment.
-    const student = (db.students || []).find(st => normId(st.email) === userId);
-    if (student) {
-      student.enrolledCourses = [courseId];
-      if (!student.progressMap) student.progressMap = {};
-      if (!student.progressMap[courseId]) student.progressMap[courseId] = { progress: 0, completedModules: [], quizzesPassed: [], finalTestPassed: false, projectStatus: 'Not Submitted' };
-    }
-    saveDb(db);
-  }
-  res.json({ success: true, courseId });
+  enrol(db, userId, courseId, { paid: false, by: 'learner' });
+  saveDb(db);
+  res.json({ success: true, ...enrolmentState(db, userId) });
 });
 
 // Manual Course Enrollment
@@ -410,30 +408,12 @@ router.post('/admin/enrollments', verifyAdminToken, (req, res) => {
     return res.status(404).json({ success: false, message: 'Student or Course not found.' });
   }
 
-  if (!student.enrolledCourses) student.enrolledCourses = [];
-  // Policy: one course per student account.
-  const otherCourse = student.enrolledCourses.find(cId => cId !== courseId);
-  if (otherCourse) {
-    return res.status(400).json({
-      success: false,
-      message: `${student.name} is already enrolled in "${otherCourse}". Each account can be enrolled in only one course — remove that enrollment first.`
-    });
-  }
-  if (!student.enrolledCourses.includes(courseId)) {
-    student.enrolledCourses.push(courseId);
-  }
-
-  if (!student.progressMap) student.progressMap = {};
-  if (!student.progressMap[courseId]) {
-    student.progressMap[courseId] = {
-      progress: 0,
-      completedModules: [],
-      quizzesPassed: [],
-      finalTestPassed: false,
-      projectStatus: 'Not Submitted'
-    };
-  }
-
+  // The admin can enrol anyone in any course (e.g. after a ₹99 payment received directly); this
+  // sets the student's real enrolment, moving any current course to their history.
+  const email = normId(student.email);
+  const state = enrolmentState(db, email);
+  if (state.courseId === courseId && state.status === 'active') return res.json({ success: true, message: `${student.name} is already studying ${course.title}` });
+  enrol(db, email, courseId, { paid: state.nextPrice > 0, by: 'admin' });
   saveDb(db);
 
   logActivity({

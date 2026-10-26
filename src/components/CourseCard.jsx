@@ -10,10 +10,12 @@ import { hoursOf, TRACKS } from '../data/meta';
 const CARD_ART = new Set(['python-programming', 'sql-mastery', 'web-development', 'data-science-ai']);
 /** The course's card image: certificate-style art when available, otherwise its thumbnail. */
 export const courseArt = (course) => (CARD_ART.has(course.id) ? `/course-cards/${course.id}.webp` : course.thumbnail);
+/** Price shown on enrol buttons: 'Free' or '₹99'. */
+export const priceLabel = (offer) => (offer?.price > 0 ? `₹${offer.price}` : 'Free');
 
-export default function CourseCard({ course, enrolledCourseId, onSelect, onEnroll, index = 0 }) {
+export default function CourseCard({ course, enrolledCourseId, onSelect, onEnroll, offer, index = 0 }) {
   const isMine = enrolledCourseId === course.id;
-  const isLocked = !!enrolledCourseId && !isMine;
+  const isLocked = !!enrolledCourseId && !isMine && !offer?.canEnrollNew;
   const modules = course.modules?.length || 0;
   const art = CARD_ART.has(course.id) ? `/course-cards/${course.id}.webp` : null;
 
@@ -60,12 +62,12 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
             {isMine ? (
               <button onClick={() => onEnroll(course.id)} className="btn-primary font-display w-full py-3 !rounded-md"><PlayCircle className="w-4 h-4" /> Continue learning</button>
             ) : isLocked ? (
-              <button disabled className="btn font-display w-full py-3 !rounded-md bg-cream text-charcoal/50 border border-brand-900/10" title="Only one course is allowed per login">
-                <Lock className="w-4 h-4" /> One course per login
+              <button disabled className="btn font-display w-full py-3 !rounded-md bg-cream text-charcoal/50 border border-brand-900/10" title="Finish your current course first">
+                <Lock className="w-4 h-4" /> Finish current course first
               </button>
             ) : (
               <button onClick={() => onEnroll(course.id)} className="btn font-display w-full py-3 !rounded-md bg-cream text-forest border border-forest/20 hover:bg-forest hover:text-ivory hover:border-forest group/btn">
-                Enroll for Free <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                {offer?.price > 0 ? `Enroll for ₹${offer.price}` : 'Enroll for Free'} <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
               </button>
             )}
           </div>
@@ -77,9 +79,9 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
 
 /** Courses page card in the eduleb "single_course" style: image with a vertical category tag,
  *  centered stars, title and facts, a course-fee strip and the enrol action. */
-export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll }) {
+export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll, offer }) {
   const isMine = enrolledCourseId === course.id;
-  const isLocked = !!enrolledCourseId && !isMine;
+  const isLocked = !!enrolledCourseId && !isMine && !offer?.canEnrollNew;
   const modules = course.modules?.length || 0;
   const rating = Number(course.rating) || 0;
 
@@ -122,17 +124,17 @@ export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll }) {
         )}
 
         <div className="mt-auto pt-5 w-full">
-          <p className="py-2.5 rounded-md bg-cream border border-brand-900/10 font-display text-[15px] font-semibold text-forest">Course Fee - Free</p>
+          <p className="py-2.5 rounded-md bg-cream border border-brand-900/10 font-display text-[15px] font-semibold text-forest">Course Fee - {priceLabel(offer)}</p>
           <div className="mt-3">
             {isMine ? (
               <button onClick={() => onEnroll(course.id)} className="btn-primary font-display w-full py-3 !rounded-md"><PlayCircle className="w-4 h-4" /> Continue learning</button>
             ) : isLocked ? (
-              <button disabled className="btn font-display w-full py-3 !rounded-md bg-cream text-charcoal/50 border border-brand-900/10" title="Only one course is allowed per login">
-                <Lock className="w-4 h-4" /> One course per login
+              <button disabled className="btn font-display w-full py-3 !rounded-md bg-cream text-charcoal/50 border border-brand-900/10" title="Finish your current course first">
+                <Lock className="w-4 h-4" /> Finish current course first
               </button>
             ) : (
               <button onClick={() => onEnroll(course.id)} className="btn font-display w-full py-3 !rounded-md bg-forest text-ivory hover:bg-sage group/btn">
-                Enroll for Free <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                {offer?.price > 0 ? `Enroll for ₹${offer.price}` : 'Enroll for Free'} <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
               </button>
             )}
           </div>

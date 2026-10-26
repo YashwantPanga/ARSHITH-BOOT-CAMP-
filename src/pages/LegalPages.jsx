@@ -50,7 +50,7 @@ export function TermsPage({ onHome }) {
       sections={[
         { title: 'Your account', body: [
           'You must give your full name exactly as it appears on a government or college photo ID, and a working email address. Your name is printed on your certificate and checked against your ID before the final assessment.',
-          'Keep your password private. You are responsible for activity on your account. One person may hold one account, and each account may enrol in one course.'
+          'Keep your password private. You are responsible for activity on your account. One person may hold one account. You study one course at a time; your first course is free and courses stay free while you pass their final assessment. After failing a final assessment twice, further courses (including the same course again) cost ₹99 each.'
         ] },
         { title: 'Courses and certificates', body: [
           'Courses are free. A certificate of completion is issued when you finish every module quiz, submit the required project and score at least 70% in the proctored final assessment.',

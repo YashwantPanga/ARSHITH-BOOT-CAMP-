@@ -9,7 +9,7 @@ import { Reveal } from './ui';
 import { TrackMark } from './TrackBadge';
 import { TRACKS } from '../data/meta';
 
-export default function PopularCourses({ courses, enrolledCourseId, onSelectCourse, onEnrollCourse, onViewAllCourses }) {
+export default function PopularCourses({ courses, enrolledCourseId, offer, onSelectCourse, onEnrollCourse, onViewAllCourses }) {
   const [track, setTrack] = useState('all');
   const tracks = useMemo(() => [...new Set(courses.map(c => c.iconType).filter(Boolean))], [courses]);
   const list = (track === 'all' ? courses : courses.filter(c => c.iconType === track)).slice(0, 8);
@@ -46,13 +46,13 @@ export default function PopularCourses({ courses, enrolledCourseId, onSelectCour
           <>
           {/* phones: compact list rows (Coursera-style), then a full-width "show all" button */}
           <div className="mt-6 space-y-3 sm:hidden">
-            {list.slice(0, 4).map(c => <CourseRow key={`${track}-${c.id}`} course={c} enrolledCourseId={enrolledCourseId} onSelect={onSelectCourse} />)}
+            {list.slice(0, 4).map(c => <CourseRow key={`${track}-${c.id}`} course={c} enrolledCourseId={enrolledCourseId} offer={offer} onSelect={onSelectCourse} />)}
             <button onClick={onViewAllCourses} className="font-display w-full h-12 rounded-md bg-forest text-ivory text-[15px] font-semibold hover:bg-sage transition">Show all courses</button>
           </div>
           <div className="mt-8 hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {list.map((c, i) => (
               <div key={`${track}-${c.id}`} className="h-full animate-fade-up" style={{ animationDelay: `${i * 70}ms` }}>
-                <CourseCard course={c} index={i} enrolledCourseId={enrolledCourseId} onSelect={onSelectCourse} onEnroll={onEnrollCourse} />
+                <CourseCard course={c} index={i} enrolledCourseId={enrolledCourseId} offer={offer} onSelect={onSelectCourse} onEnroll={onEnrollCourse} />
               </div>
             ))}
           </div>
@@ -64,9 +64,9 @@ export default function PopularCourses({ courses, enrolledCourseId, onSelectCour
 }
 
 /** One course as a compact row: image on the left, title and key facts on the right. */
-function CourseRow({ course, enrolledCourseId, onSelect }) {
+function CourseRow({ course, enrolledCourseId, offer, onSelect }) {
   const isMine = enrolledCourseId === course.id;
-  const isLocked = !!enrolledCourseId && !isMine;
+  const isLocked = !!enrolledCourseId && !isMine && !offer?.canEnrollNew;
   return (
     <button onClick={() => onSelect(course.id)} className={`edu-card w-full flex gap-3 p-2.5 !rounded-2xl text-left active:scale-[.99] transition ${isLocked ? 'opacity-80' : ''}`}>
       <span className="relative shrink-0 w-[112px] aspect-[16/10] rounded-lg overflow-hidden bg-forest">

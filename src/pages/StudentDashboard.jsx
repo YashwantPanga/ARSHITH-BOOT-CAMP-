@@ -5,7 +5,7 @@ import { courseArt } from '../components/CourseCard';
 import { cleanText, displayTitle } from '../utils/textUtils';
 import { api } from '../services/api';
 
-export default function StudentDashboard({ studentUser, courses, coursesLoaded, enrolledCourseId, onOpenCourse, onContinue, onViewCertificate, onExploreCourses, onRefresh, onHome, onProfileSaved, initialTab = 'learning' }) {
+export default function StudentDashboard({ studentUser, courses, coursesLoaded, enrolledCourseId, onOpenCourse, onContinue, onViewCertificate, onExploreCourses, onRefresh, onHome, onProfileSaved, initialTab = 'learning', enrollState }) {
   useEffect(() => { onRefresh?.(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
   const [tab, setTab] = useState(initialTab === 'profile' ? 'profile' : 'learning');
 
@@ -22,6 +22,11 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
   const passedFinal = lp?.passedFinal;
   const lastFinal = lp?.finalAttempts?.[0];
   const nextModule = course?.modules?.find(m => !m.completed) || course?.modules?.[0];
+  const attemptsUsed = lp?.finalAttemptsUsed ?? lp?.finalAttempts?.length ?? 0;
+  const titleOf = (id) => displayTitle(courses.find(c => c.id === id)?.title || id);
+  const history = enrollState?.history || [];
+  const canStartNext = !!enrollState?.canEnrollNew && !!course;
+  const nextPrice = enrollState?.nextPrice || 0;
 
   const stats = [
     { label: 'Course progress', value: course ? `${course.progress || 0}%` : '-', icon: BookOpen },
@@ -125,6 +130,13 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
               </div>
 
               <div className="space-y-6">
+                {canStartNext && (
+                  <div className="edu-card p-6 border-sage/40 bg-brand-50/60">
+                    <h3 className="font-display text-[18px] font-semibold text-evergreen">{enrollState.status === 'passed' ? 'Ready for your next course' : 'This course is closed'}</h3>
+                    <p className="mt-1.5 text-sm text-charcoal/70">{enrollState.status === 'passed' ? 'Well done! Pick your next course - it is free.' : `You used both final attempts. You can take any course - this one again too, with two fresh attempts - for ₹${nextPrice}.`}</p>
+                    <button onClick={onExploreCourses} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage w-full mt-4 py-3">Choose a course <ArrowRight className="w-4 h-4" /></button>
+                  </div>
+                )}
                 <div className="edu-card p-6 text-center">
                   <ProgressRing value={course.progress} size={96} stroke={9} />
                   <p className="mt-3 font-display text-[17px] font-semibold text-evergreen">Course progress</p>
@@ -137,7 +149,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                     <p className="mt-2 text-sm text-charcoal/70">Passed with <strong className="text-forest">{passedFinal.percentage}%</strong>.</p>
                   ) : allPassed ? (
                     <p className="mt-2 text-sm text-charcoal/70">Unlocked! 45 minutes, proctored, pass mark 70%.{lastFinal ? ` Last attempt: ${lastFinal.percentage}%.` : ''}
-                      <span className="block mt-1 font-semibold text-evergreen">{(lp?.finalAttempts?.length || 0) >= 2 ? 'Both attempts used.' : `Attempts left: ${2 - (lp?.finalAttempts?.length || 0)} of 2`}</span>
+                      <span className="block mt-1 font-semibold text-evergreen">{attemptsUsed >= 2 ? 'Both attempts used.' : `Attempts left: ${2 - attemptsUsed} of 2`}</span>
                     </p>
                   ) : (
                     <div className="mt-2 text-sm text-charcoal/60 space-y-1">
@@ -146,8 +158,24 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                       {projectReq.required > 0 && <p className="pl-6">Project GitHub repos submitted: <strong className="text-evergreen">{projectReq.submitted}/{projectReq.required}</strong></p>}
                     </div>
                   )}
-                  {!passedFinal && allPassed && (lp?.finalAttempts?.length || 0) < 2 && <button onClick={() => onContinue(course.id, nextModule?.id)} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage w-full mt-4 py-3">Go to final assessment</button>}
+                  {!passedFinal && allPassed && attemptsUsed < 2 && <button onClick={() => onContinue(course.id, nextModule?.id)} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage w-full mt-4 py-3">Go to final assessment</button>}
                 </div>
+
+                {history.length > 0 && (
+                  <div className="edu-card p-6">
+                    <h3 className="font-display text-[18px] font-semibold text-evergreen flex items-center gap-2"><BookOpen className="w-5 h-5 text-sage" /> Earlier courses</h3>
+                    <ul className="mt-3 space-y-2.5">
+                      {history.slice().reverse().map((h, i) => (
+                        <li key={i} className="flex items-center gap-2 text-sm">
+                          <span className="flex-1 min-w-0 truncate text-charcoal">{titleOf(h.courseId)}</span>
+                          {h.outcome === 'passed'
+                            ? <button onClick={() => onViewCertificate(h.courseId)} className="shrink-0 rounded-full bg-brand-100 text-forest text-[12px] font-semibold px-2.5 py-1 hover:bg-brand-200">Passed · Certificate</button>
+                            : <span className="shrink-0 rounded-full bg-rose-50 text-rose-700 text-[12px] font-semibold px-2.5 py-1">{h.outcome === 'failed' ? 'Not passed' : 'Closed'}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 <div className="edu-card p-6">
                   <h3 className="font-display text-[18px] font-semibold text-evergreen flex items-center gap-2"><Award className="w-5 h-5 text-sage" /> Certificate</h3>
