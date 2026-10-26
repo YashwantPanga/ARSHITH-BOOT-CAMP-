@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { getDb, saveDb, logActivity } from '../db.js';
-import { signLearnerToken } from '../middleware/learnerAuth.js';
+import { signLearnerToken, learnerFromRequest } from '../middleware/learnerAuth.js';
 import { JWT_SECRET } from '../middleware/auth.js';
 import { KNOWN_DEFAULT_PASSWORDS } from './authRoutes.js';
 import { sendMail, devCodesAllowed, smtpConfigured } from '../lib/mailer.js';
@@ -39,7 +39,9 @@ function publicLearner(db, l) {
     regNo: l.regNo,
     phone: l.phone,
     createdAt: l.createdAt,
-    enrolledCourseIds: enrolled ? [enrolled] : []
+    enrolledCourseIds: enrolled ? [enrolled] : [],
+    // the name is printed on certificates, so it cannot be edited once one exists
+    nameLocked: (db.certificates || []).some(c => normEmail(c.userId) === l.email && c.status !== 'revoked')
   };
 }
 
@@ -300,6 +302,56 @@ router.post('/learners/login', (req, res) => {
     saveDb(db);
   }
   res.json({ success: true, learner: publicLearner(db, learner), token: signLearnerToken(email) });
+});
+
+/* ---------- my profile (signed-in learner) ---------- */
+// Name, registration number and phone can be changed; the email is the account itself. The name is
+// printed on certificates and checked against the photo ID, so it is locked once a certificate exists.
+router.put('/learners/me', (req, res) => {
+  const email = learnerFromRequest(req);
+  if (!email) return res.status(401).json({ success: false, code: 'LEARNER_AUTH_REQUIRED', message: 'Please sign in again.' });
+  const db = getDb();
+  const learner = db.learners?.[email];
+  if (!learner) return res.status(401).json({ success: false, code: 'LEARNER_AUTH_REQUIRED', message: 'Please sign in again.' });
+
+  const name = req.body.name === undefined ? learner.name : String(req.body.name).trim().replace(/\s+/g, ' ');
+  const regNo = req.body.regNo === undefined ? learner.regNo : normReg(req.body.regNo);
+  const phone = req.body.phone === undefined ? learner.phone : String(req.body.phone).trim();
+  if (name.length < 2) return res.status(400).json({ success: false, field: 'name', message: 'Please enter your full name.' });
+  if (!/^[A-Z0-9-]{4,20}$/.test(regNo)) return res.status(400).json({ success: false, field: 'regNo', message: 'Registration number must be 4–20 letters, digits or hyphens.' });
+  if (phone.replace(/\D/g, '').length < 10) return res.status(400).json({ success: false, field: 'phone', message: 'Please enter a valid phone number (at least 10 digits).' });
+  if (regNo !== learner.regNo && Object.values(db.learners).some(l => l.email !== email && l.regNo === regNo)) {
+    return res.status(409).json({ success: false, field: 'regNo', message: 'This registration number is already registered to another account.' });
+  }
+  const hasCertificate = (db.certificates || []).some(c => normEmail(c.userId) === email && c.status !== 'revoked');
+  if (name !== learner.name && hasCertificate) {
+    return res.status(409).json({ success: false, field: 'name', message: 'Your name is printed on your certificate, so it can no longer be changed here. Contact us if it is wrong.' });
+  }
+
+  Object.assign(learner, { name, regNo, phone, updatedAt: new Date().toISOString() });
+  const student = (db.students || []).find(s => normEmail(s.email) === email);
+  if (student) Object.assign(student, { name, regNo, phone });
+  saveDb(db);
+  res.json({ success: true, message: 'Your profile has been updated.', learner: { ...publicLearner(db, learner), nameLocked: hasCertificate } });
+});
+
+router.post('/learners/change-password', (req, res) => {
+  const email = learnerFromRequest(req);
+  if (!email) return res.status(401).json({ success: false, code: 'LEARNER_AUTH_REQUIRED', message: 'Please sign in again.' });
+  const db = getDb();
+  const learner = db.learners?.[email];
+  if (!learner) return res.status(401).json({ success: false, code: 'LEARNER_AUTH_REQUIRED', message: 'Please sign in again.' });
+  const current = String(req.body.currentPassword || '');
+  const next = String(req.body.newPassword || '');
+  if (!bcrypt.compareSync(current, learner.passwordHash)) return res.status(400).json({ success: false, field: 'currentPassword', message: 'Your current password is not correct.' });
+  if (next.length < 6) return res.status(400).json({ success: false, field: 'newPassword', message: 'The new password must be at least 6 characters.' });
+  if (next === current) return res.status(400).json({ success: false, field: 'newPassword', message: 'Choose a password different from the current one.' });
+  learner.passwordHash = bcrypt.hashSync(next, 10);
+  learner.passwordChangedAt = new Date().toISOString();
+  saveDb(db);
+  sendMail({ to: email, ...passwordChangedEmail({ name: learner.name }) }).catch(() => {});
+  // older sessions stop working after a password change; this one continues with a fresh token
+  res.json({ success: true, message: 'Your password has been changed.', token: signLearnerToken(email) });
 });
 
 // Contact form – messages are stored for the admin team (previously the form only pretended to send).

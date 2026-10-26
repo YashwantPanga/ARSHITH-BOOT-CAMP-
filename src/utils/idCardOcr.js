@@ -67,11 +67,21 @@ export function matchNameInText(registeredName, text) {
   };
 }
 
+/** True when a script file could not be loaded because the site was updated after this page opened. */
+export const isStaleBuildError = (err) => /dynamically imported module|Importing a module script failed|error loading dynamically imported|Failed to fetch/i.test(String(err?.message || err));
+
 let workerPromise = null;
 /** Starts the OCR engine once (English). */
 export function loadOcr() {
   if (!workerPromise) {
-    workerPromise = import('tesseract.js').then(async ({ createWorker }) => {
+    workerPromise = import('tesseract.js').catch((err) => {
+      if (isStaleBuildError(err)) {
+        const e = new Error('The website was updated while this page was open. Reload the page, then scan your ID again.');
+        e.stale = true;
+        throw e;
+      }
+      throw err;
+    }).then(async ({ createWorker }) => {
       const worker = await createWorker('eng');
       // ID cards are scattered short lines: "sparse text" layout reads them better than page layout
       await worker.setParameters({ tessedit_pageseg_mode: '11', preserve_interword_spaces: '1' });
@@ -93,7 +103,7 @@ function prepare(source, { crop = null, binary = false } = {}) {
   const fh = source.videoHeight || source.naturalHeight || source.height;
   const sx = crop ? Math.round(fw * crop.x) : 0, sy = crop ? Math.round(fh * crop.y) : 0;
   const w = crop ? Math.round(fw * crop.w) : fw, h = crop ? Math.round(fh * crop.h) : fh;
-  const scale = Math.min(3, Math.max(1, 1600 / Math.max(w, h)));
+  const scale = Math.min(3, Math.max(1, 1400 / Math.max(w, h)));
   const c = document.createElement('canvas');
   c.width = Math.round(w * scale); c.height = Math.round(h * scale);
   const ctx = c.getContext('2d', { willReadFrequently: true });

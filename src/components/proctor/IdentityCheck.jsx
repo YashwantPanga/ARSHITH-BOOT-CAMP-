@@ -37,6 +37,8 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
       .catch(() => setModels(m => ({ ...m, state: 'error' })));
   };
   useEffect(load, []);
+  // start the ID text reader straight away, so it is ready by the time the student shows the card
+  useEffect(() => { loadOcr().catch(() => {}); }, []);
 
   const setVideo = (el) => { videoEl.current = el; attachVideo(el); };
 
@@ -95,7 +97,7 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
           : `Your registered name was not found on the card${r.missing.length ? ` (missing: ${r.missing.join(', ')})` : ''}. Make sure the card shows your full name as registered, then try again.`
       }));
     } catch (e) {
-      if (alive.current) setIdCard(s => ({ ...s, state: 'error', tries: s.tries + 1, msg: e.message || 'The card could not be read. Try again.' }));
+      if (alive.current) setIdCard(s => ({ ...s, state: 'error', stale: !!e.stale, tries: e.stale ? s.tries : s.tries + 1, msg: e.message || 'The card could not be read. Try again.' }));
     } finally {
       clearInterval(timer);
     }
@@ -193,6 +195,7 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
         <Step n={3} title="Verify the name on your ID" state={idCard.state === 'done' || skipped ? 'done' : face.state === 'done' ? 'active' : 'pending'}>
           <p className="text-xs text-slate-500">Show a photo ID (college ID, Aadhaar, passport, licence). The name on it must match your registered name: <strong className="text-brand-900">{registeredName}</strong>.</p>
           {(idCard.state === 'mismatch' || idCard.state === 'error') && !skipped && <p className="mt-1 text-xs text-rose-600">{idCard.msg}</p>}
+          {idCard.state === 'error' && idCard.stale && <button type="button" onClick={() => window.location.reload()} className="btn-plum mt-2 text-sm py-2 px-3">Reload page</button>}
           {idCard.state === 'done' && <p className="mt-1 text-xs text-mint-500 font-semibold flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> Name verified on your ID</p>}
           {skipped && <p className="mt-1 text-xs text-amber-700 flex items-center gap-1"><ShieldAlert className="w-3.5 h-3.5" /> Continuing without a name match - this attempt will be reviewed.</p>}
           {idCard.state !== 'done' && !skipped && (

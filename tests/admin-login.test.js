@@ -66,11 +66,15 @@ describe('single login form', () => {
   it('never accepts the old published demo passwords', async () => {
     process.env.ADMIN_PASSWORD = 'Admin@2026';
     // applyAdminSettings would apply it; force the stored hash to a demo password to prove it is refused
-    const { getDb } = await import('../server/db.js');
-    const saved = getDb().admin.passwordHash;
-    getDb().admin.passwordHash = bcrypt.hashSync('Admin@2026', 10);
+    const { getDb, saveDb } = await import('../server/db.js');
+    const db = getDb(); // a fresh copy: changes need saveDb
+    const saved = db.admin.passwordHash;
+    db.admin.passwordHash = bcrypt.hashSync('Admin@2026', 10);
+    saveDb(db);
     expectGeneric(await login('owner@example.test', 'Admin@2026'));
-    getDb().admin.passwordHash = saved;
+    const back = getDb();
+    back.admin.passwordHash = saved;
+    saveDb(back);
     process.env.ADMIN_PASSWORD = 'Str0ng-test-pass';
   });
 

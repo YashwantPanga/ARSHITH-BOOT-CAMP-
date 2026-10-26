@@ -94,6 +94,8 @@ export const api = {
   // Learner accounts
   learnerRegister: (data) => request('/learners/register', { method: 'POST', body: JSON.stringify(data) }),
   learnerLogin: (data) => request('/learners/login', { method: 'POST', body: JSON.stringify(data) }),
+  updateProfile: (data) => request('/learners/me', { method: 'PUT', body: JSON.stringify(data) }),
+  changePassword: (data) => request('/learners/change-password', { method: 'POST', body: JSON.stringify(data) }),
   sendContactMessage: (data) => request('/contact', { method: 'POST', body: JSON.stringify(data) }),
   verifyEmail: (data) => request('/learners/verify-email', { method: 'POST', body: JSON.stringify(data) }),
   resendVerification: (email) => request('/learners/resend-verification', { method: 'POST', body: JSON.stringify({ email }) }),

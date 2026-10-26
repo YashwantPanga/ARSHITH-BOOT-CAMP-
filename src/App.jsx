@@ -413,6 +413,9 @@ function AppShell() {
           onViewCertificate={(id) => navigate(paths.certificate(id))}
           onExploreCourses={() => goCourses()}
           onRefresh={() => enrolledCourseId && refreshProgress(enrolledCourseId)}
+          onHome={() => navigate(paths.home())}
+          onProfileSaved={(changes) => saveUser({ ...studentUser, ...changes })}
+          initialTab={route.query.tab}
         />
       );
       break;

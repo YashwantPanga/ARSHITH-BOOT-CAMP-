@@ -2,6 +2,20 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
+import { examGuard } from './router'
+
+// After a new release, a page that was already open can ask for script files that no longer exist.
+// Reload once to pick up the new files (never during a proctored exam).
+window.addEventListener('vite:preloadError', (event) => {
+  if (examGuard.active) return;
+  try {
+    if (sessionStorage.getItem('arb-reloaded-for-update')) return;
+    sessionStorage.setItem('arb-reloaded-for-update', '1');
+  } catch { /* storage blocked */ }
+  event.preventDefault();
+  window.location.reload();
+});
+window.addEventListener('load', () => setTimeout(() => { try { sessionStorage.removeItem('arb-reloaded-for-update'); } catch { /* ignore */ } }, 10000));
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
