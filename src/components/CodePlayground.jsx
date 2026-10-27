@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Play, Square, RotateCcw, X, Terminal, Copy, Check, Database, Keyboard, Eye, Loader2, Maximize2, Minimize2 } from 'lucide-react';
-import { tokenLines, LANG_LABEL } from '../utils/highlight';
+import { LANG_LABEL } from '../utils/highlight';
+import CodeEditor from './CodeEditor';
 import { runPython, runSql, resetSqlDb, buildWebDoc, SAMPLE_SCHEMA } from '../utils/runners';
 
 const Ctx = createContext(null);
@@ -52,8 +53,6 @@ function PlaygroundModal({ initial, onClose }) {
   const [copied, setCopied] = useState(false);
   const [full, setFull] = useState(false);
   const stopRef = useRef(null);
-  const taRef = useRef(null);
-  const preRef = useRef(null);
   const isWeb = ['html', 'css', 'javascript'].includes(lang);
 
   useEffect(() => {
@@ -65,6 +64,10 @@ function PlaygroundModal({ initial, onClose }) {
   }, [onClose]);
 
   // Console messages from the sandboxed preview frame
+  // Every "Try it" starts from a fresh sample database, so an example always behaves as shown even
+  // after earlier examples created or changed tables.
+  useEffect(() => { if (initial.lang === 'sql') resetSqlDb().catch(() => {}); }, [initial]);
+
   useEffect(() => {
     const onMsg = (e) => {
       if (e.data && e.data.__arb) setOut(o => [...o, { k: e.data.kind === 'error' ? 'err' : e.data.kind === 'warn' ? 'warn' : 'out', text: e.data.text }]);
@@ -113,23 +116,6 @@ function PlaygroundModal({ initial, onClose }) {
 
   const stop = () => stopRef.current?.();
 
-  const onKeyDown = (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); run(); return; }
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      const ta = e.currentTarget;
-      const { selectionStart: s, selectionEnd: en } = ta;
-      const next = code.slice(0, s) + '    ' + code.slice(en);
-      setCode(next);
-      requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = s + 4; });
-    }
-  };
-
-  const syncScroll = (e) => {
-    if (preRef.current) { preRef.current.scrollTop = e.currentTarget.scrollTop; preRef.current.scrollLeft = e.currentTarget.scrollLeft; }
-  };
-
-  const lines = useMemo(() => tokenLines(code, lang), [code, lang]);
   const copy = async () => { try { await navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* blocked */ } };
   const switchLang = (l) => { setLang(l); setCode(STARTERS[l]); setOut([]); setTables([]); setImages([]); setDoc(''); };
 
@@ -171,31 +157,7 @@ function PlaygroundModal({ initial, onClose }) {
                 )}
               </span>
             </div>
-            <div className="relative flex-1 min-h-[240px] font-mono text-[13px] leading-[1.7]">
-              <pre ref={preRef} aria-hidden="true" className="absolute inset-0 overflow-hidden m-0 py-3 text-[#E9F1EC] pointer-events-none">
-                <code className="table min-w-full">
-                  {lines.map((toks, i) => (
-                    <span key={i} className="table-row">
-                      <span className="table-cell select-none text-right pl-3 pr-4 text-brand-400/70 w-10 text-[12px]">{i + 1}</span>
-                      <span className="table-cell whitespace-pre pr-6">{toks.length ? toks.map((t, k) => (t.t ? <span key={k} className={`tok-${t.t}`}>{t.v}</span> : <React.Fragment key={k}>{t.v}</React.Fragment>)) : ' '}</span>
-                    </span>
-                  ))}
-                </code>
-              </pre>
-              <textarea
-                ref={taRef}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                onKeyDown={onKeyDown}
-                onScroll={syncScroll}
-                spellCheck={false}
-                autoCapitalize="off"
-                autoComplete="off"
-                aria-label="Code editor"
-                className="absolute inset-0 w-full h-full resize-none bg-transparent text-transparent caret-ivory outline-none py-3 pr-6 whitespace-pre overflow-auto thin-scroll selection:bg-white/20"
-                style={{ paddingLeft: 'calc(2.5rem + 1.75rem)', tabSize: 4, fontFamily: 'inherit', fontSize: 'inherit', lineHeight: 'inherit' }}
-              />
-            </div>
+            <CodeEditor value={code} onChange={setCode} lang={lang} onRun={run} minHeight={240} className="flex-1 min-h-0" label="Code editor" />
             {showStdin && lang === 'python' && (
               <div className="border-t border-white/10 p-3 bg-black/20">
                 <p className="text-[10.5px] uppercase tracking-[0.16em] text-brand-300 mb-1.5">Program input (one value per line for each input())</p>

@@ -1,0 +1,3489 @@
+{
+ "sql-mastery/sql-mod-1/1": {
+  "columns": [
+   "emp_id",
+   "first_name",
+   "last_name",
+   "email",
+   "dept_id",
+   "salary",
+   "hire_date",
+   "manager_id"
+  ],
+  "rows": [
+   [
+    101,
+    "Aarav",
+    "Sharma",
+    "aarav@arb.io",
+    1,
+    98000,
+    "2021-03-14",
+    null
+   ],
+   [
+    102,
+    "Diya",
+    "Reddy",
+    "diya@arb.io",
+    1,
+    87000,
+    "2022-06-01",
+    101
+   ],
+   [
+    103,
+    "Kabir",
+    "Mehta",
+    "kabir@arb.io",
+    2,
+    64000,
+    "2020-11-20",
+    null
+   ],
+   [
+    104,
+    "Ananya",
+    "Iyer",
+    "ananya@arb.io",
+    2,
+    58000,
+    "2023-01-09",
+    103
+   ],
+   [
+    105,
+    "Rohan",
+    "Gupta",
+    "rohan@arb.io",
+    3,
+    61000,
+    "2021-08-30",
+    null
+   ],
+   [
+    106,
+    "Meera",
+    "Nair",
+    "meera@arb.io",
+    4,
+    72000,
+    "2019-05-17",
+    null
+   ],
+   [
+    107,
+    "Vihaan",
+    "Das",
+    "vihaan@arb.io",
+    1,
+    79000,
+    "2024-02-12",
+    101
+   ],
+   [
+    108,
+    "Isha",
+    "Patel",
+    "isha@arb.io",
+    3,
+    55000,
+    "2024-07-01",
+    105
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-1/2": {
+  "columns": [
+   "emp_id",
+   "first_name",
+   "dept_id"
+  ],
+  "rows": [
+   [
+    101,
+    "Aarav",
+    1
+   ],
+   [
+    102,
+    "Diya",
+    1
+   ],
+   [
+    103,
+    "Kabir",
+    2
+   ],
+   [
+    104,
+    "Ananya",
+    2
+   ],
+   [
+    105,
+    "Rohan",
+    3
+   ],
+   [
+    106,
+    "Meera",
+    4
+   ],
+   [
+    107,
+    "Vihaan",
+    1
+   ],
+   [
+    108,
+    "Isha",
+    3
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-1/3": {
+  "columns": [
+   "first_name",
+   "salary"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    98000
+   ],
+   [
+    "Diya",
+    87000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-1/4": {
+  "columns": [
+   "employees",
+   "total_salaries",
+   "highest_salary"
+  ],
+  "rows": [
+   [
+    8,
+    574000,
+    98000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-1/5": {
+  "columns": [
+   "table_name"
+  ],
+  "rows": [
+   [
+    "customers"
+   ],
+   [
+    "departments"
+   ],
+   [
+    "employees"
+   ],
+   [
+    "order_items"
+   ],
+   [
+    "orders"
+   ],
+   [
+    "products"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-2/0": {
+  "columns": [
+   "first_name",
+   "last_name"
+  ],
+  "rows": [
+   [
+    "Kabir",
+    "Mehta"
+   ],
+   [
+    "Ananya",
+    "Iyer"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-2/1": {
+  "columns": [
+   "first_name"
+  ],
+  "rows": [
+   [
+    "Aarav"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-2/2": {
+  "columns": [
+   "employees"
+  ],
+  "rows": [
+   [
+    8
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-2/3": {
+  "columns": [
+   "first_name",
+   "salary"
+  ],
+  "rows": [
+   [
+    "Kabir",
+    64000
+   ],
+   [
+    "Ananya",
+    58000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-2/4": {
+  "columns": [
+   "name",
+   "city"
+  ],
+  "rows": [
+   [
+    "Sara Khan",
+    "Mumbai"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-2/5": {
+  "columns": [
+   "added",
+   "multiplied",
+   "whole_division",
+   "decimal_division",
+   "remainder"
+  ],
+  "rows": [
+   [
+    15,
+    50,
+    3,
+    3.5,
+    1
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-2/7": {
+  "columns": [
+   "a_number",
+   "a_text",
+   "converted",
+   "as_text"
+  ],
+  "rows": [
+   [
+    "integer",
+    "text",
+    255,
+    "98000 INR"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-3/1": {
+  "columns": [
+   "student_id",
+   "full_name",
+   "city",
+   "joined_on"
+  ],
+  "rows": [
+   [
+    1,
+    "Priya Das",
+    "Kolkata",
+    "2024-06-10"
+   ],
+   [
+    2,
+    "Rahul Verma",
+    "Pune",
+    "2024-06-12"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-3/2": {
+  "columns": [
+   "note_id",
+   "body"
+  ],
+  "rows": [
+   [
+    1,
+    "Revise JOINs"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-3/3": {
+  "columns": [
+   "cid",
+   "name",
+   "type",
+   "notnull",
+   "dflt_value",
+   "pk"
+  ],
+  "rows": [
+   [
+    0,
+    "emp_id",
+    "INTEGER",
+    0,
+    null,
+    1
+   ],
+   [
+    1,
+    "first_name",
+    "TEXT",
+    0,
+    null,
+    0
+   ],
+   [
+    2,
+    "last_name",
+    "TEXT",
+    0,
+    null,
+    0
+   ],
+   [
+    3,
+    "email",
+    "TEXT",
+    0,
+    null,
+    0
+   ],
+   [
+    4,
+    "dept_id",
+    "INTEGER",
+    0,
+    null,
+    0
+   ],
+   [
+    5,
+    "salary",
+    "REAL",
+    0,
+    null,
+    0
+   ],
+   [
+    6,
+    "hire_date",
+    "TEXT",
+    0,
+    null,
+    0
+   ],
+   [
+    7,
+    "manager_id",
+    "INTEGER",
+    0,
+    null,
+    0
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-3/4": {
+  "columns": [
+   "student_id",
+   "full_name",
+   "phone"
+  ],
+  "rows": [
+   [
+    1,
+    "Priya Das",
+    null
+   ],
+   [
+    2,
+    "Rahul Verma",
+    null
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-3/5": {
+  "columns": [
+   "student_id",
+   "mobile"
+  ],
+  "rows": [
+   [
+    1,
+    "98765 43210"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-3/6": {
+  "columns": [
+   "student_id",
+   "full_name"
+  ],
+  "rows": [
+   [
+    1,
+    "Priya Das"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-3/7": {
+  "columns": [
+   "emp_id",
+   "first_name",
+   "salary"
+  ],
+  "rows": [
+   [
+    101,
+    "Aarav",
+    98000
+   ],
+   [
+    102,
+    "Diya",
+    87000
+   ],
+   [
+    107,
+    "Vihaan",
+    79000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-3/8": {
+  "columns": [
+   "rows_left"
+  ],
+  "rows": [
+   [
+    0
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-4/1": {
+  "columns": [
+   "member_id",
+   "full_name"
+  ],
+  "rows": [
+   [
+    1,
+    "Priya Das"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-4/2": {
+  "columns": [
+   "member_id",
+   "email"
+  ],
+  "rows": [
+   [
+    1,
+    "priya@mail.com"
+   ],
+   [
+    2,
+    "rahul@mail.com"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-4/3": {
+  "columns": [
+   "member_id",
+   "full_name"
+  ],
+  "rows": [
+   [
+    1,
+    "Priya Das"
+   ],
+   [
+    2,
+    "Rahul Verma"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-4/4": {
+  "columns": [
+   "enrolment_id",
+   "student",
+   "batch_id"
+  ],
+  "rows": [
+   [
+    1,
+    "Priya",
+    1
+   ],
+   [
+    2,
+    "Rahul",
+    2
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-4/5": {
+  "columns": [
+   "name",
+   "price",
+   "stock"
+  ],
+  "rows": [
+   [
+    "Pen",
+    10,
+    100
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-4/6": {
+  "columns": [
+   "account_id",
+   "holder",
+   "status"
+  ],
+  "rows": [
+   [
+    1,
+    "Priya",
+    "active"
+   ],
+   [
+    2,
+    "Rahul",
+    "blocked"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-4/7": {
+  "columns": [
+   "first_name",
+   "manager_id"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    null
+   ],
+   [
+    "Kabir",
+    null
+   ],
+   [
+    "Rohan",
+    null
+   ],
+   [
+    "Meera",
+    null
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-5/0": {
+  "columns": [
+   "customer_id",
+   "name",
+   "city",
+   "signup_date"
+  ],
+  "rows": [
+   [
+    1,
+    "Arjun Rao",
+    "Hyderabad",
+    "2023-01-05"
+   ],
+   [
+    2,
+    "Sara Khan",
+    "Mumbai",
+    "2023-03-22"
+   ],
+   [
+    3,
+    "Neel Joshi",
+    "Pune",
+    "2023-07-11"
+   ],
+   [
+    4,
+    "Tara Singh",
+    "Delhi",
+    "2024-02-02"
+   ],
+   [
+    5,
+    "Zoya Ali",
+    "Hyderabad",
+    "2024-05-19"
+   ],
+   [
+    6,
+    "Kiran Rao",
+    "Goa",
+    "2024-08-01"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-5/1": {
+  "columns": [
+   "customer_id",
+   "name",
+   "city",
+   "signup_date"
+  ],
+  "rows": [
+   [
+    7,
+    "Leela Menon",
+    null,
+    null
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-5/2": {
+  "columns": [
+   "product_id",
+   "name",
+   "category",
+   "price"
+  ],
+  "rows": [
+   [
+    1,
+    "Laptop Pro 14",
+    "Electronics",
+    1299
+   ],
+   [
+    2,
+    "Noise-Cancel Headphones",
+    "Electronics",
+    249
+   ],
+   [
+    3,
+    "Standing Desk",
+    "Furniture",
+    499
+   ],
+   [
+    4,
+    "Ergo Chair",
+    "Furniture",
+    329
+   ],
+   [
+    5,
+    "Python Crash Course",
+    "Books",
+    39
+   ],
+   [
+    6,
+    "USB-C Hub",
+    "Electronics",
+    59
+   ],
+   [
+    7,
+    "Desk Lamp",
+    "Furniture",
+    35
+   ],
+   [
+    8,
+    "SQL Pocket Guide",
+    "Books",
+    19
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-5/3": {
+  "columns": [
+   "customer_id",
+   "name"
+  ],
+  "rows": [
+   [
+    1,
+    "Arjun Rao"
+   ],
+   [
+    5,
+    "Zoya Ali"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-5/4": {
+  "columns": [
+   "product_id",
+   "name",
+   "price"
+  ],
+  "rows": [
+   [
+    1,
+    "Laptop Pro 14",
+    1299
+   ],
+   [
+    2,
+    "Noise-Cancel Headphones",
+    279
+   ],
+   [
+    3,
+    "Standing Desk",
+    499
+   ],
+   [
+    4,
+    "Ergo Chair",
+    329
+   ],
+   [
+    5,
+    "Python Crash Course",
+    39
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-5/5": {
+  "columns": [
+   "first_name",
+   "dept_id",
+   "salary"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    1,
+    98000
+   ],
+   [
+    "Diya",
+    1,
+    87000
+   ],
+   [
+    "Vihaan",
+    1,
+    79000
+   ],
+   [
+    "Kabir",
+    2,
+    64000
+   ],
+   [
+    "Ananya",
+    2,
+    58000
+   ],
+   [
+    "Rohan",
+    3,
+    67100
+   ],
+   [
+    "Isha",
+    3,
+    60500
+   ],
+   [
+    "Meera",
+    4,
+    72000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-5/6": {
+  "columns": [
+   "order_id",
+   "status"
+  ],
+  "rows": [
+   [
+    1001,
+    "SHIPPED"
+   ],
+   [
+    1002,
+    "SHIPPED"
+   ],
+   [
+    1003,
+    "SHIPPED"
+   ],
+   [
+    1004,
+    "SHIPPED"
+   ],
+   [
+    1005,
+    "SHIPPED"
+   ],
+   [
+    1006,
+    "SHIPPED"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-5/7": {
+  "columns": [
+   "order_id",
+   "status"
+  ],
+  "rows": [
+   [
+    1001,
+    "DELIVERED"
+   ],
+   [
+    1002,
+    "SHIPPED"
+   ],
+   [
+    1003,
+    "DELIVERED"
+   ],
+   [
+    1005,
+    "PENDING"
+   ],
+   [
+    1006,
+    "DELIVERED"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-5/8": {
+  "columns": [
+   "rows_left"
+  ],
+  "rows": [
+   [
+    0
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-6/0": {
+  "columns": [
+   "first_name",
+   "last_name",
+   "salary"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    "Sharma",
+    98000
+   ],
+   [
+    "Diya",
+    "Reddy",
+    87000
+   ],
+   [
+    "Kabir",
+    "Mehta",
+    64000
+   ],
+   [
+    "Ananya",
+    "Iyer",
+    58000
+   ],
+   [
+    "Rohan",
+    "Gupta",
+    61000
+   ],
+   [
+    "Meera",
+    "Nair",
+    72000
+   ],
+   [
+    "Vihaan",
+    "Das",
+    79000
+   ],
+   [
+    "Isha",
+    "Patel",
+    55000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-6/1": {
+  "columns": [
+   "product_id",
+   "name",
+   "category",
+   "price"
+  ],
+  "rows": [
+   [
+    1,
+    "Laptop Pro 14",
+    "Electronics",
+    1299
+   ],
+   [
+    2,
+    "Noise-Cancel Headphones",
+    "Electronics",
+    249
+   ],
+   [
+    3,
+    "Standing Desk",
+    "Furniture",
+    499
+   ],
+   [
+    4,
+    "Ergo Chair",
+    "Furniture",
+    329
+   ],
+   [
+    5,
+    "Python Crash Course",
+    "Books",
+    39
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-6/2": {
+  "columns": [
+   "name",
+   "joined_on",
+   "yearly_salary"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    "2021-03-14",
+    98000
+   ],
+   [
+    "Diya",
+    "2022-06-01",
+    87000
+   ],
+   [
+    "Kabir",
+    "2020-11-20",
+    64000
+   ],
+   [
+    "Ananya",
+    "2023-01-09",
+    58000
+   ],
+   [
+    "Rohan",
+    "2021-08-30",
+    61000
+   ],
+   [
+    "Meera",
+    "2019-05-17",
+    72000
+   ],
+   [
+    "Vihaan",
+    "2024-02-12",
+    79000
+   ],
+   [
+    "Isha",
+    "2024-07-01",
+    55000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-6/3": {
+  "columns": [
+   "first_name",
+   "salary",
+   "monthly_salary",
+   "after_10pct_raise"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    98000,
+    8166.67,
+    107800
+   ],
+   [
+    "Diya",
+    87000,
+    7250,
+    95700
+   ],
+   [
+    "Kabir",
+    64000,
+    5333.33,
+    70400
+   ],
+   [
+    "Ananya",
+    58000,
+    4833.33,
+    63800
+   ],
+   [
+    "Rohan",
+    61000,
+    5083.33,
+    67100
+   ],
+   [
+    "Meera",
+    72000,
+    6000,
+    79200
+   ],
+   [
+    "Vihaan",
+    79000,
+    6583.33,
+    86900
+   ],
+   [
+    "Isha",
+    55000,
+    4583.33,
+    60500
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-6/4": {
+  "columns": [
+   "full_name",
+   "email"
+  ],
+  "rows": [
+   [
+    "Aarav Sharma",
+    "aarav@arb.io"
+   ],
+   [
+    "Diya Reddy",
+    "diya@arb.io"
+   ],
+   [
+    "Kabir Mehta",
+    "kabir@arb.io"
+   ],
+   [
+    "Ananya Iyer",
+    "ananya@arb.io"
+   ],
+   [
+    "Rohan Gupta",
+    "rohan@arb.io"
+   ],
+   [
+    "Meera Nair",
+    "meera@arb.io"
+   ],
+   [
+    "Vihaan Das",
+    "vihaan@arb.io"
+   ],
+   [
+    "Isha Patel",
+    "isha@arb.io"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-6/5": {
+  "columns": [
+   "emp_id",
+   "first_name",
+   "salary"
+  ],
+  "rows": [
+   [
+    101,
+    "Aarav",
+    98000
+   ],
+   [
+    102,
+    "Diya",
+    87000
+   ],
+   [
+    103,
+    "Kabir",
+    64000
+   ],
+   [
+    104,
+    "Ananya",
+    58000
+   ],
+   [
+    105,
+    "Rohan",
+    61000
+   ],
+   [
+    106,
+    "Meera",
+    72000
+   ],
+   [
+    107,
+    "Vihaan",
+    79000
+   ],
+   [
+    108,
+    "Isha",
+    55000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-6/6": {
+  "columns": [
+   "sum",
+   "shout",
+   "third"
+  ],
+  "rows": [
+   [
+    5,
+    "SQL",
+    3.33
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-6/7": {
+  "columns": [
+   "dept_id",
+   "people"
+  ],
+  "rows": [
+   [
+    1,
+    3
+   ],
+   [
+    2,
+    2
+   ],
+   [
+    4,
+    1
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-7/0": {
+  "columns": [
+   "first_name",
+   "dept_id"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    1
+   ],
+   [
+    "Diya",
+    1
+   ],
+   [
+    "Vihaan",
+    1
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-7/1": {
+  "columns": [
+   "first_name",
+   "hire_date"
+  ],
+  "rows": [
+   [
+    "Ananya",
+    "2023-01-09"
+   ],
+   [
+    "Vihaan",
+    "2024-02-12"
+   ],
+   [
+    "Isha",
+    "2024-07-01"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-7/2": {
+  "columns": [
+   "first_name",
+   "dept_id",
+   "salary"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    1,
+    98000
+   ],
+   [
+    "Diya",
+    1,
+    87000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-7/3": {
+  "columns": [
+   "name",
+   "city"
+  ],
+  "rows": [
+   [
+    "Neel Joshi",
+    "Pune"
+   ],
+   [
+    "Tara Singh",
+    "Delhi"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-7/4": {
+  "columns": [
+   "name",
+   "category"
+  ],
+  "rows": [
+   [
+    "Standing Desk",
+    "Furniture"
+   ],
+   [
+    "Ergo Chair",
+    "Furniture"
+   ],
+   [
+    "Python Crash Course",
+    "Books"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-7/5": {
+  "columns": [
+   "first_name",
+   "dept_id",
+   "salary"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    1,
+    98000
+   ],
+   [
+    "Diya",
+    1,
+    87000
+   ],
+   [
+    "Kabir",
+    2,
+    64000
+   ],
+   [
+    "Vihaan",
+    1,
+    79000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-7/6": {
+  "columns": [
+   "order_id",
+   "order_date",
+   "total_amount"
+  ],
+  "rows": [
+   [
+    1001,
+    "2024-06-01",
+    1548
+   ],
+   [
+    1002,
+    "2024-06-03",
+    499
+   ],
+   [
+    1003,
+    "2024-06-10",
+    39
+   ],
+   [
+    1004,
+    "2024-06-15",
+    329
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-7/7": {
+  "columns": [
+   "order_id",
+   "status"
+  ],
+  "rows": [
+   [
+    1002,
+    "SHIPPED"
+   ],
+   [
+    1005,
+    "PENDING"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-7/8": {
+  "columns": [
+   "first_name"
+  ],
+  "rows": [
+   [
+    "Aarav"
+   ],
+   [
+    "Diya"
+   ],
+   [
+    "Ananya"
+   ],
+   [
+    "Vihaan"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-7/9": {
+  "columns": [
+   "first_name",
+   "manager_id"
+  ],
+  "rows": [
+   [
+    "Diya",
+    101
+   ],
+   [
+    "Ananya",
+    103
+   ],
+   [
+    "Vihaan",
+    101
+   ],
+   [
+    "Isha",
+    105
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-8/0": {
+  "columns": [
+   "city"
+  ],
+  "rows": [
+   [
+    "Hyderabad"
+   ],
+   [
+    "Mumbai"
+   ],
+   [
+    "Pune"
+   ],
+   [
+    "Delhi"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-8/1": {
+  "columns": [
+   "customer_id",
+   "status"
+  ],
+  "rows": [
+   [
+    1,
+    "DELIVERED"
+   ],
+   [
+    2,
+    "SHIPPED"
+   ],
+   [
+    3,
+    "CANCELLED"
+   ],
+   [
+    4,
+    "PENDING"
+   ],
+   [
+    5,
+    "DELIVERED"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-8/2": {
+  "columns": [
+   "all_customers_with_city",
+   "different_cities"
+  ],
+  "rows": [
+   [
+    5,
+    4
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-8/3": {
+  "columns": [
+   "name",
+   "price"
+  ],
+  "rows": [
+   [
+    "Python Crash Course",
+    39
+   ],
+   [
+    "Noise-Cancel Headphones",
+    249
+   ],
+   [
+    "Ergo Chair",
+    329
+   ],
+   [
+    "Standing Desk",
+    499
+   ],
+   [
+    "Laptop Pro 14",
+    1299
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-8/4": {
+  "columns": [
+   "first_name",
+   "hire_date"
+  ],
+  "rows": [
+   [
+    "Isha",
+    "2024-07-01"
+   ],
+   [
+    "Vihaan",
+    "2024-02-12"
+   ],
+   [
+    "Ananya",
+    "2023-01-09"
+   ],
+   [
+    "Diya",
+    "2022-06-01"
+   ],
+   [
+    "Rohan",
+    "2021-08-30"
+   ],
+   [
+    "Aarav",
+    "2021-03-14"
+   ],
+   [
+    "Kabir",
+    "2020-11-20"
+   ],
+   [
+    "Meera",
+    "2019-05-17"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-8/5": {
+  "columns": [
+   "dept_id",
+   "first_name",
+   "salary"
+  ],
+  "rows": [
+   [
+    1,
+    "Aarav",
+    98000
+   ],
+   [
+    1,
+    "Diya",
+    87000
+   ],
+   [
+    1,
+    "Vihaan",
+    79000
+   ],
+   [
+    2,
+    "Kabir",
+    64000
+   ],
+   [
+    2,
+    "Ananya",
+    58000
+   ],
+   [
+    3,
+    "Rohan",
+    61000
+   ],
+   [
+    3,
+    "Isha",
+    55000
+   ],
+   [
+    4,
+    "Meera",
+    72000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-8/6": {
+  "columns": [
+   "full_name",
+   "monthly"
+  ],
+  "rows": [
+   [
+    "Aarav Sharma",
+    8167
+   ],
+   [
+    "Diya Reddy",
+    7250
+   ],
+   [
+    "Vihaan Das",
+    6583
+   ],
+   [
+    "Meera Nair",
+    6000
+   ],
+   [
+    "Kabir Mehta",
+    5333
+   ],
+   [
+    "Rohan Gupta",
+    5083
+   ],
+   [
+    "Ananya Iyer",
+    4833
+   ],
+   [
+    "Isha Patel",
+    4583
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-8/7": {
+  "columns": [
+   "first_name",
+   "salary"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    98000
+   ],
+   [
+    "Diya",
+    87000
+   ],
+   [
+    "Vihaan",
+    79000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-8/8": {
+  "columns": [
+   "emp_id",
+   "first_name"
+  ],
+  "rows": [
+   [
+    104,
+    "Ananya"
+   ],
+   [
+    105,
+    "Rohan"
+   ],
+   [
+    106,
+    "Meera"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-9/1": {
+  "columns": [
+   "employees",
+   "with_a_manager"
+  ],
+  "rows": [
+   [
+    8,
+    4
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-9/2": {
+  "columns": [
+   "revenue"
+  ],
+  "rows": [
+   [
+    3673
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-9/3": {
+  "columns": [
+   "average_salary"
+  ],
+  "rows": [
+   [
+    71750
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-9/4": {
+  "columns": [
+   "cheapest",
+   "most_expensive",
+   "first_alphabetically"
+  ],
+  "rows": [
+   [
+    39,
+    1299,
+    "Ergo Chair"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-9/5": {
+  "columns": [
+   "dept_id",
+   "employees",
+   "avg_salary"
+  ],
+  "rows": [
+   [
+    1,
+    3,
+    88000
+   ],
+   [
+    2,
+    2,
+    61000
+   ],
+   [
+    3,
+    2,
+    58000
+   ],
+   [
+    4,
+    1,
+    72000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-9/6": {
+  "columns": [
+   "customer_id",
+   "status",
+   "orders"
+  ],
+  "rows": [
+   [
+    1,
+    "DELIVERED",
+    2
+   ],
+   [
+    2,
+    "SHIPPED",
+    1
+   ],
+   [
+    3,
+    "CANCELLED",
+    1
+   ],
+   [
+    4,
+    "PENDING",
+    1
+   ],
+   [
+    5,
+    "DELIVERED",
+    1
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-9/7": {
+  "columns": [
+   "dept_id",
+   "employees"
+  ],
+  "rows": [
+   [
+    1,
+    3
+   ],
+   [
+    2,
+    2
+   ],
+   [
+    3,
+    2
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-9/8": {
+  "columns": [
+   "customer_id",
+   "orders",
+   "spent"
+  ],
+  "rows": [
+   [
+    1,
+    2,
+    1587
+   ],
+   [
+    4,
+    1,
+    1338
+   ],
+   [
+    2,
+    1,
+    499
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-10/0": {
+  "columns": [
+   "order_id",
+   "customer_id",
+   "total_amount"
+  ],
+  "rows": [
+   [
+    1001,
+    1,
+    1548
+   ],
+   [
+    1002,
+    2,
+    499
+   ],
+   [
+    1003,
+    1,
+    39
+   ],
+   [
+    1004,
+    3,
+    329
+   ],
+   [
+    1005,
+    4,
+    1338
+   ],
+   [
+    1006,
+    5,
+    249
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-10/1": {
+  "columns": [
+   "order_id",
+   "name",
+   "total_amount"
+  ],
+  "rows": [
+   [
+    1001,
+    "Arjun Rao",
+    1548
+   ],
+   [
+    1002,
+    "Sara Khan",
+    499
+   ],
+   [
+    1003,
+    "Arjun Rao",
+    39
+   ],
+   [
+    1004,
+    "Neel Joshi",
+    329
+   ],
+   [
+    1005,
+    "Tara Singh",
+    1338
+   ],
+   [
+    1006,
+    "Zoya Ali",
+    249
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-10/2": {
+  "columns": [
+   "order_id",
+   "name",
+   "city",
+   "total_amount"
+  ],
+  "rows": [
+   [
+    1001,
+    "Arjun Rao",
+    "Hyderabad",
+    1548
+   ],
+   [
+    1002,
+    "Sara Khan",
+    "Mumbai",
+    499
+   ],
+   [
+    1003,
+    "Arjun Rao",
+    "Hyderabad",
+    39
+   ],
+   [
+    1004,
+    "Neel Joshi",
+    "Pune",
+    329
+   ],
+   [
+    1005,
+    "Tara Singh",
+    "Delhi",
+    1338
+   ],
+   [
+    1006,
+    "Zoya Ali",
+    "Hyderabad",
+    249
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-10/3": {
+  "columns": [
+   "dept_name",
+   "first_name"
+  ],
+  "rows": [
+   [
+    "Engineering",
+    "Aarav"
+   ],
+   [
+    "Engineering",
+    "Diya"
+   ],
+   [
+    "Engineering",
+    "Vihaan"
+   ],
+   [
+    "Sales",
+    "Ananya"
+   ],
+   [
+    "Sales",
+    "Kabir"
+   ],
+   [
+    "Marketing",
+    "Isha"
+   ],
+   [
+    "Marketing",
+    "Rohan"
+   ],
+   [
+    "Finance",
+    "Meera"
+   ],
+   [
+    "Legal",
+    null
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-10/4": {
+  "columns": [
+   "first_name",
+   "dept_name"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    "Engineering"
+   ],
+   [
+    "Diya",
+    "Engineering"
+   ],
+   [
+    "Vihaan",
+    "Engineering"
+   ],
+   [
+    "Kabir",
+    "Sales"
+   ],
+   [
+    "Ananya",
+    "Sales"
+   ],
+   [
+    "Rohan",
+    "Marketing"
+   ],
+   [
+    "Isha",
+    "Marketing"
+   ],
+   [
+    "Meera",
+    "Finance"
+   ],
+   [
+    null,
+    "Legal"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-10/5": {
+  "columns": [
+   "first_name",
+   "dept_name"
+  ],
+  "rows": [
+   [
+    "Sam",
+    null
+   ],
+   [
+    null,
+    "Legal"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-10/6": {
+  "columns": [
+   "dept_name",
+   "category"
+  ],
+  "rows": [
+   [
+    "Engineering",
+    "Books"
+   ],
+   [
+    "Engineering",
+    "Electronics"
+   ],
+   [
+    "Engineering",
+    "Furniture"
+   ],
+   [
+    "Finance",
+    "Books"
+   ],
+   [
+    "Finance",
+    "Electronics"
+   ],
+   [
+    "Finance",
+    "Furniture"
+   ],
+   [
+    "Marketing",
+    "Books"
+   ],
+   [
+    "Marketing",
+    "Electronics"
+   ],
+   [
+    "Marketing",
+    "Furniture"
+   ],
+   [
+    "Sales",
+    "Books"
+   ],
+   [
+    "Sales",
+    "Electronics"
+   ],
+   [
+    "Sales",
+    "Furniture"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-10/7": {
+  "columns": [
+   "employee",
+   "manager"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    null
+   ],
+   [
+    "Diya",
+    "Aarav"
+   ],
+   [
+    "Kabir",
+    null
+   ],
+   [
+    "Ananya",
+    "Kabir"
+   ],
+   [
+    "Rohan",
+    null
+   ],
+   [
+    "Meera",
+    null
+   ],
+   [
+    "Vihaan",
+    "Aarav"
+   ],
+   [
+    "Isha",
+    "Rohan"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-10/8": {
+  "columns": [
+   "customer",
+   "product",
+   "quantity",
+   "unit_price"
+  ],
+  "rows": [
+   [
+    "Arjun Rao",
+    "Laptop Pro 14",
+    1,
+    1299
+   ],
+   [
+    "Arjun Rao",
+    "Noise-Cancel Headphones",
+    1,
+    249
+   ],
+   [
+    "Arjun Rao",
+    "Python Crash Course",
+    1,
+    39
+   ],
+   [
+    "Neel Joshi",
+    "Ergo Chair",
+    1,
+    329
+   ],
+   [
+    "Sara Khan",
+    "Standing Desk",
+    1,
+    499
+   ],
+   [
+    "Tara Singh",
+    "Laptop Pro 14",
+    1,
+    1299
+   ],
+   [
+    "Tara Singh",
+    "Python Crash Course",
+    1,
+    39
+   ],
+   [
+    "Zoya Ali",
+    "Noise-Cancel Headphones",
+    1,
+    249
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-10/9": {
+  "columns": [
+   "name"
+  ],
+  "rows": [
+   [
+    "Kiran Rao"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-11/0": {
+  "columns": [
+   "first_name",
+   "salary"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    98000
+   ],
+   [
+    "Diya",
+    87000
+   ],
+   [
+    "Meera",
+    72000
+   ],
+   [
+    "Vihaan",
+    79000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-11/1": {
+  "columns": [
+   "name",
+   "price"
+  ],
+  "rows": [
+   [
+    "Laptop Pro 14",
+    1299
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-11/2": {
+  "columns": [
+   "name",
+   "city"
+  ],
+  "rows": [
+   [
+    "Arjun Rao",
+    "Hyderabad"
+   ],
+   [
+    "Zoya Ali",
+    "Hyderabad"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-11/3": {
+  "columns": [
+   "name"
+  ],
+  "rows": [
+   [
+    "Webcam"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-11/4": {
+  "columns": [
+   "dept_id",
+   "avg_salary"
+  ],
+  "rows": [
+   [
+    1,
+    88000
+   ],
+   [
+    2,
+    61000
+   ],
+   [
+    4,
+    72000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-11/5": {
+  "columns": [
+   "first_name",
+   "dept_id",
+   "salary"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    1,
+    98000
+   ],
+   [
+    "Kabir",
+    2,
+    64000
+   ],
+   [
+    "Rohan",
+    3,
+    61000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-11/6": {
+  "columns": [
+   "name"
+  ],
+  "rows": [
+   [
+    "Kiran Rao"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-11/7": {
+  "columns": [
+   "first_name",
+   "salary"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    98000
+   ],
+   [
+    "Diya",
+    87000
+   ],
+   [
+    "Meera",
+    72000
+   ],
+   [
+    "Vihaan",
+    79000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-11/8": {
+  "columns": [
+   "city"
+  ],
+  "rows": [
+   [
+    "Bengaluru"
+   ],
+   [
+    "Chennai"
+   ],
+   [
+    "Delhi"
+   ],
+   [
+    "Hyderabad"
+   ],
+   [
+    "Mumbai"
+   ],
+   [
+    "Pune"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-11/9": {
+  "columns": [
+   "city"
+  ],
+  "rows": [
+   [
+    "Hyderabad"
+   ],
+   [
+    "Mumbai"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-11/10": {
+  "columns": [
+   "name",
+   "spent"
+  ],
+  "rows": [
+   [
+    "Arjun Rao",
+    1587
+   ],
+   [
+    "Zoya Ali",
+    249
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-12/0": {
+  "columns": [
+   "first_name",
+   "upper_name",
+   "lower_email"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    "AARAV",
+    "aarav@arb.io"
+   ],
+   [
+    "Diya",
+    "DIYA",
+    "diya@arb.io"
+   ],
+   [
+    "Kabir",
+    "KABIR",
+    "kabir@arb.io"
+   ],
+   [
+    "Ananya",
+    "ANANYA",
+    "ananya@arb.io"
+   ],
+   [
+    "Rohan",
+    "ROHAN",
+    "rohan@arb.io"
+   ],
+   [
+    "Meera",
+    "MEERA",
+    "meera@arb.io"
+   ],
+   [
+    "Vihaan",
+    "VIHAAN",
+    "vihaan@arb.io"
+   ],
+   [
+    "Isha",
+    "ISHA",
+    "isha@arb.io"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-12/1": {
+  "columns": [
+   "name",
+   "letters"
+  ],
+  "rows": [
+   [
+    "Noise-Cancel Headphones",
+    23
+   ],
+   [
+    "Python Crash Course",
+    19
+   ],
+   [
+    "Laptop Pro 14",
+    13
+   ],
+   [
+    "Standing Desk",
+    13
+   ],
+   [
+    "Ergo Chair",
+    10
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-12/2": {
+  "columns": [
+   "email",
+   "user_name",
+   "domain"
+  ],
+  "rows": [
+   [
+    "aarav@arb.io",
+    "aarav",
+    "arb.io"
+   ],
+   [
+    "ananya@arb.io",
+    "ananya",
+    "arb.io"
+   ],
+   [
+    "diya@arb.io",
+    "diya",
+    "arb.io"
+   ],
+   [
+    "isha@arb.io",
+    "isha",
+    "arb.io"
+   ],
+   [
+    "kabir@arb.io",
+    "kabir",
+    "arb.io"
+   ],
+   [
+    "meera@arb.io",
+    "meera",
+    "arb.io"
+   ],
+   [
+    "rohan@arb.io",
+    "rohan",
+    "arb.io"
+   ],
+   [
+    "vihaan@arb.io",
+    "vihaan",
+    "arb.io"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-12/3": {
+  "columns": [
+   "phone_digits",
+   "trimmed",
+   "code_name"
+  ],
+  "rows": [
+   [
+    "9876543210",
+    "Arshith",
+    "Laptop_Pro_14"
+   ],
+   [
+    "9876543210",
+    "Arshith",
+    "Noise-Cancel_Headphones"
+   ],
+   [
+    "9876543210",
+    "Arshith",
+    "Standing_Desk"
+   ],
+   [
+    "9876543210",
+    "Arshith",
+    "Ergo_Chair"
+   ],
+   [
+    "9876543210",
+    "Arshith",
+    "Python_Crash_Course"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-12/4": {
+  "columns": [
+   "short_name",
+   "contact"
+  ],
+  "rows": [
+   [
+    "A. Sharma",
+    "Aarav (aarav@arb.io)"
+   ],
+   [
+    "D. Reddy",
+    "Diya (diya@arb.io)"
+   ],
+   [
+    "K. Mehta",
+    "Kabir (kabir@arb.io)"
+   ],
+   [
+    "A. Iyer",
+    "Ananya (ananya@arb.io)"
+   ],
+   [
+    "R. Gupta",
+    "Rohan (rohan@arb.io)"
+   ],
+   [
+    "M. Nair",
+    "Meera (meera@arb.io)"
+   ],
+   [
+    "V. Das",
+    "Vihaan (vihaan@arb.io)"
+   ],
+   [
+    "I. Patel",
+    "Isha (isha@arb.io)"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-12/5": {
+  "columns": [
+   "name",
+   "price",
+   "price_in_usd_guess",
+   "hundreds"
+  ],
+  "rows": [
+   [
+    "Laptop Pro 14",
+    1299,
+    1065.18,
+    12
+   ],
+   [
+    "Noise-Cancel Headphones",
+    249,
+    204.18,
+    2
+   ],
+   [
+    "Standing Desk",
+    499,
+    409.18,
+    4
+   ],
+   [
+    "Ergo Chair",
+    329,
+    269.78,
+    3
+   ],
+   [
+    "Python Crash Course",
+    39,
+    31.98,
+    0
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-12/6": {
+  "columns": [
+   "first_name",
+   "hire_date",
+   "year_joined",
+   "month_joined",
+   "first_anniversary"
+  ],
+  "rows": [
+   [
+    "Meera",
+    "2019-05-17",
+    "2019",
+    "05",
+    "2020-05-17"
+   ],
+   [
+    "Kabir",
+    "2020-11-20",
+    "2020",
+    "11",
+    "2021-11-20"
+   ],
+   [
+    "Aarav",
+    "2021-03-14",
+    "2021",
+    "03",
+    "2022-03-14"
+   ],
+   [
+    "Rohan",
+    "2021-08-30",
+    "2021",
+    "08",
+    "2022-08-30"
+   ],
+   [
+    "Diya",
+    "2022-06-01",
+    "2022",
+    "06",
+    "2023-06-01"
+   ],
+   [
+    "Ananya",
+    "2023-01-09",
+    "2023",
+    "01",
+    "2024-01-09"
+   ],
+   [
+    "Vihaan",
+    "2024-02-12",
+    "2024",
+    "02",
+    "2025-02-12"
+   ],
+   [
+    "Isha",
+    "2024-07-01",
+    "2024",
+    "07",
+    "2025-07-01"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-12/7": {
+  "columns": [
+   "order_id",
+   "order_date",
+   "days_before_month_end"
+  ],
+  "rows": [
+   [
+    1001,
+    "2024-06-01",
+    60
+   ],
+   [
+    1002,
+    "2024-06-03",
+    58
+   ],
+   [
+    1003,
+    "2024-06-10",
+    51
+   ],
+   [
+    1004,
+    "2024-06-15",
+    46
+   ],
+   [
+    1005,
+    "2024-07-02",
+    29
+   ],
+   [
+    1006,
+    "2024-07-04",
+    27
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-12/8": {
+  "columns": [
+   "first_name",
+   "manager"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    "no manager"
+   ],
+   [
+    "Diya",
+    101
+   ],
+   [
+    "Kabir",
+    "no manager"
+   ],
+   [
+    "Ananya",
+    103
+   ],
+   [
+    "Rohan",
+    "no manager"
+   ],
+   [
+    "Meera",
+    "no manager"
+   ],
+   [
+    "Vihaan",
+    101
+   ],
+   [
+    "Isha",
+    105
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-12/9": {
+  "columns": [
+   "safe_division",
+   "kept"
+  ],
+  "rows": [
+   [
+    null,
+    5
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-12/10": {
+  "columns": [
+   "first_name",
+   "salary",
+   "salary_band"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    98000,
+    "High"
+   ],
+   [
+    "Diya",
+    87000,
+    "High"
+   ],
+   [
+    "Vihaan",
+    79000,
+    "Medium"
+   ],
+   [
+    "Meera",
+    72000,
+    "Medium"
+   ],
+   [
+    "Kabir",
+    64000,
+    "Medium"
+   ],
+   [
+    "Rohan",
+    61000,
+    "Medium"
+   ],
+   [
+    "Ananya",
+    58000,
+    "Low"
+   ],
+   [
+    "Isha",
+    55000,
+    "Low"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-12/11": {
+  "columns": [
+   "all_orders",
+   "delivered",
+   "pending",
+   "cancelled_value"
+  ],
+  "rows": [
+   [
+    6,
+    3,
+    1,
+    329
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-13/0": {
+  "columns": [
+   "employee",
+   "dept_name",
+   "location"
+  ],
+  "rows": [
+   [
+    "Aarav Sharma",
+    "Engineering",
+    "Hyderabad"
+   ],
+   [
+    "Diya Reddy",
+    "Engineering",
+    "Hyderabad"
+   ],
+   [
+    "Kabir Mehta",
+    "Sales",
+    "Mumbai"
+   ],
+   [
+    "Ananya Iyer",
+    "Sales",
+    "Mumbai"
+   ],
+   [
+    "Rohan Gupta",
+    "Marketing",
+    "Bengaluru"
+   ],
+   [
+    "Meera Nair",
+    "Finance",
+    "Chennai"
+   ],
+   [
+    "Vihaan Das",
+    "Engineering",
+    "Hyderabad"
+   ],
+   [
+    "Isha Patel",
+    "Marketing",
+    "Bengaluru"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-13/1": {
+  "columns": [
+   "employee",
+   "dept_name"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    "Engineering"
+   ],
+   [
+    "Diya",
+    "Engineering"
+   ],
+   [
+    "Vihaan",
+    "Engineering"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-13/2": {
+  "columns": [
+   "name",
+   "price"
+  ],
+  "rows": [
+   [
+    "Noise-Cancel Headphones",
+    249
+   ],
+   [
+    "Python Crash Course",
+    39
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-13/4": {
+  "columns": [
+   "index_name",
+   "on_table"
+  ],
+  "rows": [
+   [
+    "idx_orders_customer",
+    "orders"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-13/5": {
+  "columns": [
+   "id",
+   "parent",
+   "notused",
+   "detail"
+  ],
+  "rows": [
+   [
+    3,
+    0,
+    0,
+    "SEARCH orders USING INDEX idx_orders_customer (customer_id=?)"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-13/6": {
+  "columns": [
+   "id",
+   "parent",
+   "notused",
+   "detail"
+  ],
+  "rows": [
+   [
+    2,
+    0,
+    0,
+    "SEARCH orders USING COVERING INDEX idx_orders_status_date (status=? AND order_date>?)"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-13/7": {
+  "columns": [
+   "my_indexes"
+  ],
+  "rows": [
+   [
+    0
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-14/1": {
+  "columns": [
+   "id",
+   "holder",
+   "balance"
+  ],
+  "rows": [
+   [
+    1,
+    "Priya",
+    3500
+   ],
+   [
+    2,
+    "Rahul",
+    2500
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-14/2": {
+  "columns": [
+   "id",
+   "holder",
+   "balance"
+  ],
+  "rows": [
+   [
+    1,
+    "Priya",
+    5000
+   ],
+   [
+    2,
+    "Rahul",
+    1000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-14/3": {
+  "columns": [
+   "item"
+  ],
+  "rows": [
+   [
+    "Laptop"
+   ],
+   [
+    "Mouse"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-14/6": {
+  "columns": [
+   "customer_id",
+   "name",
+   "city"
+  ],
+  "rows": [
+   [
+    1,
+    "Arjun Rao",
+    "Hyderabad"
+   ],
+   [
+    2,
+    "Sara Khan",
+    "Mumbai"
+   ],
+   [
+    3,
+    "Neel Joshi",
+    "Pune"
+   ],
+   [
+    4,
+    "Tara Singh",
+    "Delhi"
+   ],
+   [
+    5,
+    "Zoya Ali",
+    "Hyderabad"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-15/0": {
+  "columns": [
+   "first_name",
+   "dept_id",
+   "salary",
+   "dept_average"
+  ],
+  "rows": [
+   [
+    "Aarav",
+    1,
+    98000,
+    88000
+   ],
+   [
+    "Diya",
+    1,
+    87000,
+    88000
+   ],
+   [
+    "Vihaan",
+    1,
+    79000,
+    88000
+   ],
+   [
+    "Kabir",
+    2,
+    64000,
+    61000
+   ],
+   [
+    "Ananya",
+    2,
+    58000,
+    61000
+   ],
+   [
+    "Rohan",
+    3,
+    61000,
+    58000
+   ],
+   [
+    "Isha",
+    3,
+    55000,
+    58000
+   ],
+   [
+    "Meera",
+    4,
+    72000,
+    72000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-15/1": {
+  "columns": [
+   "joining_order",
+   "first_name",
+   "hire_date"
+  ],
+  "rows": [
+   [
+    1,
+    "Meera",
+    "2019-05-17"
+   ],
+   [
+    2,
+    "Kabir",
+    "2020-11-20"
+   ],
+   [
+    3,
+    "Aarav",
+    "2021-03-14"
+   ],
+   [
+    4,
+    "Rohan",
+    "2021-08-30"
+   ],
+   [
+    5,
+    "Diya",
+    "2022-06-01"
+   ],
+   [
+    6,
+    "Ananya",
+    "2023-01-09"
+   ],
+   [
+    7,
+    "Vihaan",
+    "2024-02-12"
+   ],
+   [
+    8,
+    "Isha",
+    "2024-07-01"
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-15/2": {
+  "columns": [
+   "name",
+   "category",
+   "price",
+   "rank_by_category",
+   "dense_rank_by_category"
+  ],
+  "rows": [
+   [
+    "Python Crash Course",
+    "Books",
+    39,
+    1,
+    1
+   ],
+   [
+    "Laptop Pro 14",
+    "Electronics",
+    1299,
+    2,
+    2
+   ],
+   [
+    "Noise-Cancel Headphones",
+    "Electronics",
+    249,
+    2,
+    2
+   ],
+   [
+    "Standing Desk",
+    "Furniture",
+    499,
+    4,
+    3
+   ],
+   [
+    "Ergo Chair",
+    "Furniture",
+    329,
+    4,
+    3
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-15/3": {
+  "columns": [
+   "dept_id",
+   "first_name",
+   "salary",
+   "rank_in_dept"
+  ],
+  "rows": [
+   [
+    1,
+    "Aarav",
+    98000,
+    1
+   ],
+   [
+    1,
+    "Diya",
+    87000,
+    2
+   ],
+   [
+    1,
+    "Vihaan",
+    79000,
+    3
+   ],
+   [
+    2,
+    "Kabir",
+    64000,
+    1
+   ],
+   [
+    2,
+    "Ananya",
+    58000,
+    2
+   ],
+   [
+    3,
+    "Rohan",
+    61000,
+    1
+   ],
+   [
+    3,
+    "Isha",
+    55000,
+    2
+   ],
+   [
+    4,
+    "Meera",
+    72000,
+    1
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-15/4": {
+  "columns": [
+   "dept_id",
+   "first_name",
+   "salary"
+  ],
+  "rows": [
+   [
+    1,
+    "Aarav",
+    98000
+   ],
+   [
+    2,
+    "Kabir",
+    64000
+   ],
+   [
+    3,
+    "Rohan",
+    61000
+   ],
+   [
+    4,
+    "Meera",
+    72000
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-15/5": {
+  "columns": [
+   "order_date",
+   "total_amount",
+   "running_total"
+  ],
+  "rows": [
+   [
+    "2024-06-01",
+    1548,
+    1548
+   ],
+   [
+    "2024-06-03",
+    499,
+    2047
+   ],
+   [
+    "2024-06-10",
+    39,
+    2086
+   ],
+   [
+    "2024-07-02",
+    1338,
+    3424
+   ],
+   [
+    "2024-07-04",
+    249,
+    3673
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-15/6": {
+  "columns": [
+   "order_date",
+   "total_amount",
+   "previous_order",
+   "difference"
+  ],
+  "rows": [
+   [
+    "2024-06-01",
+    1548,
+    null,
+    null
+   ],
+   [
+    "2024-06-03",
+    499,
+    1548,
+    -1049
+   ],
+   [
+    "2024-06-10",
+    39,
+    499,
+    -460
+   ],
+   [
+    "2024-07-02",
+    1338,
+    39,
+    1299
+   ],
+   [
+    "2024-07-04",
+    249,
+    1338,
+    -1089
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-15/7": {
+  "columns": [
+   "month",
+   "orders",
+   "revenue",
+   "average_order"
+  ],
+  "rows": [
+   [
+    "2024-06",
+    3,
+    2086,
+    695.33
+   ],
+   [
+    "2024-07",
+    2,
+    1587,
+    793.5
+   ]
+  ]
+ },
+ "sql-mastery/sql-mod-15/8": {
+  "columns": [
+   "name",
+   "orders",
+   "spent",
+   "last_order",
+   "segment"
+  ],
+  "rows": [
+   [
+    "Arjun Rao",
+    2,
+    1587,
+    "2024-06-10",
+    "Gold"
+   ],
+   [
+    "Tara Singh",
+    1,
+    1338,
+    "2024-07-02",
+    "Gold"
+   ],
+   [
+    "Sara Khan",
+    1,
+    499,
+    "2024-06-03",
+    "Regular"
+   ],
+   [
+    "Zoya Ali",
+    1,
+    249,
+    "2024-07-04",
+    "Regular"
+   ],
+   [
+    "Neel Joshi",
+    0,
+    0,
+    null,
+    "Regular"
+   ]
+  ]
+ }
+}

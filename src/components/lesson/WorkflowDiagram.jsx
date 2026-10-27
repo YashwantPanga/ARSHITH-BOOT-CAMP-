@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, X, ArrowRight, MousePointerClick } from 'lucide-react';
 import { DiagramCard, FlowArrow } from '../diagrams/VisualDiagram';
 import { validateDiagram } from '../../../shared/contentSchema.js';
 
@@ -290,7 +290,7 @@ export function routeEdges(L) {
   return routes;
 }
 
-export function DiagramSvg({ def, L }) {
+export function DiagramSvg({ def, L, onSelect, selected }) {
   const routes = routeEdges(L);
   const [reduced] = useState(() => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
   return (
@@ -335,9 +335,20 @@ export function DiagramSvg({ def, L }) {
         const [fill, stroke, accent, ink] = NODE_TONES[(n.step - 1) % NODE_TONES.length];
         const firstBaseline = L.NODE_H / 2 - ((n.lines.length - 1) * LABEL_LINE_H) / 2 + 4.5;
         return (
-          <g key={n.id} transform={`translate(${n.x},${n.y})`}>
-            <title>{n.label}</title>
-            <rect width={L.NODE_W} height={L.NODE_H} rx="14" fill={fill} stroke={stroke} strokeWidth="1.2" />
+          <g
+            key={n.id}
+            transform={`translate(${n.x},${n.y})`}
+            className={onSelect ? 'wf-node cursor-pointer outline-none' : undefined}
+            {...(onSelect ? {
+              role: 'button',
+              tabIndex: 0,
+              'aria-label': `${n.step}. ${n.label} - show explanation`,
+              onClick: () => onSelect(n.id),
+              onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(n.id); } }
+            } : {})}
+          >
+            <title>{n.label} (click for the explanation)</title>
+            <rect width={L.NODE_W} height={L.NODE_H} rx="14" fill={fill} stroke={selected === n.id ? accent : stroke} strokeWidth={selected === n.id ? 2.6 : 1.2} />
             <circle cx="22" cy={L.NODE_H / 2} r="11" fill={accent} />
             <text x="22" y={L.NODE_H / 2 + 4} textAnchor="middle" fontSize="11" fontWeight="700" fill="#FFFFFF" fontFamily="DM Sans, system-ui, sans-serif">{n.step}</text>
             {n.lines.map((l, k) => (
@@ -351,7 +362,7 @@ export function DiagramSvg({ def, L }) {
 }
 
 /** Phone layout: the same stages as numbered cards from top to bottom, edge labels on the arrows. */
-function DiagramStack({ def, L }) {
+function DiagramStack({ def, L, onSelect }) {
   const order = [...L.nodes].sort((a, b) => a.step - b.step);
   const label = new Map(def.nodes.map(n => [n.id, n.label]));
   const loops = L.edges.filter(e => e.back);
@@ -362,7 +373,9 @@ function DiagramStack({ def, L }) {
           const outs = L.edges.filter(e => !e.back && e.from === n.id);
           return (
             <li key={n.id}>
-              <DiagramCard node={{ title: n.label, text: n.detail }} n={n.step} index={n.step - 1} />
+              <button type="button" onClick={() => onSelect?.(n.id)} className="block w-full text-left rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage">
+                <DiagramCard node={{ title: n.label, text: n.detail }} n={n.step} index={n.step - 1} />
+              </button>
               {i < order.length - 1 && (
                 <div className="flex flex-col items-center py-1.5 text-[12px] text-charcoal/60" aria-hidden="true">
                   <FlowArrow dir="down" className="text-forest/75" />
@@ -379,6 +392,76 @@ function DiagramStack({ def, L }) {
           <ul className="mt-1.5 space-y-1">{loops.map((e, i) => <li key={i} className="text-[13px] text-charcoal/80"><span className="font-semibold">{label.get(e.from)}</span> ↺ <span className="font-semibold">{label.get(e.to)}</span>{e.label && <span className="text-charcoal/60"> — {e.label}</span>}</li>)}</ul>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * Glossy explanation card for one box of the diagram: what happens there, a longer explanation and
+ * example when the content has one, what goes in and comes out, and the next steps (clickable).
+ */
+function StageCard({ def, L, id, onPick, onClose }) {
+  const node = L.nodes.find(n => n.id === id);
+  const cardRef = useRef(null);
+  useEffect(() => {
+    cardRef.current?.focus();
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [id, onClose]);
+  if (!node) return null;
+  const [, , accent, ink] = NODE_TONES[(node.step - 1) % NODE_TONES.length];
+  const byId = new Map(L.nodes.map(n => [n.id, n]));
+  const next = L.edges.filter(e => e.from === id).map(e => ({ ...e, node: byId.get(e.to) }));
+  const prev = L.edges.filter(e => e.to === id && !e.back).map(e => byId.get(e.from));
+  const paragraphs = String(node.explain || '').split(/\n\s*\n/).filter(Boolean);
+  return (
+    <div className="absolute inset-0 z-10 flex items-center justify-center p-3 sm:p-6 bg-evergreen/25 backdrop-blur-[2px] animate-fade-in" onClick={onClose}>
+      <div
+        ref={cardRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`stage-${id}`}
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-xl max-h-full overflow-y-auto thin-scroll rounded-2xl border border-white/70 bg-gradient-to-br from-white via-white/95 to-[#EEF5F1] shadow-[0_24px_60px_-20px_rgba(1,58,43,.55)] outline-none animate-scale-in"
+      >
+        {/* glossy shine */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 rounded-t-2xl bg-gradient-to-b from-white/90 to-transparent" aria-hidden="true" />
+        <div className="h-1.5 rounded-t-2xl" style={{ background: accent }} aria-hidden="true" />
+        <div className="relative p-5 sm:p-6">
+          <button type="button" onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full text-charcoal/50 hover:bg-cream" aria-label="Close explanation"><X className="w-4 h-4" /></button>
+          <p className="text-[11px] font-bold tracking-[0.16em] uppercase text-sage pr-8">Step {node.step} of {L.nodes.length} · {def.title}</p>
+          <h3 id={`stage-${id}`} className="mt-1.5 flex items-start gap-2.5 font-display text-[21px] leading-snug" style={{ color: ink }}>
+            <span className="mt-0.5 shrink-0 w-7 h-7 rounded-full text-white text-[13px] font-bold flex items-center justify-center" style={{ background: accent }}>{node.step}</span>
+            {node.label}
+          </h3>
+          {node.detail && <p className="mt-3 text-[15px] font-medium text-charcoal/85 leading-relaxed">{node.detail}</p>}
+          {paragraphs.map((t, i) => <p key={i} className="mt-2.5 text-[14.5px] text-charcoal/75 leading-relaxed">{t}</p>)}
+          {node.example && (
+            <pre className="mt-3 rounded-xl bg-evergreen text-[#E9F1EC] text-[12.5px] leading-relaxed p-3 overflow-x-auto thin-scroll whitespace-pre"><code>{node.example}</code></pre>
+          )}
+          {(node.input || node.output) && (
+            <div className="mt-4 grid sm:grid-cols-2 gap-2.5">
+              <div className="rounded-xl bg-white/80 border border-brand-900/10 p-3"><p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-sage">Goes in</p><p className="mt-1 text-sm text-charcoal/80">{node.input || '—'}</p></div>
+              <div className="rounded-xl bg-white/80 border border-brand-900/10 p-3"><p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-sage">Comes out</p><p className="mt-1 text-sm text-charcoal/80">{node.output || '—'}</p></div>
+            </div>
+          )}
+          {prev.length > 0 && <p className="mt-4 text-[13px] text-charcoal/60">Comes after: {prev.map((p, i) => <React.Fragment key={p.id}>{i ? ', ' : ''}<button type="button" onClick={() => onPick(p.id)} className="font-semibold text-forest hover:underline">{p.label}</button></React.Fragment>)}</p>}
+          {next.length > 0 && (
+            <div className="mt-3">
+              <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-sage">What happens next</p>
+              <div className="mt-1.5 flex flex-wrap gap-2">
+                {next.map(e => (
+                  <button key={e.to} type="button" onClick={() => onPick(e.to)} className="inline-flex items-center gap-1.5 rounded-full border border-forest/20 bg-white px-3 py-1.5 text-[13px] text-forest hover:border-forest">
+                    {e.label && <span className="text-charcoal/55">{e.label}:</span>}{e.node.label}<ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -414,6 +497,7 @@ export default function WorkflowDiagram({ def }) {
   const L = useMemo(() => (v.ok ? layoutDiagram(def) : null), [def, v.ok]);
   const boxRef = useRef(null);
   const [boxW, setBoxW] = useState(0);
+  const [openId, setOpenId] = useState(null);
   useEffect(() => {
     const el = boxRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
@@ -435,10 +519,12 @@ export default function WorkflowDiagram({ def }) {
         </div>
         {drawingFits && (
           <div className="relative overflow-x-auto thin-scroll p-2 sm:p-3 hidden sm:block">
-            <DiagramBoundary><DiagramSvg def={def} L={L} /></DiagramBoundary>
+            <DiagramBoundary><DiagramSvg def={def} L={L} onSelect={setOpenId} selected={openId} /></DiagramBoundary>
           </div>
         )}
-        <div className={drawingFits ? 'sm:hidden' : ''}><DiagramBoundary><DiagramStack def={def} L={L} /></DiagramBoundary></div>
+        <div className={drawingFits ? 'sm:hidden' : ''}><DiagramBoundary><DiagramStack def={def} L={L} onSelect={setOpenId} /></DiagramBoundary></div>
+        <p className="relative px-4 sm:px-5 pb-3 text-[12.5px] text-charcoal/55 flex items-center gap-1.5"><MousePointerClick className="w-3.5 h-3.5" aria-hidden="true" /> Click any box to read its full explanation.</p>
+        {openId && <StageCard def={def} L={L} id={openId} onPick={setOpenId} onClose={() => setOpenId(null)} />}
       </div>
       {def.caption && <figcaption className="text-sm text-charcoal/65">{def.caption}</figcaption>}
       {hasStageData && (

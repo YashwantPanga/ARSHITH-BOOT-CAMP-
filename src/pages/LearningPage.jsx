@@ -240,12 +240,34 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
             <div key={i} id={`concept-${i}`} className="space-y-3 scroll-mt-6">
               {sec.heading && <h4 className="flex items-start gap-3 text-xl font-semibold text-brand-900"><span className="mt-0.5 w-7 h-7 rounded-lg bg-brand-50 text-brand-900 text-xs font-sans font-bold flex items-center justify-center shrink-0">{i + 1}</span><span className="min-w-0">{cleanText(sec.heading).replace(/^\d+[.)]\s*/, '')}</span></h4>}
               <Paragraphs text={sec.text || sec.content} />
+              {sec.syntax && (
+                <div className="rounded-xl border border-brand-900/10 bg-cream/70 overflow-hidden">
+                  <p className="px-4 pt-2.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-sage">Syntax</p>
+                  <pre className="px-4 pb-3 pt-1 font-mono text-[13.5px] text-brand-900 whitespace-pre-wrap break-words m-0">{sec.syntax}</pre>
+                </div>
+              )}
               {sec.bulletPoints?.length > 0 && (
                 <ul className="space-y-1.5 pl-1">
                   {sec.bulletPoints.map((b, k) => <li key={k} className="flex gap-2.5 text-[15px] text-slate-600"><span className="text-peach-500 mt-1">•</span><span className="min-w-0">{cleanText(b).replace(/^\s*[•●▪*-]+\s*/, '')}</span></li>)}
                 </ul>
               )}
-              {sec.code && <CodeBlock courseId={course.id} code={sec.code} />}
+              {sec.code && (
+                <div className="space-y-2">
+                  <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-sage">Example - press Try it to run it yourself</p>
+                  <CodeBlock courseId={course.id} language={sec.language} code={sec.code} />
+                </div>
+              )}
+              {sec.result?.columns?.length > 0 && (
+                <div>
+                  <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-sage mb-1.5">Result ({sec.result.rows.length} row{sec.result.rows.length === 1 ? '' : 's'}{sec.result.more ? `, first ${sec.result.rows.length} shown` : ''})</p>
+                  <div className="overflow-x-auto thin-scroll rounded-xl border border-slate-200 max-h-72">
+                    <table className="w-full text-[13px] font-mono">
+                      <thead className="bg-slate-100 text-slate-700 sticky top-0"><tr>{sec.result.columns.map((h, k) => <th key={k} className="px-3 py-1.5 text-left font-semibold whitespace-nowrap">{h}</th>)}</tr></thead>
+                      <tbody>{sec.result.rows.map((r, k) => <tr key={k} className="odd:bg-white even:bg-slate-50">{r.map((c, j) => <td key={j} className="px-3 py-1.5 text-slate-700 border-t border-slate-100 whitespace-nowrap">{c === null ? <span className="text-slate-400">NULL</span> : String(c)}</td>)}</tr>)}</tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
               {sec.table?.headers && (
                 <div className="overflow-x-auto thin-scroll rounded-xl border border-slate-200">
                   <table className="w-full text-sm">
@@ -253,6 +275,9 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                     <tbody>{(sec.table.rows || []).map((r, k) => <tr key={k} className="odd:bg-white even:bg-slate-50">{r.map((c, j) => <td key={j} className="px-3 py-2 text-slate-600 border-t border-slate-100">{cleanText(c)}</td>)}</tr>)}</tbody>
                   </table>
                 </div>
+              )}
+              {sec.note && (
+                <p className="flex gap-2.5 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-[14px] text-amber-900"><span className="font-bold shrink-0">Tip:</span><span>{sec.note}</span></p>
               )}
             </div>
           ))}

@@ -214,6 +214,9 @@
 .flow-hop { animation: flow-hop 1.8s ease-in-out infinite; }
 @keyframes wf-flow { to { stroke-dashoffset: -32; } }
 .wf-flow { animation: wf-flow 1.2s linear infinite; }
+/* clickable workflow boxes: lift a little on hover / keyboard focus */
+.wf-node > rect:first-of-type { transition: filter .2s ease, stroke-width .2s ease; }
+.wf-node:hover > rect:first-of-type, .wf-node:focus-visible > rect:first-of-type { filter: drop-shadow(0 6px 10px rgba(1, 58, 43, .22)); stroke-width: 2.2; }
 
 /* concept map: cards and hub enter, connectors draw in, light flows along them, hub rings pulse */
 @keyframes cm-card-in { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
