@@ -15,10 +15,18 @@ echo "==> Code: $(git log --oneline -1)"
 
 echo "==> Settings"
 if [ -f .env ]; then cp .env ".env.backup-$(date +%Y%m%d-%H%M%S)"; fi
-if [ -f "$OLD/.env" ]; then
-  cp "$OLD/.env" .env           # the settings the live site already runs with
-elif [ ! -f .env ]; then
-  cp .env.example .env
+if [ ! -f .env ]; then
+  if [ -f "$OLD/.env" ]; then cp "$OLD/.env" .env; else cp .env.example .env; fi
+fi
+# never lose the database settings: bring back Supabase lines from the newest backup that has them
+if ! grep -q '^SUPABASE_URL=.' .env; then
+  for b in $(ls -t .env.backup-* 2>/dev/null) "$OLD/.env"; do
+    if [ -f "$b" ] && grep -q '^SUPABASE_URL=.' "$b"; then
+      grep -E '^SUPABASE_(URL|SERVICE_KEY)=' "$b" >> .env
+      echo "   Supabase settings restored from $b"
+      break
+    fi
+  done
 fi
 
 # set KEY=VALUE in .env (value taken literally)
