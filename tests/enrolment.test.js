@@ -77,7 +77,18 @@ describe('enrolment rules', () => {
     addAttempt(B, 'web-development', false);
     expect(await state(B)).toMatchObject({ courses: { 'web-development': 'failed' }, nextPrice: 99 });
     for (const course of ['sql-mastery', 'web-development']) expect((await enrol(B, course)).status).toBe(402);
+    // the failed course is locked: no quizzes or projects until it is unlocked again
+    const course = db$.getDb().courses.find(c => c.id === 'web-development');
+    const quiz = await request(app).post(`/api/quizzes/module/${course.modules[0].id}/submit`).set('X-Learner-Token', tok[B]).send({ answers: {} });
+    expect(quiz.status).toBe(403);
+    expect(quiz.body.code).toBe('COURSE_CLOSED');
+    if (course.projects?.length) {
+      const proj = await request(app).post('/api/projects/submit').set('X-Learner-Token', tok[B])
+        .send({ courseId: course.id, projectId: course.projects[0].id, githubUrl: 'https://github.com/someone/some-repo' });
+      expect(proj.status).toBe(403);
+    }
     expect((await unlock('ARB-STU-FAIL01', 'web-development')).status).toBe(200);
+    expect((await request(app).post(`/api/quizzes/module/${course.modules[0].id}/submit`).set('X-Learner-Token', tok[B]).send({ answers: {} })).status).toBe(200);
     expect((await state(B)).courses['web-development']).toBe('active');
     const { finalAttemptsUsed } = await import('../server/routes/quizRoutes.js');
     expect(finalAttemptsUsed(db$.getDb(), B, 'web-development')).toBe(0);

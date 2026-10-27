@@ -5,7 +5,7 @@ import { courseArt } from '../components/CourseCard';
 import { cleanText, displayTitle } from '../utils/textUtils';
 import { api } from '../services/api';
 
-export default function StudentDashboard({ studentUser, courses, coursesLoaded, enrolledCourseId, onOpenCourse, onContinue, onViewCertificate, onExploreCourses, onRefresh, onHome, onProfileSaved, initialTab = 'learning', enrollState, enrolledIds = [] }) {
+export default function StudentDashboard({ studentUser, courses, coursesLoaded, enrolledCourseId, onOpenCourse, onContinue, onViewCertificate, onExploreCourses, onUnlock, onRefresh, onHome, onProfileSaved, initialTab = 'learning', enrollState, enrolledIds = [] }) {
   useEffect(() => { onRefresh?.(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
   const [tab, setTab] = useState(initialTab === 'profile' ? 'profile' : 'learning');
 
@@ -124,7 +124,9 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                       <ProgressBar value={course.progress} />
                     </div>
                     <div className="mt-5 flex flex-wrap gap-2">
-                      <button onClick={() => onContinue(course.id, nextModule?.id)} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage px-5 py-2.5"><PlayCircle className="w-4 h-4" />{done ? 'Continue learning' : 'Start learning'}</button>
+                      {courseState === 'failed'
+                        ? <button onClick={() => onUnlock?.(course.id)} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage px-5 py-2.5"><Lock className="w-4 h-4" />Unlock again for ₹{nextPrice || 99}</button>
+                        : <button onClick={() => onContinue(course.id, nextModule?.id)} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage px-5 py-2.5"><PlayCircle className="w-4 h-4" />{done ? 'Continue learning' : 'Start learning'}</button>}
                       <button onClick={() => onOpenCourse(course.id)} className="btn font-display !rounded-md bg-cream text-forest border border-forest/20 hover:border-forest px-5 py-2.5">Course details</button>
                     </div>
                   </div>
@@ -150,8 +152,10 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                 {canStartNext && (
                   <div className="edu-card p-6 border-sage/40 bg-brand-50/60">
                     <h3 className="font-display text-[18px] font-semibold text-evergreen">{courseState === 'passed' ? 'Ready for your next course' : 'This course is closed'}</h3>
-                    <p className="mt-1.5 text-sm text-charcoal/70">{courseState === 'passed' ? `Well done! Unlock your next course for ₹${nextPrice || 99}.` : `You used both final attempts. You can take any course - this one again too, with two fresh attempts - for ₹${nextPrice}.`}</p>
-                    <button onClick={onExploreCourses} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage w-full mt-4 py-3">Choose a course <ArrowRight className="w-4 h-4" /></button>
+                    <p className="mt-1.5 text-sm text-charcoal/70">{courseState === 'passed' ? `Well done! Unlock your next course for ₹${nextPrice || 99}.` : `You used both final attempts without passing, so this course is locked. Pay ₹${nextPrice || 99} to study it again with two fresh attempts.`}</p>
+                    {courseState === 'failed'
+                      ? <button onClick={() => onUnlock?.(course.id)} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage w-full mt-4 py-3">Unlock again for ₹{nextPrice || 99} <ArrowRight className="w-4 h-4" /></button>
+                      : <button onClick={onExploreCourses} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage w-full mt-4 py-3">Choose a course <ArrowRight className="w-4 h-4" /></button>}
                   </div>
                 )}
                 <div className="edu-card p-6 text-center">

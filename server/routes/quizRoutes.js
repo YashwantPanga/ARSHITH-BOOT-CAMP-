@@ -100,10 +100,18 @@ function getFinalQuestions(course, paperCode) {
   return { paper, questions };
 }
 
-/** Returns an error message when the learner is locked into a different course. */
-function enrollmentConflict(db, userId, courseId) {
-  if (!courseId || isEnrolled(db, userId, courseId)) return null;
-  return 'Unlock this course first to continue.';
+/** Failed course: both final attempts used and not passed. It stays locked until unlocked again. */
+export function courseClosed(db, userId, courseId) {
+  return isEnrolled(db, userId, courseId) && !getPassedFinalAttempt(db, userId, courseId)
+    && finalAttemptsUsed(db, userId, courseId) >= MAX_FINAL_ATTEMPTS;
+}
+export const COURSE_CLOSED_MESSAGE = 'You used both final attempts for this course. Unlock it again for ₹99 to study it with two fresh attempts.';
+
+/** Returns an error message when the learner may not work on this course. */
+function enrollmentConflict(db, userId, courseId, { allowClosed = false } = {}) {
+  if (!courseId) return null;
+  if (!isEnrolled(db, userId, courseId)) return 'Unlock this course first to continue.';
+  return !allowClosed && courseClosed(db, userId, courseId) ? COURSE_CLOSED_MESSAGE : null;
 }
 
 function formatDuration(totalSeconds) {
@@ -192,7 +200,7 @@ router.post('/quizzes/module/:moduleId/submit', (req, res) => {
 
   const course = findCourseOfModule(db, moduleId);
   const conflict = enrollmentConflict(db, userId, course?.id);
-  if (conflict) return res.status(403).json({ success: false, message: conflict });
+  if (conflict) return res.status(403).json({ success: false, code: conflict === COURSE_CLOSED_MESSAGE ? 'COURSE_CLOSED' : undefined, message: conflict });
   let correctCount = 0;
   const questionsReview = moduleQuestions.map(q => {
     const selectedAnswer = answers[q.id] !== undefined && answers[q.id] !== null ? Number(answers[q.id]) : null;
@@ -284,7 +292,8 @@ router.post('/final-test/start', (req, res) => {
   const db = getDb();
   const course = findCourse(db, courseId);
   if (!course) return res.status(404).json({ success: false, message: 'Course not found.' });
-  const conflict = enrollmentConflict(db, userId, course.id);
+  // a failed course is answered below with FINAL_ATTEMPTS_USED
+  const conflict = enrollmentConflict(db, userId, course.id, { allowClosed: true });
   if (conflict) return res.status(403).json({ success: false, message: conflict });
 
   // 1. Lock: every module quiz of this course must be passed first.

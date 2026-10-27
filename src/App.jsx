@@ -10,6 +10,8 @@ import MobileBottomNav from './components/MobileBottomNav';
 import DesktopNotice from './components/DesktopNotice';
 import { WhatBringsYou } from './components/MobileWelcome';
 import EnrollCelebration from './components/EnrollCelebration';
+import { Lock } from 'lucide-react';
+import { displayTitle } from './utils/textUtils';
 import PaymentNotice from './components/PaymentNotice';
 
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
@@ -103,11 +105,13 @@ function AppShell() {
   const enrolledCourseId = enrolledCourseOf(studentUser);
   // from the server: { courseIds, courses: { id: status }, nextPrice, history }
   const [enrollState, setEnrollState] = useState(null);
+  // failed courses (both final attempts used) stay locked until the learner pays to take them again
+  const closedIds = useMemo(() => enrolledIds.filter(id => enrollState?.courses?.[id] === 'failed'), [enrolledIds, enrollState]);
   const courseOffer = useMemo(() => ({
     canEnrollNew: true,
-    enrolledIds,
+    enrolledIds: enrolledIds.filter(id => !closedIds.includes(id)),
     price: studentUser ? (enrollState ? enrollState.nextPrice || 0 : (enrolledIds.length ? 99 : 0)) : 0
-  }), [studentUser, enrollState, enrolledIds]);
+  }), [studentUser, enrollState, enrolledIds, closedIds]);
 
   const saveUser = useCallback((u) => {
     setStudentUser(u);
@@ -218,16 +222,17 @@ function AppShell() {
       navigate(paths.login(paths.course(courseId)));
       return;
     }
-    if (enrolledIds.includes(courseId)) {
+    const retake = closedIds.includes(courseId);
+    if (enrolledIds.includes(courseId) && !retake) {
       navigate(paths.learn(courseId));
       return;
     }
-    if (courseOffer.price > 0) {
-      setPaymentFor({ course: course || { id: courseId, title: courseId }, price: courseOffer.price });
+    if (retake || courseOffer.price > 0) {
+      setPaymentFor({ course: course || { id: courseId, title: courseId }, price: courseOffer.price || 99, retake });
       return;
     }
     setEnrollTarget(course || { id: courseId, title: courseId });
-  }, [studentUser, enrolledIds, courses, navigate, toast, courseOffer]);
+  }, [studentUser, enrolledIds, closedIds, courses, navigate, toast, courseOffer]);
 
   const confirmEnroll = async () => {
     if (!enrollTarget || !studentUser) return;
@@ -400,7 +405,14 @@ function AppShell() {
     }
     case 'learning': {
       const course = findCourse(route.params.courseId);
-      page = !coursesLoaded || !studentUser ? loading : !course ? notFound('Course not found') : !enrolledIds.includes(course.id) ? loading : (
+      page = !coursesLoaded || !studentUser ? loading : !course ? notFound('Course not found') : !enrolledIds.includes(course.id) ? loading : closedIds.includes(course.id) ? (
+        <CourseClosed
+          course={course}
+          price={courseOffer.price || 99}
+          onUnlock={() => requestEnroll(course.id)}
+          onDashboard={() => navigate(paths.dashboard())}
+        />
+      ) : (
         <LearningPage
           course={course}
           studentUser={studentUser}
@@ -432,6 +444,7 @@ function AppShell() {
           onContinue={(id, moduleId) => navigate(paths.learn(id, moduleId))}
           onViewCertificate={(id) => navigate(paths.certificate(id))}
           onExploreCourses={() => goCourses()}
+          onUnlock={requestEnroll}
           onRefresh={() => { enrolledIds.forEach(id => refreshProgress(id)); api.getEnrollment(userId).then(setEnrollState).catch(() => {}); }}
           enrolledIds={enrolledIds}
           enrollState={enrollState}
@@ -590,6 +603,7 @@ function AppShell() {
         <PaymentNotice
           course={paymentFor.course}
           price={paymentFor.price}
+          retake={!!paymentFor.retake}
           paymentsEnabled={!!enrollState?.paymentsEnabled}
           onPaid={onCoursePaid}
           onClose={() => setPaymentFor(null)}
@@ -625,6 +639,23 @@ function AuthModalLayer({ onClose, children }) {
       <div className="fixed inset-0 bg-[#0C2D26]/45 backdrop-blur-[3px] animate-fade-in" onClick={onClose} aria-hidden="true" />
       <div className="relative min-h-full flex items-center justify-center p-4 sm:p-6 pointer-events-none">
         <div className="pointer-events-auto w-full flex justify-center">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/** A failed course (both final attempts used): locked until the learner unlocks it again. */
+function CourseClosed({ course, price, onUnlock, onDashboard }) {
+  return (
+    <div className="bg-ivory min-h-[70vh] flex items-center justify-center px-4 py-16">
+      <div className="edu-card max-w-md w-full p-7 text-center">
+        <span className="mx-auto w-14 h-14 rounded-full bg-brand-100 text-forest flex items-center justify-center"><Lock className="w-7 h-7" /></span>
+        <h1 className="mt-4 text-[24px] font-bold text-evergreen leading-tight">{displayTitle(course.title)} is locked</h1>
+        <p className="mt-2 text-[14.5px] text-charcoal/70 leading-relaxed">
+          You used both final assessment attempts without passing. Unlock the course again for ₹{price} to study it and get two fresh attempts.
+        </p>
+        <button onClick={onUnlock} className="font-display mt-6 w-full h-12 rounded-md bg-forest text-ivory text-[15.5px] font-semibold hover:bg-sage transition-colors">Unlock again for ₹{price}</button>
+        <button onClick={onDashboard} className="mt-3 text-[14px] font-medium text-charcoal/60 hover:text-forest">Back to my dashboard</button>
       </div>
     </div>
   );

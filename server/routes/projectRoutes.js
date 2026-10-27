@@ -3,6 +3,7 @@ import { isEnrolled } from '../lib/enrolledCourses.js';
 import { getDb, saveDb, logActivity } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
 import { GITHUB_REPO_RE, projectRequirement } from '../lib/projects.js';
+import { courseClosed, COURSE_CLOSED_MESSAGE } from './quizRoutes.js';
 
 const router = express.Router();
 
@@ -85,6 +86,7 @@ router.post('/projects/submit', (req, res) => {
   const project = course?.projects?.find(p => p.id === projectId);
   if (!course || !project) return res.status(404).json({ success: false, message: 'Project not found.' });
   if (!isEnrolled(db, userId, course.id)) return res.status(403).json({ success: false, message: 'Enroll in this course before submitting its projects.' });
+  if (courseClosed(db, userId, course.id)) return res.status(403).json({ success: false, code: 'COURSE_CLOSED', message: COURSE_CLOSED_MESSAGE });
 
   if (!db.projectSubmissions) db.projectSubmissions = [];
   const learner = db.learners?.[userId];

@@ -24,7 +24,7 @@ const loadCheckout = () => {
  * unlocks straight away - onPaid(enrolmentState) is called once the server has confirmed the payment.
  * Otherwise the learner contacts the team and the admin enrols them.
  */
-export default function PaymentNotice({ course, price = 99, paymentsEnabled = false, onPaid, onClose }) {
+export default function PaymentNotice({ course, price = 99, retake = false, paymentsEnabled = false, onPaid, onClose }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [online, setOnline] = useState(paymentsEnabled);
@@ -82,10 +82,12 @@ export default function PaymentNotice({ course, price = 99, paymentsEnabled = fa
       <div className="relative w-full max-w-md rounded-[22px] bg-ivory p-6 sm:p-7 shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} disabled={busy} className="absolute top-3 right-3 p-2 rounded-full text-charcoal/50 hover:bg-cream disabled:opacity-40" aria-label="Close"><X className="w-4 h-4" /></button>
         <span className="w-14 h-14 rounded-full bg-brand-100 text-forest flex items-center justify-center"><IndianRupee className="w-7 h-7" /></span>
-        <h2 id="pay-title" className="mt-4 text-[23px] font-bold text-evergreen leading-tight">{online ? `Unlock ${displayTitle(course?.title || 'this course')} for ₹${price}` : `${displayTitle(course?.title || 'This course')} costs ₹${price}`}</h2>
+        <h2 id="pay-title" className="mt-4 text-[23px] font-bold text-evergreen leading-tight">{online ? `Unlock ${displayTitle(course?.title || 'this course')}${retake ? ' again' : ''} for ₹${price}` : `${displayTitle(course?.title || 'This course')} costs ₹${price}`}</h2>
         <p className="mt-2 text-[14.5px] text-charcoal/70 leading-relaxed">
-          Every student gets one free course. Each further course costs ₹{price} to unlock - including the same course again after
-          failing its final assessment twice, which gives two fresh attempts.
+          {retake
+            ? <>You used both final assessment attempts without passing, so this course is locked. Pay ₹{price} to study it again with two fresh attempts.</>
+            : <>Every student gets one free course. Each further course costs ₹{price} to unlock - including the same course again after
+              failing its final assessment twice, which gives two fresh attempts.</>}
         </p>
         {online ? (
           <>
