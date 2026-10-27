@@ -27,7 +27,7 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
       {/* Image with the overlapping track plate */}
       <button onClick={() => onSelect(course.id)} className="relative block text-left" aria-label={`View ${course.title}`}>
         <div className="relative aspect-[16/10] overflow-hidden bg-forest">
-          <SafeImg src={art || course.thumbnail} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
+          <SafeImg src={art || course.thumbnail} alt="" className="w-full h-full object-cover object-[44%_50%] transition-transform duration-700 group-hover:scale-[1.04]" />
           {!art && <div className="absolute inset-0 bg-gradient-to-t from-evergreen/55 via-evergreen/5 to-transparent" />}
           {isMine && <span className="absolute top-2.5 right-2.5 chip bg-ivory text-brand-900">Enrolled</span>}
           {isLocked && <span className="absolute top-2.5 right-2.5 chip bg-white/90 text-charcoal/70"><Lock className="w-3 h-3" /> Locked</span>}
@@ -89,7 +89,7 @@ export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll, offer
     <article className={`edu-card group relative flex flex-col h-full overflow-hidden text-center transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_48px_-26px_rgba(1,58,43,.45)] ${isLocked ? 'opacity-80' : ''}`}>
       <button onClick={() => onSelect(course.id)} className="relative block" aria-label={`View ${course.title}`}>
         <div className="relative aspect-[16/10] overflow-hidden bg-forest">
-          <SafeImg src={courseArt(course)} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.05]" />
+          <SafeImg src={courseArt(course)} alt="" className="w-full h-full object-cover object-[44%_50%] transition-transform duration-700 group-hover:scale-[1.05]" />
           {isMine && <span className="absolute top-3 right-3 chip bg-ivory text-brand-900">Enrolled</span>}
           {isLocked && <span className="absolute top-3 right-3 chip bg-white/90 text-charcoal/70"><Lock className="w-3 h-3" /> Locked</span>}
         </div>

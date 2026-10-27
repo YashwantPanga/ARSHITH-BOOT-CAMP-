@@ -25,8 +25,8 @@ const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 
  *    covering/turning off the camera, and pressing Back are violations.
  *  - The 3rd violation ends the exam automatically and it is recorded as a fail.
  *  - Copy / paste / right-click / dev-tools shortcuts are blocked.
- *  - AI proctoring (in the browser, nothing uploaded): before the exam the student's face is captured
- *    and the name on their photo ID is matched with the registered name; during the exam extra people, a different person, a phone or a
+ *  - AI proctoring (in the browser, nothing uploaded): before the exam the student's face is captured;
+ *    during the exam extra people, a different person, a phone or a
  *    missing face become violations after a short grace period, and hands near the face are flagged.
  *    Detections are shown live on screen as they happen.
  */
@@ -524,7 +524,7 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
                   [Maximize, 'Stay in full screen', 'The exam runs in full screen. Pressing Esc or leaving full screen counts as a warning.'],
                   [MonitorX, 'Do not switch tabs or apps', 'Switching tabs, minimising, or clicking another window counts as a warning.'],
                   [Video, 'Keep your camera on', 'Your face must stay visible. Covering or turning off the camera counts as a warning.'],
-                  [UserCheck, 'Identity is checked all the time', 'Before you start, your face is captured and the name on your photo ID must match your registered name. The person on camera is compared with your captured face throughout the exam.'],
+                  [UserCheck, 'Identity is checked all the time', 'Before you start, your face is captured. The person on camera is compared with your captured face throughout the exam.'],
                   [Users, 'Only you in the frame', 'Another person on camera counts as a warning.'],
                   [Smartphone, 'No phone', 'A mobile phone seen on camera counts as a warning. Hands covering your face are flagged for review.'],
                   [Eye, 'Keep your eyes on the screen', 'Eye tracking is on. Looking down or away from the screen for more than a few seconds counts as a warning.'],

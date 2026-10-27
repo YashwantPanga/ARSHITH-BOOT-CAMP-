@@ -70,7 +70,7 @@ export function CourseRow({ course, enrolledCourseId, offer, onSelect }) {
   return (
     <button onClick={() => onSelect(course.id)} className="w-full flex gap-3 p-3 rounded-xl bg-white border border-brand-900/15 text-left active:scale-[.99] transition">
       <span className="relative shrink-0 w-[84px] h-[84px] rounded-lg overflow-hidden bg-forest">
-        <SafeImg src={courseArt(course)} alt="" className="w-full h-full object-cover" />
+        <SafeImg src={courseArt(course)} alt="" className="w-full h-full object-cover object-[44%_50%]" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-2">

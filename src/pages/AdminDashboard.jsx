@@ -1129,7 +1129,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
                 { label: 'Exams running now', value: live.length, sub: live.length ? `${live.reduce((n, x) => n + x.cd.liveExam.violationCount, 0)} live warnings` : 'No exam in progress', tone: live.length ? 'text-rose-600' : 'text-slate-900', pulse: live.length > 0 },
                 { label: 'Warnings recorded', value: attempts.reduce((n, a) => n + (a.violationCount || 0), 0), sub: `across ${attempts.length} submitted attempt${attempts.length === 1 ? '' : 's'}`, tone: 'text-amber-600' },
                 { label: 'Ended by proctoring', value: attempts.filter(a => a.terminated).length, sub: '3 warnings reached', tone: 'text-rose-600' },
-                { label: 'ID flagged for review', value: attempts.filter(a => a.identity?.flaggedForReview).length, sub: 'name not matched or face mismatch', tone: 'text-amber-700' }
+                { label: 'Identity flagged for review', value: attempts.filter(a => a.identity?.flaggedForReview).length, sub: 'face did not match during the exam', tone: 'text-amber-700' }
               ];
               return (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -1236,7 +1236,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
                                       <span className={`inline-block px-2 py-0.5 text-[10px] font-black rounded-full border ${warnTone(last.violationCount)}`}>
                                         {last.terminated ? 'Ended · ' : ''}{last.violationCount} warning{last.violationCount === 1 ? '' : 's'}
                                       </span>
-                                      {last.identity?.flaggedForReview && <span className="block text-[10px] font-bold text-amber-700">ID flagged for review</span>}
+                                      {last.identity?.flaggedForReview && <span className="block text-[10px] font-bold text-amber-700">Identity flagged for review</span>}
                                       {(targetDetail.examAttempts || []).length > 1 && <span className="block text-[10px] text-slate-400">{targetDetail.examAttempts.length} attempts · {targetDetail.totalViolations} total</span>}
                                     </div>
                                   );
@@ -1841,7 +1841,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
                           <p className="text-[10.5px] text-slate-400">{a.submittedAt ? new Date(a.submittedAt).toLocaleString() : ''}</p>
                           {a.identity && (
                             <p className="text-[11px] text-slate-600">
-                              Identity: face {a.identity.faceCaptured ? 'captured' : 'not captured'} · ID name {a.identity.idCardMatched ? 'matched' : a.identity.idCardChecked ? 'not matched (flagged)' : 'not checked'}
+                              Identity: face {a.identity.faceCaptured ? 'captured' : 'not captured'}{a.identity.idCardChecked ? ` · ID name ${a.identity.idCardMatched ? 'matched' : 'not matched'}` : ''}
                               {a.identity.averageMatch != null && <> · avg face match {a.identity.averageMatch}%</>}
                               {a.identity.mismatchedChecks > 0 && <> · {a.identity.mismatchedChecks} mismatched checks</>}
                             </p>

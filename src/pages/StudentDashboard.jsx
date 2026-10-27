@@ -112,7 +112,9 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
             <div className="grid lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
                 <div className="edu-card overflow-hidden grid sm:grid-cols-5">
-                  <SafeImg src={courseArt(course)} alt="" className="sm:col-span-2 h-48 sm:h-full w-full object-cover bg-forest" />
+                  <div className="sm:col-span-2 bg-forest flex items-center">
+                    <SafeImg src={courseArt(course)} alt="" className="w-full aspect-[16/10] object-cover object-[44%_50%]" />
+                  </div>
                   <div className="sm:col-span-3 p-6 flex flex-col">
                     <span className="font-display self-start rounded-md bg-forest text-ivory text-[12.5px] font-medium px-2.5 py-1">{course.category}</span>
                     <h2 className="mt-3 text-[22px] font-semibold text-evergreen leading-snug">{displayTitle(course.title)}</h2>

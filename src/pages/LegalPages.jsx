@@ -103,14 +103,14 @@ export function PrivacyPage({ onHome }) {
           [
             'Account details: your name (as on your photo ID), email address, password (stored only as a secure hash) and your learner ID.',
             'Learning records: course enrolment, module progress, quiz and assessment scores, project links you submit and the certificates issued to you.',
-            'Assessment monitoring results: whether your face and ID name checks passed, and the time and type of any suspected violations (for example another person visible or leaving fullscreen).',
+            'Assessment monitoring results: whether your face checks passed, and the time and type of any suspected violations (for example another person visible or leaving fullscreen).',
             'Messages you send through the contact form.',
             'Basic technical data needed to run the site, such as your browser type and a sign-in token kept in your browser.'
           ]
         ] },
-        { title: 'Camera, face and ID images', body: [
-          'Camera access is requested only for the proctored final assessment, and only with your permission. Your face reference and the photo of your ID card are analysed in your browser, on your own device. The images are not uploaded or stored by us.',
-          'Only the outcomes are sent to our server: whether the checks passed, how much of your name was found on the ID, and the violation events described above.'
+        { title: 'Camera and face images', body: [
+          'Camera access is requested only for the proctored final assessment, and only with your permission. Your face reference is analysed in your browser, on your own device. The images are not uploaded or stored by us.',
+          'Only the outcomes are sent to our server: whether the face checks passed and the violation events described above.'
         ] },
         { title: 'Why we use your data', body: [
           [
