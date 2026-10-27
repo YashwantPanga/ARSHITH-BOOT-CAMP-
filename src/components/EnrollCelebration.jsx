@@ -6,10 +6,10 @@ import { displayTitle } from '../utils/textUtils';
 const CONFETTI_COLORS = ['#013A2B', '#426557', '#E0B54A', '#BCD1C6', '#7DB59A', '#FBF8F1'];
 
 /**
- * Shown right after a learner enrols: a gift box opens, the course card rises out of it, a FREE stamp
- * lands on the course fee and confetti bursts. "Start learning" opens the first module.
+ * Shown right after a learner enrols: a gift box opens, the course card rises out of it, a FREE (or,
+ * after a payment, PAID) stamp lands on the course fee and confetti bursts. "Start learning" opens the first module.
  */
-export default function EnrollCelebration({ course, learnerName, onStart, onClose }) {
+export default function EnrollCelebration({ course, learnerName, paid = 0, onStart, onClose }) {
   const first = String(learnerName || '').trim().split(/\s+/)[0];
   const modules = course?.modules?.length || 0;
 
@@ -87,11 +87,11 @@ export default function EnrollCelebration({ course, learnerName, onStart, onClos
             <strong className="text-evergreen">{displayTitle(course.title)}</strong> is now yours.
           </p>
 
-          {/* course fee with the FREE stamp */}
+          {/* course fee with the FREE / PAID stamp */}
           <div className="en-up relative mt-5 mx-auto w-fit rounded-xl border border-dashed border-sage/50 bg-white pl-6 pr-24 py-3 text-left" style={{ animationDelay: '1s' }}>
             <p className="text-[12px] uppercase tracking-[0.18em] text-charcoal/50">Course fee</p>
-            <p className="font-display text-[28px] font-bold text-evergreen leading-none mt-1">₹0</p>
-            <span className="en-stamp absolute right-3 top-1/2 -mt-4 rotate-[-14deg] rounded-md border-[3px] border-[#2F7A5C] text-[#2F7A5C] bg-ivory/90 font-display font-bold text-[17px] tracking-[0.12em] px-2.5 py-0.5">FREE</span>
+            <p className="font-display text-[28px] font-bold text-evergreen leading-none mt-1">₹{paid}</p>
+            <span className="en-stamp absolute right-3 top-1/2 -mt-4 rotate-[-14deg] rounded-md border-[3px] border-[#2F7A5C] text-[#2F7A5C] bg-ivory/90 font-display font-bold text-[17px] tracking-[0.12em] px-2.5 py-0.5">{paid ? 'PAID' : 'FREE'}</span>
           </div>
 
           <ul className="en-up mt-5 flex flex-wrap justify-center gap-2 text-[13px] text-charcoal/75" style={{ animationDelay: '1.15s' }}>

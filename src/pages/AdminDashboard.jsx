@@ -5,7 +5,7 @@ import {
   Copy, Eye, CheckCircle2, XCircle, AlertTriangle, Search, Filter, RefreshCw, 
   UserCheck, Shield, ChevronRight, ChevronLeft, Lock, Save, ExternalLink, Download, FileSpreadsheet, FileCheck,
   Check, X, AlertCircle, Clock, Calendar, CheckSquare, Sparkles, User, ArrowUpRight, Menu,
-  ArrowUpDown, TrendingUp, Users, Github, Mail, Phone, Hash, ArrowLeft
+  ArrowUpDown, TrendingUp, Users, Github, Mail, Phone, Hash, ArrowLeft, IndianRupee
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { api } from '../services/adminApi';
@@ -37,6 +37,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
   const [students, setStudents] = useState([]);
   const [projectSubmissions, setProjectSubmissions] = useState([]);
   const [certificates, setCertificates] = useState([]);
+  const [payments, setPayments] = useState({ enabled: false, payments: [] });
   const [activityLogs, setActivityLogs] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
 
@@ -142,6 +143,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
       if (prRes.success) setProjectSubmissions(prRes.submissions);
       if (ceRes.success) setCertificates(ceRes.certificates);
       if (lgRes.success) setActivityLogs(lgRes.logs);
+      api.getPayments().then(r => r.success && setPayments(r)).catch(() => {});
     } catch (err) {
       showToast(err.message || 'Failed to load backend data', 'error');
     } finally {
@@ -535,6 +537,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     { id: 'progress', label: 'Course Progress', icon: BarChart3 },
     { id: 'projects', label: 'Project Submissions', icon: FolderCheck, badge: projectSubmissions.filter(p => p.status === 'Submitted' || p.status === 'Under Review').length },
     { id: 'certificates', label: 'Certificates', icon: Award, badge: certificates.length },
+    { id: 'payments', label: 'Payments', icon: IndianRupee, badge: payments.payments.filter(p => p.status === 'paid').length },
     { id: 'export', label: 'Export Reports', icon: FileSpreadsheet },
     { id: 'courses', label: 'Course Catalog', icon: BookOpen, badge: courses.length },
     { id: 'settings', label: 'Admin Settings', icon: Settings },
@@ -554,6 +557,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     activeSection === 'progress' ? 'Course Progress' :
     activeSection === 'projects' ? 'Project Submissions' :
     activeSection === 'certificates' ? 'Certificates' :
+    activeSection === 'payments' ? 'Payments' :
     activeSection === 'export' ? 'Export Reports' :
     activeSection === 'courses' ? 'Course Catalog' : 'Admin Settings';
   const pageSubtitle = builderCourse ? 'Edit modules, lessons and quizzes for this course' :
@@ -562,6 +566,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     activeSection === 'progress' ? 'Module scores, final exams and proctoring' :
     activeSection === 'projects' ? 'Review GitHub project submissions' :
     activeSection === 'certificates' ? 'Certificate management & verification' :
+    activeSection === 'payments' ? 'Course payments received through Razorpay' :
     activeSection === 'export' ? 'Download student data as Excel' :
     activeSection === 'courses' ? 'Manage the course catalog' : 'Admin account & security';
   const go = (id) => { setActiveSection(id); setBuilderCourse(null); setMobileSidebarOpen(false); };
@@ -1447,6 +1452,63 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
             </div>
           </div>
         )}
+
+        {activeSection === 'payments' && (() => {
+          const paid = payments.payments.filter(p => p.status === 'paid');
+          const total = paid.reduce((sum, p) => sum + p.amount, 0) / 100;
+          return (
+            <div className="bg-white rounded-3xl dark-bezel p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                <div>
+                  <h2 className="text-lg font-black text-slate-900">Payments ({paid.length} paid · ₹{total.toLocaleString('en-IN')})</h2>
+                  <span className="text-xs font-semibold text-slate-500">
+                    {payments.enabled ? 'Online payment is on. Refunds are made from the Razorpay Dashboard.' : 'Online payment is off - add the Razorpay keys to the server .env to turn it on.'}
+                  </span>
+                </div>
+                <a href="https://dashboard.razorpay.com/app/payments" target="_blank" rel="noreferrer" className="px-4 py-2 text-xs font-black text-white bg-brand-900 hover:bg-brand-800 rounded-xl shadow-md inline-flex items-center gap-2 self-start sm:self-auto">
+                  Razorpay Dashboard <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                      <th className="py-3 px-4">Date</th>
+                      <th className="py-3 px-4">Student</th>
+                      <th className="py-3 px-4">Course</th>
+                      <th className="py-3 px-4">Amount</th>
+                      <th className="py-3 px-4">Payment ID</th>
+                      <th className="py-3 px-4">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-xs font-bold">
+                    {payments.payments.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-12 text-center text-slate-400 font-semibold">
+                          <IndianRupee className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                          <p className="text-sm font-bold text-slate-700">No payments yet.</p>
+                        </td>
+                      </tr>
+                    ) : payments.payments.map(p => (
+                      <tr key={p.orderId} className="hover:bg-slate-50 transition-colors">
+                        <td className="py-4 px-4 text-slate-500 font-medium">{new Date(p.paidAt || p.createdAt).toLocaleString('en-IN')}</td>
+                        <td className="py-4 px-4 text-slate-900">{p.email}</td>
+                        <td className="py-4 px-4 text-slate-700">{p.courseTitle}</td>
+                        <td className="py-4 px-4 font-extrabold text-slate-900">₹{p.amount / 100}</td>
+                        <td className="py-4 px-4 font-mono text-[11px] text-brand-900">{p.paymentId || <span className="text-slate-400">{p.orderId}</span>}</td>
+                        <td className="py-4 px-4">
+                          <span className={`px-2.5 py-1 text-[10px] font-black rounded-full uppercase ${p.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500'}`}>
+                            {p.status === 'paid' ? 'Paid' : 'Not completed'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ============================================================== */}
         {/* SECTION 6: EXPORT REPORTS CENTER */}

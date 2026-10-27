@@ -3,9 +3,10 @@
 //  - Each learner gets exactly one free course - the first one. Every other course costs
 //    PAID_COURSE_PRICE to unlock, and so does the same course again after failing its final twice,
 //    which gives two fresh final attempts (attemptOffset).
-//  - Online payment is not connected yet, so paid courses are unlocked by the admin.
+//  - Paid courses are unlocked by a Razorpay payment (routes/paymentRoutes.js) or by the admin.
 import { finalAttemptsTotal, MAX_FINAL_ATTEMPTS, getPassedFinalAttempt } from '../routes/quizRoutes.js';
 import { enrolmentRecord, enrolledCourseIds } from './enrolledCourses.js';
+import { razorpayConfigured } from './razorpay.js';
 
 export const PAID_COURSE_PRICE = 99;
 const norm = (v) => String(v || '').trim().toLowerCase();
@@ -33,7 +34,7 @@ export function enrolmentState(db, email) {
     status: ids[0] ? courses[ids[0]] : null,
     canEnrollNew: true,
     nextPrice: usedFreeCourse ? PAID_COURSE_PRICE : 0,
-    paymentsEnabled: false,
+    paymentsEnabled: razorpayConfigured(),
     passedCourseIds: ids.filter(id => courses[id] === 'passed'),
     history: history.map(h => ({ courseId: h.courseId, outcome: h.outcome, enrolledAt: h.enrolledAt, closedAt: h.closedAt, paid: !!h.paid }))
   };

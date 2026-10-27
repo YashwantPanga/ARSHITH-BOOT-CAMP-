@@ -44,6 +44,7 @@ const PROTECTED = [
   ['GET', /^\/progress\/[^/]+$/],
   ['GET', /^\/enrollment$/],
   ['POST', /^\/enrollment$/],
+  ['POST', /^\/payments\/(order|verify)$/],
   ['POST', /^\/certificates\/issue$/],
   ['GET', /^\/practice\/progress$/],
   ['POST', /^\/projects\/submit$/],

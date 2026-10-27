@@ -13,6 +13,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import learnerRoutes from './routes/learnerRoutes.js';
 import practiceRoutes from './routes/practiceRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 import { learnerGuard } from './middleware/learnerAuth.js';
 import { adminGate } from './middleware/auth.js';
 import { getDb } from './db.js';
@@ -30,7 +31,8 @@ app.use(cors({
 }));
 
 // Body parser
-app.use(express.json({ limit: '10mb' }));
+// The Razorpay webhook is signed over the exact bytes it sends, so keep those for that route.
+app.use(express.json({ limit: '10mb', verify: (req, res, buf) => { if (req.originalUrl.startsWith('/api/payments/webhook')) req.rawBody = buf; } }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Request logging middleware (silenced in tests)
@@ -64,6 +66,7 @@ app.use('/api', adminRoutes);
 app.use('/api', quizRoutes);
 app.use('/api', learnerRoutes);
 app.use('/api', practiceRoutes);
+app.use('/api', paymentRoutes);
 
 // Serve the production build (npm run build) so the whole site runs from one port.
 const distDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'dist');

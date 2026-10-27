@@ -53,7 +53,7 @@ export function TermsPage({ onHome }) {
           'Keep your password private. You are responsible for activity on your account. One person may hold one account. Each student gets one free course - the first one they enrol in. Every other course costs ₹99 to unlock. After failing a final assessment twice, the same course can be unlocked again for ₹99, with two fresh attempts.'
         ] },
         { title: 'Courses and certificates', body: [
-          'Courses are free. A certificate of completion is issued when you finish every module quiz, submit the required project and score at least 70% in the proctored final assessment.',
+          'Your first course is free; other courses cost ₹99 each, paid online through Razorpay (see the Refund and Cancellation Policy). A certificate of completion is issued when you finish every module quiz, submit the required project and score at least 70% in the proctored final assessment.',
           'Certificates confirm completion of an Arshith Bootcamp course. They are not a degree, diploma or university qualification, and are not issued under UGC or AICTE approval. Each certificate has a unique ID that anyone can verify on this site.',
           'We may revoke a certificate obtained through cheating, impersonation or false information.'
         ] },
@@ -123,7 +123,7 @@ export function PrivacyPage({ onHome }) {
           'We do not sell your data or use it for advertising.'
         ] },
         { title: 'Who processes it', body: [
-          'Your data is stored with our database provider (Supabase) and emails are delivered through our email provider (Brevo). They process data only on our instructions. We may disclose data if the law requires it.'
+          'Your data is stored with our database provider (Supabase) and emails are delivered through our email provider (Brevo). Payments are handled by Razorpay, which receives your name, email and payment details directly; we receive only the payment ID and status. They process data only on our instructions. We may disclose data if the law requires it.'
         ] },
         { title: 'How long we keep it', body: [
           'Account and learning records are kept while your account is open. Certificate records are kept so certificates stay verifiable. When you ask us to delete your account we remove your personal data, except what we must keep by law or to prevent fraud.'
@@ -139,6 +139,37 @@ export function PrivacyPage({ onHome }) {
         ] },
         { title: 'Grievance officer', body: [
           `For any privacy concern or complaint, contact the Grievance Officer, Arshith Group, Bengaluru, Karnataka, India at ${CONTACT}. If you are not satisfied with our response you may approach the Data Protection Board of India.`
+        ] }
+      ]}
+    />
+  );
+}
+
+export function RefundPage({ onHome }) {
+  return (
+    <LegalDoc
+      title="Refund and Cancellation Policy"
+      onHome={onHome}
+      intro="This policy covers payments made on Arshith Bootcamp (arshithbootcamp.com), operated by Arshith Group, Bengaluru, India. Payments are processed securely by Razorpay; we never see or store your card, UPI or bank details."
+      sections={[
+        { title: 'What you pay for', body: [
+          'Every student gets one course free. Each further course costs ₹99 (inclusive of all charges), and the same course can be unlocked again for ₹99 after two failed final assessments, which gives two fresh attempts.',
+          'A payment unlocks one course for the account that paid: all its modules, quizzes, the project and the proctored final assessment. The course is unlocked as soon as the payment is confirmed, and a receipt is emailed to you.'
+        ] },
+        { title: 'Cancellation', body: [
+          'Because the course is a digital service that is unlocked immediately, an order cannot be cancelled once the payment is successful.'
+        ] },
+        { title: 'Refunds', body: [
+          'You can ask for a full refund within 7 days of payment if you have not yet attempted the final assessment of that course.',
+          'We also refund in full if you were charged twice for the same course, or if money was taken but the course was not unlocked and we cannot fix it.',
+          'Refunds are not given after a final assessment attempt, for a failed assessment, or when access was removed for breaking the Terms of Use.'
+        ] },
+        { title: 'How to ask', body: [
+          `Email ${CONTACT} or call +91 82177 29744 with your registered email and the Razorpay payment ID from your receipt. We reply within 2 working days.`,
+          'Approved refunds are sent back to the original payment method within 5-7 working days. When a refund is made, the course is locked again.'
+        ] },
+        { title: 'Failed payments', body: [
+          'If money leaves your account but the payment fails, your bank or Razorpay normally returns it automatically within 5-7 working days. If it does not, contact us with the payment ID.'
         ] }
       ]}
     />

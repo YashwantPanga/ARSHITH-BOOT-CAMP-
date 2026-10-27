@@ -89,6 +89,8 @@ export const api = {
     request(`/progress/${encodeURIComponent(courseId)}?userId=${encodeURIComponent(userId || '')}`),
   getEnrollment: (userId) => request(`/enrollment?userId=${encodeURIComponent(userId || '')}`),
   enroll: (userId, courseId) => request('/enrollment', { method: 'POST', body: JSON.stringify({ userId, courseId }) }),
+  createPaymentOrder: (courseId) => request('/payments/order', { method: 'POST', body: JSON.stringify({ courseId }) }),
+  verifyPayment: (data) => request('/payments/verify', { method: 'POST', body: JSON.stringify(data) }),
   uploadCertificateImage: (id, image) => request(`/certificates/${encodeURIComponent(id)}/image`, { method: 'POST', body: JSON.stringify({ image }) }),
   issueCertificate: (data) => request('/certificates/issue', { method: 'POST', body: JSON.stringify(data) }),
 

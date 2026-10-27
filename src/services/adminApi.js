@@ -76,6 +76,7 @@ export const api = {
 
   // Certificates
   getCertificates: () => staffRequest('/admin/certificates'),
+  getPayments: () => staffRequest('/admin/payments'),
   checkCertificateEligibility: (studentId, courseId) => 
     staffRequest('/admin/certificates/check-eligibility', {
       method: 'POST',

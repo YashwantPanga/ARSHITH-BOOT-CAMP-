@@ -25,7 +25,7 @@ import CertificateVerifyPage from './pages/CertificateVerifyPage';
 import StudentDashboard from './pages/StudentDashboard';
 import CategoriesPage from './pages/CategoriesPage';
 import { AboutPage, ContactPage } from './pages/AboutContactPages';
-import { TermsPage, PrivacyPage } from './pages/LegalPages';
+import { TermsPage, PrivacyPage, RefundPage } from './pages/LegalPages';
 import { VerifyEmailPage, ForgotPasswordPage, ResetPasswordPage, rememberDevMail } from './pages/AccountPages';
 
 import { api, getAdminToken, setAdminToken } from './services/api';
@@ -248,6 +248,16 @@ function AppShell() {
     }
   };
 
+  // Razorpay confirmed the payment and the server unlocked the course
+  const onCoursePaid = (res) => {
+    const paidId = res.courseId || paymentFor?.course?.id;
+    setEnrollState(res);
+    saveUser({ ...studentUser, enrolledCourseIds: res.courseIds || [paidId, ...enrolledIds.filter(id => id !== paidId)] });
+    setCelebrate({ ...(findCourse(paidId) || paymentFor?.course), paid: paymentFor?.price || 99 });
+    setPaymentFor(null);
+    toast('Payment received - a receipt is on its way to your email.', 'success', 5000);
+  };
+
   /* ---------------- Auth ---------------- */
   const handleAuthSuccess = (user, { isNew = false } = {}) => {
     if (user.staff) {
@@ -313,7 +323,7 @@ function AppShell() {
   // Login, register and the account screens open as a modal card over the page the visitor was on
   // (that page stays visible, faded, behind it). Opening one directly shows the home page behind.
   const AUTH_ROUTES = ['login', 'register', 'verify-email', 'forgot-password', 'reset-password'];
-  const BACKDROP_ROUTES = ['home', 'courses', 'course-details', 'categories', 'about', 'contact', 'verify', 'terms', 'privacy'];
+  const BACKDROP_ROUTES = ['home', 'courses', 'course-details', 'categories', 'about', 'contact', 'verify', 'terms', 'privacy', 'refunds'];
   const isAuthModal = AUTH_ROUTES.includes(route.name);
   if (!isAuthModal && BACKDROP_ROUTES.includes(route.name)) {
     lastPageRef.current = { route, path: window.location.pathname + window.location.search };
@@ -462,6 +472,9 @@ function AppShell() {
     case 'privacy':
       page = <PrivacyPage onHome={() => navigate(paths.home())} />;
       break;
+    case 'refunds':
+      page = <RefundPage onHome={() => navigate(paths.home())} />;
+      break;
     case 'login':
     case 'register':
       page = (
@@ -573,10 +586,19 @@ function AppShell() {
         onConfirm={confirmEnroll}
         onCancel={() => !enrolling && setEnrollTarget(null)}
       />
-      {paymentFor && <PaymentNotice course={paymentFor.course} price={paymentFor.price} onClose={() => setPaymentFor(null)} />}
+      {paymentFor && (
+        <PaymentNotice
+          course={paymentFor.course}
+          price={paymentFor.price}
+          paymentsEnabled={!!enrollState?.paymentsEnabled}
+          onPaid={onCoursePaid}
+          onClose={() => setPaymentFor(null)}
+        />
+      )}
       {celebrate && (
         <EnrollCelebration
           course={celebrate}
+          paid={celebrate.paid || 0}
           learnerName={studentUser?.name}
           onStart={() => { const id = celebrate.id; setCelebrate(null); navigate(paths.learn(id)); }}
           onClose={() => setCelebrate(null)}

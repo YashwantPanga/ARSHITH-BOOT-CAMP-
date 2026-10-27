@@ -85,6 +85,7 @@ export default function Footer({ navigate }) {
               {link('Contact', paths.contact())}
               {link('Terms of Use', paths.terms())}
               {link('Privacy Policy', paths.privacy())}
+              {link('Refund Policy', paths.refunds())}
               {link('My dashboard', paths.dashboard())}
             </ul>
           </div>
@@ -124,6 +125,8 @@ export default function Footer({ navigate }) {
             <button onClick={() => navigate(paths.terms())} className="hover:text-ivory transition-colors">Terms of Use</button>
             <span className="text-ivory/30">|</span>
             <button onClick={() => navigate(paths.privacy())} className="hover:text-ivory transition-colors">Privacy Policy</button>
+            <span className="text-ivory/30">|</span>
+            <button onClick={() => navigate(paths.refunds())} className="hover:text-ivory transition-colors">Refunds</button>
           </span>
         </div>
       </div>

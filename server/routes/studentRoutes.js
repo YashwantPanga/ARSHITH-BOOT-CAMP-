@@ -382,7 +382,9 @@ router.post('/enrollment', (req, res) => {
       success: false,
       code: 'PAYMENT_REQUIRED',
       price: state.nextPrice,
-      message: `This course costs ₹${state.nextPrice}. Online payment is coming soon - to enrol now, contact us at bootcamp@arshithgroup.com or +91 82177 29744.`
+      message: state.paymentsEnabled
+        ? `This course costs ₹${state.nextPrice}. Pay online to unlock it.`
+        : `This course costs ₹${state.nextPrice}. To enrol now, contact us at bootcamp@arshithgroup.com or +91 82177 29744.`
     });
   }
   enrol(db, userId, courseId, { paid: false, by: 'learner' });
