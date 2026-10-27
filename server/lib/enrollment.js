@@ -1,7 +1,7 @@
 // Course enrolment rules.
 //  - A learner can hold several courses at once.
 //  - Each learner gets exactly one free course - the first one. Every other course costs
-//    PAID_COURSE_PRICE to unlock, and so does the same course again after failing its final twice,
+//    coursePrice() (₹99) to unlock, and so does the same course again after failing its final twice,
 //    which gives two fresh final attempts (attemptOffset).
 //  - Paid courses are unlocked by a Razorpay payment (routes/paymentRoutes.js) or by the admin.
 import { finalAttemptsTotal, MAX_FINAL_ATTEMPTS, getPassedFinalAttempt } from '../routes/quizRoutes.js';
@@ -9,6 +9,11 @@ import { enrolmentRecord, enrolledCourseIds } from './enrolledCourses.js';
 import { razorpayConfigured } from './razorpay.js';
 
 export const PAID_COURSE_PRICE = 99;
+/** Rupees per paid course. COURSE_PRICE in .env overrides it (e.g. COURSE_PRICE=1 to try a real payment). */
+export function coursePrice() {
+  const v = Number(process.env.COURSE_PRICE);
+  return Number.isInteger(v) && v >= 1 ? v : PAID_COURSE_PRICE;
+}
 const norm = (v) => String(v || '').trim().toLowerCase();
 
 /** 'active' | 'passed' | 'failed' for one enrolled course. */
@@ -33,7 +38,7 @@ export function enrolmentState(db, email) {
     courses,                                  // { courseId: 'active' | 'passed' | 'failed' }
     status: ids[0] ? courses[ids[0]] : null,
     canEnrollNew: true,
-    nextPrice: usedFreeCourse ? PAID_COURSE_PRICE : 0,
+    nextPrice: usedFreeCourse ? coursePrice() : 0,
     paymentsEnabled: razorpayConfigured(),
     passedCourseIds: ids.filter(id => courses[id] === 'passed'),
     history: history.map(h => ({ courseId: h.courseId, outcome: h.outcome, enrolledAt: h.enrolledAt, closedAt: h.closedAt, paid: !!h.paid }))

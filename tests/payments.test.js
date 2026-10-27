@@ -93,3 +93,15 @@ describe('Razorpay payments', () => {
     expect((await request(app).post('/api/payments/order').send({ courseId: 'sql-mastery' })).status).toBe(401);
   });
 });
+
+describe('course price', () => {
+  it('COURSE_PRICE in .env overrides ₹99 (for a ₹1 test payment)', async () => {
+    const { coursePrice } = await import('../server/lib/enrollment.js');
+    process.env.COURSE_PRICE = '1';
+    expect(coursePrice()).toBe(1);
+    expect((await order(A, 'web-development')).body.amount).toBe(100);
+    process.env.COURSE_PRICE = 'abc';
+    expect(coursePrice()).toBe(99);
+    delete process.env.COURSE_PRICE;
+  });
+});
