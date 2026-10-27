@@ -8,6 +8,7 @@ import HomeButton from './components/HomeButton';
 import Footer from './components/Footer';
 import MobileBottomNav from './components/MobileBottomNav';
 import DesktopNotice from './components/DesktopNotice';
+import { WhatBringsYou } from './components/MobileWelcome';
 import EnrollCelebration from './components/EnrollCelebration';
 import PaymentNotice from './components/PaymentNotice';
 
@@ -350,6 +351,7 @@ function AppShell() {
             onEnrollCourse={requestEnroll}
             onViewAllCourses={() => goCourses()}
           />
+          <WhatBringsYou onCourses={() => goCourses()} onCategories={() => navigate(paths.categories())} />
           <WhyLearnWithUs />
           <CtaSection onExploreClick={() => goCourses()} />
         </div>

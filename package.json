@@ -9,7 +9,7 @@
     "server": "node server/index.js",
     "build": "vite build",
     "start": "node server/index.js",
-    "app": "vite build && node server/index.js",
+    "app": "npm run build && node server/index.js",
     "preview": "vite preview",
     "test": "vitest run",
     "validate:content": "node scripts/validate-content.mjs",
@@ -17,10 +17,13 @@
     "verify:exercises": "node scripts/verify-exercises.mjs",
     "report:content-diff": "node scripts/content-diff.mjs",
     "db:backup": "node scripts/supabase-backup.mjs",
-    "email:test": "node scripts/test-email.mjs"
+    "email:test": "node scripts/test-email.mjs",
+    "prebuild": "node scripts/copy-ocr-assets.mjs",
+    "predev": "node scripts/copy-ocr-assets.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.35",
+    "@tesseract.js-data/eng": "^1.0.0",
     "@vladmandic/face-api": "^1.7.15",
     "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",

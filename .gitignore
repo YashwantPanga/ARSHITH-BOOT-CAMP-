@@ -9,3 +9,5 @@ server/data/cert-images/
 
 *.zip
 backups/
+public/ocr/
+public/__ref-*

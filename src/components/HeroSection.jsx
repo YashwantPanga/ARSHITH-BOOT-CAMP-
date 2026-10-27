@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, QrCode, BookOpen, Award, Layers, Timer, Search } from 'lucide-react';
+import { MobileHero } from './MobileWelcome';
 
 /**
  * Landing hero (eduleb layout): headline, course search and actions on the left; the student in
@@ -28,7 +29,8 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
       <div className="absolute inset-0 edu-shape pointer-events-none hidden lg:block" aria-hidden="true" />
 
       {/* below lg the hero is a full-width forest band */}
-      <div className="relative bg-[radial-gradient(120%_80%_at_20%_0%,#0E5C45,#013A2B_60%)] lg:bg-none">
+      <MobileHero onRegisterClick={onRegisterClick} onExploreClick={onExploreClick} onVerifyClick={onVerifyClick} />
+      <div className="relative hidden lg:block">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8">
         <nav className="text-sm text-ivory/60 lg:text-charcoal/60" aria-label="Breadcrumb">Home <span className="mx-1.5 text-ivory/30 lg:text-charcoal/30">/</span> <a href="https://arshithgroup.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-ivory lg:text-sage hover:underline">arshithgroup.com</a></nav>
       </div>
@@ -91,14 +93,14 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
       {/* Our features as eduleb counter cards */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 lg:-mt-6 pb-14">
         <h2 className="sr-only">Our Features</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
           {features.map(({ icon: Icon, value, title, text, tone }) => (
-            <div key={title} className="edu-card p-5 flex gap-4 hover:-translate-y-1 transition-transform duration-300">
+            <div key={title} className="edu-card p-3.5 sm:p-5 flex flex-col sm:flex-row gap-2.5 sm:gap-4 hover:-translate-y-1 transition-transform duration-300">
               <span className={`shrink-0 w-[52px] h-[52px] rounded-full flex items-center justify-center ${tone}`}><Icon className="w-5 h-5" /></span>
               <div className="min-w-0">
                 <p className="font-display text-[28px] font-semibold leading-none text-evergreen">{value}</p>
                 <p className="mt-1.5 font-display text-[15.5px] font-medium text-charcoal">{title}</p>
-                <p className="mt-1 text-[12.5px] text-charcoal/60 leading-snug">{text}</p>
+                <p className="mt-1 hidden sm:block text-[12.5px] text-charcoal/60 leading-snug">{text}</p>
               </div>
             </div>
           ))}

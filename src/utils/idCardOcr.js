@@ -82,6 +82,17 @@ const NAME_PARAMS = {
   tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .-'
 };
 
+// The reader's files are served by this site (public/ocr, copied at build time) - much faster than
+// fetching them from a CDN while the proctoring models also download.
+const LOCAL_FILES = { workerPath: '/ocr/worker.min.js', corePath: '/ocr/core', langPath: '/ocr/lang' };
+
+// Loading progress (0-1) for the first-time download of the reader, for the identity step to show.
+const progressListeners = new Set();
+export const onOcrProgress = (fn) => { progressListeners.add(fn); return () => progressListeners.delete(fn); };
+const logger = (m) => {
+  if (m?.status && typeof m.progress === 'number' && /load|initializ/i.test(m.status)) progressListeners.forEach(fn => fn(m.progress, m.status));
+};
+
 let workerPromise = null;
 /** Starts the OCR engine once (English); resolves to a scheduler with OCR_READERS workers. */
 export function loadOcr() {
@@ -100,11 +111,14 @@ export function loadOcr() {
         return w;
       };
       // measured: the default model with letters-only reading is the quickest accurate setup
+      let files = { ...LOCAL_FILES, logger };
+      let first;
+      try { first = await make(files); } catch { files = { logger }; first = await make(files); } // CDN fallback
+      progressListeners.forEach(fn => fn(1, 'ready'));
       const scheduler = T.createScheduler();
-      scheduler.addWorker(await make({}));
-      for (let i = 1; i < OCR_READERS; i++) {
-        try { scheduler.addWorker(await make({})); } catch { /* one reader is enough */ }
-      }
+      scheduler.addWorker(first);
+      // the second reader joins in the background, so reading can start straight away
+      for (let i = 1; i < OCR_READERS; i++) make(files).then(w => scheduler.addWorker(w)).catch(() => {});
       return scheduler;
     });
     workerPromise.catch(() => { workerPromise = null; });

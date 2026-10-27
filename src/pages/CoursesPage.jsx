@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Search, SlidersHorizontal, Lock, BookOpen } from 'lucide-react';
 import { CourseTile } from '../components/CourseCard';
+import { CourseRow } from '../components/PopularCourses';
 import { LaptopScene, ExamScene } from '../components/StudyScenes';
 import { Reveal } from '../components/ui';
 import { displayTitle } from '../utils/textUtils';
@@ -33,15 +34,15 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
         {/* animated study scenes fill the banner's sides on wide screens */}
         <LaptopScene className="hidden xl:block absolute left-[2%] 2xl:left-[5%] bottom-0 w-[250px] 2xl:w-[330px] pointer-events-none" />
         <ExamScene className="hidden xl:block absolute right-[2%] 2xl:right-[5%] bottom-0 w-[250px] 2xl:w-[330px] pointer-events-none" />
-        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10 sm:pt-20 xl:pb-20 text-center">
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 sm:pt-20 xl:pb-20 text-left sm:text-center">
           <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Our services</p>
-          <h1 className="mt-2 text-[34px] sm:text-[48px] font-bold leading-tight text-evergreen">Online courses for focused learners</h1>
-          <p className="mt-3 text-charcoal/70 max-w-2xl mx-auto">Your first course is free. Unlock more courses for ₹99 each.</p>
+          <h1 className="mt-2 text-[28px] sm:text-[48px] font-bold leading-tight text-evergreen">Online courses for focused learners</h1>
+          <p className="mt-3 text-[15px] sm:text-base text-charcoal/70 max-w-2xl sm:mx-auto">Your first course is free. Unlock more courses for ₹99 each.</p>
           <nav aria-label="Breadcrumb" className="mt-5 font-display text-[15.5px] text-evergreen">
             {onHome ? <button onClick={onHome} className="font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
             <span className="mx-2 text-charcoal/40">/</span>Courses
           </nav>
-          <div className="xl:hidden mt-6 flex justify-center gap-3 sm:gap-8" aria-hidden="true">
+          <div className="hidden sm:flex xl:hidden mt-6 justify-center gap-8" aria-hidden="true">
             <LaptopScene className="w-[46%] max-w-[230px]" />
             <ExamScene className="w-[46%] max-w-[230px]" />
           </div>
@@ -92,13 +93,19 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
             <button className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage mt-4 px-6 py-3" onClick={() => { setSearch(''); setCategory('All Categories'); }}>Clear filters</button>
           </div>
         ) : (
-          <div className="mt-8 grid sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          <>
+          {/* phones: compact rows; larger screens: tiles */}
+          <div className="mt-5 space-y-3 sm:hidden">
+            {list.map(c => <CourseRow key={c.id} course={c} enrolledCourseId={enrolledCourseId} offer={offer} onSelect={onSelectCourse} />)}
+          </div>
+          <div className="mt-8 hidden sm:grid sm:grid-cols-2 xl:grid-cols-4 gap-6">
             {list.map((c, i) => (
               <Reveal key={c.id} delay={(i % 4) * 80} className="h-full">
                 <CourseTile course={c} enrolledCourseId={enrolledCourseId} offer={offer} onSelect={onSelectCourse} onEnroll={onEnrollCourse} />
               </Reveal>
             ))}
           </div>
+          </>
         )}
       </section>
     </div>

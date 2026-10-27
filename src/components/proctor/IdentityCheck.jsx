@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, CreditCard, Loader2, ScanFace, ShieldAlert, Upload } from 'lucide-react';
 import { loadProctorModels, captureReference, calibrateGaze } from '../../utils/aiProctor';
-import { loadOcr, readIdText, matchNameInText, nameParts, OCR_READERS } from '../../utils/idCardOcr';
+import { loadOcr, readIdText, matchNameInText, nameParts, OCR_READERS, onOcrProgress } from '../../utils/idCardOcr';
 
 const MAX_ID_TRIES = 3;
 const SCAN_SECONDS = 20;               // one scan keeps reading camera frames for up to this long
@@ -49,7 +49,12 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
   };
   useEffect(load, []);
   // start the ID text reader straight away, so it is ready by the time the student shows the card
-  useEffect(() => { loadOcr().catch(() => {}); }, []);
+  const [ocrReady, setOcrReady] = useState(0); // loading progress 0-1
+  useEffect(() => {
+    const off = onOcrProgress((pr) => alive.current && setOcrReady(r => Math.max(r, pr)));
+    loadOcr().then(() => alive.current && setOcrReady(1)).catch(() => {});
+    return off;
+  }, []);
 
   const setVideo = (el) => { videoEl.current = el; attachVideo(el); };
 
@@ -86,9 +91,11 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
     setIdCard(s => ({ ...s, state: 'busy', msg: busyMsg }));
     setScanTime(0);
     setPartsFound([]);
-    const started = performance.now();
+    let started = performance.now();
     const timer = setInterval(() => alive.current && setScanTime((performance.now() - started) / 1000), 100);
     try {
+      await loadOcr();                 // the time limit counts from when the reader is ready
+      started = performance.now();
       let r = null;
       const recent = [];               // texts of the last few reads, matched together
       for (let i = 0; !r?.matched && alive.current;) {
@@ -203,7 +210,7 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
           </div>
         )}
         {(face.state === 'busy' || idCard.state === 'busy') && (
-          <div className="absolute inset-x-0 bottom-0 bg-black/55 text-white text-xs px-3 py-2 flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />{face.state === 'busy' ? face.msg : idCard.msg}{scanning && <span className="ml-auto tabular-nums text-white/70">{scanTime.toFixed(1)}s</span>}</div>
+          <div className="absolute inset-x-0 bottom-0 bg-black/55 text-white text-xs px-3 py-2 flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />{face.state === 'busy' ? face.msg : scanning && ocrReady < 1 ? `Preparing the ID reader… ${Math.round(ocrReady * 100)}%` : idCard.msg}{scanning && ocrReady >= 1 && <span className="ml-auto tabular-nums text-white/70">{scanTime.toFixed(1)}s</span>}</div>
         )}
       </div>
 

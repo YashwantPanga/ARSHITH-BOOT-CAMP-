@@ -29,6 +29,13 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
   }, []);
 
   useEffect(() => { setOpen(false); setExplore(false); }, [route.name]);
+  // the phone menu covers the page: keep the page behind it still
+  useEffect(() => {
+    if (!open) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [open]);
 
   useEffect(() => {
     if (!explore) return undefined;
@@ -155,30 +162,38 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
       </div>
 
       {open && (
-        <div className="lg:hidden border-t border-brand-900/10 bg-white px-4 pt-3 pb-6 space-y-3 animate-fade-in shadow-lg max-h-[calc(100vh-64px)] overflow-y-auto">
-          <form onSubmit={submitSearch} className="relative md:hidden">
-            <input id="mobile-search" type="search" placeholder="What do you want to learn today?" value={query} onChange={(e) => setQuery(e.target.value)} className="input pl-10" />
-            <Search className="w-4 h-4 text-charcoal/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          </form>
-          <div className="grid gap-1">
-            {NAV.map(link => (
-              <button key={link.id} onClick={() => go(link.to)} className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold ${isActive(link.id) ? 'bg-brand-900 text-ivory' : 'text-charcoal hover:bg-brand-50'}`}>
-                {link.name}<ChevronRight className="w-4 h-4 opacity-60" />
-              </button>
-            ))}
+        <div className="lg:hidden fixed inset-x-0 top-16 bottom-0 z-50 bg-white flex flex-col animate-fade-in" role="dialog" aria-label="Menu">
+          <div className="flex-1 overflow-y-auto px-5 pt-4 pb-4">
+            <form onSubmit={submitSearch} className="relative md:hidden">
+              <input id="mobile-search" type="search" placeholder="What do you want to learn today?" value={query} onChange={(e) => setQuery(e.target.value)} className="w-full h-11 pl-10 pr-4 rounded-full bg-cream border border-brand-900/10 text-[15px] outline-none focus:border-sage focus:bg-white" />
+              <Search className="w-4 h-4 text-charcoal/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            </form>
+            <nav className="mt-3" aria-label="Main">
+              {NAV.map(link => (
+                <button key={link.id} onClick={() => go(link.to)} className={`w-full flex items-center justify-between py-3.5 text-left text-[16px] ${isActive(link.id) ? 'font-semibold text-forest' : 'text-charcoal'}`}>
+                  {link.name}<ChevronRight className="w-4 h-4 text-charcoal/50" />
+                </button>
+              ))}
+            </nav>
+            <div className="my-2 border-t border-brand-900/10" />
+            <p className="pt-2 text-[14px] text-charcoal/55">Not sure where to begin?</p>
+            <button onClick={() => go(paths.courses())} className="w-full py-3 text-left text-[16px] text-charcoal">Browse free courses</button>
             {studentUser && (
-              <button onClick={() => go(paths.dashboard())} className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold text-brand-900 bg-brand-50">
-                <span className="flex items-center gap-2"><LayoutDashboard className="w-4 h-4 text-sage" />My Dashboard</span><ChevronRight className="w-4 h-4" />
-              </button>
+              <>
+                <div className="my-2 border-t border-brand-900/10" />
+                <button onClick={() => go(paths.dashboard())} className="w-full flex items-center justify-between py-3.5 text-left text-[16px] text-charcoal">
+                  <span className="flex items-center gap-2"><LayoutDashboard className="w-4 h-4 text-sage" />My dashboard</span><ChevronRight className="w-4 h-4 text-charcoal/50" />
+                </button>
+              </>
             )}
           </div>
-          <div className="pt-3 border-t border-brand-900/10 grid gap-2">
+          <div className="border-t border-brand-900/10 bg-cream px-5 pt-4 pb-[calc(16px+env(safe-area-inset-bottom))] grid gap-2.5">
             {studentUser ? (
-              <button onClick={() => { setOpen(false); onLogout(); }} className="btn bg-rose-50 text-rose-700 hover:bg-rose-100">Sign out</button>
+              <button onClick={() => { setOpen(false); onLogout(); }} className="font-display h-12 rounded-md border border-rose-300 bg-white text-rose-700 text-[15.5px] font-semibold">Sign out</button>
             ) : (
               <>
-                <button onClick={() => go(paths.register())} className="btn-primary">Sign up free</button>
-                <button onClick={() => go(paths.login())} className="btn-outline">Log in</button>
+                <button onClick={() => go(paths.register())} className="font-display h-12 rounded-md bg-forest text-ivory text-[15.5px] font-semibold">Join for Free</button>
+                <button onClick={() => go(paths.login())} className="font-display h-12 rounded-md border border-forest text-forest bg-white text-[15.5px] font-semibold">Log In</button>
               </>
             )}
           </div>
