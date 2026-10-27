@@ -242,7 +242,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
               <Paragraphs text={sec.text || sec.content} />
               {sec.bulletPoints?.length > 0 && (
                 <ul className="space-y-1.5 pl-1">
-                  {sec.bulletPoints.map((b, k) => <li key={k} className="flex gap-2.5 text-[15px] text-slate-600"><span className="text-peach-500 mt-1">•</span><span className="min-w-0">{cleanText(b)}</span></li>)}
+                  {sec.bulletPoints.map((b, k) => <li key={k} className="flex gap-2.5 text-[15px] text-slate-600"><span className="text-peach-500 mt-1">•</span><span className="min-w-0">{cleanText(b).replace(/^\s*[•●▪*-]+\s*/, '')}</span></li>)}
                 </ul>
               )}
               {sec.code && <CodeBlock courseId={course.id} code={sec.code} />}

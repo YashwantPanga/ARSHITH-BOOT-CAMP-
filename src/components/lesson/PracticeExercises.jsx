@@ -24,9 +24,12 @@ export function ExerciseCard({ ex, index, courseId, moduleId, completed, onCompl
   const [check, setCheck] = useState({ status: 'idle' });
   const stopRef = useRef(null);
 
+  // Runs the editor's code and returns the final run state (also shown under the editor).
   const runCode = async () => {
-    if (run.status === 'running') return;
+    if (run.status === 'running') return null;
     setRun({ status: 'running', output: '', rows: null, error: '' });
+    let final = null;
+    const set = (r) => { final = r; setRun(r); };
     try {
       if (lang === 'python') {
         let out = '';
@@ -39,30 +42,36 @@ export function ExerciseCard({ ex, index, courseId, moduleId, completed, onCompl
             else if (m.type === 'done') resolve();
           });
         });
-        setRun({ status: err ? 'error' : 'done', output: out.trimEnd(), rows: null, error: err.trim() });
+        set({ status: err ? 'error' : 'done', output: out.trimEnd(), rows: null, error: err.trim() });
       } else if (lang === 'sql') {
         await resetSqlDb();
         const { results } = await runSql(code);
         const last = results[results.length - 1];
-        setRun({ status: 'done', output: '', rows: last ? { columns: last.columns, values: last.values } : { columns: [], values: [] }, error: '' });
+        set({ status: 'done', output: '', rows: last ? { columns: last.columns, values: last.values } : { columns: [], values: [] }, error: '' });
       } else {
         const { output, errors } = await runJavaScript(code);
-        setRun({ status: errors.length ? 'error' : 'done', output, rows: null, error: errors.join('\n') });
+        set({ status: errors.length ? 'error' : 'done', output, rows: null, error: errors.join('\n') });
       }
     } catch (e) {
-      setRun({ status: 'error', output: '', rows: null, error: String(e.message || e) });
+      set({ status: 'error', output: '', rows: null, error: String(e.message || e) });
     } finally {
       stopRef.current = null;
     }
+    return final;
   };
 
   const submit = async () => {
     if (check.status === 'checking') return; // no duplicate submissions
     const payload = { courseId, moduleId, itemId: ex.id, kind: 'exercise' };
+    let codeFailed = false;
     if (isCode) {
-      if (run.status !== 'done') { setCheck({ status: 'error', message: 'Run your code successfully first — the checker compares what it produces.' }); return; }
-      if (lang === 'sql') payload.rows = run.rows?.values || [];
-      else payload.output = run.output;
+      // Check answer always runs the current code first; code that fails is checked as a wrong
+      // answer, so the learner still gets the correct solution back.
+      setCheck({ status: 'checking' });
+      const ran = (await runCode()) || run;
+      codeFailed = ran.status !== 'done';
+      if (lang === 'sql') payload.rows = ran.status === 'done' ? (ran.rows?.values || []) : [];
+      else payload.output = ran.status === 'done' ? ran.output : '';
     } else {
       if (String(answer).trim() === '') { setCheck({ status: 'error', message: ex.checkType === 'mcq' ? 'Choose an option first.' : 'Type an answer first.' }); return; }
       payload.answer = answer;
@@ -70,7 +79,7 @@ export function ExerciseCard({ ex, index, courseId, moduleId, completed, onCompl
     setCheck({ status: 'checking' });
     try {
       const res = await api.checkPractice(payload);
-      setCheck({ status: 'checked', ...res });
+      setCheck({ status: 'checked', ...res, ...(codeFailed && !res.correct ? { feedback: 'Your code did not run - see the error above the button. Here is the correct answer:' } : {}) });
       if (res.correct) onCompleted?.(ex.id, res.recorded);
     } catch (e) {
       // Keep the learner's answer; just report the failure and allow a retry.

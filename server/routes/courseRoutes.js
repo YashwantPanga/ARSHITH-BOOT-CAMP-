@@ -1,4 +1,5 @@
 import express from 'express';
+import { withLessons } from '../data/lessons/index.js';
 import { getDb, saveDb, logActivity } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
 
@@ -22,7 +23,8 @@ function stripAnswers(node) {
   return out;
 }
 
-function toPublicCourse(course) {
+function toPublicCourse(stored) {
+  const course = withLessons(stored);
   const papers = course.finalTest?.questionPapers || [];
   const { finalTest, modules, ...rest } = course;
   return {
@@ -67,7 +69,7 @@ router.get('/courses/:id', (req, res) => {
 // Get all courses (including draft, published, archived) for Admin
 router.get('/admin/courses', verifyAdminToken, (req, res) => {
   const db = getDb();
-  res.json({ success: true, courses: db.courses || [] });
+  res.json({ success: true, courses: (db.courses || []).map(withLessons) });
 });
 
 // Add new course

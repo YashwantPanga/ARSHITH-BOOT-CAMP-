@@ -16,6 +16,7 @@ const MAX_CHARS = Math.floor((NODE_W - TEXT_X - TEXT_RIGHT_PAD) / LABEL_CHAR_W);
 const MAX_LINES = 4;
 const MAX_ROW_W = 1040;      // wider chains wrap onto further rows instead of scrolling sideways
 const ROW_GAP = 64;          // vertical space between rows (holds the connecting arrows)
+const LANE_GAP = 18;         // spacing of the lanes used by arrows that skip over boxes
 
 /**
  * Wraps a label to `max` characters per line. Long tokens without spaces (code such as
@@ -92,14 +93,20 @@ export function layoutDiagram(def, { maxRowW = MAX_ROW_W } = {}) {
   const maxLines = Math.max(1, ...nodes.map(n => n.lines.length));
   const NODE_H = Math.max(64, 26 + maxLines * LABEL_LINE_H + 8);
   const forwardLabels = edges.filter((e, i) => !back.has(i) && e.label).map(e => edgeLabelWidth(e.label));
-  const GAP_X = Math.max(72, ...forwardLabels.map(w => w + 28));
+  // room for a label beside the arrowhead (labels of branching arrows sit next to their target)
+  const GAP_X = Math.max(72, ...forwardLabels.map(w => w + 64));
   const GAP_Y = 26, PAD = 24;
   const maxRows = Math.max(...cols.map(c => c?.length || 0));
   const innerH = maxRows * NODE_H + (maxRows - 1) * GAP_Y;
   // Layers per row: as many as fit in MAX_ROW_W (at least 2), so long chains read like lines of text.
   const perRow = Math.max(2, Math.floor((maxRowW + GAP_X) / (NODE_W + GAP_X)));
   const rowCount = Math.ceil(cols.length / perRow);
-  const rowTop = (r) => PAD + r * (innerH + ROW_GAP);
+  // Arrows that skip over boxes in the same row run in lanes above it, one lane each (see routeEdges).
+  const rowOf = (id) => Math.floor(layer.get(id) / perRow);
+  const skipLanes = Math.max(0, ...Array.from({ length: rowCount }, (_, r) => edges.filter((e, i) => !back.has(i)
+    && rowOf(e.from) === r && rowOf(e.to) === r && layer.get(e.to) - layer.get(e.from) > 1).length));
+  const extraTop = skipLanes > 1 ? (skipLanes - 1) * LANE_GAP : 0;
+  const rowTop = (r) => PAD + extraTop + r * (innerH + ROW_GAP + extraTop);
   cols.forEach((col, l) => {
     const colH = col.length * NODE_H + (col.length - 1) * GAP_Y;
     const row = Math.floor(l / perRow);
@@ -160,7 +167,32 @@ export function routeEdges(L) {
     return [x, y];
   };
   let loopIndex = 0;
-  const routes = L.edges.map((e) => {
+  // Arrows that skip over boxes in their row: shortest in the lowest lane, longer ones above it, so
+  // the lanes nest and no arrow runs across another one's label.
+  const skipLane = new Map();
+  const skips = L.edges.map((e, i) => [e, i]).filter(([e]) => {
+    const a = pos.get(e.from), b = pos.get(e.to);
+    return !e.back && a.row === b.row && b.layer - a.layer > 1;
+  });
+  for (let r = 0; r < L.rowCount; r++) {
+    skips.filter(([e]) => pos.get(e.from).row === r)
+      .sort(([e1], [e2]) => (pos.get(e1.to).layer - pos.get(e1.from).layer) - (pos.get(e2.to).layer - pos.get(e2.from).layer))
+      .forEach(([, i], k) => skipLane.set(i, k));
+  }
+  // Branching: a box with several arrows to the next column. Their start points are spread along the
+  // box's right edge (top to bottom, in target order) so the arrows and their labels do not bunch up.
+  const fan = new Map();
+  L.edges.forEach((e, i) => {
+    const a = pos.get(e.from), b = pos.get(e.to);
+    if (!e.back && a.row === b.row && b.layer - a.layer === 1) (fan.get(e.from) || fan.set(e.from, []).get(e.from)).push(i);
+  });
+  const startY = new Map();
+  fan.forEach((list) => {
+    if (list.length < 2) return;
+    list.sort((i, j) => pos.get(L.edges[i].to).y - pos.get(L.edges[j].to).y);
+    list.forEach((i, k) => startY.set(i, (k + 1) / (list.length + 1)));
+  });
+  const routes = L.edges.map((e, ei) => {
     const a = pos.get(e.from);
     const b = pos.get(e.to);
     let d;
@@ -216,20 +248,31 @@ export function routeEdges(L) {
       }
     } else {
       const x1 = a.x + L.NODE_W;
-      const y1 = a.y + L.NODE_H / 2;
+      const branch = startY.has(ei);
+      const y1 = a.y + L.NODE_H * (branch ? startY.get(ei) : 0.5);
       const x2 = b.x - 2;
       const y2 = b.y + L.NODE_H / 2;
       const span = b.layer - a.layer;
       if (span <= 1) {
         const mx = (x1 + x2) / 2;
         d = `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
-        lx = mx;
-        ly = (y1 + y2) / 2;
+        if (branch) {
+          // bend first, then run straight into the target; the label sits on that straight stretch
+          const lw = e.label ? edgeLabelWidth(e.label) : 0;
+          const xs = Math.max(x1 + 28, x2 - lw - 34);
+          const xc = (x1 + xs) / 2;
+          d = `M${x1},${y1} C${xc},${y1} ${xc},${y2} ${xs},${y2} L${x2},${y2}`;
+          lx = xs + lw / 2 + 2;
+          ly = y2;
+        } else {
+          lx = mx;
+          ly = (y1 + y2) / 2;
+        }
       } else {
         // Edge that skips layers: run along a lane above every box in the row so it never crosses one.
-        const top = L.rowTop(a.row) - 12;
+        const top = L.rowTop(a.row) - 12 - (skipLane.get(ei) || 0) * LANE_GAP;
         d = `M${x1},${y1} C${x1 + 24},${y1} ${x1 + 24},${top} ${x1 + 48},${top} L${x2 - 48},${top} C${x2 - 24},${top} ${x2 - 24},${y2} ${x2},${y2}`;
-        lx = x1 + L.GAP_X / 2;
+        lx = x1 + 48 + (e.label ? edgeLabelWidth(e.label) : 0) / 2 + 6;
         ly = top;
       }
     }

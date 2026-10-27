@@ -320,9 +320,9 @@ export default {
       ],
       edges: [
         { from: 'ins', to: 'nn' }, { from: 'nn', to: 'chk' }, { from: 'chk', to: 'uniq' }, { from: 'uniq', to: 'fk' }, { from: 'fk', to: 'ok', label: 'all pass' },
-        { from: 'chk', to: 'rej', label: 'fails' }, { from: 'uniq', to: 'rej', label: 'duplicate' }, { from: 'fk', to: 'rej', label: 'no parent' }
+        { from: 'fk', to: 'rej', label: 'any check fails' }
       ],
-      explanation: 'Any single failed rule rejects the whole statement, which keeps the table consistent.'
+      explanation: 'The checks run one after another. If any of them fails - a missing value, a CHECK that is false, a duplicate key or a missing parent row - the whole statement is rejected and nothing is saved, which keeps the table consistent.'
     },
     workedExample: {
       title: 'Constraints in action',
