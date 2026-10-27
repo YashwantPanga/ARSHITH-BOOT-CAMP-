@@ -148,7 +148,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                 {canStartNext && (
                   <div className="edu-card p-6 border-sage/40 bg-brand-50/60">
                     <h3 className="font-display text-[18px] font-semibold text-evergreen">{courseState === 'passed' ? 'Ready for your next course' : 'This course is closed'}</h3>
-                    <p className="mt-1.5 text-sm text-charcoal/70">{courseState === 'passed' ? 'Well done! Pick your next course - it is free.' : `You used both final attempts. You can take any course - this one again too, with two fresh attempts - for ₹${nextPrice}.`}</p>
+                    <p className="mt-1.5 text-sm text-charcoal/70">{courseState === 'passed' ? `Well done! Unlock your next course for ₹${nextPrice || 99}.` : `You used both final attempts. You can take any course - this one again too, with two fresh attempts - for ₹${nextPrice}.`}</p>
                     <button onClick={onExploreCourses} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage w-full mt-4 py-3">Choose a course <ArrowRight className="w-4 h-4" /></button>
                   </div>
                 )}

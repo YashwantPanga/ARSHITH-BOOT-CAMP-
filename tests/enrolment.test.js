@@ -5,8 +5,8 @@ import path from 'node:path';
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
 
-// Several courses per learner. First course free; free again once everything so far is passed;
-// otherwise ₹99 to unlock (admin unlocks until online payment is connected). Unlocking a failed
+// Several courses per learner. Exactly one free course (the first); every other course is
+// ₹99 to unlock (admin unlocks until online payment is connected). Unlocking a failed
 // course again gives two fresh final attempts.
 const tmp = path.join(os.tmpdir(), `arb-enrol-db-${process.pid}-${Date.now()}.json`);
 const A = 'pass@example.test';
@@ -61,17 +61,18 @@ describe('enrolment rules', () => {
     expect(login.body.learner.enrolledCourseIds.sort()).toEqual(['python-programming', 'sql-mastery']);
   });
 
-  it('after passing everything so far, the next course is free again', async () => {
+  it('only one course is ever free: passing does not make the next one free', async () => {
     addAttempt(A, 'python-programming', true);
-    expect((await state(A)).nextPrice).toBe(99); // sql-mastery still open
     addAttempt(A, 'sql-mastery', true);
-    expect((await state(A)).nextPrice).toBe(0);
+    expect((await state(A)).nextPrice).toBe(99);
     expect((await enrol(A, 'python-programming')).status).toBe(409); // already passed
-    expect((await enrol(A, 'web-development')).status).toBe(200);
+    const r = await enrol(A, 'web-development');
+    expect(r.status).toBe(402);
+    expect(r.body.price).toBe(99);
   });
 
-  it('after failing twice, any course - the same one too - costs ₹99; unlocking it again resets attempts', async () => {
-    expect((await enrol(B, 'web-development')).status).toBe(200);
+  it('after failing twice, the same course costs ₹99 too; unlocking it again resets attempts', async () => {
+    expect((await enrol(B, 'web-development')).status).toBe(200); // B's one free course
     addAttempt(B, 'web-development', false);
     addAttempt(B, 'web-development', false);
     expect(await state(B)).toMatchObject({ courses: { 'web-development': 'failed' }, nextPrice: 99 });

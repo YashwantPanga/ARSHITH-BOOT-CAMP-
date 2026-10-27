@@ -563,7 +563,7 @@ function AppShell() {
         title={`Enroll in ${enrollTarget?.title || 'this course'}?`}
         message={
           <>
-            <p>This course is <strong>free</strong>. You can unlock more courses for ₹99 each at any time. Pass this course's final assessment and your next course is free too.</p>
+            <p>This will be your <strong>one free course</strong>. Every other course - and this one again if you fail its final assessment twice - costs ₹99 to unlock.</p>
           </>
         }
         confirmLabel="Yes, enroll me"

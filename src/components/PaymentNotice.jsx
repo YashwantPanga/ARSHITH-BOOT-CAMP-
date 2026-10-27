@@ -20,8 +20,8 @@ export default function PaymentNotice({ course, price = 99, onClose }) {
         <span className="w-14 h-14 rounded-full bg-brand-100 text-forest flex items-center justify-center"><IndianRupee className="w-7 h-7" /></span>
         <h2 id="pay-title" className="mt-4 text-[23px] font-bold text-evergreen leading-tight">{displayTitle(course?.title || 'This course')} costs ₹{price}</h2>
         <p className="mt-2 text-[14.5px] text-charcoal/70 leading-relaxed">
-          Courses are free while you keep passing. After a final assessment is failed twice, every further course - including the same
-          course again, with two fresh attempts - costs ₹{price}.
+          Every student gets one free course. Each further course costs ₹{price} to unlock - including the same course again after
+          failing its final assessment twice, which gives two fresh attempts.
         </p>
         <div className="mt-4 rounded-xl border border-dashed border-sage/50 bg-white p-4 text-[14px] text-charcoal/75">
           <p className="font-display font-semibold text-evergreen">Online payment is coming soon</p>
