@@ -11,6 +11,9 @@ const norm = (s) => String(s || '')
   .normalize('NFD').replace(/[̀-ͯ]/g, '')   // drop accents
   .toUpperCase().replace(/[^A-Z\s]/g, ' ').replace(/\s+/g, ' ').trim();
 
+/** The registered name split into the parts that are looked for on the card (capitals). */
+export const nameParts = (name) => norm(name).split(' ').filter(Boolean);
+
 /** Edit distance between two short words. */
 function lev(a, b) {
   const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
@@ -70,8 +73,17 @@ export function matchNameInText(registeredName, text) {
 /** True when a script file could not be loaded because the site was updated after this page opened. */
 export const isStaleBuildError = (err) => /dynamically imported module|Importing a module script failed|error loading dynamically imported|Failed to fetch/i.test(String(err?.message || err));
 
+// Readers working side by side: two on machines with 4+ cores, so two camera frames are read at once.
+export const OCR_READERS = typeof navigator !== 'undefined' && (navigator.hardwareConcurrency || 2) >= 4 ? 2 : 1;
+const NAME_PARAMS = {
+  tessedit_pageseg_mode: '11',            // sparse text: ID cards are short scattered lines
+  preserve_interword_spaces: '1',
+  // names only: reading just letters is faster and stops "O" turning into "0" and similar
+  tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .-'
+};
+
 let workerPromise = null;
-/** Starts the OCR engine once (English). */
+/** Starts the OCR engine once (English); resolves to a scheduler with OCR_READERS workers. */
 export function loadOcr() {
   if (!workerPromise) {
     workerPromise = import('tesseract.js').catch((err) => {
@@ -81,15 +93,30 @@ export function loadOcr() {
         throw e;
       }
       throw err;
-    }).then(async ({ createWorker }) => {
-      const worker = await createWorker('eng');
-      // ID cards are scattered short lines: "sparse text" layout reads them better than page layout
-      await worker.setParameters({ tessedit_pageseg_mode: '11', preserve_interword_spaces: '1' });
-      return worker;
+    }).then(async (T) => {
+      const make = async (opts) => {
+        const w = await T.createWorker('eng', 1, opts);
+        await w.setParameters(NAME_PARAMS);
+        return w;
+      };
+      // measured: the default model with letters-only reading is the quickest accurate setup
+      const scheduler = T.createScheduler();
+      scheduler.addWorker(await make({}));
+      for (let i = 1; i < OCR_READERS; i++) {
+        try { scheduler.addWorker(await make({})); } catch { /* one reader is enough */ }
+      }
+      return scheduler;
     });
     workerPromise.catch(() => { workerPromise = null; });
   }
   return workerPromise;
+}
+
+/** Text read from one image or camera frame. attempt alternates grey / black-and-white processing. */
+export async function readIdText(source, { crop = null, attempt = 0 } = {}) {
+  const scheduler = await loadOcr();
+  const { data } = await scheduler.addJob('recognize', prepare(source, { crop, binary: attempt % 2 === 1 }), {}, { text: true, blocks: false, hocr: false, tsv: false });
+  return data?.text || '';
 }
 
 /**
@@ -103,7 +130,8 @@ function prepare(source, { crop = null, binary = false } = {}) {
   const fh = source.videoHeight || source.naturalHeight || source.height;
   const sx = crop ? Math.round(fw * crop.x) : 0, sy = crop ? Math.round(fh * crop.y) : 0;
   const w = crop ? Math.round(fw * crop.w) : fw, h = crop ? Math.round(fh * crop.h) : fh;
-  const scale = Math.min(3, Math.max(1, 1400 / Math.max(w, h)));
+  // enlarge only small pictures: bigger images cost time without reading names better
+  const scale = Math.min(2, Math.max(1, 1000 / Math.max(w, h)));
   const c = document.createElement('canvas');
   c.width = Math.round(w * scale); c.height = Math.round(h * scale);
   const ctx = c.getContext('2d', { willReadFrequently: true });
@@ -144,8 +172,6 @@ function prepare(source, { crop = null, binary = false } = {}) {
  * Returns { matched, percent, found, total, missing, text }.
  */
 export async function checkIdName(source, registeredName, { crop = null, attempt = 0 } = {}) {
-  const worker = await loadOcr();
-  const { data } = await worker.recognize(prepare(source, { crop, binary: attempt % 2 === 1 }));
-  const text = data?.text || '';
+  const text = await readIdText(source, { crop, attempt });
   return { ...matchNameInText(registeredName, text), text };
 }

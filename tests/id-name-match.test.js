@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { matchNameInText } from '../src/utils/idCardOcr';
+import { matchNameInText, nameParts } from '../src/utils/idCardOcr';
 
 const CARD = `GOVERNMENT OF INDIA
 Panga Yashwant
@@ -46,6 +46,13 @@ describe('ID card name matching', () => {
 
   it('finds a name OCR split into three pieces', () => {
     expect(matchNameInText('Yashwant Panga', 'YA SH WANT PANGA').matched).toBe(true);
+  });
+
+  it('combines name parts read in different camera frames', () => {
+    const frames = ['COLLEGE OF ENGINEERING KOLLA BHAVANA', 'ROLL NO SOWMYA CSE'];
+    expect(matchNameInText('Kolla Bhavana Sowmya', frames[0]).matched).toBe(false);
+    expect(matchNameInText('Kolla Bhavana Sowmya', frames.join('\n')).matched).toBe(true);
+    expect(nameParts('  kolla   Bhavana sowmya ')).toEqual(['KOLLA', 'BHAVANA', 'SOWMYA']);
   });
 
   it('does not let short words match loosely', () => {

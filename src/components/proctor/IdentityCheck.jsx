@@ -1,10 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, CreditCard, Loader2, ScanFace, ShieldAlert, Upload } from 'lucide-react';
 import { loadProctorModels, captureReference, calibrateGaze } from '../../utils/aiProctor';
-import { checkIdName, loadOcr } from '../../utils/idCardOcr';
+import { loadOcr, readIdText, matchNameInText, nameParts, OCR_READERS } from '../../utils/idCardOcr';
 
 const MAX_ID_TRIES = 3;
-const SCAN_SECONDS = 12;               // one scan keeps reading camera frames for up to this long
+const SCAN_SECONDS = 20;               // one scan keeps reading camera frames for up to this long
+const RECENT_READS = 6;                // name parts found in the last few frames count together
+
+/** A still copy of the current camera frame, so each reader works on its own picture. */
+function frameCopy(video) {
+  const c = document.createElement('canvas');
+  c.width = video.videoWidth || 640; c.height = video.videoHeight || 360;
+  c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+  return c;
+}
 // The part of the camera frame inside the on-screen card outline (a little generous on each side).
 const CARD_CROP = { x: 0.06, y: 0.03, w: 0.88, h: 0.94 };
 
@@ -27,6 +36,8 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
   const gazeBase = useRef(null);
   const [scanTime, setScanTime] = useState(0);
   const [matchFlash, setMatchFlash] = useState(false);
+  const [partsFound, setPartsFound] = useState([]);
+  const autoScanned = useRef(false);
   const alive = useRef(true);
   useEffect(() => () => { alive.current = false; }, []);
 
@@ -60,6 +71,7 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
       gazeBase.current = await calibrateGaze(videoEl.current);
       setFace({ state: 'done', msg: '', thumb: snapshot() });
       loadOcr().catch(() => {}); // warm up the text reader for the ID step
+      if (!autoScanned.current) { autoScanned.current = true; setTimeout(() => alive.current && scanId(), 800); }
     } catch (e) {
       refDesc.current = null;
       gazeBase.current = null;
@@ -73,16 +85,27 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
   const runId = async (getSource, busyMsg, { crop = null, seconds = 0 } = {}) => {
     setIdCard(s => ({ ...s, state: 'busy', msg: busyMsg }));
     setScanTime(0);
+    setPartsFound([]);
     const started = performance.now();
     const timer = setInterval(() => alive.current && setScanTime((performance.now() - started) / 1000), 100);
     try {
       let r = null;
-      for (let i = 0; !r?.matched && alive.current; i++) {
+      const recent = [];               // texts of the last few reads, matched together
+      for (let i = 0; !r?.matched && alive.current;) {
         if (i > 0 && (!seconds || performance.now() - started > seconds * 1000)) break;
-        const src = await getSource(i);
-        if (!src) break;
-        const next = await checkIdName(src, registeredName, { crop, attempt: i });
-        if (!r || next.found > r.found || (next.found === r.found && next.text.length > r.text.length)) r = next;
+        // one picture per reader, read at the same time
+        const batch = [];
+        for (let k = 0; k < OCR_READERS; k++, i++) {
+          const src = await getSource(i);
+          if (!src) break;
+          batch.push(readIdText(src.tagName === 'VIDEO' ? frameCopy(src) : src, { crop, attempt: i }));
+        }
+        if (!batch.length) break;
+        recent.push(...await Promise.all(batch));
+        while (recent.length > RECENT_READS) recent.shift();
+        const text = recent.join('\n');
+        r = { ...matchNameInText(registeredName, text), text };
+        if (alive.current) setPartsFound(nameParts(registeredName).filter(part => !r.missing.includes(part)));
       }
       if (!alive.current) return;
       if (!r) throw new Error('No image to read.');
@@ -102,7 +125,7 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
       clearInterval(timer);
     }
   };
-  const scanId = () => runId(async (i) => { if (i) await new Promise(r => setTimeout(r, 120)); return videoEl.current; },
+  const scanId = () => runId(async (i) => { if (i) await new Promise(r => setTimeout(r, 60)); return videoEl.current; },
     'Hold your ID card inside the frame, flat and close…', { crop: CARD_CROP, seconds: SCAN_SECONDS });
   const uploadId = (file) => {
     if (!file) return;
@@ -214,6 +237,15 @@ export default function IdentityCheck({ attachVideo, onChange, registeredName })
 
         <Step n={3} title="Verify the name on your ID" state={idCard.state === 'done' || skipped ? 'done' : face.state === 'done' ? 'active' : 'pending'}>
           <p className="text-xs text-slate-500">Show a photo ID (college ID, Aadhaar, passport, licence). The name on it must match your registered name: <strong className="text-brand-900">{registeredName}</strong>.</p>
+          {(scanning || idCard.state === 'mismatch') && !skipped && (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5" aria-live="polite">
+              <span className="text-[11px] text-slate-500 mr-0.5">{scanning ? 'Looking for:' : 'Found:'}</span>
+              {nameParts(registeredName).map(part => {
+                const ok = partsFound.includes(part);
+                return <span key={part} className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold transition-colors ${ok ? 'bg-mint-50 text-mint-500 ring-1 ring-mint-200' : 'bg-slate-100 text-slate-500'}`}>{ok ? <CheckCircle2 className="w-3 h-3" /> : <Loader2 className={`w-3 h-3 ${scanning ? 'animate-spin' : ''}`} />}{part}</span>;
+              })}
+            </div>
+          )}
           {(idCard.state === 'mismatch' || idCard.state === 'error') && !skipped && <p className="mt-1 text-xs text-rose-600">{idCard.msg}</p>}
           {idCard.state === 'error' && idCard.stale && <button type="button" onClick={() => window.location.reload()} className="btn-plum mt-2 text-sm py-2 px-3">Reload page</button>}
           {idCard.state === 'done' && <p className="mt-1 text-xs text-mint-500 font-semibold flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> Name verified on your ID</p>}
