@@ -1,47 +1,76 @@
-// Rewritten lesson text, laid over the stored course content when courses are served, so a deploy
-// (git pull + restart) updates every database without a data migration.
-// { [courseId]: { [moduleId]: { description?, readingMaterial } } }
-// Section examples get their result table from results.json (scripts/build-lesson-results.mjs).
+// Rewritten lesson content, laid over the stored course content when courses are served, so a
+// deploy (git pull + restart) updates every database without a data migration.
+//  - SQL: full lesson text (sql-mastery.part*.js) plus detailed step-by-step sections.
+//  - Python, Web Development, Data Science & AI: detailed step-by-step sections that replace the
+//    module's concept sections; the rest of each module (introduction, examples, quiz) is kept.
+// Each example's result (table, output, chart) comes from results.json (scripts/build-lesson-results.mjs).
 import fs from 'node:fs';
 import sql1 from './sql-mastery.part1.js';
 import sql2 from './sql-mastery.part2.js';
 import sql3 from './sql-mastery.part3.js';
-import sec1 from './sql-sections.part1.js';
-import sec2 from './sql-sections.part2.js';
-import sec3 from './sql-sections.part3.js';
+import sqlSec1 from './sql-sections.part1.js';
+import sqlSec2 from './sql-sections.part2.js';
+import sqlSec3 from './sql-sections.part3.js';
+import pySec1 from './python-sections.part1.js';
+import pySec2 from './python-sections.part2.js';
+import pySec3 from './python-sections.part3.js';
+import webSec1 from './web-sections.part1.js';
+import webSec2 from './web-sections.part2.js';
+import webSec3 from './web-sections.part3.js';
+import aiSec1 from './ai-sections.part1.js';
+import aiSec2 from './ai-sections.part2.js';
+import aiSec3 from './ai-sections.part3.js';
 
-// The detailed step-by-step sections replace each module's shorter sections.
-const withSections = (lessons, sections) => Object.fromEntries(Object.entries(lessons).map(([id, l]) => [
-  id, sections[id] ? { ...l, readingMaterial: { ...l.readingMaterial, sections: sections[id] } } : l
-]));
-
-const LESSONS = {
-  'sql-mastery': withSections({ ...sql1, ...sql2, ...sql3 }, { ...sec1, ...sec2, ...sec3 })
+/** { [courseId]: { [moduleId]: sections[] } } - the detailed step-by-step sections. */
+const SECTIONS = {
+  'sql-mastery': { ...sqlSec1, ...sqlSec2, ...sqlSec3 },
+  'python-programming': { ...pySec1, ...pySec2, ...pySec3 },
+  'web-development': { ...webSec1, ...webSec2, ...webSec3 },
+  'data-science-ai': { ...aiSec1, ...aiSec2, ...aiSec3 }
 };
+
+/** Full replacement lessons ({ description?, readingMaterial }) - SQL only. */
+const FULL = {
+  'sql-mastery': { ...sql1, ...sql2, ...sql3 }
+};
+
+export const lessonSections = () => SECTIONS;
 
 let results = {};
 try { results = JSON.parse(fs.readFileSync(new URL('./results.json', import.meta.url), 'utf8')); } catch { /* not built yet */ }
 
-const withResults = (courseId, moduleId, rm) => ({
-  ...rm,
-  sections: (rm.sections || []).map((sec, i) => {
+const sectionsFor = (courseId, moduleId) => {
+  const secs = SECTIONS[courseId]?.[moduleId];
+  if (!secs) return null;
+  return secs.map((sec, i) => {
     const result = results[`${courseId}/${moduleId}/${i}`];
     return result ? { ...sec, result } : sec;
-  })
-});
+  });
+};
 
-/** The course with any rewritten lessons applied (the stored course is not changed). */
+/** The course with the rewritten lessons applied (the stored course is not changed). */
 export function withLessons(course) {
-  const lessons = LESSONS[course?.id];
-  if (!lessons) return course;
+  if (!course || (!SECTIONS[course.id] && !FULL[course.id])) return course;
   return {
     ...course,
     modules: (course.modules || []).map(m => {
-      const l = lessons[m.id];
-      if (!l) return m;
-      return { ...m, ...(l.description ? { description: l.description } : {}), readingMaterial: withResults(course.id, m.id, l.readingMaterial) };
+      const full = FULL[course.id]?.[m.id];
+      const sections = sectionsFor(course.id, m.id);
+      if (!full && !sections) return m;
+      const rm = { ...(full ? full.readingMaterial : m.readingMaterial) };
+      if (sections) {
+        rm.sections = sections;
+        delete rm.theory; // the sections replace a Markdown theory text (some AI modules)
+      }
+      return { ...m, ...(full?.description ? { description: full.description } : {}), readingMaterial: rm };
     })
   };
 }
 
+/** SQL lessons with their detailed sections (used by tests). */
+const LESSONS = {
+  'sql-mastery': Object.fromEntries(Object.entries(FULL['sql-mastery']).map(([id, l]) => [
+    id, { ...l, readingMaterial: { ...l.readingMaterial, sections: SECTIONS['sql-mastery'][id] || l.readingMaterial.sections } }
+  ]))
+};
 export default LESSONS;

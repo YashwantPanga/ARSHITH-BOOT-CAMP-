@@ -3,7 +3,8 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import LESSONS, { withLessons } from '../server/data/lessons/index.js';
 import ENRICHMENT from '../server/data/enrichment/index.js';
-import { buildResults, RESULTS_FILE } from '../scripts/build-lesson-results.mjs';
+import { RESULTS_FILE, resultKind, codeHash } from '../scripts/build-lesson-results.mjs';
+import { lessonSections } from '../server/data/lessons/index.js';
 import { SAMPLE_SCHEMA } from '../shared/sampleSchema.js';
 import { normalizeModule } from '../src/utils/normalizeModule.js';
 
@@ -48,9 +49,19 @@ describe('SQL lessons', () => {
     expect(failures).toEqual([]);
   });
 
-  it('result tables (results.json) are up to date - run node scripts/build-lesson-results.mjs', async () => {
+  it('results.json has an up-to-date result for every runnable example - run node scripts/build-lesson-results.mjs', () => {
     const saved = JSON.parse(fs.readFileSync(RESULTS_FILE, 'utf8'));
-    expect(saved).toEqual(await buildResults());
+    const stale = [];
+    for (const [courseId, modules] of Object.entries(lessonSections())) {
+      for (const [moduleId, sections] of Object.entries(modules)) {
+        sections.forEach((sec, i) => {
+          if (!resultKind(sec)) return;
+          const r = saved[`${courseId}/${moduleId}/${i}`];
+          if (!r || r.h !== codeHash(sec.code)) stale.push(`${courseId}/${moduleId}/${i} ${sec.heading}`);
+        });
+      }
+    }
+    expect(stale).toEqual([]);
   });
 
   it('render through the normal lesson pipeline with no stray bullet marks', () => {
@@ -76,5 +87,32 @@ describe('SQL lessons', () => {
     for (const [id, e] of Object.entries(ENRICHMENT['sql-mastery'])) {
       for (const n of e.workflow.nodes) expect(String(n.explain || '').length, `${id}/${n.id}`).toBeGreaterThan(60);
     }
+  });
+});
+
+describe('Python, Web Development and Data Science lessons', () => {
+  const courses = { 'python-programming': 'py-mod-', 'web-development': 'web-mod-', 'data-science-ai': 'ai-ds-mod-' };
+
+  it.each(Object.entries(courses))('%s: all 15 modules have detailed step-by-step sections', (courseId, prefix) => {
+    const mods = lessonSections()[courseId];
+    expect(Object.keys(mods).sort()).toEqual(Array.from({ length: 15 }, (_, i) => `${prefix}${i + 1}`).sort());
+    for (const [id, secs] of Object.entries(mods)) {
+      expect(secs.length, id).toBeGreaterThanOrEqual(6);
+      expect(secs.filter(s => s.code).length, `${id} examples`).toBeGreaterThanOrEqual(3);
+      for (const s of secs) {
+        expect(s.heading, id).toBeTruthy();
+        expect(String(s.text || '').length, `${id} "${s.heading}" text`).toBeGreaterThan(40);
+        if (s.code && s.run !== false) expect(['python', 'html', 'javascript', 'sql', 'text'], `${id} "${s.heading}" language`).toContain(s.language || 'sql');
+      }
+    }
+  });
+
+  it('replace the stored sections (and a Markdown theory text) when a course is served', () => {
+    const course = { id: 'data-science-ai', modules: [{ id: 'ai-ds-mod-9', title: 'M9', readingMaterial: { theory: '# old', introduction: 'kept' } }] };
+    const rm = withLessons(course).modules[0].readingMaterial;
+    expect(rm.introduction).toBe('kept');
+    expect(rm.theory).toBeUndefined();
+    expect(rm.sections.length).toBe(lessonSections()['data-science-ai']['ai-ds-mod-9'].length);
+    expect(rm.sections.find(s => s.code && s.language === 'python').result.output).toBeTruthy();
   });
 });

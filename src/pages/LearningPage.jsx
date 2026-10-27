@@ -41,6 +41,27 @@ const Paragraphs = ({ text, className = 'text-[15px] leading-7 text-slate-600' }
 
 const CodeBlock = (props) => <PremiumCodeBlock {...props} />;
 
+/** Live result of an HTML / CSS lesson example, in a sandboxed frame that grows to fit its content. */
+function LivePreview({ code, title }) {
+  const [h, setH] = useState(160);
+  const id = useMemo(() => `pv-${Math.random().toString(36).slice(2)}`, []);
+  useEffect(() => {
+    const onMsg = (e) => { if (e.data?.arbPreview === id) setH(Math.min(560, Math.max(80, e.data.height + 4))); };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, [id]);
+  const doc = `<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:system-ui,sans-serif;margin:14px;color:#1f2937}</style></head><body>${code}<script>
+    const send = () => parent.postMessage({ arbPreview: '${id}', height: document.documentElement.scrollHeight }, '*');
+    addEventListener('load', send); new ResizeObserver(send).observe(document.body); setTimeout(send, 300);
+  </script></body></html>`;
+  return (
+    <div>
+      <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-sage mb-1.5">Result (live preview - try clicking or typing in it)</p>
+      <iframe title={`Live preview: ${title}`} srcDoc={doc} sandbox="allow-scripts allow-forms allow-modals" className="w-full rounded-xl border border-slate-200 bg-white" style={{ height: h }} />
+    </div>
+  );
+}
+
 const DEFAULT_LANG = { 'sql-mastery': 'sql', 'web-development': 'html' };
 
 /** Rough reading time for a module (~230 words per minute). */
@@ -253,10 +274,23 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
               )}
               {sec.code && (
                 <div className="space-y-2">
-                  <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-sage">Example - press Try it to run it yourself</p>
-                  <CodeBlock courseId={course.id} language={sec.language} code={sec.code} />
+                  <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-sage">{sec.run === false ? 'Example' : 'Example - press Try it to run it yourself'}</p>
+                  <CodeBlock courseId={course.id} language={sec.language} code={sec.code} runnable={sec.run !== false} />
                 </div>
               )}
+              {(sec.result?.output || sec.output) && (
+                <div>
+                  <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-sage mb-1.5">{sec.result?.output ? 'Output' : 'What you will see'}</p>
+                  <pre className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-[13px] text-slate-800 whitespace-pre-wrap break-words max-h-80 overflow-y-auto thin-scroll m-0">{sec.result?.output || sec.output}</pre>
+                </div>
+              )}
+              {sec.result?.image && (
+                <div>
+                  <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-sage mb-1.5">Chart</p>
+                  <img src={sec.result.image} alt={`Chart drawn by the example: ${cleanText(sec.heading || '')}`} className="max-w-full rounded-xl border border-slate-200 bg-white" />
+                </div>
+              )}
+              {sec.code && sec.run !== false && ['html', 'css'].includes(sec.language) && <LivePreview code={sec.code} title={cleanText(sec.heading || 'Example')} />}
               {sec.result?.columns?.length > 0 && (
                 <div>
                   <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-sage mb-1.5">Result ({sec.result.rows.length} row{sec.result.rows.length === 1 ? '' : 's'}{sec.result.more ? `, first ${sec.result.rows.length} shown` : ''})</p>
