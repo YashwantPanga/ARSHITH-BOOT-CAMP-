@@ -263,6 +263,18 @@ function AppShell() {
     toast('Payment received - a receipt is on its way to your email.', 'success', 5000);
   };
 
+  // After a second failed final: reload the course states (the course shows as locked at once) and,
+  // when the learner chooses to, open the ₹99 payment to take the course again.
+  const refreshEnrollment = useCallback(() => {
+    if (!userId) return;
+    api.getEnrollment(userId).then(setEnrollState).catch(() => {});
+  }, [userId]);
+  const offerRetake = (courseId) => {
+    const course = findCourse(courseId) || { id: courseId, title: courseId };
+    setPaymentFor({ course, price: enrollState?.nextPrice || 99, retake: true });
+    refreshEnrollment();
+  };
+
   /* ---------------- Auth ---------------- */
   const handleAuthSuccess = (user, { isNew = false } = {}) => {
     if (user.staff) {
@@ -421,6 +433,8 @@ function AppShell() {
           onExit={() => navigate(paths.dashboard())}
           onProgressChanged={() => refreshProgress(course.id)}
           onViewCertificate={() => navigate(paths.certificate(course.id))}
+          onCourseLocked={refreshEnrollment}
+          onUnlockAgain={() => offerRetake(course.id)}
         />
       );
       break;

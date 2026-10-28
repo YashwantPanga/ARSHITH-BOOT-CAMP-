@@ -12,6 +12,7 @@ import { Spinner } from './ui';
 import IdentityCheck from './proctor/IdentityCheck';
 import { analyzeFrame, handNearFace, matchPercent, gazeState } from '../utils/aiProctor';
 import CertificateCelebration from './CertificateCelebration';
+import BetterLuck from './BetterLuck';
 
 const MAX_VIOLATIONS = 3;
 const PASS = 70;
@@ -30,7 +31,14 @@ const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 
  *    missing face become violations after a short grace period, and hands near the face are flagged.
  *    Detections are shown live on screen as they happen.
  */
-export default function FinalTestModal({ isOpen, onClose, course, studentUser, locked, projectReq, passedFinal, onSubmitted, onViewCertificate }) {
+export default function FinalTestModal({ isOpen, onClose: closeModal, course, studentUser, locked, projectReq, passedFinal, onSubmitted, onViewCertificate, onCourseLocked, onUnlockAgain }) {
+  // After the second failed attempt the course is locked: closing the result (or choosing to pay)
+  // tells the page, so it switches to the locked screen straight away instead of after a reload.
+  const lockedOutRef = useRef(false);
+  const onClose = useCallback(() => {
+    closeModal();
+    if (lockedOutRef.current) { lockedOutRef.current = false; onCourseLocked?.(); }
+  }, [closeModal, onCourseLocked]);
   const [phase, setPhase] = useState('intro');
   const [error, setError] = useState('');
   const [session, setSession] = useState(null);
@@ -168,6 +176,7 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
       stopCamera();
       setResult({ ...res.result, terminated });
       setPhase('result');
+      lockedOutRef.current = !res.result.passed && res.result.attemptsLeft === 0;
       onSubmitted?.(res.result);
     } catch (err) {
       setError(err.message || 'Submission failed. Check your connection and try again.');
@@ -630,15 +639,15 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
             {result.passed ? (
               <CertificateCelebration name={studentName} courseTitle={displayTitle(course.title)} percentage={result.percentage} />
             ) : (
-              <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center bg-rose-50 text-rose-500">
-                <XCircle className="w-10 h-10" />
-              </div>
+              <BetterLuck lockedOut={result.attemptsLeft === 0} />
             )}
-            <h2 className="mt-5 text-3xl font-bold text-brand-900">{result.passed ? 'Congratulations, you passed!' : result.terminated ? 'Exam ended by proctoring' : 'Not passed this time'}</h2>
-            <p className="mt-2 text-slate-500">
+            <h2 className="mt-5 text-3xl font-bold text-brand-900 animate-fade-up">{result.passed ? 'Congratulations, you passed!' : 'Better luck next time!'}</h2>
+            <p className="mt-2 text-slate-500 max-w-xl mx-auto">
               {result.passed ? 'Your certificate is ready and will show exactly this score.'
                 : result.terminated ? `The exam was stopped after ${MAX_VIOLATIONS} proctoring warnings and is recorded as not passed.`
-                : `You need ${PASS}% or more to earn the certificate. Review the modules and try again.`}
+                : result.attemptsLeft === 0
+                  ? `You need ${PASS}% to pass. Every expert failed before they succeeded - review the modules where you lost marks and come back stronger.`
+                  : `You need ${PASS}% to pass. Review the modules where you lost marks - you can do this.`}
             </p>
             <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
               <ResultStat label="Percentage" value={`${result.percentage}%`} tone={result.passed ? 'text-mint-500' : 'text-rose-500'} />
@@ -646,16 +655,23 @@ export default function FinalTestModal({ isOpen, onClose, course, studentUser, l
               <ResultStat label="Time taken" value={result.timeTakenFormatted?.replace(' minutes', 'm').replace(' minute', 'm').replace(' seconds', 's').replace(' second', 's') || '—'} />
               <ResultStat label="Warnings" value={`${result.proctorViolations ?? violations.length}/${MAX_VIOLATIONS}`} />
             </div>
-            {!result.passed && result.attemptsLeft !== undefined && (
-              <p className={`mt-6 text-sm font-semibold ${result.attemptsLeft > 0 ? 'text-brand-900' : 'text-rose-600'}`}>
-                {result.attemptsLeft > 0 ? `You have ${result.attemptsLeft} attempt${result.attemptsLeft === 1 ? '' : 's'} left.` : 'You have used both attempts at this final assessment.'}
-              </p>
+            {!result.passed && result.attemptsLeft > 0 && (
+              <p className="mt-6 text-sm font-semibold text-brand-900">You have {result.attemptsLeft} attempt{result.attemptsLeft === 1 ? '' : 's'} left.</p>
+            )}
+            {!result.passed && result.attemptsLeft === 0 && (
+              <div className="mt-6 mx-auto max-w-xl rounded-2xl border border-rose-200 bg-rose-50/70 px-5 py-4 text-left animate-fade-up">
+                <p className="flex items-center gap-2 font-semibold text-rose-700"><Lock className="w-4 h-4" /> This course is now locked</p>
+                <p className="mt-1 text-sm text-charcoal/75">You have used both final attempts. Unlock {displayTitle(course.title)} again for ₹99 to study it and get two fresh attempts at the final assessment.</p>
+              </div>
             )}
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               {result.passed
                 ? <button onClick={onViewCertificate} className="btn-plum"><Award className="w-4 h-4" /> Get my certificate</button>
                 : result.attemptsLeft === 0
-                  ? <button onClick={onClose} className="btn-outline">Close</button>
+                  ? <>
+                      <button onClick={() => { lockedOutRef.current = false; closeModal(); onUnlockAgain?.(); }} className="btn-primary">Unlock again for ₹99 <ArrowRight className="w-4 h-4" /></button>
+                      <button onClick={onClose} className="btn-outline">Later</button>
+                    </>
                   : <button onClick={() => { setPhase('intro'); setAgree(false); setCamState('idle'); }} className="btn-primary"><RefreshCw className="w-4 h-4" /> Retake assessment</button>}
             </div>
           </Centered>
