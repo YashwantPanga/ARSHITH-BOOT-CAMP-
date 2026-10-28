@@ -14,7 +14,6 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
   const [selectedId, setSelectedId] = useState(null);
   const course = courses.find(c => c.id === (myIds.includes(selectedId) ? selectedId : myIds[0]));
   const firstName = (studentUser.name || studentUser.email).split(' ')[0];
-  const initials = (studentUser.name || studentUser.email || '?').split(/\s+/).map(s => s[0]).join('').slice(0, 2).toUpperCase();
   const lp = course?.learnerProgress;
   const done = course?.modules?.filter(m => m.completed).length || 0;
   const total = course?.modules?.length || 0;
@@ -49,8 +48,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
             {onHome ? <button onClick={onHome} className="font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
             <span className="mx-2 text-charcoal/40">/</span>My dashboard
           </nav>
-          <div className="mt-6 flex flex-wrap items-center gap-5">
-            <span className="w-16 h-16 rounded-full bg-forest text-ivory font-display text-[22px] font-semibold flex items-center justify-center shadow-[0_14px_28px_-16px_rgba(1,58,43,.8)]">{initials}</span>
+          <div className="mt-5">
             <div className="min-w-0">
               <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">My dashboard</p>
               <h1 className="mt-1 text-[30px] sm:text-[38px] font-bold leading-tight text-evergreen">Welcome back, {firstName}!</h1>
