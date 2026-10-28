@@ -261,6 +261,8 @@ function AppShell() {
     setCelebrate({ ...(findCourse(paidId) || paymentFor?.course), paid: paymentFor?.price || 99 });
     setPaymentFor(null);
     toast('Payment received - a receipt is on its way to your email.', 'success', 5000);
+    // open the course straight away; the celebration shows on top of it
+    if (paidId) navigate(paths.learn(paidId));
   };
 
   // After a second failed final: reload the course states (the course shows as locked at once) and,

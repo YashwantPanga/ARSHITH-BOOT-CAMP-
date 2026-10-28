@@ -26,6 +26,7 @@ const loadCheckout = () => {
  */
 export default function PaymentNotice({ course, price = 99, retake = false, paymentsEnabled, onPaid, onClose }) {
   const [busy, setBusy] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState('');
   // Show the Pay button unless the server has said online payment is off; if it turns out to be
   // off when the learner presses Pay (PAYMENTS_OFF), the contact details are shown instead.
@@ -54,12 +55,25 @@ export default function PaymentNotice({ course, price = 99, retake = false, paym
         prefill: order.prefill,
         theme: { color: '#013A2B' },
         handler: async (resp) => {
-          try {
-            const state = await api.verifyPayment(resp);
-            onPaid?.(state);
-          } catch (err) {
-            setError(err.message || 'We could not confirm the payment. If money was taken, contact us with your payment ID.');
-            setBusy(false);
+          // Razorpay has taken the payment; confirm it with our server. A phone can lose its
+          // connection right after paying, so retry a few times before giving up.
+          setError('');
+          setConfirming(true);
+          for (let attempt = 1; attempt <= 4; attempt++) {
+            try {
+              const state = await api.verifyPayment(resp);
+              onPaid?.(state);
+              return;
+            } catch (err) {
+              const retryable = !err.status || err.status >= 500;
+              if (!retryable || attempt === 4) {
+                setError(`${err.message || 'We could not confirm the payment.'} Your payment ID is ${resp.razorpay_payment_id} - if money was taken, send it to bootcamp@arshithgroup.com and we will unlock the course.`);
+                setBusy(false);
+                setConfirming(false);
+                return;
+              }
+              await new Promise(r => setTimeout(r, attempt * 1500));
+            }
           }
         },
         modal: { ondismiss: () => setBusy(false) }
@@ -101,7 +115,7 @@ export default function PaymentNotice({ course, price = 99, retake = false, paym
             </ul>
             {error && <p className="mt-3 text-[13.5px] text-rose-600" role="alert">{error}</p>}
             <button onClick={pay} disabled={busy} className="font-display mt-5 w-full h-12 rounded-md bg-forest text-ivory text-[15.5px] font-semibold hover:bg-sage transition-colors disabled:opacity-70 inline-flex items-center justify-center gap-2">
-              {busy ? <><Loader2 className="w-4 h-4 animate-spin" /> Opening secure payment…</> : `Pay ₹${price} and unlock`}
+              {busy ? <><Loader2 className="w-4 h-4 animate-spin" /> {confirming ? 'Confirming your payment…' : 'Opening secure payment…'}</> : `Pay ₹${price} and unlock`}
             </button>
             <p className="mt-3 flex items-center justify-center gap-1.5 text-[12px] text-charcoal/55"><ShieldCheck className="w-3.5 h-3.5" /> UPI, cards and net banking, secured by Razorpay</p>
           </>
