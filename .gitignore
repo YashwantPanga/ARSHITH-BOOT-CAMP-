@@ -11,3 +11,8 @@ server/data/cert-images/
 backups/
 public/ocr/
 public/__ref-*
+
+# live update script
+dist-new/
+dist-old/
+.env.backup-*
