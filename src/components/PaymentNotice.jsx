@@ -24,17 +24,20 @@ const loadCheckout = () => {
  * unlocks straight away - onPaid(enrolmentState) is called once the server has confirmed the payment.
  * Otherwise the learner contacts the team and the admin enrols them.
  */
-export default function PaymentNotice({ course, price = 99, retake = false, paymentsEnabled = false, onPaid, onClose }) {
+export default function PaymentNotice({ course, price = 99, retake = false, paymentsEnabled, onPaid, onClose }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [online, setOnline] = useState(paymentsEnabled);
+  // Show the Pay button unless the server has said online payment is off; if it turns out to be
+  // off when the learner presses Pay (PAYMENTS_OFF), the contact details are shown instead.
+  const [online, setOnline] = useState(paymentsEnabled !== false);
+  useEffect(() => { if (paymentsEnabled === false) setOnline(false); }, [paymentsEnabled]);
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape' && !busy) onClose(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose, busy]);
-  useEffect(() => { if (paymentsEnabled) loadCheckout().catch(() => {}); }, [paymentsEnabled]);
+  useEffect(() => { if (online) loadCheckout().catch(() => {}); }, [online]);
 
   const pay = async () => {
     setBusy(true);

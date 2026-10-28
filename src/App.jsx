@@ -604,7 +604,7 @@ function AppShell() {
           course={paymentFor.course}
           price={paymentFor.price}
           retake={!!paymentFor.retake}
-          paymentsEnabled={!!enrollState?.paymentsEnabled}
+          paymentsEnabled={enrollState ? !!enrollState.paymentsEnabled : undefined}
           onPaid={onCoursePaid}
           onClose={() => setPaymentFor(null)}
         />

@@ -109,9 +109,8 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                 ))}
               </div>
             )}
-            <div className="grid lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                <div className="edu-card overflow-hidden grid sm:grid-cols-5">
+            <div className="grid grid-cols-1 lg:grid-cols-3 lg:grid-rows-[auto_1fr] gap-6">
+                <div className="edu-card overflow-hidden grid grid-cols-1 sm:grid-cols-5 order-1 lg:order-none lg:col-span-2 lg:col-start-1 lg:row-start-1">
                   <div className="sm:col-span-2 bg-forest flex items-center">
                     <SafeImg src={courseArt(course)} alt="" className="w-full aspect-[16/10] object-cover object-[44%_50%]" />
                   </div>
@@ -132,9 +131,9 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                   </div>
                 </div>
 
-                <div className="edu-card p-6">
+                <div className="edu-card p-6 min-w-0 order-3 lg:order-none lg:col-span-2 lg:col-start-1 lg:row-start-2 self-start">
                   <h3 className="font-display text-[19px] font-semibold text-evergreen flex items-center gap-2"><ListChecks className="w-5 h-5 text-sage" /> Module quizzes</h3>
-                  <div className="mt-4 grid sm:grid-cols-2 gap-2.5">
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {course.modules.map((m, i) => (
                       <button key={m.id} onClick={() => onContinue(course.id, m.id)} className="flex items-center gap-3 p-3 rounded-xl border border-brand-900/10 hover:border-sage/50 hover:bg-cream text-left transition">
                         <span className={`w-9 h-9 rounded-full font-display text-[13px] font-semibold flex items-center justify-center shrink-0 ${m.completed ? 'bg-forest text-ivory' : 'bg-brand-100 text-forest'}`}>{m.completed ? <CheckCircle2 className="w-4 h-4" /> : String(i + 1).padStart(2, '0')}</span>
@@ -146,9 +145,8 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                     ))}
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-6">
+              <div className="space-y-6 min-w-0 order-2 lg:order-none lg:col-start-3 lg:row-start-1 lg:row-span-2">
                 {canStartNext && (
                   <div className="edu-card p-6 border-sage/40 bg-brand-50/60">
                     <h3 className="font-display text-[18px] font-semibold text-evergreen">{courseState === 'passed' ? 'Ready for your next course' : 'This course is closed'}</h3>
@@ -268,7 +266,7 @@ function ProfileSettings({ studentUser, onSaved }) {
   const field = 'auth-input w-full';
 
   return (
-    <div className="grid lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* account card */}
       <div className="edu-card p-6 h-fit">
         <h3 className="font-display text-[18px] font-semibold text-evergreen flex items-center gap-2"><User className="w-5 h-5 text-sage" /> Account</h3>
