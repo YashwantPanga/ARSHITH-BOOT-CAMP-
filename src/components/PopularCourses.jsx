@@ -68,20 +68,22 @@ export function CourseRow({ course, enrolledCourseId, offer, onSelect }) {
   const isMine = offer?.enrolledIds ? offer.enrolledIds.includes(course.id) : enrolledCourseId === course.id;
   const tag = isMine ? 'Enrolled' : offer?.price > 0 ? `₹${offer.price}` : 'Free';
   return (
-    <button onClick={() => onSelect(course.id)} className="w-full flex gap-3 p-3 rounded-xl bg-white border border-brand-900/15 text-left active:scale-[.99] transition">
-      <span className="relative shrink-0 w-[84px] h-[84px] rounded-lg overflow-hidden bg-forest">
-        <SafeImg src={courseArt(course)} alt="" className="w-full h-full object-cover object-[44%_50%]" />
+    <button onClick={() => onSelect(course.id)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-white border border-brand-900/15 text-left active:scale-[.99] transition">
+      {/* the course art is 16:10 - show all of it so the course name on the picture is never cut off */}
+      <span className="relative shrink-0 w-[124px] aspect-[16/10] rounded-lg overflow-hidden bg-forest shadow-[0_6px_14px_-8px_rgba(1,58,43,.6)]">
+        <SafeImg src={courseArt(course)} alt="" className="w-full h-full object-cover" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-2">
-          <img src="/arshith-bootcamp-icon.png" alt="" className="w-6 h-6 rounded border border-brand-900/10 bg-white object-contain p-0.5" />
-          <span className="text-[13px] text-charcoal/70">Arshith Bootcamp</span>
+        <span className="flex items-center gap-1.5">
+          <img src="/arshith-bootcamp-icon.png" alt="" className="w-5 h-5 rounded border border-brand-900/10 bg-white object-contain p-0.5" />
+          <span className="text-[12px] text-charcoal/60 truncate">Arshith Bootcamp</span>
         </span>
-        <span className="mt-1 block text-[15.5px] font-bold leading-snug text-charcoal line-clamp-2">{displayTitle(course.title)}</span>
-        <span className="mt-1 block text-[12.5px] text-charcoal/60">
-          <Star className="inline w-3.5 h-3.5 -mt-0.5 fill-charcoal/70 text-charcoal/70" /> {course.rating} · {course.level || 'All levels'} · Certificate · {hoursOf(course)}
+        <span className="mt-1 block text-[15px] font-bold leading-snug text-charcoal line-clamp-2">{displayTitle(course.title)}</span>
+        <span className="mt-1 flex items-center gap-1 text-[12px] text-charcoal/60 min-w-0">
+          <Star className="w-3.5 h-3.5 shrink-0 fill-amber-400 text-amber-400" />
+          <span className="truncate">{course.rating} · {hoursOf(course)} · Certificate</span>
         </span>
-        <span className={`mt-2 inline-flex rounded-full border px-2.5 py-0.5 text-[12px] font-medium ${isMine ? 'border-forest/30 bg-brand-50 text-forest' : 'border-brand-900/20 text-charcoal/80'}`}>{tag}</span>
+        <span className={`mt-1.5 inline-flex rounded-full border px-2.5 py-0.5 text-[12px] font-medium ${isMine ? 'border-forest/30 bg-brand-50 text-forest' : 'border-brand-900/20 text-charcoal/80'}`}>{tag}</span>
       </span>
     </button>
   );
