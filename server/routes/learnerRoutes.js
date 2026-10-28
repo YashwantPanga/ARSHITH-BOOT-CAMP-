@@ -16,7 +16,9 @@ import { publicBase, isEmailSafeUrl } from '../lib/publicUrl.js';
 const router = express.Router();
 
 const normEmail = (e) => String(e || '').trim().toLowerCase();
-const normReg = (r) => String(r || '').trim().toUpperCase();
+// IDs are compared in one form: upper case, and spaces / slashes / dots / underscores become hyphens
+// (21/CS/045 and 21 cs 045 are both stored as 21-CS-045).
+const normReg = (r) => String(r || '').trim().toUpperCase().replace(/[\s/._]+/g, '-').replace(/^-+|-+$/g, '');
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** ARB-STU-7KQ2M9 – unique learner id, also printed on certificates. */
@@ -110,7 +112,7 @@ router.post('/learners/register', async (req, res) => {
 
   if (!EMAIL_RE.test(email)) return res.status(400).json({ success: false, message: 'Please enter a valid email address.' });
   if (name.length < 2) return res.status(400).json({ success: false, message: 'Please enter your full name.' });
-  if (!/^[A-Z0-9-]{4,20}$/.test(regNo)) return res.status(400).json({ success: false, message: 'Registration number must be 4–20 letters, digits or hyphens.' });
+  if (!/^[A-Z0-9-]{4,20}$/.test(regNo)) return res.status(400).json({ success: false, message: 'Registration / ID number must be 4-20 letters or digits (for example 21CS045 or EMP1024).' });
   if (phone.replace(/\D/g, '').length < 10) return res.status(400).json({ success: false, message: 'Please enter a valid phone number (at least 10 digits).' });
   if (password.length < 6) return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
 
@@ -118,7 +120,7 @@ router.post('/learners/register', async (req, res) => {
   if (!db.learners) db.learners = {};
   if (db.learners[email]) return res.status(409).json({ success: false, field: 'email', message: 'An account with this email already exists. Please log in instead.' });
   if (Object.values(db.learners).some(l => l.regNo === regNo)) {
-    return res.status(409).json({ success: false, field: 'regNo', message: 'This registration number is already registered to another account.' });
+    return res.status(409).json({ success: false, field: 'regNo', message: 'This registration / ID number is already used by another account. Please choose a different one - for example add your initials.' });
   }
 
   const learner = {
@@ -237,7 +239,7 @@ router.post('/learners/reset-password', async (req, res) => {
 });
 
 // Every failed sign-in gets this same answer and status, whatever was wrong.
-const LOGIN_FAILED = 'Incorrect email, registration number or password.';
+const LOGIN_FAILED = 'Incorrect email, registration / ID number or password.';
 // Compared against when there is no account, so every attempt costs one password check.
 const DUMMY_HASH = bcrypt.hashSync(crypto.randomBytes(16).toString('hex'), 10);
 // Failed sign-ins per address (email lockout above is per account; this one slows spraying many emails).
@@ -319,10 +321,10 @@ router.put('/learners/me', (req, res) => {
   const regNo = req.body.regNo === undefined ? learner.regNo : normReg(req.body.regNo);
   const phone = req.body.phone === undefined ? learner.phone : String(req.body.phone).trim();
   if (name.length < 2) return res.status(400).json({ success: false, field: 'name', message: 'Please enter your full name.' });
-  if (!/^[A-Z0-9-]{4,20}$/.test(regNo)) return res.status(400).json({ success: false, field: 'regNo', message: 'Registration number must be 4–20 letters, digits or hyphens.' });
+  if (!/^[A-Z0-9-]{4,20}$/.test(regNo)) return res.status(400).json({ success: false, field: 'regNo', message: 'Registration / ID number must be 4-20 letters or digits (for example 21CS045 or EMP1024).' });
   if (phone.replace(/\D/g, '').length < 10) return res.status(400).json({ success: false, field: 'phone', message: 'Please enter a valid phone number (at least 10 digits).' });
   if (regNo !== learner.regNo && Object.values(db.learners).some(l => l.email !== email && l.regNo === regNo)) {
-    return res.status(409).json({ success: false, field: 'regNo', message: 'This registration number is already registered to another account.' });
+    return res.status(409).json({ success: false, field: 'regNo', message: 'This registration / ID number is already used by another account. Please choose a different one - for example add your initials.' });
   }
   const hasCertificate = (db.certificates || []).some(c => normEmail(c.userId) === email && c.status !== 'revoked');
   if (name !== learner.name && hasCertificate) {

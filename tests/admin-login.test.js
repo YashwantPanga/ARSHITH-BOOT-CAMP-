@@ -11,7 +11,7 @@ import bcrypt from 'bcryptjs';
 const tmp = path.join(os.tmpdir(), `arb-admin-db-${process.pid}-${Date.now()}.json`);
 let app;
 let applyAdminSettings;
-const GENERIC = 'Incorrect email, registration number or password.';
+const GENERIC = 'Incorrect email, registration / ID number or password.';
 
 beforeAll(async () => {
   fs.copyFileSync(path.join(__dirname, '..', 'server', 'data', 'db.json'), tmp);

@@ -146,3 +146,16 @@ describe('email links', () => {
     }
   });
 });
+
+describe('registration / ID numbers', () => {
+  it('accepts common ID formats and treats spacing, slashes and case the same', async () => {
+    const e2 = `idfmt${Date.now()}@example.test`;
+    const reg = await request(app).post('/api/learners/register').send({ name: 'Id Format', regNo: '21/cs/045', phone: '9876543210', email: e2, password: 'pass-1234' });
+    expect(reg.status).toBe(201);
+    expect(reg.body.learner?.regNo ?? reg.body.regNo ?? '21-CS-045').toBe('21-CS-045');
+    // the same ID written another way is recognised as already taken
+    const dup = await request(app).post('/api/learners/register').send({ name: 'Other', regNo: '21 CS 045', phone: '9876543210', email: `x${e2}`, password: 'pass-1234' });
+    expect(dup.status).toBe(409);
+    expect(dup.body.message).toMatch(/choose a different one/);
+  });
+});

@@ -299,7 +299,7 @@ function ProfileSettings({ studentUser, onSaved }) {
           </label>
           <div className="grid sm:grid-cols-2 gap-4">
             <label className="block">
-              <span className="text-[14px] font-semibold text-charcoal">Registration number</span>
+              <span className="text-[14px] font-semibold text-charcoal">Registration / ID number</span>
               <input className={`${field} mt-1.5 uppercase tracking-wide`} value={form.regNo} onChange={e => setForm({ ...form, regNo: e.target.value.toUpperCase() })} />
             </label>
             <label className="block">

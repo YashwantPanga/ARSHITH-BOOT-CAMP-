@@ -36,7 +36,7 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
     if (!form.password) return setError('Password is required.');
 
     if (isSignup) {
-      if (!regNo) return setError('Registration Number is required.');
+      if (!regNo) return setError('Enter your registration / ID number.');
       if (name.length < 2) return setError('Please enter your full name.');
       if (phone.replace(/\D/g, '').length < 10) return setError('Please enter a valid phone number (at least 10 digits).');
       if (form.password.length < 6) return setError('Password must be at least 6 characters.');
@@ -98,14 +98,19 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
 
         <form onSubmit={handleSubmit} className={`mt-6 grid gap-4 ${isSignup ? 'sm:grid-cols-2' : ''}`} noValidate>
           {isSignup && (
-            <Field className="sm:col-span-2" label="Full name" hint="Exactly as on your government ID or college ID - it is printed on your certificate and checked against your ID in the final exam.">
+            <Field className="sm:col-span-2" label="Full name" hint="Your real full name - it is printed on your certificate exactly as you type it here.">
               <input className="auth-input" autoComplete="name" value={form.name} onChange={set('name')} />
             </Field>
           )}
           <Field label="Email" className={isSignup ? 'sm:col-span-2' : ''}>
             <input className="auth-input" type="email" autoComplete="email" value={form.email} onChange={set('email')} />
           </Field>
-          <Field label="Registration number">
+          <Field
+            label="Registration / ID number"
+            hint={isSignup
+              ? 'Any ID you have: college roll number, employee ID, or any number you choose (4-20 letters or digits, for example 21CS045 or EMP1024). You will need it every time you log in, so write it down.'
+              : 'The registration / ID number you entered when you signed up.'}
+          >
             <input className="auth-input uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal" value={form.regNo} onChange={set('regNo')} />
           </Field>
           {isSignup && (
@@ -152,8 +157,8 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
 
         <p className={`${asModal ? 'mt-5 text-[12.5px]' : 'mt-6 text-[13px]'} leading-relaxed text-charcoal/60`}>
           {isSignup
-            ? 'Your registration number becomes your learner ID and is printed with a QR code on your certificate. We will email you a code to verify your address.'
-            : 'Use the email, registration number and password you registered with. Having trouble? Use Forgot password to reset it.'}
+            ? 'Your registration / ID number becomes your learner ID and is printed with a QR code on your certificate. We will email you a code to verify your address.'
+            : 'Use the email, registration / ID number and password you signed up with. Having trouble? Use Forgot password to reset it.'}
         </p>
       </div>
   );
