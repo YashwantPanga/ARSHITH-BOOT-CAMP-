@@ -842,6 +842,28 @@ export async function generateCoursePDF(course, studentName = 'Student', { onPro
             });
             y += 4;
           }
+
+          // Step-by-step lesson extras: syntax, the example, what it produced, and the tip
+          if (sec.syntax) renderCodeBox("Syntax", sec.syntax, sec.language || "snippet");
+          if (sec.code) renderCodeBox("Example", sec.code, sec.language || "snippet");
+          const r = sec.result;
+          if (r?.columns?.length) {
+            const rows = [r.columns.join(" | "), ...r.rows.map(row => row.map(c => (c === null ? "NULL" : String(c))).join(" | "))];
+            if (r.more) rows.push(`... ${r.more} more rows`);
+            renderCodeBox("Result", rows.join("\n"), "text");
+          }
+          if (r?.output || sec.output) renderCodeBox(r?.output ? "Output" : "What you will see", r?.output || sec.output, "text");
+          if (r?.image) {
+            try {
+              const props = doc.getImageProperties(r.image);
+              const w = Math.min(contentWidth * 0.75, props.width * 0.26);
+              const h = w * (props.height / props.width);
+              checkPageBreak(h + 4);
+              doc.addImage(r.image, "PNG", margin, y, w, h);
+              y += h + 4;
+            } catch { /* a chart that cannot be embedded is skipped; the code above still shows it */ }
+          }
+          if (sec.note) renderParagraph(`Tip: ${sec.note}`);
         });
       }
 

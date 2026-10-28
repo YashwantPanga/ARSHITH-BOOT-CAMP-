@@ -66,9 +66,14 @@ const DEFAULT_LANG = { 'sql-mastery': 'sql', 'web-development': 'html' };
 
 /** Rough reading time for a module (~230 words per minute). */
 function readingMinutes(rm) {
-  const words = JSON.stringify(rm || {}).replace(/\\n|[{}[\]",:]/g, ' ').split(/\s+/).length;
-  return Math.max(5, Math.round(words / 230));
+  // generated example results (tables, output, charts) are not read word by word
+  const text = JSON.stringify(rm || {}, (k, v) => (k === 'result' ? undefined : v));
+  const words = text.replace(/\\n|[{}[\]",:]/g, ' ').split(/\s+/).length;
+  return Math.max(5, Math.round(words / 160)); // technical text with code reads slower than prose
 }
+
+/** Examples the learner can run: the code examples plus the section examples. */
+const runnableCount = (rm) => (rm.codeExamples || []).length + (rm.sections || []).filter(s => s.code && s.run !== false).length;
 
 /** Starter code for the Practice Lab: the problem as comments, then room to write the answer. */
 function practiceStarter(ex, courseId) {
@@ -721,7 +726,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                   </span>
                   <span className="chip bg-white/10 text-brand-100"><BookOpen className="w-3.5 h-3.5" />{sections.length} sections</span>
                   <span className="chip bg-white/10 text-brand-100"><Timer className="w-3.5 h-3.5" />~{readingMinutes(rm)} min read</span>
-                  <span className="chip bg-white/10 text-brand-100"><Code className="w-3.5 h-3.5" />{(rm.codeExamples || []).length} runnable examples</span>
+                  <span className="chip bg-white/10 text-brand-100"><Code className="w-3.5 h-3.5" />{runnableCount(rm)} runnable examples</span>
                 </div>
               </div>
             </div>

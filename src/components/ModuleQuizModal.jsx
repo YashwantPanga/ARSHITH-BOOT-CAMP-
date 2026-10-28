@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, ArrowLeft, ArrowRight, CheckCircle2, XCircle, RefreshCw, ListChecks, AlertCircle, Trophy } from 'lucide-react';
+import { X, ArrowLeft, ArrowRight, CheckCircle2, XCircle, RefreshCw, ListChecks, AlertCircle, Trophy, BookOpen } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { api } from '../services/api';
 import { cleanText } from '../utils/textUtils';
 import { userIdOf, displayNameOf } from '../utils/session';
 import { Spinner, BrandLoader } from './ui';
+
+const GOOD_SCORE = 70; // same as the final assessment's pass mark
 
 export const QuestionCard = ({ q, index, total, selected, onSelect, disabled = false }) => (
   <div className="space-y-5">
@@ -128,7 +130,7 @@ export default function ModuleQuizModal({ isOpen, onClose, module, moduleNumber,
       setResult(res.result);
       setPhase('result');
       onSubmitted?.(res.result);
-      if (res.result.passed) confetti({ particleCount: 120, spread: 75, origin: { y: 0.6 }, colors: ['#426557', '#013A2B', '#5F8574', '#90B1A2'] });
+      if (res.result.passed && res.result.percentage >= GOOD_SCORE) confetti({ particleCount: 120, spread: 75, origin: { y: 0.6 }, colors: ['#426557', '#013A2B', '#5F8574', '#90B1A2'] });
     } catch (err) {
       setError(err.message || 'Submission failed. Please try again.');
       setPhase('taking');
@@ -179,14 +181,27 @@ export default function ModuleQuizModal({ isOpen, onClose, module, moduleNumber,
 
           {phase === 'result' && result && (
             <div className="text-center py-4 animate-fade-up">
-              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center ${result.passed ? 'bg-mint-50 text-mint-400' : 'bg-rose-50 text-rose-500'}`}>
-                {result.passed ? <Trophy className="w-10 h-10" /> : <XCircle className="w-10 h-10" />}
-              </div>
-              <h3 className="mt-4 text-2xl font-bold text-brand-900">{result.passed ? 'Module complete!' : 'Not passed yet'}</h3>
-              <p className="text-slate-500 mt-1">{result.passed ? 'Great work — this module is now marked complete.' : 'You need 70% to pass. Review the module and try again.'}</p>
+              {(() => {
+                // module quizzes have no pass mark: finishing one completes the module, but the
+                // message should still match the score
+                const good = result.passed && result.percentage >= GOOD_SCORE;
+                return (
+                  <>
+                    <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center ${good ? 'bg-mint-50 text-mint-400' : result.passed ? 'bg-amber-50 text-amber-500' : 'bg-rose-50 text-rose-500'}`}>
+                      {good ? <Trophy className="w-10 h-10" /> : result.passed ? <BookOpen className="w-10 h-10" /> : <XCircle className="w-10 h-10" />}
+                    </div>
+                    <h3 className="mt-4 text-2xl font-bold text-brand-900">{good ? 'Module complete!' : result.passed ? 'Module done - keep practising' : 'Not passed yet'}</h3>
+                    <p className="text-slate-500 mt-1 max-w-md mx-auto">{good
+                      ? 'Great work - this module is now marked complete.'
+                      : result.passed
+                        ? `The module is marked complete, but ${result.percentage}% shows some ideas need another look. Review your answers, reread the sections, and retake the quiz - the final assessment needs 70%.`
+                        : 'You need 70% to pass. Review the module and try again.'}</p>
+                  </>
+                );
+              })()}
               <div className="mt-6 grid grid-cols-3 gap-3 max-w-sm mx-auto">
                 <Stat label="Score" value={`${result.score}/${result.totalQuestions}`} />
-                <Stat label="Percentage" value={`${result.percentage}%`} tone={result.passed ? 'text-mint-500' : 'text-rose-500'} />
+                <Stat label="Percentage" value={`${result.percentage}%`} tone={result.percentage >= GOOD_SCORE ? 'text-mint-500' : 'text-rose-500'} />
                 <Stat label="Attempt" value={`#${result.attemptNumber}`} />
               </div>
             </div>
@@ -211,8 +226,11 @@ export default function ModuleQuizModal({ isOpen, onClose, module, moduleNumber,
             <>
               <button onClick={() => setPhase('review')} className="btn-outline">Review answers</button>
               {result?.passed ? (
-                hasNextModule ? <button onClick={onContinueNextModule} className="btn-primary">Next module <ArrowRight className="w-4 h-4" /></button>
-                  : <button onClick={onClose} className="btn-primary">Done</button>
+                <span className="flex gap-2">
+                  {result.percentage < GOOD_SCORE && <button onClick={load} className="btn-outline"><RefreshCw className="w-4 h-4" /> Retake</button>}
+                  {hasNextModule ? <button onClick={onContinueNextModule} className="btn-primary">Next module <ArrowRight className="w-4 h-4" /></button>
+                    : <button onClick={onClose} className="btn-primary">Done</button>}
+                </span>
               ) : (
                 <button onClick={load} className="btn-primary"><RefreshCw className="w-4 h-4" /> Retake quiz</button>
               )}

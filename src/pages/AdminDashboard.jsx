@@ -548,6 +548,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     { heading: 'Home', ids: ['dashboard'] },
     { heading: 'Learners', ids: ['students', 'progress', 'projects'] },
     { heading: 'Certificates', ids: ['certificates', 'export'] },
+    { heading: 'Money', ids: ['payments'] },
     { heading: 'Content', ids: ['courses'] },
     { heading: 'Account', ids: ['settings'] }
   ];
