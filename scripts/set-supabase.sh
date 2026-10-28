@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Connects the live site to Supabase (the same database the PC version uses).
-# Run on the VPS as root:  cd /var/www/arshithcamp && bash scripts/set-supabase.sh
+# Run on the VPS as root:  cd /var/www/arshithcamp && bash scripts/set-supabase.sh   (or: ... set-supabase.sh ask)
 #  - uses Supabase lines from an earlier settings backup if one has them, otherwise asks for them
 #  - restarts the app and shows which database it is using
 set -euo pipefail
@@ -16,7 +16,10 @@ setv() {
 
 cp .env ".env.backup-$(date +%Y%m%d-%H%M%S)"
 URL=""; KEY=""
-for b in $(ls -t .env.backup-* 2>/dev/null) /var/www/bootcamp/.env; do
+# "bash scripts/set-supabase.sh ask" skips the backups and asks for the values
+BACKUPS="$(ls -t .env.backup-* 2>/dev/null || true) /var/www/bootcamp/.env"
+[ "${1:-}" = "ask" ] && BACKUPS=""
+for b in $BACKUPS; do
   if [ -f "$b" ] && grep -q '^SUPABASE_URL=.' "$b" && grep -q '^SUPABASE_SERVICE_KEY=.' "$b"; then
     URL="$(grep -E '^SUPABASE_URL=' "$b" | tail -1 | cut -d= -f2-)"
     KEY="$(grep -E '^SUPABASE_SERVICE_KEY=' "$b" | tail -1 | cut -d= -f2-)"
@@ -36,8 +39,4 @@ setv SUPABASE_SERVICE_KEY "$KEY"
 unset KEY
 chmod 600 .env
 
-pm2 restart bootcamp --update-env
-sleep 5
-echo
-pm2 logs bootcamp --lines 30 --nostream | grep -E "Database:|supabase|Supabase" | tail -3 || true
-echo "If it says 'Database: Supabase' the live site now uses Supabase."
+bash scripts/db-status.sh
