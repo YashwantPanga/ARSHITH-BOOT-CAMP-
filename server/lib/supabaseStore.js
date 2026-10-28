@@ -19,8 +19,15 @@ function headers(extra = {}) {
 const endpoint = (query = '') => `${process.env.SUPABASE_URL.replace(/\/+$/, '')}/rest/v1/${TABLE}${query}`;
 
 async function check(res, what) {
+  // A web page instead of data: SUPABASE_URL is not the project's API address (e.g. the dashboard link)
+  if (/text\/html/i.test(res.headers.get('content-type') || '')) {
+    throw new Error(`SUPABASE_URL does not point to a Supabase project API - it should look like https://<project-id>.supabase.co (not the supabase.com/dashboard link).`);
+  }
   if (res.ok) return res;
   const body = await res.text().catch(() => '');
+  if (res.status === 401 || res.status === 403 || /invalid api key|Invalid API key|apikey/i.test(body)) {
+    throw new Error(`Supabase did not accept SUPABASE_SERVICE_KEY (${res.status}) - the key is wrong or was deleted. Create a secret key in Supabase > Project Settings > API Keys and run: bash scripts/set-supabase.sh ask`);
+  }
   if (res.status === 404 || /relation .* does not exist|Could not find the table/i.test(body)) {
     throw new Error(`Supabase table "${TABLE}" is missing. Run supabase/setup.sql in the Supabase SQL Editor first.`);
   }

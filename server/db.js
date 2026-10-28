@@ -20,6 +20,11 @@ export function storageMode() {
   return useSupabase() ? 'supabase' : 'file';
 }
 
+/** False while the Supabase copy is still loading (or cannot be reached); the file is always ready. */
+export function dbReady() {
+  return !useSupabase() || memory !== null;
+}
+
 /** Loads the database before the server starts. Seeds Supabase from db.json on the very first run. */
 export async function initDb() {
   if (!useSupabase()) return 'file';

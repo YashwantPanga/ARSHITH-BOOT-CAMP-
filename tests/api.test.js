@@ -128,3 +128,14 @@ describe('enrichment and practice API', () => {
     expect(JSON.stringify(res.body)).not.toMatch(/"correctAnswer"/);
   });
 });
+
+describe('health check', () => {
+  it('reports which database, email and payment setup is active, without secrets', async () => {
+    const res = await request(app).get('/api/health');
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ status: 'ok', database: 'file' });
+    expect(['brevo-api', 'smtp', 'outbox']).toContain(res.body.email);
+    expect(['on', 'off']).toContain(res.body.payments);
+    expect(JSON.stringify(res.body)).not.toMatch(/sb_secret|rzp_|xsmtpsib|eyJ/);
+  });
+});

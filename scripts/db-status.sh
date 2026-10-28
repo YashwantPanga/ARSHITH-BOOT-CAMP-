@@ -19,6 +19,8 @@ for _ in $(seq 1 20); do
 done
 err="$(pm2 logs bootcamp --err --lines 20 --nostream 2>/dev/null | grep -iE 'supabase|Error' | tail -3)"
 echo "  ${line:-no start-up line yet}"
+PORT="$(grep -E '^PORT=' .env | cut -d= -f2 | tr -d ' ')"; PORT="${PORT:-5000}"
+echo "  health: $(curl -s --max-time 5 "http://127.0.0.1:$PORT/api/health" | sed 's/"timestamp":"[^"]*",\{0,1\}//')"
 [ -n "$err" ] && echo "$err" | sed 's/^/  /'
 if echo "$line" | grep -q "Database: Supabase"; then
   echo "==> OK: the live site uses Supabase."

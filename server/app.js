@@ -16,7 +16,9 @@ import practiceRoutes from './routes/practiceRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import { learnerGuard } from './middleware/learnerAuth.js';
 import { adminGate } from './middleware/auth.js';
-import { getDb } from './db.js';
+import { getDb, dbReady, storageMode } from './db.js';
+import { razorpayConfigured } from './lib/razorpay.js';
+import { mailMode } from './lib/mailer.js';
 import { certImagePath } from './routes/certificateRoutes.js';
 
 const app = express();
@@ -43,8 +45,23 @@ app.use((req, res, next) => {
 });
 
 // Health check endpoint
+// Health check endpoint. Also says which database, email and payment setup is active (no secrets),
+// so one URL shows whether the live site is configured correctly.
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', service: 'Arshith Bootcamp Secure Backend API', timestamp: new Date().toISOString() });
+  res.status(dbReady() ? 200 : 503).json({
+    status: dbReady() ? 'ok' : 'starting',
+    service: 'Arshith Bootcamp Secure Backend API',
+    database: dbReady() ? storageMode() : 'connecting',
+    email: mailMode(),
+    payments: razorpayConfigured() ? 'on' : 'off',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Until the database has loaded, answer API calls with a clear message instead of failing.
+app.use('/api', (req, res, next) => {
+  if (dbReady()) return next();
+  res.status(503).json({ success: false, code: 'STARTING', message: 'The site is starting up. Please try again in a minute.' });
 });
 
 // Public address used in certificate QR codes and emails (see server/lib/publicUrl.js).
