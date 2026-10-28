@@ -17,15 +17,22 @@ setv() {
 echo "Razorpay Dashboard > Account & Settings > API Keys. Copy the Key ID and the Key Secret."
 read -rp  "Key ID (starts with rzp_live_ or rzp_test_), then Enter: " ID
 read -rsp "Key Secret (nothing shows while pasting), then Enter: " SECRET; echo
-ID="$(printf '%s' "$ID" | tr -d '[:space:]')"
-SECRET="$(printf '%s' "$SECRET" | tr -d '[:space:]')"
+# Some web terminals add invisible "bracketed paste" codes (ESC[200~ ... ESC[201~) around pasted
+# text; Razorpay keys only contain letters, digits and _, so keep just those.
+clean() { printf '%s' "$1" | sed -e 's/\[20[01]~//g' -e 's/\[20[01]~//g' | tr -cd 'A-Za-z0-9_'; }
+ID="$(clean "$ID")"
+SECRET="$(clean "$SECRET")"
+echo "   received Key ID: $ID"
+echo "   received Key Secret: ${#SECRET} characters (a Razorpay secret has 24)"
 case "$ID" in rzp_live_*|rzp_test_*) ;; *) echo "!! The Key ID must start with rzp_live_ or rzp_test_. Nothing changed."; exit 1 ;; esac
 [ -n "$SECRET" ] || { echo "!! The Key Secret is empty. Nothing changed."; exit 1; }
 
 echo "==> Checking the keys with Razorpay"
 code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 -u "$ID:$SECRET" 'https://api.razorpay.com/v1/orders?count=1')"
 if [ "$code" != "200" ]; then
-  echo "!! Razorpay did not accept these keys (answer $code). Copy both again - the secret must match this Key ID. Nothing changed."
+  echo "!! Razorpay did not accept these keys (answer $code). Nothing changed."
+  echo "   - If the secret length above is not 24, the paste went wrong: run this script again and paste with right-click."
+  echo "   - If it is 24, the secret belongs to another key: in Razorpay click Regenerate Key and use the new ID and secret together."
   exit 1
 fi
 echo "   keys accepted"
