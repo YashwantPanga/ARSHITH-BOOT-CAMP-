@@ -468,7 +468,7 @@ function Paragraphs({ text, className = '' }) {
 }
 
 function CodeView({ code }) {
-  return <pre className="mt-3 p-4 rounded-xl bg-[#0C2D26] text-[#E8F1EC] text-[13px] leading-6 overflow-x-auto thin-scroll font-mono">{code}</pre>;
+  return <pre className="mt-3 p-3 sm:p-4 max-w-full rounded-xl bg-[#0C2D26] text-[#E8F1EC] text-[12px] sm:text-[13px] leading-[1.65] sm:leading-6 overflow-x-auto thin-scroll font-mono">{code}</pre>;
 }
 
 /** Last result set of a sql.js run as rows of plain values. */
@@ -622,7 +622,7 @@ function Workspace({ set, item, progress, plans, mark, signedIn, navigate, toast
               <button key={id} onClick={() => setTab(id)} className={`px-4 py-3 text-[14px] font-semibold border-b-2 -mb-px transition ${tab === id ? 'border-forest text-forest' : 'border-transparent text-charcoal/55 hover:text-charcoal'}`}>{label}</button>
             ))}
           </div>
-          <div className="p-5 sm:p-6 overflow-y-auto thin-scroll">
+          <div className="p-4 sm:p-6 overflow-y-auto thin-scroll">
             {tab === 'problem' ? (
               <>
                 <h1 className="font-display text-[24px] font-bold text-evergreen leading-tight">{item.n}. {item.title}</h1>
@@ -633,13 +633,13 @@ function Workspace({ set, item, progress, plans, mark, signedIn, navigate, toast
                 {isJs && item.tests.slice(0, 2).map((tc, i) => (
                   <div key={i} className="mt-5">
                     <p className="text-[13.5px] font-semibold text-evergreen">Example {i + 1}</p>
-                    <pre className="mt-1.5 p-3.5 rounded-xl bg-cream border border-brand-900/[.08] text-[13px] leading-6 overflow-x-auto thin-scroll font-mono text-charcoal">{`${tc.code}\n// returns ${jsRepr(tc.expected)}`}</pre>
+                    <pre className="mt-1.5 p-3 sm:p-3.5 max-w-full rounded-xl bg-cream border border-brand-900/[.08] text-[12px] sm:text-[13px] leading-[1.65] sm:leading-6 overflow-x-auto thin-scroll font-mono text-charcoal">{`${tc.code}\n// returns ${jsRepr(tc.expected)}`}</pre>
                   </div>
                 ))}
                 {set.kind === 'python' && item.tests.slice(0, 2).map(([args, exp], i) => (
                   <div key={i} className="mt-5">
                     <p className="text-[13.5px] font-semibold text-evergreen">Example {i + 1}</p>
-                    <pre className="mt-1.5 p-3.5 rounded-xl bg-cream border border-brand-900/[.08] text-[13px] leading-6 overflow-x-auto thin-scroll font-mono text-charcoal">{`Input:  ${item.fn}(${args.map(pyRepr).join(', ')})\nOutput: ${pyRepr(exp)}`}</pre>
+                    <pre className="mt-1.5 p-3 sm:p-3.5 max-w-full rounded-xl bg-cream border border-brand-900/[.08] text-[12px] sm:text-[13px] leading-[1.65] sm:leading-6 overflow-x-auto thin-scroll font-mono text-charcoal">{`Input:  ${item.fn}(${args.map(pyRepr).join(', ')})\nOutput: ${pyRepr(exp)}`}</pre>
                   </div>
                 ))}
                 {!isSql && <p className="mt-4 text-[13px] text-charcoal/60">Submit also runs {item.tests.length - 2} hidden test{item.tests.length - 2 === 1 ? '' : 's'}.{item.compare ? ' Any order of the answer is accepted.' : ''}</p>}
@@ -741,7 +741,7 @@ function OutputPanel({ out, item, isSql, isJs, signedIn, navigate, set }) {
                 <div key={i} className={`rounded-lg border p-3 text-[12.5px] font-mono ${r.ok ? 'border-mint-200 bg-mint-50/50' : 'border-rose-200 bg-rose-50/60'}`}>
                   <p className={`font-sans font-semibold text-[13px] ${r.ok ? 'text-mint-500' : 'text-rose-600'}`}>{r.ok ? '✓' : '✗'} {hidden ? `Hidden test ${i - 1}` : `Example ${i + 1}`}</p>
                   {isJs
-                    ? <pre className="mt-1 text-charcoal/75 whitespace-pre-wrap">{item.tests[i].code}</pre>
+                    ? <pre className="mt-1 text-charcoal/75 whitespace-pre-wrap break-words">{item.tests[i].code}</pre>
                     : <p className="mt-1 text-charcoal/75 break-all">Input: {item.fn}({args.map(pyRepr).join(', ')})</p>}
                   <p className="text-charcoal/75 break-all">Expected: {show(exp)}</p>
                   {!r.ok && <p className="text-rose-700 break-all">{r.error ? r.error : `Got: ${show(r.got)}`}</p>}

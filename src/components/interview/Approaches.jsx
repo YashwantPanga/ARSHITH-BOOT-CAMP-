@@ -11,7 +11,7 @@ const KIND = {
 const kindOf = (a) => (a.recommended ? 'recommended' : a.brute ? 'brute' : 'alt');
 
 function Code({ code }) {
-  return <pre className="mt-3 p-4 rounded-xl bg-[#0C2D26] text-[#E8F1EC] text-[13px] leading-6 overflow-x-auto thin-scroll font-mono">{code}</pre>;
+  return <pre className="mt-3 p-3 sm:p-4 max-w-full rounded-xl bg-[#0C2D26] text-[#E8F1EC] text-[12px] sm:text-[13px] leading-[1.65] sm:leading-6 overflow-x-auto thin-scroll font-mono">{code}</pre>;
 }
 
 /**
@@ -50,7 +50,7 @@ export default function Approaches({ item, onCopy }) {
         </div>
       )}
 
-      <div key={active} className="mt-4 rounded-2xl border border-brand-900/10 bg-white p-4 sm:p-5 animate-fade-up">
+      <div key={active} className="mt-4 rounded-2xl border border-brand-900/10 bg-white p-3 sm:p-5 animate-fade-up">
         <div className="flex flex-wrap items-center gap-2">
           {list.length > 1 && <span className="font-display text-[15px] font-bold text-evergreen">Approach {active + 1}:</span>}
           <span className="font-display text-[15px] font-bold text-evergreen">{a.title}</span>

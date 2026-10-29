@@ -32,14 +32,14 @@ export default function CodeBlock({ code, label, language, courseId, compact = f
       ? 'border-mint-300/50 shadow-[0_20px_44px_-26px_rgba(30,140,100,.55)]'
       : 'border-black/25 shadow-[0_22px_48px_-26px_rgba(12,45,38,.7)]';
   const glow = tone === 'bad' ? 'via-rose-300/60' : tone === 'good' ? 'via-mint-300/70' : 'via-brand-200/40';
-  const gutterW = String(lines.length).length > 2 ? 'w-12' : 'w-10';
+  const gutterW = String(lines.length).length > 2 ? 'w-10 sm:w-12' : 'w-8 sm:w-10';
 
   return (
-    <div className={`code-card group relative rounded-2xl overflow-hidden bg-evergreen border ${frame}`}>
+    <div className={`code-card group relative max-w-full min-w-0 rounded-xl sm:rounded-2xl overflow-hidden bg-evergreen border ${frame}`}>
       {/* top light edge */}
       <span className={`pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent ${glow} to-transparent`} aria-hidden="true" />
-      <div className="flex items-center gap-3 px-3.5 h-10 bg-gradient-to-b from-white/[0.06] to-black/10 border-b border-white/[0.06]">
-        <span className="flex gap-1.5 shrink-0" aria-hidden="true">
+      <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-3.5 h-10 bg-gradient-to-b from-white/[0.06] to-black/10 border-b border-white/[0.06]">
+        <span className="hidden sm:flex gap-1.5 shrink-0" aria-hidden="true">
           <i className="w-2.5 h-2.5 rounded-full bg-[#5F8574]" /><i className="w-2.5 h-2.5 rounded-full bg-[#90B1A2]" /><i className="w-2.5 h-2.5 rounded-full bg-[#BCD1C6]" />
         </span>
         {title ? (
@@ -63,12 +63,12 @@ export default function CodeBlock({ code, label, language, courseId, compact = f
         </span>
       </div>
       <div className={`overflow-x-auto thin-scroll ${compact ? 'max-h-72' : 'max-h-[560px]'} overflow-y-auto`}>
-        <pre className="py-3.5 text-[13px] leading-[1.75] text-[#E9F1EC] font-mono" style={{ tabSize: 4 }}>
+        <pre className="py-3 sm:py-3.5 text-[12px] sm:text-[13px] leading-[1.7] sm:leading-[1.75] text-[#E9F1EC] font-mono" style={{ tabSize: 4 }}>
           <code className="table min-w-full">
             {lines.map((toks, i) => (
               <span key={i} className="table-row hover:bg-white/[0.04] transition-colors">
-                <span className={`table-cell select-none text-right pr-3 pl-3 ${gutterW} text-[12px] text-brand-400/60 border-r border-white/[0.06]`}>{i + 1}</span>
-                <span className="table-cell pl-4 pr-5 whitespace-pre">
+                <span className={`table-cell select-none text-right pr-2 pl-2 sm:pr-3 sm:pl-3 ${gutterW} text-[11px] sm:text-[12px] text-brand-400/60 border-r border-white/[0.06]`}>{i + 1}</span>
+                <span className="table-cell pl-3 sm:pl-4 pr-4 sm:pr-5 whitespace-pre">
                   {toks.length ? toks.map((t, k) => (t.t ? <span key={k} className={`tok-${t.t}`}>{t.v}</span> : <React.Fragment key={k}>{t.v}</React.Fragment>)) : ' '}
                 </span>
               </span>

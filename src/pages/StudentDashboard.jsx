@@ -9,6 +9,7 @@ import StreakCard from '../components/StreakCard';
 export default function StudentDashboard({ studentUser, courses, coursesLoaded, enrolledCourseId, onOpenCourse, onContinue, onViewCertificate, onExploreCourses, onUnlock, onRefresh, onHome, onProfileSaved, initialTab = 'learning', enrollState, enrolledIds = [] }) {
   useEffect(() => { onRefresh?.(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
   const [tab, setTab] = useState(initialTab === 'profile' ? 'profile' : 'learning');
+  const [allModules, setAllModules] = useState(false);   // phones show the first five modules until expanded
 
   // several courses can be open; the chips above the course card switch between them
   const myIds = enrolledIds.length ? enrolledIds : (enrolledCourseId ? [enrolledCourseId] : []);
@@ -113,13 +114,19 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
             )}
             <div className="grid grid-cols-1 lg:grid-cols-3 lg:grid-rows-[auto_1fr] gap-6">
                 <div className="edu-card overflow-hidden grid grid-cols-1 sm:grid-cols-5 order-1 lg:order-none lg:col-span-2 lg:col-start-1 lg:row-start-1">
-                  <div className="sm:col-span-2 bg-forest flex items-center">
+                  <div className="hidden sm:flex sm:col-span-2 bg-forest items-center">
                     <SafeImg src={courseArt(course)} alt="" className="w-full aspect-[16/10] object-cover object-[44%_50%]" />
                   </div>
-                  <div className="sm:col-span-3 p-6 flex flex-col">
-                    <span className="font-display self-start rounded-md bg-forest text-ivory text-[12.5px] font-medium px-2.5 py-1">{course.category}</span>
-                    <h2 className="mt-3 text-[22px] font-semibold text-evergreen leading-snug">{displayTitle(course.title)}</h2>
-                    <p className="text-[14px] text-charcoal/60 mt-1 line-clamp-2">{cleanText(course.shortDescription)}</p>
+                  <div className="sm:col-span-3 p-4 sm:p-6 flex flex-col">
+                    {/* phones: a small picture next to the title instead of a full-width banner */}
+                    <div className="flex items-start gap-3">
+                      <span className="sm:hidden shrink-0 w-[96px] aspect-[16/10] rounded-lg overflow-hidden bg-forest"><SafeImg src={courseArt(course)} alt="" className="w-full h-full object-cover" /></span>
+                      <div className="min-w-0">
+                        <span className="font-display inline-block rounded-md bg-forest text-ivory text-[11.5px] sm:text-[12.5px] font-medium px-2 sm:px-2.5 py-0.5 sm:py-1">{course.category}</span>
+                        <h2 className="mt-1.5 sm:mt-3 text-[17px] sm:text-[22px] font-semibold text-evergreen leading-snug">{displayTitle(course.title)}</h2>
+                      </div>
+                    </div>
+                    <p className="hidden sm:block text-[14px] text-charcoal/60 mt-1 line-clamp-2">{cleanText(course.shortDescription)}</p>
                     <div className="mt-4">
                       <div className="flex justify-between text-xs mb-1.5"><span className="text-charcoal/60">{done}/{total} module quizzes completed</span><span className="font-semibold text-forest">{course.progress}%</span></div>
                       <ProgressBar value={course.progress} />
@@ -133,11 +140,11 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                   </div>
                 </div>
 
-                <div className="edu-card p-6 min-w-0 order-3 lg:order-none lg:col-span-2 lg:col-start-1 lg:row-start-2 self-start">
+                <div className="edu-card p-4 sm:p-6 min-w-0 order-3 lg:order-none lg:col-span-2 lg:col-start-1 lg:row-start-2 self-start">
                   <h3 className="font-display text-[19px] font-semibold text-evergreen flex items-center gap-2"><ListChecks className="w-5 h-5 text-sage" /> Module quizzes</h3>
                   <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {course.modules.map((m, i) => (
-                      <button key={m.id} onClick={() => onContinue(course.id, m.id)} className="flex items-center gap-3 p-3 rounded-xl border border-brand-900/10 hover:border-sage/50 hover:bg-cream text-left transition">
+                      <button key={m.id} onClick={() => onContinue(course.id, m.id)} className={`${i >= 5 && !allModules ? 'hidden sm:flex' : 'flex'} items-center gap-3 p-3 rounded-xl border border-brand-900/10 hover:border-sage/50 hover:bg-cream text-left transition`}>
                         <span className={`w-9 h-9 rounded-full font-display text-[13px] font-semibold flex items-center justify-center shrink-0 ${m.completed ? 'bg-forest text-ivory' : 'bg-brand-100 text-forest'}`}>{m.completed ? <CheckCircle2 className="w-4 h-4" /> : String(i + 1).padStart(2, '0')}</span>
                         <span className="flex-1 min-w-0">
                           <span className="block text-[14px] text-charcoal truncate">{cleanText(m.title)}</span>
@@ -146,11 +153,16 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                       </button>
                     ))}
                   </div>
+                  {course.modules.length > 5 && (
+                    <button onClick={() => setAllModules(v => !v)} className="sm:hidden mt-3 w-full h-10 rounded-xl border border-brand-900/10 text-[13.5px] font-semibold text-forest">
+                      {allModules ? 'Show fewer' : `Show all ${course.modules.length} modules`}
+                    </button>
+                  )}
                 </div>
 
               <div className="space-y-6 min-w-0 order-2 lg:order-none lg:col-start-3 lg:row-start-1 lg:row-span-2">
                 {canStartNext && (
-                  <div className="edu-card p-6 border-sage/40 bg-brand-50/60">
+                  <div className="edu-card p-4 sm:p-6 border-sage/40 bg-brand-50/60">
                     <h3 className="font-display text-[18px] font-semibold text-evergreen">{courseState === 'passed' ? 'Ready for your next course' : nextPrice ? 'This course is closed' : 'Better luck next time!'}</h3>
                     <p className="mt-1.5 text-sm text-charcoal/70">{courseState === 'passed'
                       ? (nextPrice ? `Well done! Unlock your next course for ₹${nextPrice}.` : 'Well done! Pick your next course - every course is free.')
@@ -160,13 +172,13 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                       : <button onClick={onExploreCourses} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage w-full mt-4 py-3">Choose a course <ArrowRight className="w-4 h-4" /></button>}
                   </div>
                 )}
-                <div className="edu-card p-6 text-center">
+                <div className="edu-card p-4 sm:p-6 text-center">
                   <ProgressRing value={course.progress} size={96} stroke={9} />
                   <p className="mt-3 font-display text-[17px] font-semibold text-evergreen">Course progress</p>
                   <p className="text-sm text-charcoal/60">{done} of {total} modules complete</p>
                 </div>
 
-                <div className="edu-card p-6">
+                <div className="edu-card p-4 sm:p-6">
                   <h3 className="font-display text-[18px] font-semibold text-evergreen flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-sage" /> Final assessment</h3>
                   {passedFinal ? (
                     <p className="mt-2 text-sm text-charcoal/70">Passed with <strong className="text-forest">{passedFinal.percentage}%</strong>.</p>
@@ -185,7 +197,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                 </div>
 
                 {history.length > 0 && (
-                  <div className="edu-card p-6">
+                  <div className="edu-card p-4 sm:p-6">
                     <h3 className="font-display text-[18px] font-semibold text-evergreen flex items-center gap-2"><BookOpen className="w-5 h-5 text-sage" /> Earlier courses</h3>
                     <ul className="mt-3 space-y-2.5">
                       {history.slice().reverse().map((h, i) => (
@@ -200,7 +212,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                   </div>
                 )}
 
-                <div className="edu-card p-6">
+                <div className="edu-card p-4 sm:p-6">
                   <h3 className="font-display text-[18px] font-semibold text-evergreen flex items-center gap-2"><Award className="w-5 h-5 text-sage" /> Certificate</h3>
                   {passedFinal ? (
                     <>
@@ -272,7 +284,7 @@ function ProfileSettings({ studentUser, onSaved }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* account card */}
-      <div className="edu-card p-6 h-fit">
+      <div className="edu-card p-4 sm:p-6 h-fit">
         <h3 className="font-display text-[18px] font-semibold text-evergreen flex items-center gap-2"><User className="w-5 h-5 text-sage" /> Account</h3>
         <dl className="mt-4 space-y-4 text-[14.5px]">
           <div>
@@ -292,7 +304,7 @@ function ProfileSettings({ studentUser, onSaved }) {
 
       <div className="lg:col-span-2 space-y-6">
         {/* profile details */}
-        <form onSubmit={save} className="edu-card p-6 space-y-4">
+        <form onSubmit={save} className="edu-card p-4 sm:p-6 space-y-4">
           <h3 className="font-display text-[18px] font-semibold text-evergreen flex items-center gap-2"><Hash className="w-5 h-5 text-sage" /> Profile details</h3>
           <label className="block">
             <span className="text-[14px] font-semibold text-charcoal">Full name</span>
@@ -314,7 +326,7 @@ function ProfileSettings({ studentUser, onSaved }) {
         </form>
 
         {/* password */}
-        <form onSubmit={changePassword} className="edu-card p-6 space-y-4">
+        <form onSubmit={changePassword} className="edu-card p-4 sm:p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-display text-[18px] font-semibold text-evergreen flex items-center gap-2"><KeyRound className="w-5 h-5 text-sage" /> Change password</h3>
             <button type="button" onClick={() => setShowPw(s => !s)} className="inline-flex items-center gap-1.5 text-[13px] text-charcoal/60 hover:text-forest">{showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}{showPw ? 'Hide' : 'Show'}</button>

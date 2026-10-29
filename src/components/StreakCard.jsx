@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CheckCircle2, Code2, Trophy, X } from 'lucide-react';
+import { CheckCircle2, ChevronDown, Code2, Trophy, X } from 'lucide-react';
 import { api } from '../services/api';
 import { readStudent, userIdOf } from '../utils/session';
 
@@ -70,6 +70,7 @@ function statusLine(s) {
 export default function StreakCard() {
   const [s, setS] = useState(null);
   const [party, setParty] = useState(false);
+  const [more, setMore] = useState(false);     // phones: calendar and badges are folded away
   const email = userIdOf(readStudent());
 
   useEffect(() => {
@@ -101,33 +102,39 @@ export default function StreakCard() {
 
   return (
     <>
-      <section className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-[#0C2D26] via-[#013A2B] to-[#1E3B22] text-ivory p-5 sm:p-7 shadow-[0_24px_50px_-28px_rgba(12,45,38,.9)]">
+      <section className="relative overflow-hidden rounded-[20px] sm:rounded-[24px] bg-gradient-to-br from-[#0C2D26] via-[#013A2B] to-[#1E3B22] text-ivory p-4 sm:p-7 shadow-[0_24px_50px_-28px_rgba(12,45,38,.9)]">
         <span className="absolute -left-10 -bottom-16 w-72 h-72 rounded-full bg-[#FF8A1F] opacity-[.14] blur-3xl" />
         <span className="absolute right-10 -top-20 w-64 h-64 rounded-full bg-[#7DB59A] opacity-10 blur-3xl" />
         {lit && Array.from({ length: 9 }).map((_, i) => (
           <span key={i} className="streak-ember" style={{ left: `${6 + i * 3.2}%`, animationDelay: `${i * 0.45}s`, animationDuration: `${3 + (i % 3)}s` }} />
         ))}
 
-        <div className="relative grid grid-cols-1 md:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr_auto] gap-6 md:gap-8 lg:gap-10 items-center">
+        <div className="relative grid grid-cols-1 md:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr_auto] gap-4 md:gap-8 lg:gap-10 items-center">
           {/* flame + number */}
-          <div className="flex items-center gap-4">
-            <Flame lit={lit} size={84} />
-            <div>
-              <p className="font-display text-[56px] sm:text-[64px] font-bold leading-none tabular-nums">{count}</p>
-              <p className="text-[13px] font-semibold uppercase tracking-[0.18em] text-[#FFD580]">day{s.current === 1 ? '' : 's'} streak</p>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <span className="shrink-0 w-[52px] sm:w-[84px]"><Flame lit={lit} size={84} className="w-full h-auto" /></span>
+            <div className="min-w-0">
+              <p className="font-display text-[40px] sm:text-[64px] font-bold leading-none tabular-nums">{count}</p>
+              <p className="text-[11.5px] sm:text-[13px] font-semibold uppercase tracking-[0.18em] text-[#FFD580]">day{s.current === 1 ? '' : 's'} streak</p>
+            </div>
+            {/* phones: the key numbers sit next to the streak instead of in three boxes */}
+            <div className="md:hidden ml-auto text-right text-[11.5px] leading-snug text-ivory/70">
+              <p className="flex items-center justify-end gap-1"><Trophy className="w-3.5 h-3.5 text-[#FFD580]" /> Best <b className="text-ivory">{s.best}</b></p>
+              <p className="flex items-center justify-end gap-1"><Code2 className="w-3.5 h-3.5 text-[#7DB59A]" /> <b className="text-ivory">{s.totalDays}</b> coding days</p>
+              {next && <p>Next badge <b className="text-ivory">{next}</b></p>}
             </div>
           </div>
 
           {/* week + status */}
           <div className="min-w-0">
-            <p className="font-display text-[19px] sm:text-[21px] font-semibold">Daily coding streak</p>
-            <p className="text-[14px] text-ivory/70 mt-0.5">{statusLine(s)}</p>
-            <div className="mt-4 flex gap-2 sm:gap-3">
+            <p className="hidden sm:block font-display text-[21px] font-semibold">Daily coding streak</p>
+            <p className="text-[13px] sm:text-[14px] text-ivory/70 sm:mt-0.5">{statusLine(s)}</p>
+            <div className="mt-3 sm:mt-4 flex justify-between sm:justify-start gap-1 sm:gap-3">
               {week.map((d, i) => {
                 const isToday = d.date === s.today;
                 return (
                   <div key={d.date} className="flex flex-col items-center gap-1.5">
-                    <span className={`relative w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-[13px] font-semibold transition
+                    <span className={`relative w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-[13px] font-semibold transition
                       ${d.active ? 'bg-gradient-to-br from-[#FFC24B] to-[#E8641C] text-[#3D1A05] shadow-[0_6px_16px_-6px_rgba(255,138,31,.9)]' : 'bg-white/[.08] border border-white/15 text-ivory/45'}
                       ${isToday && !d.active ? 'streak-today-ring' : ''}`}
                       style={d.active ? { animation: `streakPop .45s ${i * 0.07}s backwards` } : undefined}>
@@ -141,7 +148,7 @@ export default function StreakCard() {
           </div>
 
           {/* stats */}
-          <div className="grid grid-cols-3 lg:grid-cols-1 gap-2.5 sm:gap-3 md:col-span-2 lg:col-span-1 lg:w-48">
+          <div className="hidden md:grid grid-cols-3 lg:grid-cols-1 gap-3 md:col-span-2 lg:col-span-1 lg:w-48">
             <div className="rounded-xl bg-white/[.08] border border-white/10 px-3.5 py-2.5">
               <p className="text-[11.5px] text-ivory/60 flex items-center gap-1.5"><Trophy className="w-3.5 h-3.5 text-[#FFD580]" /> Best streak</p>
               <p className="font-display text-[20px] font-bold">{s.best} <span className="text-[12px] font-normal text-ivory/60">days</span></p>
@@ -158,7 +165,10 @@ export default function StreakCard() {
         </div>
 
         {/* last 5 weeks + badges */}
-        <div className="relative mt-6 pt-5 border-t border-white/10 flex flex-col md:flex-row gap-5 md:items-center md:justify-between">
+        <button onClick={() => setMore(m => !m)} className="md:hidden relative mt-3 w-full flex items-center justify-center gap-1 text-[12.5px] font-semibold text-[#FFD580]">
+          {more ? 'Hide calendar & badges' : 'Show calendar & badges'} <ChevronDown className={`w-4 h-4 transition-transform ${more ? 'rotate-180' : ''}`} />
+        </button>
+        <div className={`${more ? 'flex' : 'hidden'} md:flex relative mt-4 md:mt-6 pt-4 md:pt-5 border-t border-white/10 flex-col md:flex-row gap-5 md:items-center md:justify-between`}>
           <div>
             <p className="text-[11.5px] uppercase tracking-[0.16em] text-ivory/50 mb-2">Last 5 weeks</p>
             <div className="grid grid-flow-col grid-rows-7 gap-1 w-max">
