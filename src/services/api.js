@@ -94,9 +94,12 @@ export const api = {
   uploadCertificateImage: (id, image) => request(`/certificates/${encodeURIComponent(id)}/image`, { method: 'POST', body: JSON.stringify({ image }) }),
   issueCertificate: (data) => request('/certificates/issue', { method: 'POST', body: JSON.stringify(data) }),
 
+  // Daily coding streak
+  recordActivity: (kind = 'code') => request('/activity', { method: 'POST', body: JSON.stringify({ kind }) }),
+  getStreak: () => request('/activity/streak'),
+
   // Interview Prep (practice credit only)
   getInterviewProgress: () => request('/interview/progress'),
-  getInterviewLeaders: (setId) => request(`/interview/leaderboard/${encodeURIComponent(setId)}`),
   markInterview: (setId, itemId, solved = true) => request('/interview/solved', { method: 'POST', body: JSON.stringify({ setId, itemId, solved }) }),
 
   // Learner accounts

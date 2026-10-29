@@ -34,6 +34,7 @@ import { VerifyEmailPage, ForgotPasswordPage, ResetPasswordPage, rememberDevMail
 import { api, getAdminToken, setAdminToken } from './services/api';
 import { parseLocation, paths, examGuard } from './router';
 import { readStudent, writeStudent, userIdOf, enrolledCourseOf } from './utils/session';
+import { StreakToast } from './components/StreakCard';
 
 export default function App() {
   return (
@@ -618,6 +619,7 @@ function AppShell() {
       </main>
 
       {!isChromeless && <Footer navigate={navigate} />}
+      {studentUser && <StreakToast />}
       {!isChromeless && (
         <MobileBottomNav route={displayRoute} navigate={navigate} studentUser={studentUser} />
       )}

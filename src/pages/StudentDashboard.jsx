@@ -4,6 +4,7 @@ import { ProgressRing, ProgressBar, SafeImg, BrandLoader } from '../components/u
 import { courseArt } from '../components/CourseCard';
 import { cleanText, displayTitle } from '../utils/textUtils';
 import { api } from '../services/api';
+import StreakCard from '../components/StreakCard';
 
 export default function StudentDashboard({ studentUser, courses, coursesLoaded, enrolledCourseId, onOpenCourse, onContinue, onViewCertificate, onExploreCourses, onUnlock, onRefresh, onHome, onProfileSaved, initialTab = 'learning', enrollState, enrolledIds = [] }) {
   useEffect(() => { onRefresh?.(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
@@ -70,7 +71,10 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <StreakCard />
+
         {/* tabs */}
+        <div className="h-8" />
         <div className="flex gap-2 border-b border-brand-900/10" role="tablist">
           {[
             { id: 'learning', label: 'My learning', icon: LayoutDashboard },
@@ -92,7 +96,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
             <div className="edu-card p-8 sm:p-12 text-center max-w-2xl mx-auto">
               <span className="mx-auto w-14 h-14 rounded-full bg-brand-100 text-forest flex items-center justify-center"><BookOpen className="w-7 h-7" /></span>
               <h2 className="mt-4 text-2xl font-semibold text-evergreen">You haven't enrolled in a course yet</h2>
-              <p className="mt-2 text-charcoal/65">Each account can enroll in <strong>one</strong> course. Choose carefully — it stays with this login through to your certificate.</p>
+              <p className="mt-2 text-charcoal/65">Every course is <strong>free</strong>. Pick one, finish the modules, pass the final assessment and earn your certificate.</p>
               <button onClick={onExploreCourses} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage mt-6 px-6 py-3">Browse courses <ArrowRight className="w-4 h-4" /></button>
             </div>
           ) : (

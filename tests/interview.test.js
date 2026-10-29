@@ -84,8 +84,6 @@ describe('interview progress API', () => {
     const p = (await request(app).get('/api/interview/progress').set('X-Learner-Token', tok)).body.progress;
     expect(Object.keys(p['sql-50'])).toEqual(['sql-01']);
     expect(Object.keys(p['dsa-75'])).toEqual(['dsa-10']);
-    const leaders = (await request(app).get('/api/interview/leaderboard/dsa-75')).body.leaders;
-    expect(leaders).toEqual([{ name: 'Prep L.', solved: 1 }]);
     const cleared = (await mark({ setId: 'sql-50', itemId: 'sql-01', solved: false })).body.progress;
     expect(cleared['sql-50']).toEqual({});
   });

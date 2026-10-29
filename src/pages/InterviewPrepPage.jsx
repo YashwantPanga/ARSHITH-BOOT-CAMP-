@@ -10,6 +10,7 @@ import { TICK_MARK, buildJsCheck, jsRepr, jsStarter } from '../../shared/intervi
 import CodeEditor from '../components/CodeEditor';
 import { Inline } from '../components/lesson/Markdown';
 import { runJavaScript, runPython, runSqlFresh } from '../utils/runners';
+import { noteCoding } from '../utils/activity';
 import { api } from '../services/api';
 import { paths } from '../router';
 
@@ -214,7 +215,7 @@ function PrepHome({ progress, signedIn, navigate }) {
                   <span className="relative block font-display text-[21px] font-bold leading-tight">{s.title}</span>
                   <span className="relative block mt-1.5 text-[14px] text-ivory/75">{s.tagline}</span>
                   <span className="relative mt-4 flex flex-wrap gap-1.5 text-[11.5px] font-semibold">
-                    {['Easy', 'Medium', 'Hard'].filter(d => diff[d]).map(d => <span key={d} className="px-2 py-0.5 rounded-full bg-white/12 border border-white/15">{diff[d]} {d}</span>)}
+                    {['Easy', 'Medium', 'Hard'].filter(d => diff[d]).map(d => <span key={d} className="px-2 py-0.5 rounded-full bg-white/[.12] border border-white/15">{diff[d]} {d}</span>)}
                   </span>
                   <SetIcon icon={s.icon} glow={theme.glow} className="absolute right-4 bottom-4 w-24 h-24 group-hover:scale-105 group-hover:-rotate-3 transition duration-300" />
                   <span className="absolute left-6 bottom-6 right-28">
@@ -347,14 +348,14 @@ function SetPage({ set, progress, signedIn, navigate }) {
               {list.length === 0 && <p className="edu-card p-8 text-center text-charcoal/55">No {noun} match these filters.</p>}
               {[...new Set(list.map(i => i.topic))].map(tp => (
                 <div key={tp} className="edu-card overflow-hidden">
-                  <div className="px-5 py-2.5 bg-cream border-b border-brand-900/8 flex items-center justify-between">
+                  <div className="px-5 py-2.5 bg-cream border-b border-brand-900/[.08] flex items-center justify-between">
                     <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-sage">{tp}</span>
                     <span className="text-[12px] text-charcoal/45">{list.filter(i => i.topic === tp && solvedMap[i.id]).length} / {list.filter(i => i.topic === tp).length}</span>
                   </div>
                   {list.filter(i => i.topic === tp).map(i => {
                     const isDone = !!solvedMap[i.id];
                     return (
-                      <div key={i.id} className="flex items-center gap-3 px-5 py-3 border-b border-brand-900/8 last:border-b-0 hover:bg-brand-50/50 transition">
+                      <div key={i.id} className="flex items-center gap-3 px-5 py-3 border-b border-brand-900/[.08] last:border-b-0 hover:bg-brand-50/50 transition">
                         {isDone ? <CheckCircle2 className="w-5 h-5 text-mint-400 shrink-0" /> : <Circle className="w-5 h-5 text-charcoal/20 shrink-0" />}
                         <button onClick={() => navigate(paths.interview(set.id, i.id))} className="flex-1 min-w-0 text-left">
                           <span className="block text-[15px] text-charcoal truncate hover:text-forest">{i.n}. {i.title}</span>
@@ -379,16 +380,10 @@ function SetPage({ set, progress, signedIn, navigate }) {
   );
 }
 
-/** Right column of a plan: summary, completion award, related plans and this week's top learners. */
+/** Right column of a plan: summary, completion award and related plans. */
 function PlanSidebar({ set, solved, navigate, progress }) {
   const theme = THEMES[set.theme];
   const earned = solved >= set.items.length;
-  const [leaders, setLeaders] = useState(null);
-  useEffect(() => {
-    let live = true;
-    api.getInterviewLeaders(set.id).then(r => live && setLeaders(r.leaders || [])).catch(() => live && setLeaders([]));
-    return () => { live = false; };
-  }, [set.id, solved]);
   return (
     <aside className="space-y-5 lg:sticky lg:top-24">
       <div className="edu-card p-5">
@@ -432,20 +427,6 @@ function PlanSidebar({ set, solved, navigate, progress }) {
         </div>
       </div>
 
-      <div className="edu-card p-5">
-        <h3 className="font-display text-[18px] font-semibold text-evergreen flex items-center gap-2"><Flame className="w-5 h-5 text-[#C47A1E]" /> Top learners this week</h3>
-        {leaders === null && <p className="mt-3 text-[13px] text-charcoal/50">Loading…</p>}
-        {leaders?.length === 0 && <p className="mt-3 text-[13px] text-charcoal/55">No one has solved a problem here this week. Be the first!</p>}
-        <ol className="mt-3 space-y-2.5">
-          {(leaders || []).map((l, i) => (
-            <li key={i} className="flex items-center gap-3">
-              <span className={`w-6 text-center font-display font-bold ${i === 0 ? 'text-[#C47A1E]' : 'text-charcoal/40'}`}>{i + 1}</span>
-              <span className="w-8 h-8 rounded-full bg-brand-100 text-forest text-[12px] font-semibold flex items-center justify-center">{l.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</span>
-              <span className="flex-1 min-w-0"><span className="block text-[14px] text-charcoal truncate">{l.name}</span><span className="block text-[12px] text-charcoal/50">Solved {l.solved} {l.solved === 1 ? 'problem' : 'problems'}</span></span>
-            </li>
-          ))}
-        </ol>
-      </div>
     </aside>
   );
 }
@@ -619,7 +600,13 @@ function Workspace({ set, item, progress, mark, signedIn, navigate, toast, start
     if (submit && all) accept();
   };
 
-  const run = (submit) => (busy ? null : isSql ? runSql(submit) : isJs ? runJs(submit) : runPy(submit));
+  const run = (submit) => {
+    if (busy) return;
+    noteCoding('interview');
+    if (isSql) runSql(submit);
+    else if (isJs) runJs(submit);
+    else runPy(submit);
+  };
 
   return (
     <div className="bg-ivory min-h-screen">
@@ -643,13 +630,13 @@ function Workspace({ set, item, progress, mark, signedIn, navigate, toast, start
                 {isJs && item.tests.slice(0, 2).map((tc, i) => (
                   <div key={i} className="mt-5">
                     <p className="text-[13.5px] font-semibold text-evergreen">Example {i + 1}</p>
-                    <pre className="mt-1.5 p-3.5 rounded-xl bg-cream border border-brand-900/8 text-[13px] leading-6 overflow-x-auto thin-scroll font-mono text-charcoal">{`${tc.code}\n// returns ${jsRepr(tc.expected)}`}</pre>
+                    <pre className="mt-1.5 p-3.5 rounded-xl bg-cream border border-brand-900/[.08] text-[13px] leading-6 overflow-x-auto thin-scroll font-mono text-charcoal">{`${tc.code}\n// returns ${jsRepr(tc.expected)}`}</pre>
                   </div>
                 ))}
                 {set.kind === 'python' && item.tests.slice(0, 2).map(([args, exp], i) => (
                   <div key={i} className="mt-5">
                     <p className="text-[13.5px] font-semibold text-evergreen">Example {i + 1}</p>
-                    <pre className="mt-1.5 p-3.5 rounded-xl bg-cream border border-brand-900/8 text-[13px] leading-6 overflow-x-auto thin-scroll font-mono text-charcoal">{`Input:  ${item.fn}(${args.map(pyRepr).join(', ')})\nOutput: ${pyRepr(exp)}`}</pre>
+                    <pre className="mt-1.5 p-3.5 rounded-xl bg-cream border border-brand-900/[.08] text-[13px] leading-6 overflow-x-auto thin-scroll font-mono text-charcoal">{`Input:  ${item.fn}(${args.map(pyRepr).join(', ')})\nOutput: ${pyRepr(exp)}`}</pre>
                   </div>
                 ))}
                 {!isSql && <p className="mt-4 text-[13px] text-charcoal/60">Submit also runs {item.tests.length - 2} hidden test{item.tests.length - 2 === 1 ? '' : 's'}.{item.compare ? ' Any order of the answer is accepted.' : ''}</p>}

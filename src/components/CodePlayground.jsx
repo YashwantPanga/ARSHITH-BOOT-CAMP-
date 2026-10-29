@@ -3,6 +3,7 @@ import { Play, Square, RotateCcw, X, Terminal, Copy, Check, Database, Keyboard, 
 import { LANG_LABEL } from '../utils/highlight';
 import CodeEditor from './CodeEditor';
 import { runPython, runSql, resetSqlDb, buildWebDoc, SAMPLE_SCHEMA } from '../utils/runners';
+import { noteCoding } from '../utils/activity';
 
 const Ctx = createContext(null);
 export const usePlayground = () => useContext(Ctx);
@@ -81,6 +82,7 @@ function PlaygroundModal({ initial, onClose }) {
   const run = async () => {
     if (running) return;
     setOut([]); setImages([]); setTables([]); setStatus('');
+    noteCoding('code');
     if (isWeb) {
       setDoc(buildWebDoc(code, lang) + `<!-- ${Date.now()} -->`);
       push('info', 'Preview updated.');

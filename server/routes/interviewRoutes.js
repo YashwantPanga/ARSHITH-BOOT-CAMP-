@@ -25,20 +25,4 @@ router.post('/interview/solved', (req, res) => {
   res.json({ success: true, progress: mine });
 });
 
-// Top learners of the last 7 days for one plan (public): first name and initial only.
-router.get('/interview/leaderboard/:setId', (req, res) => {
-  const db = getDb();
-  const since = new Date(Date.now() - 7 * 86400000).toISOString();
-  const rows = Object.entries(db.interviewProgress || {})
-    .map(([email, sets]) => ({ email, solved: Object.values(sets[req.params.setId] || {}).filter(d => d >= since).length }))
-    .filter(r => r.solved > 0)
-    .sort((a, b) => b.solved - a.solved)
-    .slice(0, 5)
-    .map(({ email, solved }) => {
-      const [first = 'Learner', last = ''] = String(db.learners?.[email]?.name || 'Learner').trim().split(/\s+/);
-      return { name: last ? `${first} ${last[0]}.` : first, solved };
-    });
-  res.json({ success: true, leaders: rows });
-});
-
 export default router;

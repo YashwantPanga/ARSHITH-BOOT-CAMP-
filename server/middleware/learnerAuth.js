@@ -50,7 +50,9 @@ const PROTECTED = [
   ['POST', /^\/projects\/submit$/],
   ['GET', /^\/projects\/mine$/],
   ['GET', /^\/interview\/progress$/],
-  ['POST', /^\/interview\/solved$/]
+  ['POST', /^\/interview\/solved$/],
+  ['POST', /^\/activity$/],
+  ['GET', /^\/activity\/streak$/]
 ];
 
 /** Mounted at /api. Lets admins through, otherwise requires a learner token matching userId. */

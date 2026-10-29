@@ -4,6 +4,7 @@ import { api } from '../../services/api';
 import CodeEditor from '../CodeEditor';
 import CodeBlock from '../CodeBlock';
 import { runPython, runSql, runJavaScript, resetSqlDb } from '../../utils/runners';
+import { noteCoding } from '../../utils/activity';
 
 const DIFF_TONE = {
   Beginner: 'bg-brand-50 text-brand-900 border-brand-200',
@@ -28,6 +29,7 @@ export function ExerciseCard({ ex, index, courseId, moduleId, completed, onCompl
   const runCode = async () => {
     if (run.status === 'running') return null;
     setRun({ status: 'running', output: '', rows: null, error: '' });
+    noteCoding('practice');
     let final = null;
     const set = (r) => { final = r; setRun(r); };
     try {
