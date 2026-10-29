@@ -143,14 +143,14 @@ export function QuestHero({ set, solvedMap, signedIn, playerName, next, onStart,
   const shown = topics.slice(0, 5);
 
   return (
-    <section className="relative overflow-hidden rounded-[26px] text-white shadow-[0_30px_60px_-30px_rgba(20,10,60,.8)]" style={{ background: q.bg }}>
+    <section className="relative overflow-hidden rounded-[22px] sm:rounded-[26px] text-white shadow-[0_30px_60px_-30px_rgba(20,10,60,.8)]" style={{ background: q.bg }}>
       <Sky q={q} />
-      <div className="relative grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,1fr)_230px_250px] items-center gap-4 lg:gap-2 p-5 sm:p-8 lg:pr-6">
+      <div className="relative grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,1fr)_230px_250px] items-center gap-4 lg:gap-2 p-4 sm:p-8 lg:pr-6">
         <div className="min-w-0 relative z-10">
-          <span className="inline-block px-3 py-1 rounded-md bg-[#FFD34D] text-[#2A1A05] text-[11px] font-extrabold tracking-[0.16em] shadow-[0_3px_0_#C99A1E]">QUEST · {q.track}</span>
-          <GoldTitle text={set.title} className="mt-3 font-display text-[30px] sm:text-[40px] lg:text-[46px] font-extrabold leading-[1.05] tracking-tight drop-shadow-[0_3px_0_rgba(0,0,0,.25)]" />
-          <p className="mt-3 text-[14.5px] sm:text-[15px] text-white/80 max-w-xl">{set.tagline}. {set.items.length} challenges, every one unlocked. Begin your quest.</p>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <span className="inline-block px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-md bg-[#FFD34D] text-[#2A1A05] text-[10px] sm:text-[11px] font-extrabold tracking-[0.16em] shadow-[0_3px_0_#C99A1E]">QUEST · {q.track}</span>
+          <GoldTitle text={set.title} className="mt-2 sm:mt-3 font-display text-[26px] sm:text-[40px] lg:text-[46px] font-extrabold leading-[1.05] tracking-tight drop-shadow-[0_3px_0_rgba(0,0,0,.25)]" />
+          <p className="mt-1.5 sm:mt-3 text-[13.5px] sm:text-[15px] text-white/80 max-w-xl">{set.tagline}<span className="hidden sm:inline">. {set.items.length} challenges, every one unlocked. Begin your quest.</span></p>
+          <div className="mt-4 hidden sm:flex flex-wrap gap-2">
             {shown.map((t, i) => (
               <span key={t} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/25 text-[12px] font-semibold backdrop-blur-sm">
                 <span className="w-2 h-2 rounded-full" style={{ background: DOTS[i % DOTS.length] }} />{t}
@@ -158,13 +158,13 @@ export function QuestHero({ set, solvedMap, signedIn, playerName, next, onStart,
             ))}
             {topics.length > shown.length && <span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/25 text-[12px] font-semibold">+{topics.length - shown.length}</span>}
           </div>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <button onClick={onStart} className="quest-btn inline-flex items-center gap-2 h-12 px-5 rounded-xl bg-gradient-to-b from-[#FFD95A] to-[#FFB52E] text-[#2A1A05] font-display font-bold text-[15.5px]">
-              <Play className="w-4 h-4 fill-current" /> {solved ? 'Continue Quest' : 'Start Quest'} #{next.n}
+          <div className={`mt-4 sm:mt-5 grid ${onPlan ? 'grid-cols-[1.3fr_1fr]' : 'grid-cols-1'} sm:flex sm:flex-wrap gap-2.5 sm:gap-3`}>
+            <button onClick={onStart} className="quest-btn inline-flex items-center justify-center gap-2 h-11 sm:h-12 px-3 sm:px-5 rounded-xl bg-gradient-to-b from-[#FFD95A] to-[#FFB52E] text-[#2A1A05] font-display font-bold text-[15.5px]">
+              <Play className="w-4 h-4 fill-current" /> {solved ? 'Continue' : 'Start'}<span className="hidden sm:inline"> Quest</span> #{next.n}
             </button>
             {onPlan && (
-              <button onClick={onPlan} className="inline-flex items-center gap-2 h-12 px-5 rounded-xl border-2 border-white/45 bg-white/5 text-white font-display font-semibold text-[15px] hover:bg-white/15 active:scale-[.98] transition">
-                <Flame className="w-4 h-4 text-[#FFC94D]" /> {hasPlan ? 'My daily plan' : 'Daily plan'}
+              <button onClick={onPlan} className="inline-flex items-center justify-center gap-2 h-11 sm:h-12 px-3 sm:px-5 rounded-xl border-2 border-white/45 bg-white/5 text-white font-display font-semibold text-[15px] hover:bg-white/15 active:scale-[.98] transition">
+                <Flame className="w-4 h-4 text-[#FFC94D]" /> {hasPlan ? 'My plan' : 'Daily plan'}
               </button>
             )}
           </div>
@@ -176,8 +176,27 @@ export function QuestHero({ set, solvedMap, signedIn, playerName, next, onStart,
           <Mascot q={q} className="w-full h-auto" />
         </div>
 
+        {/* phones: slim status strip */}
+        <div className="md:hidden relative z-10 rounded-2xl bg-[#140B33]/50 border border-white/20 backdrop-blur-md px-3 py-2.5">
+          <div className="flex items-center gap-3">
+            <p className="font-display font-extrabold shrink-0"><span className="text-[11px] text-white/70 mr-0.5">LV.</span><span className="text-[22px] leading-none">{level}</span></p>
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between text-[10px] font-bold tracking-wider text-white/60"><span>EXP</span><span>{solved}/{set.items.length}</span></div>
+              <div className="mt-1 h-1.5 rounded-full bg-white/15 overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-[#5EF0D2] via-[#9FA8FF] to-[#FF7EB6]" style={{ width: `${(solved / set.items.length) * 100}%` }} /></div>
+            </div>
+            <span className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-[#FFC94D]/20 border border-[#FFC94D]/40 text-[#FFD86B] text-[11.5px] font-bold"><Flame className="w-3.5 h-3.5" /> {streak}</span>
+          </div>
+          <div className="mt-2 grid grid-cols-3 gap-1.5">
+            {gems.map(g => (
+              <span key={g.d} className="flex items-center justify-center gap-1.5 rounded-lg bg-white/[.06] py-1 text-[11.5px] font-semibold">
+                <span className="w-2.5 h-2.5 rotate-45 rounded-[2px]" style={{ background: g.c }} />{g.done}/{g.total}
+              </span>
+            ))}
+          </div>
+        </div>
+
         {/* status panel */}
-        <div className="relative z-10 md:col-span-2 lg:col-span-1 rounded-2xl bg-[#140B33]/55 border border-white/20 backdrop-blur-md p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.15)]">
+        <div className="hidden md:block relative z-10 md:col-span-2 lg:col-span-1 rounded-2xl bg-[#140B33]/55 border border-white/20 backdrop-blur-md p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.15)]">
           <div className="flex items-center justify-between text-[11px] font-extrabold tracking-[0.18em]">
             <span>STATUS</span><span className="text-white/60 truncate max-w-[120px]">PLAYER: {signedIn ? (playerName || 'YOU').split(' ')[0].toUpperCase() : 'GUEST'}</span>
           </div>
@@ -212,25 +231,27 @@ export function QuestCard({ set, solved, signedIn, onOpen }) {
   const q = QUEST[set.id] || QUEST['programming-essentials'];
   const diff = ['Easy', 'Medium', 'Hard'].map(d => [d, set.items.filter(i => i.difficulty === d).length]).filter(([, n]) => n);
   return (
-    <button onClick={onOpen} className="quest-card group relative overflow-hidden rounded-[22px] text-left text-white shrink-0 snap-start w-[78%] sm:w-auto h-[214px] sm:h-[290px] p-4 sm:p-5 flex flex-col items-start shadow-[0_22px_44px_-26px_rgba(20,10,60,.9)]" style={{ background: q.bg }}>
+    <button onClick={onOpen} className="quest-card group relative overflow-hidden rounded-[20px] sm:rounded-[22px] text-left text-white shrink-0 snap-start w-[264px] sm:w-auto h-[196px] sm:h-[290px] p-4 sm:p-5 flex flex-col items-start shadow-[0_18px_36px_-24px_rgba(20,10,60,.9)]" style={{ background: q.bg }}>
       <Sky q={q} glyphs={false} />
-      <span className="relative inline-block px-2.5 py-0.5 rounded-md bg-[#FFD34D] text-[#2A1A05] text-[10px] font-extrabold tracking-[0.16em] shadow-[0_2px_0_#C99A1E]">QUEST · {q.track}</span>
-      <span className="relative mt-2 sm:mt-2.5 block font-display text-[19px] sm:text-[22px] font-extrabold leading-tight max-w-[78%] drop-shadow-[0_2px_0_rgba(0,0,0,.2)]">{set.title}</span>
-      <span className="relative mt-1 block text-[13px] text-white/75 max-w-[62%] leading-snug">{set.tagline}</span>
-      <span className="relative mt-2.5 sm:mt-3 hidden min-[380px]:flex sm:flex flex-wrap gap-1.5 max-w-[60%]">
+      <Mascot q={q} className="absolute -right-5 -bottom-7 w-[112px] sm:-right-6 sm:-bottom-10 sm:w-[190px] transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:scale-[1.03]" />
+      <span className="quest-bubble-sm absolute right-4 top-4 hidden sm:block px-2 py-1 rounded-lg bg-white text-[#1B1440] text-[11px] font-extrabold shadow-[0_3px_0_rgba(0,0,0,.2)]">{q.bubble}</span>
+
+      <span className="relative z-10 inline-block px-2 py-0.5 rounded-md bg-[#FFD34D] text-[#2A1A05] text-[9.5px] sm:text-[10px] font-extrabold tracking-[0.14em] shadow-[0_2px_0_#C99A1E]"><span className="hidden sm:inline">QUEST · </span>{q.track}</span>
+      <span className="relative z-10 mt-2 block font-display text-[18px] sm:text-[22px] font-extrabold leading-tight max-w-[70%] sm:max-w-[78%] line-clamp-2 drop-shadow-[0_2px_0_rgba(0,0,0,.2)]">{set.title}</span>
+      <span className="relative z-10 mt-1 block text-[12px] sm:text-[13px] text-white/75 max-w-[62%] leading-snug line-clamp-2">{set.tagline}</span>
+      <span className="relative z-10 mt-3 hidden sm:flex flex-wrap gap-1.5 max-w-[60%]">
         {diff.map(([d, n], i) => (
           <span key={d} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-[11px] font-semibold">
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: ['#3FD69B', '#FFC34D', '#FF6B8B'][i] }} />{n} {d}
           </span>
         ))}
       </span>
-      <Mascot q={q} className="absolute -right-6 -bottom-9 w-[135px] sm:w-[190px] transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:scale-[1.03]" />
-      <span className="quest-bubble-sm absolute right-4 top-4 px-2 py-1 rounded-lg bg-white text-[#1B1440] text-[11px] font-extrabold shadow-[0_3px_0_rgba(0,0,0,.2)]">{q.bubble}</span>
-      <span className="absolute left-4 bottom-4 sm:left-5 sm:bottom-5 right-[42%]">
+
+      <span className="relative z-10 mt-auto w-[58%] sm:w-[56%]">
         {signedIn && solved > 0 && (
           <span className="block mb-2 h-1.5 rounded-full bg-white/20 overflow-hidden"><span className="block h-full rounded-full bg-gradient-to-r from-[#FFD95A] to-[#FFB52E]" style={{ width: `${(solved / set.items.length) * 100}%` }} /></span>
         )}
-        <span className="quest-btn-sm inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-gradient-to-b from-[#FFD95A] to-[#FFB52E] text-[#2A1A05] font-display font-bold text-[13.5px] whitespace-nowrap">
+        <span className="quest-btn-sm inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-gradient-to-b from-[#FFD95A] to-[#FFB52E] text-[#2A1A05] font-display font-bold text-[13px] sm:text-[13.5px] whitespace-nowrap">
           <Play className="w-3.5 h-3.5 fill-current" /> {solved ? `Continue · ${solved}/${set.items.length}` : `Start · ${set.items.length}`}
         </span>
       </span>
