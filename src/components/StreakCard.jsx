@@ -108,7 +108,7 @@ export default function StreakCard() {
           <span key={i} className="streak-ember" style={{ left: `${6 + i * 3.2}%`, animationDelay: `${i * 0.45}s`, animationDuration: `${3 + (i % 3)}s` }} />
         ))}
 
-        <div className="relative grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-6 lg:gap-10 items-center">
+        <div className="relative grid grid-cols-1 md:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr_auto] gap-6 md:gap-8 lg:gap-10 items-center">
           {/* flame + number */}
           <div className="flex items-center gap-4">
             <Flame lit={lit} size={84} />
@@ -130,7 +130,7 @@ export default function StreakCard() {
                     <span className={`relative w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-[13px] font-semibold transition
                       ${d.active ? 'bg-gradient-to-br from-[#FFC24B] to-[#E8641C] text-[#3D1A05] shadow-[0_6px_16px_-6px_rgba(255,138,31,.9)]' : 'bg-white/[.08] border border-white/15 text-ivory/45'}
                       ${isToday && !d.active ? 'streak-today-ring' : ''}`}
-                      style={d.active ? { animation: `streakPop .45s ${i * 0.07}s both` } : undefined}>
+                      style={d.active ? { animation: `streakPop .45s ${i * 0.07}s backwards` } : undefined}>
                       {d.active ? <CheckCircle2 className="w-4 h-4" /> : ''}
                     </span>
                     <span className={`text-[11px] ${isToday ? 'text-[#FFD580] font-semibold' : 'text-ivory/50'}`}>{WEEKDAYS[(startPad + i) % 7]}</span>
@@ -141,7 +141,7 @@ export default function StreakCard() {
           </div>
 
           {/* stats */}
-          <div className="grid grid-cols-3 lg:grid-cols-1 gap-3 lg:w-48">
+          <div className="grid grid-cols-3 lg:grid-cols-1 gap-2.5 sm:gap-3 md:col-span-2 lg:col-span-1 lg:w-48">
             <div className="rounded-xl bg-white/[.08] border border-white/10 px-3.5 py-2.5">
               <p className="text-[11.5px] text-ivory/60 flex items-center gap-1.5"><Trophy className="w-3.5 h-3.5 text-[#FFD580]" /> Best streak</p>
               <p className="font-display text-[20px] font-bold">{s.best} <span className="text-[12px] font-normal text-ivory/60">days</span></p>
@@ -206,7 +206,7 @@ export function StreakCelebration({ streak, onClose }) {
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Streak celebration">
       <div className="absolute inset-0 bg-[#0C2D26]/80 backdrop-blur-sm animate-fade-in" onClick={onClose} />
-      <div className="relative w-full max-w-sm rounded-[28px] overflow-hidden bg-gradient-to-b from-[#123E30] to-[#0C2D26] text-ivory text-center px-6 pt-10 pb-7 shadow-2xl streak-pop-in">
+      <div className="relative w-full max-w-sm max-h-[92vh] overflow-y-auto rounded-[28px] bg-gradient-to-b from-[#123E30] to-[#0C2D26] text-ivory text-center px-6 pt-10 pb-7 shadow-2xl streak-pop-in">
         <button onClick={onClose} className="absolute right-4 top-4 text-ivory/60 hover:text-ivory" aria-label="Close"><X className="w-5 h-5" /></button>
         <div className="relative mx-auto w-44 h-44 flex items-center justify-center">
           <span className="absolute inset-0 streak-rays" />

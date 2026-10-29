@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { tokenLines } from '../utils/highlight';
 
 /**
@@ -9,12 +9,29 @@ import { tokenLines } from '../utils/highlight';
  */
 const PAD_Y = 12;   // px, top/bottom padding of both layers
 const PAD_X = 14;   // px, gap between the line numbers and the code
-const LINE = 13 * 1.7; // px, line height of the code (text-[13px] leading-[1.7])
+// Touch screens get 16px code: iPhones zoom into any text field smaller than that when it is tapped,
+// and the page then stays zoomed in.
+const TOUCH = '(pointer: coarse)';
+
+function useFontSize() {
+  const pick = () => (typeof window !== 'undefined' && window.matchMedia?.(TOUCH).matches ? 16 : 13);
+  const [size, setSize] = useState(pick);
+  useEffect(() => {
+    const mq = window.matchMedia?.(TOUCH);
+    if (!mq) return undefined;
+    const onChange = () => setSize(pick());
+    mq.addEventListener?.('change', onChange);
+    return () => mq.removeEventListener?.('change', onChange);
+  }, []);
+  return size;
+}
 
 export default function CodeEditor({ value, onChange, lang, onRun, minHeight = 220, label = 'Code editor', className = '' }) {
   const preRef = useRef(null);
   const gutterRef = useRef(null);
   const lines = useMemo(() => tokenLines(value, lang), [value, lang]);
+  const fontSize = useFontSize();
+  const LINE = fontSize * 1.7; // px, line height of the code
   const gutter = String(lines.length).length > 2 ? 48 : 40; // px
 
   const onKeyDown = (e) => {
@@ -35,7 +52,7 @@ export default function CodeEditor({ value, onChange, lang, onRun, minHeight = 2
 
   const layer = { padding: `${PAD_Y}px 24px ${PAD_Y}px ${PAD_X}px`, fontFamily: 'inherit', fontSize: 'inherit', lineHeight: 'inherit', tabSize: 4, letterSpacing: 0 };
   return (
-    <div className={`relative font-mono text-[13px] leading-[1.7] bg-evergreen ${className}`} style={{ minHeight }}>
+    <div className={`relative font-mono leading-[1.7] bg-evergreen ${className}`} style={{ minHeight, fontSize }}>
       <div ref={gutterRef} aria-hidden="true" className="absolute top-0 bottom-0 left-0 overflow-hidden select-none text-right text-brand-400/70 text-[12px]" style={{ width: gutter, paddingTop: PAD_Y }}>
         {lines.map((_, i) => <div key={i} className="pr-1" style={{ height: LINE, lineHeight: `${LINE}px` }}>{i + 1}</div>)}
       </div>

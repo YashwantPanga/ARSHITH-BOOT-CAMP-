@@ -8,7 +8,7 @@ import { paths } from '../router';
  * continues learning. Hidden on the course details page, which has its own enrol button.
  */
 export default function MobileBottomNav({ route, navigate, studentUser }) {
-  if (route.name === 'course-details') return null;
+  if (route.name === 'course-details' || (route.name === 'interview' && route.params.itemId)) return null;
   const signedIn = !!studentUser;
   return (
     <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-brand-900/10 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] shadow-[0_-10px_30px_-18px_rgba(1,58,43,.35)]">

@@ -210,14 +210,14 @@ function PrepHome({ progress, signedIn, navigate }) {
               const solved = Object.keys(progress[s.id] || {}).length;
               return (
                 <button key={s.id} onClick={() => navigate(paths.interview(s.id))}
-                  className={`group relative overflow-hidden rounded-[22px] bg-gradient-to-br ${theme.card} p-6 h-[300px] flex flex-col items-start justify-start text-left text-ivory shadow-[0_22px_40px_-24px_rgba(12,45,38,.9)] hover:-translate-y-1 transition duration-300`}>
+                  className={`group relative overflow-hidden rounded-[22px] bg-gradient-to-br ${theme.card} p-5 sm:p-6 h-[220px] sm:h-[300px] flex flex-col items-start justify-start text-left text-ivory shadow-[0_22px_40px_-24px_rgba(12,45,38,.9)] hover:-translate-y-1 transition duration-300`}>
                   <span className="absolute -right-10 -top-10 w-44 h-44 rounded-full opacity-20 blur-2xl" style={{ background: theme.glow }} />
                   <span className="relative block font-display text-[21px] font-bold leading-tight">{s.title}</span>
                   <span className="relative block mt-1.5 text-[14px] text-ivory/75">{s.tagline}</span>
                   <span className="relative mt-4 flex flex-wrap gap-1.5 text-[11.5px] font-semibold">
                     {['Easy', 'Medium', 'Hard'].filter(d => diff[d]).map(d => <span key={d} className="px-2 py-0.5 rounded-full bg-white/[.12] border border-white/15">{diff[d]} {d}</span>)}
                   </span>
-                  <SetIcon icon={s.icon} glow={theme.glow} className="absolute right-4 bottom-4 w-24 h-24 group-hover:scale-105 group-hover:-rotate-3 transition duration-300" />
+                  <SetIcon icon={s.icon} glow={theme.glow} className="absolute right-4 bottom-4 w-20 h-20 sm:w-24 sm:h-24 group-hover:scale-105 group-hover:-rotate-3 transition duration-300" />
                   <span className="absolute left-6 bottom-6 right-28">
                     {signedIn && solved > 0 && <span className="block mb-2"><ProgressBar value={solved} total={s.items.length} light /></span>}
                     <span className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold whitespace-nowrap">{solved ? `Continue · ${solved}/${s.items.length}` : `Start · ${s.items.length}`} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
@@ -298,17 +298,17 @@ function SetPage({ set, progress, signedIn, navigate }) {
 
         <div className={`mt-4 relative overflow-hidden rounded-[24px] bg-gradient-to-br ${theme.card} text-ivory p-6 sm:p-8`}>
           <span className="absolute -right-16 -bottom-16 w-72 h-72 rounded-full opacity-15 blur-3xl" style={{ background: theme.glow }} />
-          <div className="relative flex flex-col lg:flex-row gap-6 lg:items-center">
-            <SetIcon icon={set.icon} glow={theme.glow} className="w-24 h-24 sm:w-28 sm:h-28 shrink-0" />
+          <div className="relative flex flex-col md:flex-row gap-5 lg:gap-6 md:items-center">
+            <SetIcon icon={set.icon} glow={theme.glow} className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-ivory/70">{set.tagline}</p>
-              <h1 className="font-display text-[30px] sm:text-[38px] font-bold leading-tight mt-1">{set.title}</h1>
+              <h1 className="font-display text-[28px] sm:text-[32px] lg:text-[38px] font-bold leading-tight mt-1">{set.title}</h1>
               <p className="mt-2 text-[15px] text-ivory/80 max-w-2xl">{set.description}</p>
               <button onClick={() => navigate(paths.interview(set.id, next.id))} className="mt-5 inline-flex items-center gap-2 h-11 px-5 rounded-md bg-ivory text-forest font-display font-semibold text-[15px] hover:bg-white transition">
                 <Play className="w-4 h-4" /> {solved ? 'Continue' : 'Start'} with #{next.n}
               </button>
             </div>
-            <div className="lg:w-64 shrink-0 rounded-2xl bg-white/10 border border-white/15 p-4">
+            <div className="md:w-56 lg:w-64 shrink-0 rounded-2xl bg-white/10 border border-white/15 p-4">
               <div className="flex items-baseline justify-between"><span className="text-[13px] text-ivory/70">Progress</span><span className="font-display text-[22px] font-bold">{solved}<span className="text-ivory/60 text-[14px]"> / {set.items.length}</span></span></div>
               <div className="mt-2"><ProgressBar value={solved} total={set.items.length} light /></div>
               <div className="mt-3 space-y-1 text-[12.5px]">
@@ -322,9 +322,9 @@ function SetPage({ set, progress, signedIn, navigate }) {
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-7 items-start">
           <div className="min-w-0">
             <div className="flex flex-col gap-3">
-              <div className="flex gap-2 overflow-x-auto thin-scroll pb-1">
+              <div className="flex gap-2 overflow-x-auto overscroll-x-contain snap-x thin-scroll pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
                 {['All', ...topics].map(t => (
-                  <button key={t} onClick={() => setTopic(t)} className={`shrink-0 px-3.5 py-1.5 rounded-full text-[13px] font-medium border transition ${topic === t ? 'bg-forest text-ivory border-forest' : 'bg-white text-charcoal/75 border-brand-900/15 hover:border-sage'}`}>{t}</button>
+                  <button key={t} onClick={() => setTopic(t)} className={`shrink-0 snap-start px-3.5 py-1.5 rounded-full text-[13px] font-medium border transition ${topic === t ? 'bg-forest text-ivory border-forest' : 'bg-white text-charcoal/75 border-brand-900/15 hover:border-sage'}`}>{t}</button>
                 ))}
               </div>
               <div className="flex flex-wrap gap-2 items-center">
@@ -385,7 +385,7 @@ function PlanSidebar({ set, solved, navigate, progress }) {
   const theme = THEMES[set.theme];
   const earned = solved >= set.items.length;
   return (
-    <aside className="space-y-5 lg:sticky lg:top-24">
+    <aside className="grid gap-5 md:grid-cols-2 lg:grid-cols-1 lg:sticky lg:top-24">
       <div className="edu-card p-5">
         <h3 className="font-display text-[18px] font-semibold text-evergreen">Summary</h3>
         <ul className="mt-3 space-y-2">

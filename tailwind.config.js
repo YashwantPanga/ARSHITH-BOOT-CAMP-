@@ -3,6 +3,8 @@
 //          Soft Cream #F8F5EE · Sage #426557 · Charcoal Brown #302B25
 // The old token names (brand / peach / mint) are kept so every screen picks up the new palette.
 export default {
+  // Hover styles only on devices that can hover, so taps on phones never leave cards stuck "hovered".
+  future: { hoverOnlyWhenSupported: true },
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
