@@ -44,8 +44,8 @@ export default function PopularCourses({ courses, enrolledCourseId, offer, onSel
           </div>
         ) : (
           <>
-          {/* phones: compact list rows (reference style), then a full-width "show all" button */}
-          <div className="mt-5 space-y-3 sm:hidden">
+          {/* phones: medium cards, two per row, then a full-width "show all" button */}
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:hidden">
             {list.slice(0, 4).map(c => <CourseRow key={`${track}-${c.id}`} course={c} enrolledCourseId={enrolledCourseId} offer={offer} onSelect={onSelectCourse} />)}
             <button onClick={onViewAllCourses} className="font-display w-full h-12 rounded-md bg-forest text-ivory text-[15px] font-semibold hover:bg-sage transition">Show all courses</button>
           </div>
@@ -63,27 +63,27 @@ export default function PopularCourses({ courses, enrolledCourseId, offer, onSel
   );
 }
 
-/** One course as a compact row (phones): picture, provider, title, key facts and price. */
+/** One course as a medium card (phones, two per row): picture, provider, title, key facts and price. */
 export function CourseRow({ course, enrolledCourseId, offer, onSelect }) {
   const isMine = offer?.enrolledIds ? offer.enrolledIds.includes(course.id) : enrolledCourseId === course.id;
   const tag = isMine ? 'Enrolled' : offer?.price > 0 ? `₹${offer.price}` : 'Free';
   return (
-    <button onClick={() => onSelect(course.id)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-white border border-brand-900/15 text-left active:scale-[.99] transition">
+    <button onClick={() => onSelect(course.id)} className="group h-full flex flex-col rounded-2xl bg-white border border-brand-900/10 overflow-hidden text-left shadow-[0_10px_24px_-18px_rgba(1,58,43,.55)] active:scale-[.98] transition">
       {/* the course art is 16:10 - show all of it so the course name on the picture is never cut off */}
-      <span className="relative shrink-0 w-[124px] aspect-[16/10] rounded-lg overflow-hidden bg-forest shadow-[0_6px_14px_-8px_rgba(1,58,43,.6)]">
+      <span className="relative block w-full aspect-[16/10] bg-forest overflow-hidden">
         <SafeImg src={courseArt(course)} alt="" className="w-full h-full object-cover" />
+        <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10.5px] font-bold shadow-sm ${isMine ? 'bg-forest text-ivory' : 'bg-white/95 text-forest'}`}>{tag}</span>
       </span>
-      <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-1.5">
-          <img src="/arshith-bootcamp-icon.png" alt="" className="w-5 h-5 rounded border border-brand-900/10 bg-white object-contain p-0.5" />
-          <span className="text-[12px] text-charcoal/60 truncate">Arshith Bootcamp</span>
+      <span className="flex-1 flex flex-col p-2.5">
+        <span className="flex items-center gap-1 min-w-0">
+          <img src="/arshith-bootcamp-icon.png" alt="" className="w-4 h-4 rounded border border-brand-900/10 bg-white object-contain p-[1px] shrink-0" />
+          <span className="text-[10.5px] text-charcoal/55 truncate">Arshith Bootcamp</span>
         </span>
-        <span className="mt-1 block text-[15px] font-bold leading-snug text-charcoal line-clamp-2">{displayTitle(course.title)}</span>
-        <span className="mt-1 flex items-center gap-1 text-[12px] text-charcoal/60 min-w-0">
-          <Star className="w-3.5 h-3.5 shrink-0 fill-amber-400 text-amber-400" />
-          <span className="truncate">{course.rating} · {hoursOf(course)} · Certificate</span>
+        <span className="mt-1 block text-[13.5px] font-bold leading-snug text-charcoal line-clamp-2 min-h-[36px]">{displayTitle(course.title)}</span>
+        <span className="mt-auto pt-1.5 flex items-center gap-1 text-[11px] text-charcoal/60 min-w-0">
+          <Star className="w-3 h-3 shrink-0 fill-amber-400 text-amber-400" />
+          <span className="truncate">{course.rating} · {hoursOf(course)}</span>
         </span>
-        <span className={`mt-1.5 inline-flex rounded-full border px-2.5 py-0.5 text-[12px] font-medium ${isMine ? 'border-forest/30 bg-brand-50 text-forest' : 'border-brand-900/20 text-charcoal/80'}`}>{tag}</span>
       </span>
     </button>
   );

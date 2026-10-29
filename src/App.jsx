@@ -6,7 +6,7 @@ import WhyLearnWithUs from './components/WhyLearnWithUs';
 import CtaSection from './components/CtaSection';
 import HomeButton from './components/HomeButton';
 import Footer from './components/Footer';
-import MobileBottomNav from './components/MobileBottomNav';
+import MobileBottomNav, { showsBottomBar } from './components/MobileBottomNav';
 import PromoStory from './components/mobile/PromoStory';
 import DesktopNotice from './components/DesktopNotice';
 import { WhatBringsYou } from './components/MobileWelcome';
@@ -599,7 +599,7 @@ function AppShell() {
   const authModal = isAuthModal ? renderPage(route) : null;
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans bg-ivory text-charcoal ${isChromeless ? '' : 'has-bottom-nav'}`}>
+    <div className={`min-h-screen flex flex-col font-sans bg-ivory text-charcoal ${!isChromeless && showsBottomBar(displayRoute) ? 'has-bottom-nav' : ''}`}>
       {!isChromeless && (
         <Header
           route={route}
@@ -630,7 +630,7 @@ function AppShell() {
       {!adminUser && <DesktopNotice />}
 
       {!isAuthModal && route.name !== 'home' && !(adminUser && route.name === 'dashboard') && (
-        <HomeButton onClick={() => navigate(paths.home())} aboveBottomNav={!isChromeless} />
+        <HomeButton onClick={() => navigate(paths.home())} aboveBottomNav={false} />
       )}
 
       <ConfirmDialog

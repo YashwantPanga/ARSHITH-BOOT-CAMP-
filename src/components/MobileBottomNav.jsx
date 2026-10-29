@@ -3,12 +3,13 @@ import { ArrowRight } from 'lucide-react';
 import { paths } from '../router';
 
 /**
- * Phones: a sticky full-width action bar at the bottom of the screen (Coursera-style) instead of a
- * tab bar - navigation lives in the header menu. Signed out it starts registration; signed in it
- * continues learning. Hidden on the course details page, which has its own enrol button.
+ * Phones, home page only: a sticky full-width action bar at the bottom of the screen. Signed out it
+ * starts registration; signed in it continues learning. Other pages have their own actions.
  */
+export const showsBottomBar = (route) => route.name === 'home';
+
 export default function MobileBottomNav({ route, navigate, studentUser }) {
-  if (route.name === 'course-details' || (route.name === 'interview' && route.params.itemId)) return null;
+  if (!showsBottomBar(route)) return null;
   const signedIn = !!studentUser;
   return (
     <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-brand-900/10 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] shadow-[0_-10px_30px_-18px_rgba(1,58,43,.35)]">

@@ -94,8 +94,8 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
           </div>
         ) : (
           <>
-          {/* phones: compact rows; larger screens: tiles */}
-          <div className="mt-5 space-y-3 sm:hidden">
+          {/* phones: medium cards, two per row; larger screens: tiles */}
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:hidden">
             {list.map(c => <CourseRow key={c.id} course={c} enrolledCourseId={enrolledCourseId} offer={offer} onSelect={onSelectCourse} />)}
           </div>
           <div className="mt-8 hidden sm:grid sm:grid-cols-2 xl:grid-cols-4 gap-6">
