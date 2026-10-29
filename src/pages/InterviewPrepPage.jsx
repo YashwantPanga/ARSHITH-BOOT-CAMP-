@@ -322,7 +322,7 @@ function SetPage({ set, progress, signedIn, navigate }) {
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-7 items-start">
           <div className="min-w-0">
             <div className="flex flex-col gap-3">
-              <div className="flex gap-2 overflow-x-auto overscroll-x-contain snap-x thin-scroll pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
+              <div className="flex gap-2 overflow-x-auto overscroll-x-contain snap-x scroll-px-4 sm:scroll-px-0 thin-scroll pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
                 {['All', ...topics].map(t => (
                   <button key={t} onClick={() => setTopic(t)} className={`shrink-0 snap-start px-3.5 py-1.5 rounded-full text-[13px] font-medium border transition ${topic === t ? 'bg-forest text-ivory border-forest' : 'bg-white text-charcoal/75 border-brand-900/15 hover:border-sage'}`}>{t}</button>
                 ))}

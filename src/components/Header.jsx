@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Search, Menu, X, LogOut, LayoutDashboard, ChevronRight, ChevronDown, ShieldCheck, Info, Mail, Grid3X3, BookOpen, Target } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Search, Menu, X, LogOut, ChevronDown, ShieldCheck, Info, Mail, Grid3X3, BookOpen, Target } from 'lucide-react';
 import { Logo } from './ui';
 import { TrackMark } from './TrackBadge';
 import { paths } from '../router';
 import { cleanText, displayTitle } from '../utils/textUtils';
+import MobileMenu from './MobileMenu';
 
 const NAV = [
   { name: 'Home', id: 'home', to: paths.home(), icon: BookOpen },
@@ -17,6 +18,7 @@ const NAV = [
 
 export default function Header({ route, navigate, studentUser, onLogout, courses = [] }) {
   const [open, setOpen] = useState(false);
+  const [searchFirst, setSearchFirst] = useState(false);
   const [explore, setExplore] = useState(false);
   const [query, setQuery] = useState(route.query?.q || '');
   const [scrolled, setScrolled] = useState(false);
@@ -30,13 +32,8 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
   }, []);
 
   useEffect(() => { setOpen(false); setExplore(false); }, [route.name]);
-  // the phone menu covers the page: keep the page behind it still
-  useEffect(() => {
-    if (!open) return undefined;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
-  }, [open]);
+  const closeMenu = useCallback(() => setOpen(false), []);
+  const openMenu = (withSearch = false) => { setSearchFirst(withSearch); setOpen(true); };
 
   useEffect(() => {
     if (!explore) return undefined;
@@ -70,7 +67,7 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-16 lg:h-[78px] gap-2 sm:gap-4 lg:gap-6">
           {/* phones: menu button on the left of the logo (Coursera-style mobile header) */}
-          <button onClick={() => setOpen(o => !o)} className="lg:hidden -ml-1.5 p-2.5 rounded-xl text-brand-900 hover:bg-brand-50" aria-label="Menu" aria-expanded={open}>
+          <button onClick={() => (open ? setOpen(false) : openMenu())} className="lg:hidden -ml-1.5 p-2.5 rounded-xl text-brand-900 hover:bg-brand-50" aria-label="Menu" aria-expanded={open}>
             {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
           <Logo onClick={() => go(paths.home())} />
@@ -150,11 +147,11 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
           </div>
 
           <div className="flex lg:hidden items-center gap-1 ml-auto">
-            <button onClick={() => { setOpen(true); setTimeout(() => document.getElementById('mobile-search')?.focus(), 60); }} className="p-2.5 rounded-xl text-brand-900 hover:bg-brand-50" aria-label="Search courses">
+            <button onClick={() => openMenu(true)} className="p-2.5 rounded-xl text-brand-900 hover:bg-brand-50" aria-label="Search courses">
               <Search className="w-[22px] h-[22px]" />
             </button>
             {studentUser && (
-              <button onClick={() => go(paths.dashboard())} className="w-9 h-9 rounded-full bg-brand-900 text-ivory text-xs font-bold flex items-center justify-center" aria-label="Dashboard">
+              <button onClick={() => openMenu()} className="w-9 h-9 rounded-full bg-brand-900 text-ivory text-xs font-bold flex items-center justify-center active:scale-95 transition" aria-label="Open account menu">
                 {initials}
               </button>
             )}
@@ -162,44 +159,16 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
         </div>
       </div>
 
-      {open && (
-        <div className="lg:hidden fixed inset-x-0 top-16 bottom-0 z-50 bg-white flex flex-col animate-fade-in" role="dialog" aria-label="Menu">
-          <div className="flex-1 overflow-y-auto px-5 pt-4 pb-4">
-            <form onSubmit={submitSearch} className="relative md:hidden">
-              <input id="mobile-search" type="search" placeholder="What do you want to learn today?" value={query} onChange={(e) => setQuery(e.target.value)} className="w-full h-11 pl-10 pr-4 rounded-full bg-cream border border-brand-900/10 text-[15px] outline-none focus:border-sage focus:bg-white" />
-              <Search className="w-4 h-4 text-charcoal/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            </form>
-            <nav className="mt-3" aria-label="Main">
-              {NAV.map(link => (
-                <button key={link.id} onClick={() => go(link.to)} className={`w-full flex items-center justify-between py-3.5 text-left text-[16px] ${isActive(link.id) ? 'font-semibold text-forest' : 'text-charcoal'}`}>
-                  {link.name}<ChevronRight className="w-4 h-4 text-charcoal/50" />
-                </button>
-              ))}
-            </nav>
-            <div className="my-2 border-t border-brand-900/10" />
-            <p className="pt-2 text-[14px] text-charcoal/55">Not sure where to begin?</p>
-            <button onClick={() => go(paths.courses())} className="w-full py-3 text-left text-[16px] text-charcoal">Browse free courses</button>
-            {studentUser && (
-              <>
-                <div className="my-2 border-t border-brand-900/10" />
-                <button onClick={() => go(paths.dashboard())} className="w-full flex items-center justify-between py-3.5 text-left text-[16px] text-charcoal">
-                  <span className="flex items-center gap-2"><LayoutDashboard className="w-4 h-4 text-sage" />My dashboard</span><ChevronRight className="w-4 h-4 text-charcoal/50" />
-                </button>
-              </>
-            )}
-          </div>
-          <div className="border-t border-brand-900/10 bg-cream px-5 pt-4 pb-[calc(16px+env(safe-area-inset-bottom))] grid gap-2.5">
-            {studentUser ? (
-              <button onClick={() => { setOpen(false); onLogout(); }} className="font-display h-12 rounded-md border border-rose-300 bg-white text-rose-700 text-[15.5px] font-semibold">Sign out</button>
-            ) : (
-              <>
-                <button onClick={() => go(paths.register())} className="font-display h-12 rounded-md bg-forest text-ivory text-[15.5px] font-semibold">Join for Free</button>
-                <button onClick={() => go(paths.login())} className="font-display h-12 rounded-md border border-forest text-forest bg-white text-[15.5px] font-semibold">Log In</button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      <MobileMenu
+        open={open}
+        focusSearch={searchFirst}
+        onClose={closeMenu}
+        route={route}
+        navigate={navigate}
+        studentUser={studentUser}
+        onLogout={onLogout}
+        courses={courses}
+      />
     </header>
   );
 }
