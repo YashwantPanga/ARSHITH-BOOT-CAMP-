@@ -92,7 +92,7 @@ export default function StreakCard() {
   }, [email]);
 
   const count = useCountUp(s?.current || 0);
-  if (!s) return <div className="h-[230px] rounded-[24px] bg-gradient-to-br from-[#0C2D26] to-[#013A2B] animate-pulse" />;
+  if (!s) return <div className="h-[230px] rounded-[24px] bg-[#073B2F] animate-pulse" />;
 
   const lit = s.current > 0 && s.codedToday;
   const week = s.recent.slice(-7);
@@ -102,9 +102,10 @@ export default function StreakCard() {
 
   return (
     <>
-      <section className="relative overflow-hidden rounded-[20px] sm:rounded-[24px] bg-gradient-to-br from-[#0C2D26] via-[#013A2B] to-[#1E3B22] text-ivory p-4 sm:p-7 shadow-[0_24px_50px_-28px_rgba(12,45,38,.9)]">
-        <span className="absolute -left-10 -bottom-16 w-72 h-72 rounded-full bg-[#FF8A1F] opacity-[.14] blur-3xl" />
-        <span className="absolute right-10 -top-20 w-64 h-64 rounded-full bg-[#7DB59A] opacity-10 blur-3xl" />
+      <section className="streak-emerald relative overflow-hidden rounded-[20px] sm:rounded-[24px] text-ivory p-4 sm:p-7">
+        <span className="absolute -left-10 -bottom-16 w-72 h-72 rounded-full bg-[#FF8A1F] opacity-[.10] blur-3xl" />
+        <span className="absolute right-10 -top-20 w-64 h-64 rounded-full bg-[#3FD6A0] opacity-[.12] blur-3xl" />
+        <span className="streak-emerald-sheen" aria-hidden="true" />
         {lit && Array.from({ length: 9 }).map((_, i) => (
           <span key={i} className="streak-ember" style={{ left: `${6 + i * 3.2}%`, animationDelay: `${i * 0.45}s`, animationDuration: `${3 + (i % 3)}s` }} />
         ))}
@@ -175,7 +176,7 @@ export default function StreakCard() {
               {Array.from({ length: weekdayIndex(s.recent[0].date) }).map((_, i) => <span key={`p${i}`} className="w-3.5 h-3.5" />)}
               {s.recent.map(d => (
                 <span key={d.date} title={`${d.date}${d.active ? ' · coded' : ''}`}
-                  className={`w-3.5 h-3.5 rounded-[4px] ${d.active ? (d.runs >= 10 ? 'bg-[#FF7A1A]' : d.runs >= 3 ? 'bg-[#FFA43D]' : 'bg-[#FFD07A]') : 'bg-white/10'} ${d.date === s.today ? 'ring-2 ring-[#FFD580] ring-offset-1 ring-offset-[#013A2B]' : ''}`} />
+                  className={`w-3.5 h-3.5 rounded-[4px] ${d.active ? (d.runs >= 10 ? 'bg-[#FF7A1A]' : d.runs >= 3 ? 'bg-[#FFA43D]' : 'bg-[#FFD07A]') : 'bg-white/10'} ${d.date === s.today ? 'ring-2 ring-[#FFD580] ring-offset-1 ring-offset-[#073B2F]' : ''}`} />
               ))}
             </div>
           </div>

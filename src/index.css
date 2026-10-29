@@ -384,6 +384,21 @@
 @media (prefers-reduced-motion: reduce) { .cta-pulse, .cta-nudge, .cta-arrow, .cta-hint { animation: none !important; } .cta-pulse { box-shadow: 0 0 0 3px rgba(66,101,87,.5); } }
 
 /* ---------- Daily coding streak ---------- */
+/* emerald card: deep green, faint honeycomb, fine grain and a slow light sweep */
+.streak-emerald {
+  background-color: #073B2F;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .85 0 0 0 0 .7 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98'%3E%3Cpath d='M28 66L0 50V17L28 1l28 16v33L28 66zm0 0v32M0 17L-28 1M56 17L84 1' fill='none' stroke='%237FE0B8' stroke-opacity='.075' stroke-width='1.2'/%3E%3C/svg%3E"),
+    radial-gradient(120% 90% at 15% 0%, rgba(46,160,120,.22) 0%, transparent 55%),
+    radial-gradient(90% 80% at 100% 100%, rgba(3,30,24,.85) 0%, transparent 60%),
+    linear-gradient(135deg, #093F32 0%, #06352A 45%, #04261E 100%);
+  border: 1px solid rgba(127,224,184,.16);
+  box-shadow: inset 0 1px 0 rgba(170,255,215,.14), 0 24px 50px -28px rgba(4,40,31,.95);
+}
+.streak-emerald-sheen { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 35%, rgba(160,255,210,.10) 48%, rgba(255,255,255,.06) 50%, transparent 62%); background-size: 250% 100%; animation: emeraldSheen 7s ease-in-out infinite; }
+@keyframes emeraldSheen { 0%, 35% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
+@media (prefers-reduced-motion: reduce) { .streak-emerald-sheen { animation: none; opacity: 0; } }
 .streak-flame .streak-outer { transform-origin: 50% 92%; animation: streakFlicker 1.6s ease-in-out infinite; }
 .streak-flame .streak-inner { transform-origin: 50% 92%; animation: streakFlicker 1.1s ease-in-out infinite reverse; }
 .streak-glow { animation: streakGlow 1.8s ease-in-out infinite; }
