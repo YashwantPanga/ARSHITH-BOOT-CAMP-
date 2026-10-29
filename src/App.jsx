@@ -15,6 +15,7 @@ import { displayTitle } from './utils/textUtils';
 import PaymentNotice from './components/PaymentNotice';
 
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const InterviewPrepPage = lazy(() => import('./pages/InterviewPrepPage'));
 const AdminCourseBar = lazy(() => import('./components/staff/AdminCourseBar'));
 import AuthPage from './components/LoginModal';
 import { ToastProvider, useToast, ConfirmDialog, PageLoader } from './components/ui';
@@ -502,6 +503,13 @@ function AppShell() {
       );
       break;
     }
+    case 'interview':
+      page = (
+        <Suspense fallback={loading}>
+          <InterviewPrepPage setId={route.params.setId} itemId={route.params.itemId} studentUser={studentUser} navigate={navigate} toast={toast} />
+        </Suspense>
+      );
+      break;
     case 'verify':
       page = <CertificateVerifyPage certId={route.params.certId} onSearch={(id) => navigate(paths.verify(id), { replace: true })} onHome={() => navigate('/')} />;
       break;

@@ -94,6 +94,10 @@ export const api = {
   uploadCertificateImage: (id, image) => request(`/certificates/${encodeURIComponent(id)}/image`, { method: 'POST', body: JSON.stringify({ image }) }),
   issueCertificate: (data) => request('/certificates/issue', { method: 'POST', body: JSON.stringify(data) }),
 
+  // Interview Prep (practice credit only)
+  getInterviewProgress: () => request('/interview/progress'),
+  markInterview: (setId, itemId, solved = true) => request('/interview/solved', { method: 'POST', body: JSON.stringify({ setId, itemId, solved }) }),
+
   // Learner accounts
   learnerRegister: (data) => request('/learners/register', { method: 'POST', body: JSON.stringify(data) }),
   learnerLogin: (data) => request('/learners/login', { method: 'POST', body: JSON.stringify(data) }),

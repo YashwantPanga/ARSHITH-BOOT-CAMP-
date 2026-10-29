@@ -20,6 +20,7 @@ export function parseLocation(loc = window.location) {
     case 'learn': return a ? { name: 'learning', params: { courseId: a, moduleId: b || null }, query } : { name: 'dashboard', params: {}, query };
     case 'dashboard': return { name: 'dashboard', params: {}, query };
     case 'certificate': return { name: 'certificate', params: { courseId: a || null }, query };
+    case 'interview': return { name: 'interview', params: { setId: a || null, itemId: b || null }, query };
     case 'verify': return { name: 'verify', params: { certId: a || '' }, query };
     case 'login': return { name: 'login', params: {}, query };
     case 'register': return { name: 'register', params: {}, query };
@@ -43,6 +44,7 @@ export const paths = {
   learn: (id, moduleId) => `/learn/${encodeURIComponent(id)}${moduleId ? `/${encodeURIComponent(moduleId)}` : ''}`,
   dashboard: () => '/dashboard',
   certificate: (courseId) => `/certificate/${encodeURIComponent(courseId)}`,
+  interview: (setId, itemId) => `/interview${setId ? `/${encodeURIComponent(setId)}` : ''}${itemId ? `/${encodeURIComponent(itemId)}` : ''}`,
   verify: (certId) => (certId ? `/verify/${encodeURIComponent(certId)}` : '/verify'),
   login: (next) => (next ? `/login?next=${encodeURIComponent(next)}` : '/login'),
   register: (next) => (next ? `/register?next=${encodeURIComponent(next)}` : '/register'),

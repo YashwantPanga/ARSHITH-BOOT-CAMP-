@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Search, Menu, X, LogOut, LayoutDashboard, ChevronRight, ChevronDown, ShieldCheck, Info, Mail, Grid3X3, BookOpen } from 'lucide-react';
+import { Search, Menu, X, LogOut, LayoutDashboard, ChevronRight, ChevronDown, ShieldCheck, Info, Mail, Grid3X3, BookOpen, Target } from 'lucide-react';
 import { Logo } from './ui';
 import { TrackMark } from './TrackBadge';
 import { paths } from '../router';
@@ -8,6 +8,7 @@ import { cleanText, displayTitle } from '../utils/textUtils';
 const NAV = [
   { name: 'Home', id: 'home', to: paths.home(), icon: BookOpen },
   { name: 'All courses', id: 'courses', to: paths.courses(), icon: BookOpen },
+  { name: 'Interview Prep', id: 'interview', to: paths.interview(), icon: Target },
   { name: 'Categories', id: 'categories', to: paths.categories(), icon: Grid3X3 },
   { name: 'Verify certificate', id: 'verify', to: paths.verify(), icon: ShieldCheck },
   { name: 'About', id: 'about', to: paths.about(), icon: Info },
@@ -111,7 +112,7 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
           </div>
 
           <nav className="hidden xl:flex items-center gap-7" aria-label="Main">
-            {NAV.filter(l => ['home', 'courses', 'about', 'contact'].includes(l.id)).map(l => (
+            {NAV.filter(l => ['home', 'courses', 'interview', 'about', 'contact'].includes(l.id)).map(l => (
               <button key={l.id} onClick={() => go(l.to)} className={`edu-nav relative py-2 transition-colors ${isActive(l.id) ? 'text-sage after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-0.5 after:rounded after:bg-sage' : 'text-evergreen hover:text-sage'}`}>
                 {l.id === 'courses' ? 'Courses' : l.name}
               </button>

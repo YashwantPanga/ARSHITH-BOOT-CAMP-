@@ -118,6 +118,20 @@ export async function runSql(code) {
   return { results, ms: Math.round(performance.now() - t0), changes: sqlDb.getRowsModified() };
 }
 
+/** Runs SQL on a brand-new database built from `schema`, so nothing carries over between runs. */
+export async function runSqlFresh(schema, code) {
+  const SQL = await loadSqlJs();
+  const db = new SQL.Database();
+  try {
+    db.exec(schema);
+    const t0 = performance.now();
+    const results = db.exec(code);
+    return { results, ms: Math.round(performance.now() - t0) };
+  } finally {
+    db.close();
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Web                                                                 */
 /* ------------------------------------------------------------------ */

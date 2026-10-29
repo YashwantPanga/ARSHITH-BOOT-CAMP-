@@ -15,6 +15,7 @@
     "validate:content": "node scripts/validate-content.mjs",
     "validate:links": "node scripts/validate-content.mjs --links",
     "verify:exercises": "node scripts/verify-exercises.mjs",
+    "verify:interview": "node scripts/verify-interview.mjs",
     "report:content-diff": "node scripts/content-diff.mjs",
     "db:backup": "node scripts/supabase-backup.mjs",
     "email:test": "node scripts/test-email.mjs"

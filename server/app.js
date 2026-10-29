@@ -13,6 +13,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import learnerRoutes from './routes/learnerRoutes.js';
 import practiceRoutes from './routes/practiceRoutes.js';
+import interviewRoutes from './routes/interviewRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import { learnerGuard } from './middleware/learnerAuth.js';
 import { adminGate } from './middleware/auth.js';
@@ -83,6 +84,7 @@ app.use('/api', adminRoutes);
 app.use('/api', quizRoutes);
 app.use('/api', learnerRoutes);
 app.use('/api', practiceRoutes);
+app.use('/api', interviewRoutes);
 app.use('/api', paymentRoutes);
 
 // Serve the production build (npm run build) so the whole site runs from one port.
