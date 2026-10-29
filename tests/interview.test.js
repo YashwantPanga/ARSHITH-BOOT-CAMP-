@@ -12,8 +12,8 @@ import { buildPythonCheck, parsePythonCheck, pyRepr } from '../shared/interview/
 // Interview Prep content and progress. Python answers are checked against real Python by
 // `npm run verify:interview`; here we check the content shape, the SQL answers and the API.
 describe('interview content', () => {
-  it('has four sets with unique ids and complete items', () => {
-    expect(INTERVIEW_SETS.map(s => [s.id, s.items.length])).toEqual([['sql-50', 50], ['dsa-75', 75], ['js-30', 30], ['interview-questions', 150]]);
+  it('has every set with unique ids and complete items', () => {
+    expect(INTERVIEW_SETS.map(s => [s.id, s.items.length])).toEqual([['sql-50', 50], ['dsa-75', 75], ['programming-essentials', 50], ['js-30', 30], ['interview-questions', 150]]);
     const ids = INTERVIEW_SETS.flatMap(s => s.items.map(i => i.id));
     expect(new Set(ids).size).toBe(ids.length);
     for (const s of INTERVIEW_SETS) {
@@ -84,6 +84,13 @@ describe('interview progress API', () => {
     const p = (await request(app).get('/api/interview/progress').set('X-Learner-Token', tok)).body.progress;
     expect(Object.keys(p['sql-50'])).toEqual(['sql-01']);
     expect(Object.keys(p['dsa-75'])).toEqual(['dsa-10']);
+    const plan = (body) => request(app).post('/api/interview/plan').set('X-Learner-Token', tok).send(body);
+    expect((await plan({ setId: 'programming-essentials', perDay: 0, days: [1] })).status).toBe(400);
+    expect((await plan({ setId: 'programming-essentials', perDay: 2, days: [] })).status).toBe(400);
+    const saved = await plan({ setId: 'programming-essentials', perDay: 2, days: [5, 1, 1, 9] });
+    expect(saved.body.plans['programming-essentials']).toMatchObject({ perDay: 2, days: [1, 5] });
+    expect((await request(app).get('/api/interview/progress').set('X-Learner-Token', tok)).body.plans['programming-essentials'].perDay).toBe(2);
+    expect((await plan({ setId: 'programming-essentials', clear: true })).body.plans).toEqual({});
     const cleared = (await mark({ setId: 'sql-50', itemId: 'sql-01', solved: false })).body.progress;
     expect(cleared['sql-50']).toEqual({});
   });

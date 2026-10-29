@@ -11,6 +11,7 @@ import CodeEditor from '../components/CodeEditor';
 import { Inline } from '../components/lesson/Markdown';
 import { runJavaScript, runPython, runSqlFresh } from '../utils/runners';
 import { noteCoding } from '../utils/activity';
+import { MyPlanCard, PlanModal, planStats } from '../components/interview/StudyPlan';
 import { api } from '../services/api';
 import { paths } from '../router';
 
@@ -22,6 +23,7 @@ const THEMES = {
   forest: { card: 'from-[#0F4636] via-[#013A2B] to-[#0C2D26]', tile: 'from-[#1E5141] to-[#0C2D26]', glow: '#7DB59A' },
   teal: { card: 'from-[#1C5E66] via-[#0F4A52] to-[#0C2D26]', tile: 'from-[#2A7079] to-[#0C2D26]', glow: '#8FD3D0' },
   gold: { card: 'from-[#9A7222] via-[#6E4F17] to-[#3A2A0E]', tile: 'from-[#B8862B] to-[#4A3510]', glow: '#F2D27A' },
+  jade: { card: 'from-[#2F7A5C] via-[#1D6049] to-[#0C2D26]', tile: 'from-[#3C8E6C] to-[#0C2D26]', glow: '#A8E6C1' },
   ember: { card: 'from-[#C47A1E] via-[#8E4E12] to-[#3D2108]', tile: 'from-[#D98A26] to-[#4A2A0A]', glow: '#FFD580' }
 };
 const LANG_LABEL = { sql: 'SQL', python: 'Python 3', javascript: 'JavaScript' };
@@ -34,6 +36,17 @@ const DIFF_STYLE = {
 /** Line-art badge for a set: a database, a target, a JS 30 mark or speech bubbles. */
 function SetIcon({ icon, className = 'w-24 h-24', glow = '#7DB59A' }) {
   const stroke = { stroke: glow, strokeWidth: 5, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' };
+  if (icon === 'code') {
+    return (
+      <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
+        <path d="M34 26L12 50l22 24" {...stroke} strokeWidth={7} />
+        <path d="M66 26l22 24-22 24" {...stroke} strokeWidth={7} />
+        <path d="M57 18L43 82" {...stroke} strokeWidth={6} opacity=".7" />
+        <circle cx="12" cy="50" r="6" fill={glow} />
+        <circle cx="88" cy="50" r="6" fill={glow} />
+      </svg>
+    );
+  }
   if (icon === 'js') {
     return (
       <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
@@ -104,13 +117,15 @@ let progressCache = { user: null, data: null };
 function useInterviewProgress(studentUser) {
   const email = studentUser?.email || null;
   const [progress, setProgress] = useState(progressCache.user === email ? progressCache.data || {} : {});
+  const [plans, setPlans] = useState(progressCache.user === email ? progressCache.plans || {} : {});
   useEffect(() => {
-    if (!email) { setProgress({}); return; }
+    if (!email) { setProgress({}); setPlans({}); return; }
     let live = true;
     api.getInterviewProgress().then(r => {
       if (!live) return;
-      progressCache = { user: email, data: r.progress || {} };
+      progressCache = { user: email, data: r.progress || {}, plans: r.plans || {} };
       setProgress(r.progress || {});
+      setPlans(r.plans || {});
     }).catch(() => {});
     return () => { live = false; };
   }, [email]);
@@ -119,14 +134,25 @@ function useInterviewProgress(studentUser) {
     setProgress(p => ({ ...p, [setId]: { ...(p[setId] || {}), ...(solved ? { [itemId]: new Date().toISOString() } : {}) } }));
     try {
       const r = await api.markInterview(setId, itemId, solved);
-      progressCache = { user: email, data: r.progress };
+      progressCache = { ...progressCache, user: email, data: r.progress };
       setProgress(r.progress);
       return true;
     } catch {
       return false;
     }
   }, [email]);
-  return { progress, mark, signedIn: !!email };
+  const savePlan = useCallback(async (setId, plan) => {
+    if (!email) return false;
+    try {
+      const r = await api.saveInterviewPlan(setId, plan);
+      progressCache = { ...progressCache, plans: r.plans };
+      setPlans(r.plans);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [email]);
+  return { progress, plans, mark, savePlan, signedIn: !!email };
 }
 
 /* ------------------------------------------------------------------ */
@@ -271,7 +297,7 @@ function PrepHome({ progress, signedIn, navigate }) {
 /* One plan: progress + filterable list                                */
 /* ------------------------------------------------------------------ */
 
-function SetPage({ set, progress, signedIn, navigate }) {
+function SetPage({ set, progress, plans, savePlan, signedIn, navigate }) {
   const solvedMap = progress[set.id] || {};
   const solved = Object.keys(solvedMap).length;
   const theme = THEMES[set.theme];
@@ -288,9 +314,14 @@ function SetPage({ set, progress, signedIn, navigate }) {
   const next = set.items.find(i => !solvedMap[i.id]) || set.items[0];
   const byDiff = ['Easy', 'Medium', 'Hard'].map(d => [d, set.items.filter(i => i.difficulty === d).length, set.items.filter(i => i.difficulty === d && solvedMap[i.id]).length]);
   const noun = set.kind === 'concept' ? 'questions' : 'problems';
+  const plan = plans?.[set.id] || null;
+  const [planOpen, setPlanOpen] = useState(false);
+  const openPlan = () => (signedIn ? setPlanOpen(true) : navigate(paths.login(paths.interview(set.id))));
+  const planProps = { set, plan, solvedMap, signedIn, onSetUp: openPlan, onEdit: openPlan };
 
   return (
     <div className="bg-ivory min-h-screen">
+      {planOpen && <PlanModal set={set} initial={plan} glow={theme.glow} onSave={(p) => savePlan(set.id, p)} onClose={() => setPlanOpen(false)} />}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-20">
         <nav className="text-[13.5px] text-charcoal/55 flex items-center gap-1.5">
           <button onClick={() => navigate(paths.interview())} className="hover:text-forest">Interview Prep</button><ChevronRight className="w-3.5 h-3.5" /><span className="text-charcoal">{set.title}</span>
@@ -304,9 +335,16 @@ function SetPage({ set, progress, signedIn, navigate }) {
               <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-ivory/70">{set.tagline}</p>
               <h1 className="font-display text-[28px] sm:text-[32px] lg:text-[38px] font-bold leading-tight mt-1">{set.title}</h1>
               <p className="mt-2 text-[15px] text-ivory/80 max-w-2xl">{set.description}</p>
-              <button onClick={() => navigate(paths.interview(set.id, next.id))} className="mt-5 inline-flex items-center gap-2 h-11 px-5 rounded-md bg-ivory text-forest font-display font-semibold text-[15px] hover:bg-white transition">
-                <Play className="w-4 h-4" /> {solved ? 'Continue' : 'Start'} with #{next.n}
-              </button>
+              <div className="mt-5 flex flex-wrap gap-2.5">
+                <button onClick={() => navigate(paths.interview(set.id, next.id))} className="inline-flex items-center gap-2 h-11 px-5 rounded-md bg-ivory text-forest font-display font-semibold text-[15px] hover:bg-white active:scale-[.98] transition">
+                  <Play className="w-4 h-4" /> {solved ? 'Continue' : 'Start'} with #{next.n}
+                </button>
+                {set.kind !== 'concept' && (
+                  <button onClick={openPlan} className="inline-flex items-center gap-2 h-11 px-4 rounded-md border border-white/40 text-ivory font-display font-semibold text-[14.5px] hover:bg-white/10 active:scale-[.98] transition">
+                    <Flame className="w-4 h-4 text-[#F2D27A]" /> {plan ? 'Edit daily plan' : 'Set a daily plan'}
+                  </button>
+                )}
+              </div>
             </div>
             <div className="md:w-56 lg:w-64 shrink-0 rounded-2xl bg-white/10 border border-white/15 p-4">
               <div className="flex items-baseline justify-between"><span className="text-[13px] text-ivory/70">Progress</span><span className="font-display text-[22px] font-bold">{solved}<span className="text-ivory/60 text-[14px]"> / {set.items.length}</span></span></div>
@@ -321,6 +359,7 @@ function SetPage({ set, progress, signedIn, navigate }) {
 
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-7 items-start">
           <div className="min-w-0">
+            {set.kind !== 'concept' && <div className="lg:hidden mb-5"><MyPlanCard {...planProps} compact /></div>}
             <div className="flex flex-col gap-3">
               <div className="flex gap-2 overflow-x-auto overscroll-x-contain snap-x scroll-px-4 sm:scroll-px-0 thin-scroll pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
                 {['All', ...topics].map(t => (
@@ -373,7 +412,8 @@ function SetPage({ set, progress, signedIn, navigate }) {
             </div>
           </div>
 
-          <PlanSidebar set={set} solved={solved} navigate={navigate} progress={progress} />
+          <PlanSidebar set={set} solved={solved} navigate={navigate} progress={progress}
+            planCard={set.kind !== 'concept' ? <div className="hidden lg:block"><MyPlanCard {...planProps} /></div> : null} />
         </div>
       </div>
     </div>
@@ -381,11 +421,12 @@ function SetPage({ set, progress, signedIn, navigate }) {
 }
 
 /** Right column of a plan: summary, completion award and related plans. */
-function PlanSidebar({ set, solved, navigate, progress }) {
+function PlanSidebar({ set, solved, navigate, progress, planCard }) {
   const theme = THEMES[set.theme];
   const earned = solved >= set.items.length;
   return (
-    <aside className="grid gap-5 md:grid-cols-2 lg:grid-cols-1 lg:sticky lg:top-24">
+    <aside className="grid gap-5 md:grid-cols-2 lg:grid-cols-1">
+      {planCard}
       <div className="edu-card p-5">
         <h3 className="font-display text-[18px] font-semibold text-evergreen">Summary</h3>
         <ul className="mt-3 space-y-2">
@@ -524,7 +565,7 @@ function TablePreview({ tables }) {
   );
 }
 
-function Workspace({ set, item, progress, mark, signedIn, navigate, toast, startTab }) {
+function Workspace({ set, item, progress, plans, mark, signedIn, navigate, toast, startTab }) {
   const isSql = set.kind === 'sql';
   const isJs = set.kind === 'javascript';
   const starter = isSql ? `-- Write your SQL query here\nSELECT ` : isJs ? jsStarter(item) : pythonStarter(item);
@@ -541,10 +582,15 @@ function Workspace({ set, item, progress, mark, signedIn, navigate, toast, start
   const reset = () => { setCode(starter); clearDraft(item.id); setOut(null); };
 
   const accept = async () => {
-    if (!signedIn) return;
-    if (!solved) {
-      const ok = await mark(set.id, item.id, true);
-      if (ok) toast?.('Accepted! Saved to your progress.', 'success', 3200);
+    if (!signedIn || solved) return;
+    const plan = plans?.[set.id];
+    const before = planStats(plan, progress[set.id]);
+    const ok = await mark(set.id, item.id, true);
+    if (!ok) return;
+    if (plan && before.todayPlanned && before.doneToday + 1 === plan.perDay) {
+      toast?.(`🎯 Today's goal done! ${plan.perDay} of ${plan.perDay} solved. Keep your plan streak going.`, 'success', 5200);
+    } else {
+      toast?.('Accepted! Saved to your progress.', 'success', 3200);
     }
   };
 

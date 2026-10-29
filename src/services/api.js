@@ -100,6 +100,7 @@ export const api = {
 
   // Interview Prep (practice credit only)
   getInterviewProgress: () => request('/interview/progress'),
+  saveInterviewPlan: (setId, plan) => request('/interview/plan', { method: 'POST', body: JSON.stringify({ setId, ...plan }) }),
   markInterview: (setId, itemId, solved = true) => request('/interview/solved', { method: 'POST', body: JSON.stringify({ setId, itemId, solved }) }),
 
   // Learner accounts

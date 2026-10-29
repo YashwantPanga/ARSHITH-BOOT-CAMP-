@@ -51,6 +51,7 @@ const PROTECTED = [
   ['GET', /^\/projects\/mine$/],
   ['GET', /^\/interview\/progress$/],
   ['POST', /^\/interview\/solved$/],
+  ['POST', /^\/interview\/plan$/],
   ['POST', /^\/activity$/],
   ['GET', /^\/activity\/streak$/]
 ];

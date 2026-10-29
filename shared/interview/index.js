@@ -4,6 +4,7 @@ import { DSA_PART1 } from './dsa75.part1.js';
 import { DSA_PART2 } from './dsa75.part2.js';
 import { QUESTIONS_60 } from './questions60.js';
 import { JS_30 } from './js30.js';
+import { ESSENTIALS_50 } from './essentials50.js';
 import { QUESTIONS_PART2 } from './questions150.part2.js';
 import { QUESTIONS_PART3 } from './questions150.part3.js';
 
@@ -19,6 +20,12 @@ export const INTERVIEW_SETS = [
     description: 'The 75 data-structure and algorithm patterns that come up again and again in coding interviews. Solve each in Python, test with the examples, then submit against hidden tests.',
     icon: 'target', theme: 'teal', items: [...DSA_PART1, ...DSA_PART2],
     summary: ['Made for coding rounds at product and service companies', 'Covers the 12 patterns behind most DSA questions', 'Hidden tests, worked solutions and complexity for each']
+  },
+  {
+    id: 'programming-essentials', kind: 'python', title: 'Programming Essentials', tagline: 'Master core implementation skills in 50 problems',
+    description: 'Fifty hand-picked problems that turn knowing Python into writing it fluently: strings, built-in functions, simulations, matrices, maths, linked lists, trees, small system designs and tricky edge cases. Every section is open. Set a daily goal and keep your streak alive.',
+    icon: 'code', theme: 'jade', items: ESSENTIALS_50,
+    summary: ['Builds coding fluency for your first technical rounds', 'Nine sections from basics to design, all unlocked', 'Set a daily plan and track it on your own calendar']
   },
   {
     id: 'js-30', kind: 'javascript', title: 'JavaScript 30-Day Sprint', tagline: 'Master modern JS, one problem a day',

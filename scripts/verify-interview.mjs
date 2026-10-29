@@ -19,8 +19,8 @@ function runPy(src) {
   return parsePythonCheck((r.stdout || '') + (r.stderr ? `\n${r.stderr}` : ''));
 }
 
-console.log('DSA Top 75');
-for (const p of findInterviewSet('dsa-75').items) {
+console.log('DSA Top 75 and Programming Essentials');
+for (const p of [...findInterviewSet('dsa-75').items, ...findInterviewSet('programming-essentials').items]) {
   const { result, printed } = runPy(buildPythonCheck(p, p.solution));
   if (!result?.results) { fail(`${p.id} ${p.title}: no result ${printed.slice(-300)}`); continue; }
   result.results.forEach((r, i) => { if (!r.ok) fail(`${p.id} ${p.title}: test ${i + 1} got ${JSON.stringify(r.got ?? r.error)} expected ${JSON.stringify(p.tests[i][1])}`); });
