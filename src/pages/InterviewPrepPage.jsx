@@ -303,7 +303,7 @@ function SetPage({ set, progress, plans, savePlan, signedIn, navigate, studentUs
 
   return (
     <div className="bg-ivory min-h-screen">
-      {planOpen && <PlanModal set={set} initial={plan} glow={theme.glow} onSave={(p) => savePlan(set.id, p)} onClose={() => setPlanOpen(false)} />}
+      {planOpen && <PlanModal set={set} initial={plan} solvedCount={solved} onSave={(p) => savePlan(set.id, p)} onClose={() => setPlanOpen(false)} />}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-20">
         <nav className="text-[13.5px] text-charcoal/55 flex items-center gap-1.5">
           <button onClick={() => navigate(paths.interview())} className="hover:text-forest">Interview Prep</button><ChevronRight className="w-3.5 h-3.5" /><span className="text-charcoal">{set.title}</span>

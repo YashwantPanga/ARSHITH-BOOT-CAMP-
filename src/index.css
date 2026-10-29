@@ -439,27 +439,11 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 @media (prefers-reduced-motion: reduce) { .mobile-sheet { animation: none; } }
 
 
-/* ---------- Study plan (Interview Prep) ---------- */
-.plan-ring { transform-box: fill-box; transform-origin: center; animation: planRing .55s cubic-bezier(.2,1.4,.4,1) both; }
-@keyframes planRing { from { transform: scale(0); } to { transform: scale(1); } }
-.plan-glow { transform-box: fill-box; transform-origin: center; animation: planGlow 2.4s ease-in-out infinite; }
+/* ---------- Study plan dialog (Interview Prep) ---------- */
 @keyframes planGlow { 0%, 100% { opacity: .6; transform: scale(.95); } 50% { opacity: 1; transform: scale(1.05); } }
-.plan-arrow { animation: planArrowIn .7s cubic-bezier(.2,.9,.3,1.2) .45s both; }
-@keyframes planArrowIn { from { transform: translate(60px, -50px); opacity: 0; } to { transform: translate(0, 0); opacity: 1; } }
-.plan-arrow-hit { transform-box: view-box; transform-origin: 96px 84px; animation: planWobble .6s ease-out; }
-@keyframes planWobble { 0% { transform: rotate(0); } 30% { transform: rotate(-6deg); } 60% { transform: rotate(4deg); } 100% { transform: rotate(0); } }
-.plan-burst { transform-box: view-box; transform-origin: 96px 84px; animation: planBurst .8s ease-out both; }
-@keyframes planBurst { 0% { transform: rotate(var(--a)) translateY(0); opacity: 1; } 100% { transform: rotate(var(--a)) translateY(-70px); opacity: 0; } }
 .plan-sheet { animation: planSheetUp .38s cubic-bezier(.22,.9,.3,1) both; }
 @keyframes planSheetUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.plan-day-pop { animation: streakPop .45s cubic-bezier(.2,1.4,.4,1) backwards; }
-.plan-today { animation: planToday 1.8s ease-out infinite; }
-@keyframes planToday { 0% { box-shadow: 0 0 0 0 rgba(232,161,58,.45); } 100% { box-shadow: 0 0 0 8px rgba(232,161,58,0); } }
-.plan-done-glow { animation: planDone 2.2s ease-in-out infinite; }
-@keyframes planDone { 0%, 100% { box-shadow: 0 0 0 0 rgba(47,122,92,0); } 50% { box-shadow: 0 0 0 4px rgba(47,122,92,.15); } }
-@media (prefers-reduced-motion: reduce) {
-  .plan-ring, .plan-glow, .plan-arrow, .plan-arrow-hit, .plan-burst, .plan-sheet, .plan-day-pop, .plan-today, .plan-done-glow { animation: none !important; }
-}
+@media (prefers-reduced-motion: reduce) { .plan-sheet { animation: none !important; } }
 
 /* ---------- Interview Prep quest art ---------- */
 .quest-rays { position: absolute; inset: -40%; pointer-events: none; background: repeating-conic-gradient(from 0deg at 72% 40%, rgba(255,255,255,.07) 0deg 5deg, transparent 5deg 16deg); animation: questSpin 60s linear infinite; }
@@ -486,4 +470,24 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 .quest-card:active { transform: scale(.985); }
 @media (prefers-reduced-motion: reduce) {
   .quest-rays, .quest-star, .quest-glyph, .quest-bob, .quest-blink, .quest-glow, .quest-bubble { animation: none !important; }
+}
+
+/* ---------- Daily mission (Interview Prep) ---------- */
+.mission-pulse { transform-box: fill-box; transform-origin: center; animation: planGlow 2.2s ease-in-out infinite; }
+.mission-twinkle { animation: questTwinkle 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.mission-hover { animation: missionHover 2.8s ease-in-out infinite; }
+@keyframes missionHover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.mission-flame { transform-box: fill-box; transform-origin: top center; animation: missionFlame .25s ease-in-out infinite alternate; }
+@keyframes missionFlame { from { transform: scaleY(.8); } to { transform: scaleY(1.15); } }
+.mission-launch { animation: missionLaunch 1.3s cubic-bezier(.5,0,.75,0) forwards; }
+@keyframes missionLaunch { 0% { transform: translateY(0); } 20% { transform: translateY(4px); } 100% { transform: translateY(-190px); } }
+.mission-lid-open { animation: missionLid .5s cubic-bezier(.2,1.4,.4,1) forwards; }
+@keyframes missionLid { to { transform: rotate(-28deg) translate(-2px, -6px); } }
+.mission-coin { transform-box: fill-box; transform-origin: center; animation: missionCoin 1.6s ease-out infinite; }
+@keyframes missionCoin { 0% { transform: translate(0, 0) scale(.4); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(var(--dx), -26px) scale(1); opacity: 0; } }
+.mission-coin-in { transform-box: fill-box; transform-origin: center; animation: streakPop .5s cubic-bezier(.2,1.4,.4,1) backwards; }
+.mission-pin { animation: missionPin 1.6s ease-in-out infinite; }
+@keyframes missionPin { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) {
+  .mission-pulse, .mission-twinkle, .mission-hover, .mission-flame, .mission-coin, .mission-coin-in, .mission-pin { animation: none !important; }
 }
