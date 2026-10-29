@@ -506,7 +506,7 @@ function AppShell() {
     case 'interview':
       page = (
         <Suspense fallback={loading}>
-          <InterviewPrepPage setId={route.params.setId} itemId={route.params.itemId} studentUser={studentUser} navigate={navigate} toast={toast} />
+          <InterviewPrepPage setId={route.params.setId} itemId={route.params.itemId} tab={route.query.tab} studentUser={studentUser} navigate={navigate} toast={toast} />
         </Suspense>
       );
       break;

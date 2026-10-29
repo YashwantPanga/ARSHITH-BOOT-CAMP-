@@ -72,6 +72,7 @@ export default function Footer({ navigate }) {
             <ul className="space-y-2.5">
               {link('Home', paths.home())}
               {link('All courses', paths.courses())}
+              {link('Interview Prep', paths.interview())}
               {link('Categories', paths.categories())}
               {link('Verify a certificate', paths.verify())}
             </ul>

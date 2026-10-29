@@ -1,14 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, Circle, Eye, Lightbulb, Loader2, Lock,
-  Play, RotateCcw, Search, Send, Sparkles, Table2, Trophy, XCircle
+  ArrowLeft, ArrowRight, Award, CheckCircle2, ChevronLeft, ChevronRight, Circle, Eye, FileText, Flame, Lightbulb,
+  Loader2, Lock, Play, RotateCcw, Search, Send, Sparkles, Table2, Trophy, XCircle
 } from 'lucide-react';
 import { INTERVIEW_SETS, findInterviewSet } from '../../shared/interview/index.js';
 import { INTERVIEW_SQL_SCHEMA } from '../../shared/interview/sqlSchema.js';
-import { buildPythonCheck, parsePythonCheck, pyRepr, pythonStarter } from '../../shared/interview/pyHarness.js';
+import { RESULT_MARK, buildPythonCheck, parsePythonCheck, pyRepr, pythonStarter } from '../../shared/interview/pyHarness.js';
+import { TICK_MARK, buildJsCheck, jsRepr, jsStarter } from '../../shared/interview/jsHarness.js';
 import CodeEditor from '../components/CodeEditor';
 import { Inline } from '../components/lesson/Markdown';
-import { runPython, runSqlFresh } from '../utils/runners';
+import { runJavaScript, runPython, runSqlFresh } from '../utils/runners';
 import { api } from '../services/api';
 import { paths } from '../router';
 
@@ -19,17 +20,29 @@ import { paths } from '../router';
 const THEMES = {
   forest: { card: 'from-[#0F4636] via-[#013A2B] to-[#0C2D26]', tile: 'from-[#1E5141] to-[#0C2D26]', glow: '#7DB59A' },
   teal: { card: 'from-[#1C5E66] via-[#0F4A52] to-[#0C2D26]', tile: 'from-[#2A7079] to-[#0C2D26]', glow: '#8FD3D0' },
-  gold: { card: 'from-[#9A7222] via-[#6E4F17] to-[#3A2A0E]', tile: 'from-[#B8862B] to-[#4A3510]', glow: '#F2D27A' }
+  gold: { card: 'from-[#9A7222] via-[#6E4F17] to-[#3A2A0E]', tile: 'from-[#B8862B] to-[#4A3510]', glow: '#F2D27A' },
+  ember: { card: 'from-[#C47A1E] via-[#8E4E12] to-[#3D2108]', tile: 'from-[#D98A26] to-[#4A2A0A]', glow: '#FFD580' }
 };
+const LANG_LABEL = { sql: 'SQL', python: 'Python 3', javascript: 'JavaScript' };
 const DIFF_STYLE = {
   Easy: 'bg-mint-50 text-mint-500 border-mint-200',
   Medium: 'bg-[#FBF3DF] text-[#8A6414] border-[#EBD7A4]',
   Hard: 'bg-rose-50 text-rose-600 border-rose-200'
 };
 
-/** Line-art badge for a set: a database, a target, or speech bubbles. */
+/** Line-art badge for a set: a database, a target, a JS 30 mark or speech bubbles. */
 function SetIcon({ icon, className = 'w-24 h-24', glow = '#7DB59A' }) {
   const stroke = { stroke: glow, strokeWidth: 5, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' };
+  if (icon === 'js') {
+    return (
+      <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
+        <rect x="8" y="14" width="66" height="66" rx="16" {...stroke} />
+        <text x="41" y="64" textAnchor="middle" fontFamily="Jost, sans-serif" fontWeight="800" fontSize="34" fill={glow}>JS</text>
+        <circle cx="76" cy="74" r="17" fill={glow} />
+        <text x="76" y="80" textAnchor="middle" fontFamily="Jost, sans-serif" fontWeight="800" fontSize="16" fill="#3D2108">30</text>
+      </svg>
+    );
+  }
   if (icon === 'database') {
     return (
       <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
@@ -119,11 +132,11 @@ function useInterviewProgress(studentUser) {
 /* Page router                                                         */
 /* ------------------------------------------------------------------ */
 
-export default function InterviewPrepPage({ setId, itemId, studentUser, navigate, toast }) {
+export default function InterviewPrepPage({ setId, itemId, tab, studentUser, navigate, toast }) {
   const state = useInterviewProgress(studentUser);
   const set = setId ? findInterviewSet(setId) : null;
   const item = set && itemId ? set.items.find(i => i.id === itemId) : null;
-  const props = { ...state, navigate, toast, studentUser };
+  const props = { ...state, navigate, toast, studentUser, startTab: tab };
 
   if (setId && !set) return <NotFound navigate={navigate} what="This study plan" />;
   if (itemId && !item) return <NotFound navigate={navigate} what="This question" back={paths.interview(set.id)} />;
@@ -158,7 +171,7 @@ function PrepHome({ progress, signedIn, navigate }) {
           <div>
             <p className="eyebrow">Interview Prep</p>
             <h1 className="font-display text-[34px] sm:text-[44px] font-bold text-evergreen leading-tight mt-2">Study plans for your interviews</h1>
-            <p className="mt-3 text-[15.5px] text-charcoal/70 max-w-2xl">Practise the questions placement and job interviews really ask. Write real SQL and Python in your browser, check your answer instantly, and learn from a worked solution for every problem.</p>
+            <p className="mt-3 text-[15.5px] text-charcoal/70 max-w-2xl">Practise the questions placement and job interviews really ask. Write real SQL, Python and JavaScript in your browser, check your answer instantly, and learn from a worked solution for every problem.</p>
           </div>
           {signedIn
             ? <div className="edu-card px-5 py-3.5 shrink-0"><p className="text-[12px] text-charcoal/55">Solved so far</p><p className="font-display text-[26px] font-bold text-forest leading-none mt-1">{done}<span className="text-charcoal/40 text-[16px]"> / {total}</span></p></div>
@@ -189,7 +202,7 @@ function PrepHome({ progress, signedIn, navigate }) {
 
         <section className="mt-12">
           <h2 className="font-display text-[22px] font-bold text-evergreen">Featured</h2>
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
             {INTERVIEW_SETS.map(s => {
               const theme = THEMES[s.theme];
               const diff = countBy(s.items, 'difficulty');
@@ -198,16 +211,37 @@ function PrepHome({ progress, signedIn, navigate }) {
                 <button key={s.id} onClick={() => navigate(paths.interview(s.id))}
                   className={`group relative overflow-hidden rounded-[22px] bg-gradient-to-br ${theme.card} p-6 h-[300px] flex flex-col items-start justify-start text-left text-ivory shadow-[0_22px_40px_-24px_rgba(12,45,38,.9)] hover:-translate-y-1 transition duration-300`}>
                   <span className="absolute -right-10 -top-10 w-44 h-44 rounded-full opacity-20 blur-2xl" style={{ background: theme.glow }} />
-                  <span className="relative block font-display text-[23px] font-bold leading-tight">{s.title}</span>
+                  <span className="relative block font-display text-[21px] font-bold leading-tight">{s.title}</span>
                   <span className="relative block mt-1.5 text-[14px] text-ivory/75">{s.tagline}</span>
                   <span className="relative mt-4 flex flex-wrap gap-1.5 text-[11.5px] font-semibold">
                     {['Easy', 'Medium', 'Hard'].filter(d => diff[d]).map(d => <span key={d} className="px-2 py-0.5 rounded-full bg-white/12 border border-white/15">{diff[d]} {d}</span>)}
                   </span>
-                  <SetIcon icon={s.icon} glow={theme.glow} className="absolute right-5 bottom-5 w-28 h-28 group-hover:scale-105 group-hover:-rotate-3 transition duration-300" />
-                  <span className="absolute left-6 bottom-6 right-40">
+                  <SetIcon icon={s.icon} glow={theme.glow} className="absolute right-4 bottom-4 w-24 h-24 group-hover:scale-105 group-hover:-rotate-3 transition duration-300" />
+                  <span className="absolute left-6 bottom-6 right-28">
                     {signedIn && solved > 0 && <span className="block mb-2"><ProgressBar value={solved} total={s.items.length} light /></span>}
-                    <span className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold whitespace-nowrap">{solved ? `Continue · ${solved}/${s.items.length}` : `Start · ${s.items.length} ${s.kind === 'concept' ? 'questions' : 'problems'}`} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
+                    <span className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold whitespace-nowrap">{solved ? `Continue · ${solved}/${s.items.length}` : `Start · ${s.items.length}`} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
                   </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="mt-12">
+          <h2 className="font-display text-[22px] font-bold text-evergreen flex items-center gap-2"><Flame className="w-5 h-5 text-[#C47A1E]" /> 30-Day Challenge</h2>
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {INTERVIEW_SETS.filter(s => s.challenge).map(s => {
+              const theme = THEMES[s.theme];
+              const solved = Object.keys(progress[s.id] || {}).length;
+              return (
+                <button key={s.id} onClick={() => navigate(paths.interview(s.id))} className="edu-card p-3 flex items-center gap-4 text-left hover:border-sage/50 hover:-translate-y-0.5 transition">
+                  <span className={`w-[76px] h-[76px] rounded-xl bg-gradient-to-br ${theme.tile} flex items-center justify-center shrink-0`}><SetIcon icon={s.icon} glow={theme.glow} className="w-14 h-14" /></span>
+                  <span className="flex-1 min-w-0 pr-2">
+                    <span className="block font-display text-[17px] font-semibold text-evergreen">{s.title}</span>
+                    <span className="block text-[13px] text-charcoal/60 mt-0.5">{s.tagline}</span>
+                    <span className="block text-[12.5px] text-[#9C5A12] font-semibold mt-1.5">{solved ? `Day ${Math.min(solved + 1, s.items.length)} of ${s.items.length}` : `${s.items.length} days · start today`}</span>
+                  </span>
+                  <ArrowRight className="w-5 h-5 text-charcoal/35 shrink-0" />
                 </button>
               );
             })}
@@ -216,7 +250,7 @@ function PrepHome({ progress, signedIn, navigate }) {
 
         <section className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            [Play, 'Write and run', 'A real editor with SQL and Python running right in your browser. Nothing to install.'],
+            [Play, 'Write and run', 'A real editor with SQL, Python and JavaScript running right in your browser. Nothing to install.'],
             [CheckCircle2, 'Check instantly', 'Run the examples, then submit against hidden tests or the expected result table.'],
             [Lightbulb, 'Learn the pattern', 'Every problem has a worked solution, a plain-English explanation and its complexity.']
           ].map(([Icon, t, d]) => (
@@ -245,6 +279,7 @@ function SetPage({ set, progress, signedIn, navigate }) {
   const [diff, setDiff] = useState('All');
   const [status, setStatus] = useState('All');
   const [q, setQ] = useState('');
+  const [showTags, setShowTags] = useState(false);
   const list = set.items.filter(i =>
     (topic === 'All' || i.topic === topic) && (diff === 'All' || i.difficulty === diff)
     && (status === 'All' || (status === 'Solved') === !!solvedMap[i.id])
@@ -263,12 +298,13 @@ function SetPage({ set, progress, signedIn, navigate }) {
         <div className={`mt-4 relative overflow-hidden rounded-[24px] bg-gradient-to-br ${theme.card} text-ivory p-6 sm:p-8`}>
           <span className="absolute -right-16 -bottom-16 w-72 h-72 rounded-full opacity-15 blur-3xl" style={{ background: theme.glow }} />
           <div className="relative flex flex-col lg:flex-row gap-6 lg:items-center">
-            <SetIcon icon={set.icon} glow={theme.glow} className="w-24 h-24 shrink-0" />
+            <SetIcon icon={set.icon} glow={theme.glow} className="w-24 h-24 sm:w-28 sm:h-28 shrink-0" />
             <div className="flex-1 min-w-0">
-              <h1 className="font-display text-[30px] sm:text-[36px] font-bold leading-tight">{set.title}</h1>
+              <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-ivory/70">{set.tagline}</p>
+              <h1 className="font-display text-[30px] sm:text-[38px] font-bold leading-tight mt-1">{set.title}</h1>
               <p className="mt-2 text-[15px] text-ivory/80 max-w-2xl">{set.description}</p>
               <button onClick={() => navigate(paths.interview(set.id, next.id))} className="mt-5 inline-flex items-center gap-2 h-11 px-5 rounded-md bg-ivory text-forest font-display font-semibold text-[15px] hover:bg-white transition">
-                {solved ? 'Continue' : 'Start'} with #{next.n} <ArrowRight className="w-4 h-4" />
+                <Play className="w-4 h-4" /> {solved ? 'Continue' : 'Start'} with #{next.n}
               </button>
             </div>
             <div className="lg:w-64 shrink-0 rounded-2xl bg-white/10 border border-white/15 p-4">
@@ -282,52 +318,140 @@ function SetPage({ set, progress, signedIn, navigate }) {
           </div>
         </div>
 
-        <div className="mt-7 flex flex-col lg:flex-row gap-3 lg:items-center">
-          <div className="flex gap-2 overflow-x-auto thin-scroll pb-1 flex-1">
-            {['All', ...topics].map(t => (
-              <button key={t} onClick={() => setTopic(t)} className={`shrink-0 px-3.5 py-1.5 rounded-full text-[13px] font-medium border transition ${topic === t ? 'bg-forest text-ivory border-forest' : 'bg-white text-charcoal/75 border-brand-900/15 hover:border-sage'}`}>{t}</button>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <div className="relative flex-1 lg:w-52">
-              <Search className="w-4 h-4 text-charcoal/40 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Search ${noun}`} className="w-full h-10 pl-9 pr-3 rounded-lg border border-brand-900/15 bg-white text-[14px] outline-none focus:border-sage" />
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-7 items-start">
+          <div className="min-w-0">
+            <div className="flex flex-col gap-3">
+              <div className="flex gap-2 overflow-x-auto thin-scroll pb-1">
+                {['All', ...topics].map(t => (
+                  <button key={t} onClick={() => setTopic(t)} className={`shrink-0 px-3.5 py-1.5 rounded-full text-[13px] font-medium border transition ${topic === t ? 'bg-forest text-ivory border-forest' : 'bg-white text-charcoal/75 border-brand-900/15 hover:border-sage'}`}>{t}</button>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2 items-center">
+                <div className="relative flex-1 min-w-[180px]">
+                  <Search className="w-4 h-4 text-charcoal/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Search ${noun}`} className="w-full h-10 pl-9 pr-3 rounded-lg border border-brand-900/15 bg-white text-[14px] outline-none focus:border-sage" />
+                </div>
+                <select value={diff} onChange={e => setDiff(e.target.value)} className="h-10 px-2.5 rounded-lg border border-brand-900/15 bg-white text-[14px]" aria-label="Difficulty">
+                  {['All', 'Easy', 'Medium', 'Hard'].map(d => <option key={d} value={d}>{d === 'All' ? 'Any level' : d}</option>)}
+                </select>
+                <select value={status} onChange={e => setStatus(e.target.value)} className="h-10 px-2.5 rounded-lg border border-brand-900/15 bg-white text-[14px]" aria-label="Status">
+                  {['All', 'Solved', 'Unsolved'].map(d => <option key={d} value={d}>{d === 'All' ? 'Any status' : d}</option>)}
+                </select>
+                <label className="ml-auto inline-flex items-center gap-2 text-[13px] text-charcoal/65 cursor-pointer select-none">
+                  <input type="checkbox" checked={showTags} onChange={e => setShowTags(e.target.checked)} className="accent-[#013A2B] w-4 h-4" /> Show tags
+                </label>
+              </div>
             </div>
-            <select value={diff} onChange={e => setDiff(e.target.value)} className="h-10 px-2.5 rounded-lg border border-brand-900/15 bg-white text-[14px]" aria-label="Difficulty">
-              {['All', 'Easy', 'Medium', 'Hard'].map(d => <option key={d} value={d}>{d === 'All' ? 'Any level' : d}</option>)}
-            </select>
-            <select value={status} onChange={e => setStatus(e.target.value)} className="h-10 px-2.5 rounded-lg border border-brand-900/15 bg-white text-[14px]" aria-label="Status">
-              {['All', 'Solved', 'Unsolved'].map(d => <option key={d} value={d}>{d === 'All' ? 'Any status' : d}</option>)}
-            </select>
-          </div>
-        </div>
 
-        <div className="mt-5 edu-card overflow-hidden">
-          {list.length === 0 && <p className="p-8 text-center text-charcoal/55">No {noun} match these filters.</p>}
-          {list.map((i, idx) => {
-            const isDone = !!solvedMap[i.id];
-            const newTopic = idx === 0 || list[idx - 1].topic !== i.topic;
-            return (
-              <React.Fragment key={i.id}>
-                {newTopic && topic === 'All' && <div className="px-5 py-2 bg-cream text-[11.5px] font-semibold uppercase tracking-[0.16em] text-sage border-b border-brand-900/8">{i.topic}</div>}
-                <button onClick={() => navigate(paths.interview(set.id, i.id))} className="w-full flex items-center gap-3.5 px-5 py-3.5 border-b border-brand-900/8 last:border-b-0 text-left hover:bg-brand-50/50 transition">
-                  {isDone ? <CheckCircle2 className="w-5 h-5 text-mint-400 shrink-0" /> : <Circle className="w-5 h-5 text-charcoal/20 shrink-0" />}
-                  <span className="w-8 text-[13px] text-charcoal/40 tabular-nums shrink-0">{i.n}.</span>
-                  <span className="flex-1 min-w-0 text-[15px] text-charcoal truncate">{i.title}</span>
-                  {topic === 'All' && <span className="hidden md:block text-[12.5px] text-charcoal/45 w-40 truncate">{i.topic}</span>}
-                  <span className="w-[68px] flex justify-end shrink-0"><DifficultyPill level={i.difficulty} /></span>
-                </button>
-              </React.Fragment>
-            );
-          })}
+            <div className="mt-5 space-y-5">
+              {list.length === 0 && <p className="edu-card p-8 text-center text-charcoal/55">No {noun} match these filters.</p>}
+              {[...new Set(list.map(i => i.topic))].map(tp => (
+                <div key={tp} className="edu-card overflow-hidden">
+                  <div className="px-5 py-2.5 bg-cream border-b border-brand-900/8 flex items-center justify-between">
+                    <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-sage">{tp}</span>
+                    <span className="text-[12px] text-charcoal/45">{list.filter(i => i.topic === tp && solvedMap[i.id]).length} / {list.filter(i => i.topic === tp).length}</span>
+                  </div>
+                  {list.filter(i => i.topic === tp).map(i => {
+                    const isDone = !!solvedMap[i.id];
+                    return (
+                      <div key={i.id} className="flex items-center gap-3 px-5 py-3 border-b border-brand-900/8 last:border-b-0 hover:bg-brand-50/50 transition">
+                        {isDone ? <CheckCircle2 className="w-5 h-5 text-mint-400 shrink-0" /> : <Circle className="w-5 h-5 text-charcoal/20 shrink-0" />}
+                        <button onClick={() => navigate(paths.interview(set.id, i.id))} className="flex-1 min-w-0 text-left">
+                          <span className="block text-[15px] text-charcoal truncate hover:text-forest">{i.n}. {i.title}</span>
+                          {showTags && <span className="block text-[12px] text-charcoal/45 mt-0.5">{i.topic}{i.fn ? ` · ${i.fn}` : ''}</span>}
+                        </button>
+                        <button onClick={() => navigate(`${paths.interview(set.id, i.id)}?tab=solution`)} className="hidden sm:inline-flex items-center gap-1 text-[12.5px] text-charcoal/55 hover:text-forest shrink-0">
+                          <FileText className="w-3.5 h-3.5" /> {set.kind === 'concept' ? 'Answer' : 'Solution'}
+                        </button>
+                        <span className="w-[68px] flex justify-end shrink-0"><DifficultyPill level={i.difficulty} /></span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <PlanSidebar set={set} solved={solved} navigate={navigate} progress={progress} />
         </div>
       </div>
     </div>
   );
 }
 
+/** Right column of a plan: summary, completion award, related plans and this week's top learners. */
+function PlanSidebar({ set, solved, navigate, progress }) {
+  const theme = THEMES[set.theme];
+  const earned = solved >= set.items.length;
+  const [leaders, setLeaders] = useState(null);
+  useEffect(() => {
+    let live = true;
+    api.getInterviewLeaders(set.id).then(r => live && setLeaders(r.leaders || [])).catch(() => live && setLeaders([]));
+    return () => { live = false; };
+  }, [set.id, solved]);
+  return (
+    <aside className="space-y-5 lg:sticky lg:top-24">
+      <div className="edu-card p-5">
+        <h3 className="font-display text-[18px] font-semibold text-evergreen">Summary</h3>
+        <ul className="mt-3 space-y-2">
+          {(set.summary || []).map(s => <li key={s} className="flex gap-2 text-[14px] text-charcoal/75"><CheckCircle2 className="w-4 h-4 text-sage shrink-0 mt-0.5" />{s}</li>)}
+        </ul>
+        <p className="mt-3 text-[12.5px] text-charcoal/50">{set.items.length} {set.kind === 'concept' ? 'questions' : 'problems'} · {[...new Set(set.items.map(i => i.topic))].length} topics</p>
+      </div>
+
+      <div className="edu-card p-5">
+        <h3 className="font-display text-[18px] font-semibold text-evergreen flex items-center gap-2"><Award className="w-5 h-5 text-sage" /> Award</h3>
+        <div className="mt-3 flex items-center gap-3.5">
+          <span className={`relative w-16 h-16 rounded-full bg-gradient-to-br ${theme.tile} flex items-center justify-center shrink-0 ${earned ? 'ring-4 ring-[#F2D27A]/60' : 'opacity-75'}`}>
+            <SetIcon icon={set.icon} glow={theme.glow} className="w-10 h-10" />
+            {earned && <CheckCircle2 className="absolute -right-1 -bottom-1 w-6 h-6 text-mint-400 bg-white rounded-full" />}
+          </span>
+          <div className="min-w-0">
+            <p className="font-semibold text-[14.5px] text-charcoal">{set.title} badge</p>
+            <p className="text-[12.5px] text-charcoal/60">{earned ? 'Earned. Well done!' : `Complete all ${set.items.length} to earn it · ${set.items.length - solved} to go`}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="edu-card p-5">
+        <h3 className="font-display text-[18px] font-semibold text-evergreen">Related</h3>
+        <div className="mt-3 space-y-2.5">
+          {INTERVIEW_SETS.filter(s => s.id !== set.id).map(s => {
+            const th = THEMES[s.theme];
+            const done = Object.keys(progress[s.id] || {}).length;
+            return (
+              <button key={s.id} onClick={() => navigate(paths.interview(s.id))} className="w-full flex items-center gap-3 text-left group">
+                <span className={`w-11 h-11 rounded-lg bg-gradient-to-br ${th.tile} flex items-center justify-center shrink-0`}><SetIcon icon={s.icon} glow={th.glow} className="w-7 h-7" /></span>
+                <span className="min-w-0">
+                  <span className="block text-[14px] font-semibold text-charcoal group-hover:text-forest truncate">{s.title}</span>
+                  <span className="block text-[12px] text-charcoal/50 truncate">{done ? `${done} / ${s.items.length} solved` : s.tagline}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="edu-card p-5">
+        <h3 className="font-display text-[18px] font-semibold text-evergreen flex items-center gap-2"><Flame className="w-5 h-5 text-[#C47A1E]" /> Top learners this week</h3>
+        {leaders === null && <p className="mt-3 text-[13px] text-charcoal/50">Loading…</p>}
+        {leaders?.length === 0 && <p className="mt-3 text-[13px] text-charcoal/55">No one has solved a problem here this week. Be the first!</p>}
+        <ol className="mt-3 space-y-2.5">
+          {(leaders || []).map((l, i) => (
+            <li key={i} className="flex items-center gap-3">
+              <span className={`w-6 text-center font-display font-bold ${i === 0 ? 'text-[#C47A1E]' : 'text-charcoal/40'}`}>{i + 1}</span>
+              <span className="w-8 h-8 rounded-full bg-brand-100 text-forest text-[12px] font-semibold flex items-center justify-center">{l.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</span>
+              <span className="flex-1 min-w-0"><span className="block text-[14px] text-charcoal truncate">{l.name}</span><span className="block text-[12px] text-charcoal/50">Solved {l.solved} {l.solved === 1 ? 'problem' : 'problems'}</span></span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </aside>
+  );
+}
+
 /* ------------------------------------------------------------------ */
-/* Problem workspace (SQL and Python)                                  */
+/* Problem workspace (SQL, Python and JavaScript)                                  */
 /* ------------------------------------------------------------------ */
 
 function TopBar({ set, item, navigate, solved }) {
@@ -408,14 +532,15 @@ function TablePreview({ tables }) {
   );
 }
 
-function Workspace({ set, item, progress, mark, signedIn, navigate, toast }) {
+function Workspace({ set, item, progress, mark, signedIn, navigate, toast, startTab }) {
   const isSql = set.kind === 'sql';
-  const starter = isSql ? `-- Write your SQL query here\nSELECT ` : pythonStarter(item);
+  const isJs = set.kind === 'javascript';
+  const starter = isSql ? `-- Write your SQL query here\nSELECT ` : isJs ? jsStarter(item) : pythonStarter(item);
   const [code, setCode] = useState(() => readDraft(item.id) ?? starter);
-  const [tab, setTab] = useState('problem');
+  const [tab, setTab] = useState(startTab === 'solution' ? 'solution' : 'problem');
   const [busy, setBusy] = useState(null);       // 'run' | 'submit'
   const [out, setOut] = useState(null);         // what the output panel shows
-  const [reveal, setReveal] = useState(false);
+  const [reveal, setReveal] = useState(startTab === 'solution');
   const stopRef = useRef(null);
   const solved = !!progress[set.id]?.[item.id];
 
@@ -470,7 +595,20 @@ function Workspace({ set, item, progress, mark, signedIn, navigate, toast }) {
     });
   };
 
-  const run = (submit) => (busy ? null : isSql ? runSql(submit) : runPy(submit));
+  const runJs = async (submit) => {
+    setBusy(submit ? 'submit' : 'run');
+    setOut({ kind: 'status', text: 'Running your code…' });
+    const { output, errors: raw } = await runJavaScript(buildJsCheck(item, code, submit ? Infinity : 2), { quietMs: 3500, maxMs: 20000, doneMark: RESULT_MARK });
+    setBusy(null);
+    const errors = raw.map(e => e.replace(/ \(line \d+\)$/, ''));   // line numbers point into the test wrapper
+    const { printed, result } = parsePythonCheck(output.split('\n').filter(l => l !== TICK_MARK).join('\n'));
+    if (!result) { setOut({ kind: 'error', text: errors.join('\n') || 'Your code stopped before it could be tested (it took too long or has a syntax error).', printed }); return; }
+    const all = result.results.every(r => r.ok);
+    setOut({ kind: 'py', results: result.results, printed: [printed, ...errors].filter(Boolean).join('\n'), submit, verdict: submit ? (all ? 'accepted' : 'wrong') : null });
+    if (submit && all) accept();
+  };
+
+  const run = (submit) => (busy ? null : isSql ? runSql(submit) : isJs ? runJs(submit) : runPy(submit));
 
   return (
     <div className="bg-ivory min-h-screen">
@@ -491,7 +629,13 @@ function Workspace({ set, item, progress, mark, signedIn, navigate, toast }) {
                 <div className="mt-5 space-y-3"><Paragraphs text={item.prompt} /></div>
                 {isSql && item.ordered && <p className="mt-3 text-[13px] text-charcoal/60">Row order matters for this one.</p>}
                 {isSql && <p className="mt-3 text-[13px] text-charcoal/60">Column names do not matter; the values in each row do.</p>}
-                {!isSql && item.tests.slice(0, 2).map(([args, exp], i) => (
+                {isJs && item.tests.slice(0, 2).map((tc, i) => (
+                  <div key={i} className="mt-5">
+                    <p className="text-[13.5px] font-semibold text-evergreen">Example {i + 1}</p>
+                    <pre className="mt-1.5 p-3.5 rounded-xl bg-cream border border-brand-900/8 text-[13px] leading-6 overflow-x-auto thin-scroll font-mono text-charcoal">{`${tc.code}\n// returns ${jsRepr(tc.expected)}`}</pre>
+                  </div>
+                ))}
+                {set.kind === 'python' && item.tests.slice(0, 2).map(([args, exp], i) => (
                   <div key={i} className="mt-5">
                     <p className="text-[13.5px] font-semibold text-evergreen">Example {i + 1}</p>
                     <pre className="mt-1.5 p-3.5 rounded-xl bg-cream border border-brand-900/8 text-[13px] leading-6 overflow-x-auto thin-scroll font-mono text-charcoal">{`Input:  ${item.fn}(${args.map(pyRepr).join(', ')})\nOutput: ${pyRepr(exp)}`}</pre>
@@ -526,10 +670,10 @@ function Workspace({ set, item, progress, mark, signedIn, navigate, toast }) {
         <div className="min-w-0 flex flex-col gap-4">
           <div className="edu-card overflow-hidden">
             <div className="flex items-center gap-2 px-4 py-2.5 border-b border-brand-900/10 bg-cream/60">
-              <span className="text-[12.5px] font-semibold uppercase tracking-[0.14em] text-sage">{isSql ? 'SQL' : 'Python 3'}</span>
+              <span className="text-[12.5px] font-semibold uppercase tracking-[0.14em] text-sage">{LANG_LABEL[set.kind]}</span>
               <button onClick={reset} className="ml-auto inline-flex items-center gap-1 text-[12.5px] text-charcoal/55 hover:text-forest"><RotateCcw className="w-3.5 h-3.5" /> Reset</button>
             </div>
-            <CodeEditor value={code} onChange={edit} lang={isSql ? 'sql' : 'python'} onRun={() => run(false)} minHeight={isSql ? 220 : 300} label={`${item.title} answer`} />
+            <CodeEditor value={code} onChange={edit} lang={set.kind} onRun={() => run(false)} minHeight={isSql ? 220 : 300} label={`${item.title} answer`} />
             <div className="flex items-center gap-2 px-4 py-3 border-t border-brand-900/10">
               <span className="hidden sm:inline text-[12px] text-charcoal/45">Ctrl + Enter runs</span>
               <button onClick={() => run(false)} disabled={!!busy} className="ml-auto inline-flex items-center gap-1.5 h-10 px-4 rounded-md border border-forest/40 text-forest font-semibold text-[14px] hover:bg-brand-50 disabled:opacity-60">
@@ -541,7 +685,7 @@ function Workspace({ set, item, progress, mark, signedIn, navigate, toast }) {
             </div>
           </div>
 
-          <OutputPanel out={out} item={item} isSql={isSql} signedIn={signedIn} navigate={navigate} set={set} />
+          <OutputPanel out={out} item={item} isSql={isSql} isJs={isJs} signedIn={signedIn} navigate={navigate} set={set} />
         </div>
       </div>
     </div>
@@ -569,7 +713,7 @@ function Verdict({ ok, signedIn, navigate, set, item }) {
   );
 }
 
-function OutputPanel({ out, item, isSql, signedIn, navigate, set }) {
+function OutputPanel({ out, item, isSql, isJs, signedIn, navigate, set }) {
   return (
     <div className="edu-card p-4 sm:p-5 min-h-[160px]">
       <p className="eyebrow mb-3">Output</p>
@@ -597,13 +741,16 @@ function OutputPanel({ out, item, isSql, signedIn, navigate, set }) {
             {out.results.map((r, i) => {
               const hidden = i >= 2;
               if (r.ok && hidden) return null;
-              const [args, exp] = item.tests[i];
+              const [args, exp] = isJs ? [null, item.tests[i].expected] : item.tests[i];
+              const show = isJs ? jsRepr : pyRepr;
               return (
                 <div key={i} className={`rounded-lg border p-3 text-[12.5px] font-mono ${r.ok ? 'border-mint-200 bg-mint-50/50' : 'border-rose-200 bg-rose-50/60'}`}>
                   <p className={`font-sans font-semibold text-[13px] ${r.ok ? 'text-mint-500' : 'text-rose-600'}`}>{r.ok ? '✓' : '✗'} {hidden ? `Hidden test ${i - 1}` : `Example ${i + 1}`}</p>
-                  <p className="mt-1 text-charcoal/75 break-all">Input: {item.fn}({args.map(pyRepr).join(', ')})</p>
-                  <p className="text-charcoal/75 break-all">Expected: {pyRepr(exp)}</p>
-                  {!r.ok && <p className="text-rose-700 break-all">{r.error ? r.error : `Got: ${pyRepr(r.got)}`}</p>}
+                  {isJs
+                    ? <pre className="mt-1 text-charcoal/75 whitespace-pre-wrap">{item.tests[i].code}</pre>
+                    : <p className="mt-1 text-charcoal/75 break-all">Input: {item.fn}({args.map(pyRepr).join(', ')})</p>}
+                  <p className="text-charcoal/75 break-all">Expected: {show(exp)}</p>
+                  {!r.ok && <p className="text-rose-700 break-all">{r.error ? r.error : `Got: ${show(r.got)}`}</p>}
                 </div>
               );
             })}
@@ -619,8 +766,8 @@ function OutputPanel({ out, item, isSql, signedIn, navigate, set }) {
 /* Concept question card                                               */
 /* ------------------------------------------------------------------ */
 
-function ConceptCard({ set, item, progress, mark, signedIn, navigate, toast }) {
-  const [open, setOpen] = useState(false);
+function ConceptCard({ set, item, progress, mark, signedIn, navigate, toast, startTab }) {
+  const [open, setOpen] = useState(startTab === 'solution');
   const known = !!progress[set.id]?.[item.id];
   const idx = set.items.indexOf(item);
   const next = set.items[idx + 1];

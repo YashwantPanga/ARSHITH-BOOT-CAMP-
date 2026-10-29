@@ -1,11 +1,13 @@
 // Checks the Interview Prep answers: every DSA solution must pass all of its tests in real Python,
-// the empty starter must not, and every SQL solution must run on the practice database.
+// every JavaScript solution all of its tests in Node, the empty starters must not, and every SQL
+// solution must run on the practice database.
 //   node scripts/verify-interview.mjs          (python on PATH, or set PYTHON=...)
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { findInterviewSet } from '../shared/interview/index.js';
 import { buildPythonCheck, parsePythonCheck, pythonStarter } from '../shared/interview/pyHarness.js';
 import { INTERVIEW_SQL_SCHEMA } from '../shared/interview/sqlSchema.js';
+import { buildJsCheck, jsStarter } from '../shared/interview/jsHarness.js';
 
 const require = createRequire(import.meta.url);
 const PY = process.env.PYTHON || 'python';
@@ -23,6 +25,20 @@ for (const p of findInterviewSet('dsa-75').items) {
   if (!result?.results) { fail(`${p.id} ${p.title}: no result ${printed.slice(-300)}`); continue; }
   result.results.forEach((r, i) => { if (!r.ok) fail(`${p.id} ${p.title}: test ${i + 1} got ${JSON.stringify(r.got ?? r.error)} expected ${JSON.stringify(p.tests[i][1])}`); });
   const starter = runPy(buildPythonCheck(p, pythonStarter(p)));
+  if (starter.result?.results?.every(r => r.ok)) fail(`${p.id}: the empty starter passes every test`);
+}
+
+function runJs(src) {
+  const r = spawnSync(process.execPath, ['-'], { input: src, encoding: 'utf8', timeout: 60000 });
+  return parsePythonCheck((r.stdout || '') + (r.stderr ? `\n${r.stderr}` : ''));
+}
+
+console.log('JavaScript 30-Day Sprint');
+for (const p of findInterviewSet('js-30').items) {
+  const { result, printed } = runJs(buildJsCheck(p, p.solution));
+  if (!result?.results) { fail(`${p.id} ${p.title}: no result ${printed.slice(-300)}`); continue; }
+  result.results.forEach((r, i) => { if (!r.ok) fail(`${p.id} ${p.title}: test ${i + 1} got ${JSON.stringify(r.got ?? r.error)} expected ${JSON.stringify(p.tests[i].expected)}`); });
+  const starter = runJs(buildJsCheck(p, jsStarter(p)));
   if (starter.result?.results?.every(r => r.ok)) fail(`${p.id}: the empty starter passes every test`);
 }
 

@@ -157,9 +157,9 @@ export function buildWebDoc(code, lang) {
 /**
  * Runs JavaScript in a hidden sandboxed iframe (no access to this page, cookies or storage) and
  * resolves with the console output once the code has been quiet for a moment (so timers/promises
- * can finish). Capped at `maxMs`.
+ * can finish). Capped at `maxMs`. With `doneMark`, it finishes as soon as a line containing it is logged.
  */
-export function runJavaScript(code, { quietMs = 400, maxMs = 4000 } = {}) {
+export function runJavaScript(code, { quietMs = 400, maxMs = 4000, doneMark = null } = {}) {
   return new Promise((resolve) => {
     const runId = Math.random().toString(36).slice(2);
     const lines = [];
@@ -180,6 +180,7 @@ export function runJavaScript(code, { quietMs = 400, maxMs = 4000 } = {}) {
       if (e.source !== frame.contentWindow || !e.data || e.data.runId !== runId) return;
       if (e.data.kind === 'error') errors.push(e.data.text);
       else if (e.data.kind !== 'ready') lines.push(e.data.text);
+      if (doneMark && String(e.data.text).includes(doneMark)) { finish(); return; }
       bump();
     };
     const hardTimer = setTimeout(finish, maxMs);

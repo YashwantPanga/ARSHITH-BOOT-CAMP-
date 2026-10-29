@@ -12,8 +12,8 @@ import { buildPythonCheck, parsePythonCheck, pyRepr } from '../shared/interview/
 // Interview Prep content and progress. Python answers are checked against real Python by
 // `npm run verify:interview`; here we check the content shape, the SQL answers and the API.
 describe('interview content', () => {
-  it('has three sets with unique ids and complete items', () => {
-    expect(INTERVIEW_SETS.map(s => [s.id, s.items.length])).toEqual([['sql-50', 50], ['dsa-75', 75], ['questions-60', 60]]);
+  it('has four sets with unique ids and complete items', () => {
+    expect(INTERVIEW_SETS.map(s => [s.id, s.items.length])).toEqual([['sql-50', 50], ['dsa-75', 75], ['js-30', 30], ['questions-60', 60]]);
     const ids = INTERVIEW_SETS.flatMap(s => s.items.map(i => i.id));
     expect(new Set(ids).size).toBe(ids.length);
     for (const s of INTERVIEW_SETS) {
@@ -26,6 +26,10 @@ describe('interview content', () => {
           expect(it.solution, it.id).toContain(`def ${it.fn}(`);
         }
         if (s.kind === 'concept') expect(it.answer.length, it.id).toBeGreaterThan(80);
+        if (s.kind === 'javascript') {
+          expect(it.tests.length >= 3 && it.tests.every(t => t.code.includes('return')), it.id).toBeTruthy();
+          expect(it.solution, it.id).toContain(it.cls ? `class ${it.fn} ` : `function ${it.fn}(`);
+        }
       }
     }
   });
@@ -80,6 +84,8 @@ describe('interview progress API', () => {
     const p = (await request(app).get('/api/interview/progress').set('X-Learner-Token', tok)).body.progress;
     expect(Object.keys(p['sql-50'])).toEqual(['sql-01']);
     expect(Object.keys(p['dsa-75'])).toEqual(['dsa-10']);
+    const leaders = (await request(app).get('/api/interview/leaderboard/dsa-75')).body.leaders;
+    expect(leaders).toEqual([{ name: 'Prep L.', solved: 1 }]);
     const cleared = (await mark({ setId: 'sql-50', itemId: 'sql-01', solved: false })).body.progress;
     expect(cleared['sql-50']).toEqual({});
   });
