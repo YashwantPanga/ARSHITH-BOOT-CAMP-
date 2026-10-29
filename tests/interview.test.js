@@ -8,6 +8,7 @@ import initSqlJs from 'sql.js';
 import { INTERVIEW_SETS, findInterviewSet } from '../shared/interview/index.js';
 import { INTERVIEW_SQL_SCHEMA } from '../shared/interview/sqlSchema.js';
 import { buildPythonCheck, parsePythonCheck, pyRepr } from '../shared/interview/pyHarness.js';
+import { approachesFor } from '../shared/interview/approaches/index.js';
 
 // Interview Prep content and progress. Python answers are checked against real Python by
 // `npm run verify:interview`; here we check the content shape, the SQL answers and the API.
@@ -30,6 +31,18 @@ describe('interview content', () => {
           expect(it.tests.length >= 3 && it.tests.every(t => t.code.includes('return')), it.id).toBeTruthy();
           expect(it.solution, it.id).toContain(it.cls ? `class ${it.fn} ` : `function ${it.fn}(`);
         }
+      }
+    }
+  });
+
+  it('every coding problem has several approaches with one recommended', () => {
+    for (const set of INTERVIEW_SETS.filter(s => s.kind !== 'concept')) {
+      for (const item of set.items) {
+        const { list, pick } = approachesFor(item);
+        expect(list.length, item.id).toBeGreaterThanOrEqual(2);
+        expect(list.filter(a => a.recommended), item.id).toHaveLength(1);
+        expect(pick, item.id).toBeTruthy();
+        for (const a of list) expect(a.title && a.idea && a.code, `${item.id} ${a.title}`).toBeTruthy();
       }
     }
   });

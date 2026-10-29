@@ -13,6 +13,7 @@ import { runJavaScript, runPython, runSqlFresh } from '../utils/runners';
 import { noteCoding } from '../utils/activity';
 import { MyPlanCard, PlanModal, planStats } from '../components/interview/StudyPlan';
 import { QUEST, QuestCard, QuestHero } from '../components/interview/QuestArt';
+import Approaches from '../components/interview/Approaches';
 import { api } from '../services/api';
 import { paths } from '../router';
 
@@ -653,14 +654,7 @@ function Workspace({ set, item, progress, plans, mark, signedIn, navigate, toast
               </div>
             ) : (
               <>
-                <h2 className="font-display text-[20px] font-bold text-evergreen">Solution</h2>
-                <CodeView code={item.solution} />
-                <div className="mt-5 rounded-xl bg-brand-50/70 border border-brand-900/10 p-4">
-                  <p className="flex items-center gap-2 font-semibold text-evergreen text-[14px]"><Lightbulb className="w-4 h-4 text-sage" /> How it works</p>
-                  <div className="mt-2 space-y-2"><Paragraphs text={item.explanation} className="text-[14.5px]" /></div>
-                  {item.complexity && <p className="mt-3 text-[13px] text-charcoal/65"><b className="text-charcoal">Complexity:</b> {item.complexity}</p>}
-                </div>
-                <button onClick={() => { edit(item.solution); setTab('problem'); }} className="mt-4 text-[13.5px] font-semibold text-forest hover:underline">Copy into the editor to experiment</button>
+                <Approaches item={item} onCopy={(code) => { edit(code); setTab('problem'); }} />
               </>
             )}
           </div>

@@ -8,6 +8,8 @@ import { findInterviewSet } from '../shared/interview/index.js';
 import { buildPythonCheck, parsePythonCheck, pythonStarter } from '../shared/interview/pyHarness.js';
 import { INTERVIEW_SQL_SCHEMA } from '../shared/interview/sqlSchema.js';
 import { buildJsCheck, jsStarter } from '../shared/interview/jsHarness.js';
+import { allExtraApproaches } from '../shared/interview/approaches/index.js';
+import { findInterviewItem } from '../shared/interview/index.js';
 
 const require = createRequire(import.meta.url);
 const PY = process.env.PYTHON || 'python';
@@ -42,6 +44,17 @@ for (const p of findInterviewSet('js-30').items) {
   if (starter.result?.results?.every(r => r.ok)) fail(`${p.id}: the empty starter passes every test`);
 }
 
+console.log('Extra approaches (Python and JavaScript)');
+const setOf = (id) => ({ dsa: 'dsa-75', pe: 'programming-essentials', js: 'js-30', sql: 'sql-50' })[id.split('-')[0]];
+for (const { id, approach } of allExtraApproaches()) {
+  const item = findInterviewItem(setOf(id), id);
+  if (!item) { fail(`${id}: approach for an unknown problem`); continue; }
+  if (setOf(id) === 'sql-50') continue;   // SQL approaches are checked with the SQL answers below
+  const run = setOf(id) === 'js-30' ? runJs(buildJsCheck(item, approach.code)) : runPy(buildPythonCheck(item, approach.code));
+  if (!run.result?.results) { fail(`${id} "${approach.title}": no result ${run.printed.slice(-200)}`); continue; }
+  run.result.results.forEach((r, i) => { if (!r.ok) fail(`${id} "${approach.title}": test ${i + 1} got ${JSON.stringify(r.got ?? r.error)}`); });
+}
+
 console.log('SQL Interview 50');
 const SQL = await require('sql.js')();
 for (const p of findInterviewSet('sql-50').items) {
@@ -56,6 +69,26 @@ for (const p of findInterviewSet('sql-50').items) {
     fail(`${p.id} ${p.title}: ${e.message}`);
   }
   db.close();
+}
+
+// SQL alternatives must return the same rows as the model answer.
+const rowsOf = (sql) => {
+  const db = new SQL.Database();
+  db.exec(INTERVIEW_SQL_SCHEMA);
+  try { return (db.exec(sql).at(-1)?.values || []).map(r => JSON.stringify(r.map(v => (typeof v === 'number' ? Math.round(v * 100) / 100 : v)))); }
+  finally { db.close(); }
+};
+for (const { id, approach } of allExtraApproaches().filter(a => a.id.startsWith('sql-'))) {
+  const item = findInterviewItem('sql-50', id);
+  try {
+    const want = rowsOf(item.solution), got = rowsOf(approach.code);
+    const same = item.ordered ? want.join('|') === got.join('|') : [...want].sort().join('|') === [...got].sort().join('|');
+    if (!same) fail(`${id} "${approach.title}": rows differ
+    want ${want.join(' ')}
+    got  ${got.join(' ')}`);
+  } catch (e) {
+    fail(`${id} "${approach.title}": ${e.message}`);
+  }
 }
 
 console.log(failures ? `\n${failures} problem(s)` : '\nAll interview answers verified.');
