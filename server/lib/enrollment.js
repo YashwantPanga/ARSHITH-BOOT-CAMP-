@@ -1,9 +1,10 @@
 // Course enrolment rules.
 //  - A learner can hold several courses at once.
-//  - Each learner gets exactly one free course - the first one. Every other course costs
-//    coursePrice() (₹99) to unlock, and so does the same course again after failing its final twice,
-//    which gives two fresh final attempts (attemptOffset).
-//  - Paid courses are unlocked by a Razorpay payment (routes/paymentRoutes.js) or by the admin.
+//  - Every course is free while PAID_COURSES is not 'on' in .env.
+//  - With PAID_COURSES=on, each learner gets exactly one free course - the first one. Every other course
+//    costs coursePrice() (₹99) to unlock, unlocked by a Razorpay payment (routes/paymentRoutes.js) or the admin.
+//  - Failing a course's final twice closes it. Starting it again (free, or ₹99 in paid mode) gives two
+//    fresh final attempts (attemptOffset) and restarts its module quizzes (progressFrom).
 import { finalAttemptsTotal, MAX_FINAL_ATTEMPTS, getPassedFinalAttempt } from '../routes/quizRoutes.js';
 import { enrolmentRecord, enrolledCourseIds } from './enrolledCourses.js';
 import { razorpayConfigured } from './razorpay.js';
@@ -13,6 +14,10 @@ export const PAID_COURSE_PRICE = 99;
 export function coursePrice() {
   const v = Number(process.env.COURSE_PRICE);
   return Number.isInteger(v) && v >= 1 ? v : PAID_COURSE_PRICE;
+}
+/** Courses cost money only when PAID_COURSES=on (once a Razorpay account for the bootcamp is approved). */
+export function paidCourses() {
+  return String(process.env.PAID_COURSES || '').trim().toLowerCase() === 'on';
 }
 const norm = (v) => String(v || '').trim().toLowerCase();
 
@@ -38,14 +43,16 @@ export function enrolmentState(db, email) {
     courses,                                  // { courseId: 'active' | 'passed' | 'failed' }
     status: ids[0] ? courses[ids[0]] : null,
     canEnrollNew: true,
-    nextPrice: usedFreeCourse ? coursePrice() : 0,
-    paymentsEnabled: razorpayConfigured(),
+    nextPrice: paidCourses() && usedFreeCourse ? coursePrice() : 0,
+    paymentsEnabled: paidCourses() && razorpayConfigured(),
+    free: !paidCourses(),
     passedCourseIds: ids.filter(id => courses[id] === 'passed'),
     history: history.map(h => ({ courseId: h.courseId, outcome: h.outcome, enrolledAt: h.enrolledAt, closedAt: h.closedAt, paid: !!h.paid }))
   };
 }
 
-/** Adds courseId to the learner's courses (or restarts it with fresh final attempts after a fail). */
+/** Adds courseId to the learner's courses, or restarts a failed one: fresh final attempts, and its
+ *  module quizzes count again only from now (older attempts stay on record for the admin). */
 export function enrol(db, email, courseId, { paid = false, by = 'learner' } = {}) {
   email = norm(email);
   if (!db.learnerEnrollments) db.learnerEnrollments = {};
@@ -54,8 +61,10 @@ export function enrol(db, email, courseId, { paid = false, by = 'learner' } = {}
   // move older single-course records into the courses map
   const courses = prev?.courses ? { ...prev.courses } : (prev?.courseId ? { [prev.courseId]: { enrolledAt: prev.enrolledAt, paid: !!prev.paid, by: prev.by || 'learner', attemptOffset: prev.attemptOffset || 0 } } : {});
   const history = [...(prev?.history || [])];
-  if (courses[courseId]) history.push({ courseId, enrolledAt: courses[courseId].enrolledAt, closedAt: now, outcome: courseStatus(db, email, courseId) || 'closed', paid: !!courses[courseId].paid });
-  courses[courseId] = { enrolledAt: now, paid, by, attemptOffset: finalAttemptsTotal(db, email, courseId) };
+  const before = courses[courseId] ? courseStatus(db, email, courseId) || 'closed' : null;
+  if (before) history.push({ courseId, enrolledAt: courses[courseId].enrolledAt, closedAt: now, outcome: before, paid: !!courses[courseId].paid });
+  const progressFrom = before === 'failed' ? now : courses[courseId]?.progressFrom;
+  courses[courseId] = { enrolledAt: now, paid, by, attemptOffset: finalAttemptsTotal(db, email, courseId), ...(progressFrom ? { progressFrom } : {}) };
   db.learnerEnrollments[email] = { courseId, enrolledAt: now, courses, history };
 
   // keep the admin's student record in step
@@ -63,7 +72,7 @@ export function enrol(db, email, courseId, { paid = false, by = 'learner' } = {}
   if (student) {
     student.enrolledCourses = enrolledCourseIds(db, email);
     if (!student.progressMap) student.progressMap = {};
-    if (!student.progressMap[courseId]) student.progressMap[courseId] = { progress: 0, completedModules: [], quizzesPassed: [], finalTestPassed: false, projectStatus: 'Not Submitted' };
+    if (!student.progressMap[courseId] || before === 'failed') student.progressMap[courseId] = { progress: 0, completedModules: [], quizzesPassed: [], finalTestPassed: false, projectStatus: 'Not Submitted' };
   }
   return db.learnerEnrollments[email];
 }

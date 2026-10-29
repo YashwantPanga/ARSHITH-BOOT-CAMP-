@@ -50,10 +50,11 @@ export function TermsPage({ onHome }) {
       sections={[
         { title: 'Your account', body: [
           'You must give your full name exactly as it appears on a government or college photo ID, and a working email address. Your name is printed on your certificate and checked against your ID before the final assessment.',
-          'Keep your password private. You are responsible for activity on your account. One person may hold one account. Each student gets one free course - the first one they enrol in. Every other course costs ₹99 to unlock. After failing a final assessment twice, the same course can be unlocked again for ₹99, with two fresh attempts.'
+          'Keep your password private. You are responsible for activity on your account. One person may hold one account.'
         ] },
         { title: 'Courses and certificates', body: [
-          'Your first course is free; other courses cost ₹99 each, paid online through Razorpay (see the Refund and Cancellation Policy). A certificate of completion is issued when you finish every module quiz, submit the required project and score at least 70% in the proctored final assessment.',
+          'All courses are currently free, and you may take as many as you like. If paid courses are introduced, the price is shown before you enrol and payments follow the Refund and Cancellation Policy.',
+          'Each course has two attempts at its final assessment. If you fail both, you can start the course again: every module quiz is reset and you get two fresh attempts. A certificate of completion is issued when you finish every module quiz, submit the required project and score at least 70% in the proctored final assessment.',
           'Certificates confirm completion of an Arshith Bootcamp course. They are not a degree, diploma or university qualification, and are not issued under UGC or AICTE approval. Each certificate has a unique ID that anyone can verify on this site.',
           'We may revoke a certificate obtained through cheating, impersonation or false information.'
         ] },
@@ -153,7 +154,7 @@ export function RefundPage({ onHome }) {
       intro="This policy covers payments made on Arshith Bootcamp (arshithbootcamp.com), operated by Arshith Group, Bengaluru, India. Payments are processed securely by Razorpay; we never see or store your card, UPI or bank details."
       sections={[
         { title: 'What you pay for', body: [
-          'Every student gets one course free. Each further course costs ₹99 (inclusive of all charges), and the same course can be unlocked again for ₹99 after two failed final assessments, which gives two fresh attempts.',
+          'All courses on Arshith Bootcamp are currently free, so no payment is taken. This policy applies if paid courses are introduced, when the price is shown before you enrol.',
           'A payment unlocks one course for the account that paid: all its modules, quizzes, the project and the proctored final assessment. The course is unlocked as soon as the payment is confirmed, and a receipt is emailed to you.'
         ] },
         { title: 'Cancellation', body: [

@@ -31,7 +31,7 @@ const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 
  *    missing face become violations after a short grace period, and hands near the face are flagged.
  *    Detections are shown live on screen as they happen.
  */
-export default function FinalTestModal({ isOpen, onClose: closeModal, course, studentUser, locked, projectReq, passedFinal, onSubmitted, onViewCertificate, onCourseLocked, onUnlockAgain }) {
+export default function FinalTestModal({ isOpen, onClose: closeModal, course, studentUser, locked, projectReq, passedFinal, onSubmitted, onViewCertificate, onCourseLocked, retakePrice = 0, onUnlockAgain }) {
   // After the second failed attempt the course is locked: closing the result (or choosing to pay)
   // tells the page, so it switches to the locked screen straight away instead of after a reload.
   const lockedOutRef = useRef(false);
@@ -660,8 +660,10 @@ export default function FinalTestModal({ isOpen, onClose: closeModal, course, st
             )}
             {!result.passed && result.attemptsLeft === 0 && (
               <div className="mt-6 mx-auto max-w-xl rounded-2xl border border-rose-200 bg-rose-50/70 px-5 py-4 text-left animate-fade-up">
-                <p className="flex items-center gap-2 font-semibold text-rose-700"><Lock className="w-4 h-4" /> This course is now locked</p>
-                <p className="mt-1 text-sm text-charcoal/75">You have used both final attempts. Unlock {displayTitle(course.title)} again for ₹99 to study it and get two fresh attempts at the final assessment.</p>
+                <p className="flex items-center gap-2 font-semibold text-rose-700"><Lock className="w-4 h-4" /> {retakePrice ? 'This course is now locked' : 'Both attempts used'}</p>
+                <p className="mt-1 text-sm text-charcoal/75">{retakePrice
+                  ? `You have used both final attempts. Unlock ${displayTitle(course.title)} again for ₹${retakePrice} to study it and get two fresh attempts at the final assessment.`
+                  : `You have used both final attempts. Start ${displayTitle(course.title)} again: complete every module once more, and you get two fresh attempts at the final assessment.`}</p>
               </div>
             )}
             <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -669,7 +671,7 @@ export default function FinalTestModal({ isOpen, onClose: closeModal, course, st
                 ? <button onClick={onViewCertificate} className="btn-plum"><Award className="w-4 h-4" /> Get my certificate</button>
                 : result.attemptsLeft === 0
                   ? <>
-                      <button onClick={() => { lockedOutRef.current = false; closeModal(); onUnlockAgain?.(); }} className="btn-primary">Unlock again for ₹99 <ArrowRight className="w-4 h-4" /></button>
+                      <button onClick={() => { lockedOutRef.current = false; closeModal(); onUnlockAgain?.(); }} className="btn-primary">{retakePrice ? `Unlock again for ₹${retakePrice}` : 'Start the course again'} <ArrowRight className="w-4 h-4" /></button>
                       <button onClick={onClose} className="btn-outline">Later</button>
                     </>
                   : <button onClick={() => { setPhase('intro'); setAgree(false); setCamState('idle'); }} className="btn-primary"><RefreshCw className="w-4 h-4" /> Retake assessment</button>}

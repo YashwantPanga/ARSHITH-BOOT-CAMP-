@@ -5,7 +5,7 @@ import path from 'node:path';
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
 
-// Several courses per learner. Exactly one free course (the first); every other course is
+// Paid mode (PAID_COURSES=on). Several courses per learner. Exactly one free course (the first); every other course is
 // ₹99 to unlock (admin unlocks until online payment is connected). Unlocking a failed
 // course again gives two fresh final attempts.
 const tmp = path.join(os.tmpdir(), `arb-enrol-db-${process.pid}-${Date.now()}.json`);
@@ -24,7 +24,7 @@ const unlock = (studentId, courseId) => request(app).post('/api/admin/enrollment
 
 beforeAll(async () => {
   fs.copyFileSync(path.join(__dirname, '..', 'server', 'data', 'db.json'), tmp);
-  Object.assign(process.env, { ARB_DB_FILE: tmp, NODE_ENV: 'test', ADMIN_EMAIL: 'enrol-admin@example.test', ADMIN_PASSWORD: 'Enrol-admin-77' });
+  Object.assign(process.env, { ARB_DB_FILE: tmp, NODE_ENV: 'test', PAID_COURSES: 'on', ADMIN_EMAIL: 'enrol-admin@example.test', ADMIN_PASSWORD: 'Enrol-admin-77' });
   app = (await import('../server/app.js')).default;
   (await import('../server/lib/adminSetup.js')).applyAdminSettings();
   db$ = await import('../server/db.js');
@@ -37,7 +37,7 @@ beforeAll(async () => {
   for (const [email, reg] of [[A, 'PASS01'], [B, 'FAIL01']]) tok[email] = (await request(app).post('/api/learners/login').send({ email, password: 'Pw#12345', regNo: reg })).body.token;
   admin = (await request(app).post('/api/learners/login').send({ email: 'enrol-admin@example.test', password: 'Enrol-admin-77' })).body.staffToken;
 });
-afterAll(() => { delete process.env.ADMIN_EMAIL; delete process.env.ADMIN_PASSWORD; try { fs.unlinkSync(tmp); } catch { /* ignore */ } });
+afterAll(() => { delete process.env.PAID_COURSES; delete process.env.ADMIN_EMAIL; delete process.env.ADMIN_PASSWORD; try { fs.unlinkSync(tmp); } catch { /* ignore */ } });
 
 describe('enrolment rules', () => {
   it('first course is free; another course costs ₹99 to unlock straight away', async () => {

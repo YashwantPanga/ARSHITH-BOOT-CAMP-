@@ -2,6 +2,7 @@ import express from 'express';
 import { enrolledCourseIds } from '../lib/enrolledCourses.js';
 import { enrolmentState, enrol } from '../lib/enrollment.js';
 import { getDb, saveDb, logActivity } from '../db.js';
+import { inCurrentRun } from './quizRoutes.js';
 import { verifyAdminToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -28,11 +29,12 @@ export function computeStudentDetails(student, db) {
     const modules = course.modules || [];
     const totalModules = modules.length;
 
-    // Passed module IDs for this student & course
+    // Passed module IDs for this student & course (since the last restart, if the course was started again)
+    const current = inCurrentRun(db, normEmail, cId);
     const passedAttempts = quizAttempts.filter(a =>
       (String(a.userId || '').toLowerCase() === normEmail || a.studentId === studentId) &&
       (a.courseId === cId || !a.courseId) &&
-      a.passed
+      a.passed && current(a)
     );
     const passedModuleIds = new Set(passedAttempts.map(a => a.moduleId));
 

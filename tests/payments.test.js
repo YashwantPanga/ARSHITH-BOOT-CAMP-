@@ -24,7 +24,7 @@ const state = async (email) => (await request(app).get('/api/enrollment').set(as
 
 beforeAll(async () => {
   fs.copyFileSync(path.join(__dirname, '..', 'server', 'data', 'db.json'), tmp);
-  Object.assign(process.env, { ARB_DB_FILE: tmp, NODE_ENV: 'test', RAZORPAY_KEY_ID: 'rzp_test_abc', RAZORPAY_KEY_SECRET: SECRET, RAZORPAY_WEBHOOK_SECRET: HOOK });
+  Object.assign(process.env, { ARB_DB_FILE: tmp, NODE_ENV: 'test', PAID_COURSES: 'on', RAZORPAY_KEY_ID: 'rzp_test_abc', RAZORPAY_KEY_SECRET: SECRET, RAZORPAY_WEBHOOK_SECRET: HOOK });
   global.fetch = vi.fn(async (url, opts) => {
     if (!String(url).startsWith('https://api.razorpay.com/')) return realFetch(url, opts);
     const body = JSON.parse(opts.body);
@@ -42,7 +42,7 @@ beforeAll(async () => {
 });
 afterAll(() => {
   global.fetch = realFetch;
-  for (const k of ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET']) delete process.env[k];
+  for (const k of ['PAID_COURSES', 'RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET']) delete process.env[k];
   try { fs.unlinkSync(tmp); } catch { /* ignore */ }
 });
 

@@ -94,7 +94,7 @@ export default function LearningPage(props) {
 
 const normalizePractice = (bp) => (typeof bp === 'string' ? { rule: bp } : bp || {});
 
-function LearningInner({ course, studentUser, activeModuleId, onSelectModule, onExit, onProgressChanged, onViewCertificate, onCourseLocked, onUnlockAgain }) {
+function LearningInner({ course, studentUser, activeModuleId, onSelectModule, onExit, onProgressChanged, onViewCertificate, onCourseLocked, onUnlockAgain, retakePrice = 0 }) {
   const toast = useToast();
   const playground = usePlayground();
   const modules = course.modules || [];
@@ -811,6 +811,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         onViewCertificate={() => { setFinalOpen(false); onViewCertificate(); }}
         onCourseLocked={onCourseLocked}
         onUnlockAgain={onUnlockAgain}
+        retakePrice={retakePrice}
       />
 
       <PdfBuildOverlay open={pdfBusy} progress={pdfProgress} done={pdfDone} courseTitle={displayTitle(course.title)} />

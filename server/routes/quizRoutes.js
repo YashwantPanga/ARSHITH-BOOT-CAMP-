@@ -55,22 +55,31 @@ function getModuleQuestions(db, moduleId) {
   return [];
 }
 
+/** Whether a module quiz attempt belongs to the learner's current run of the course (a course started
+ *  again after two failed finals counts only quizzes taken since the restart). */
+export function inCurrentRun(db, userId, courseId) {
+  const from = enrolmentRecord(db, userId, courseId)?.progressFrom;
+  return (a) => !from || String(a.completedAt || '') >= from;
+}
+
 /** Module ids of `courseId` whose quiz this user has completed. Module quizzes have no pass mark:
  *  any submitted attempt (including older attempts recorded as below 70%) marks the module done. */
 export function getPassedModuleIds(db, userId, courseId) {
   const course = findCourse(db, courseId);
   const moduleIds = new Set((course?.modules || []).map(m => m.id));
   const passed = new Set();
+  const current = inCurrentRun(db, userId, courseId);
   for (const a of db.quizAttempts || []) {
-    if (a.userId === userId && moduleIds.has(a.moduleId)) passed.add(a.moduleId);
+    if (a.userId === userId && moduleIds.has(a.moduleId) && current(a)) passed.add(a.moduleId);
   }
   return [...passed];
 }
 
 function getBestModuleScores(db, userId, courseId) {
   const scores = {};
+  const current = inCurrentRun(db, userId, courseId);
   for (const a of db.quizAttempts || []) {
-    if (a.userId !== userId || a.courseId !== courseId) continue;
+    if (a.userId !== userId || a.courseId !== courseId || !current(a)) continue;
     if (scores[a.moduleId] === undefined || a.percentage > scores[a.moduleId]) scores[a.moduleId] = a.percentage;
   }
   return scores;
@@ -105,7 +114,7 @@ export function courseClosed(db, userId, courseId) {
   return isEnrolled(db, userId, courseId) && !getPassedFinalAttempt(db, userId, courseId)
     && finalAttemptsUsed(db, userId, courseId) >= MAX_FINAL_ATTEMPTS;
 }
-export const COURSE_CLOSED_MESSAGE = 'You used both final attempts for this course. Unlock it again for ₹99 to study it with two fresh attempts.';
+export const COURSE_CLOSED_MESSAGE = 'You used both final attempts for this course. Start it again to redo every module and get two fresh attempts.';
 
 /** Returns an error message when the learner may not work on this course. */
 function enrollmentConflict(db, userId, courseId, { allowClosed = false } = {}) {

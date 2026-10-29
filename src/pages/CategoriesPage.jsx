@@ -15,7 +15,7 @@ export default function CategoriesPage({ courses = [], onCategorySelect, onHome 
   return (
     <div>
       <PageTop eyebrow="Infographic" title="Explore by category" crumb="Categories" onHome={onHome}>
-        <p className="mt-3 text-charcoal/70 max-w-xl mx-auto">Four career tracks. Pick the one that fits your goal — your first course is free, and you study one course at a time.</p>
+        <p className="mt-3 text-charcoal/70 max-w-xl mx-auto">Four career tracks. Pick the one that fits your goal — every course is free.</p>
       </PageTop>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid sm:grid-cols-2 gap-6">

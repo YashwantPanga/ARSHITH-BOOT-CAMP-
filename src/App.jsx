@@ -110,7 +110,7 @@ function AppShell() {
   const courseOffer = useMemo(() => ({
     canEnrollNew: true,
     enrolledIds: enrolledIds.filter(id => !closedIds.includes(id)),
-    price: studentUser ? (enrollState ? enrollState.nextPrice || 0 : (enrolledIds.length ? 99 : 0)) : 0
+    price: studentUser && enrollState ? enrollState.nextPrice || 0 : 0
   }), [studentUser, enrollState, enrolledIds, closedIds]);
 
   const saveUser = useCallback((u) => {
@@ -166,7 +166,7 @@ function AppShell() {
       .catch(() => setAdminUser(null))
       .finally(() => setAdminChecked(true));
   };
-  useEffect(confirmStaff, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(confirmStaff, []);
   useEffect(() => {
     const expired = () => setAdminUser(null);
     window.addEventListener('arb:staff-session-expired', expired);
@@ -227,6 +227,10 @@ function AppShell() {
       navigate(paths.learn(courseId));
       return;
     }
+    if (retake && !courseOffer.price) {
+      restartCourse(courseId);
+      return;
+    }
     if (retake || courseOffer.price > 0) {
       setPaymentFor({ course: course || { id: courseId, title: courseId }, price: courseOffer.price || 99, retake });
       return;
@@ -266,12 +270,26 @@ function AppShell() {
   };
 
   // After a second failed final: reload the course states (the course shows as locked at once) and,
-  // when the learner chooses to, open the ₹99 payment to take the course again.
+  // when the learner chooses to, start it again (free) or open the ₹99 payment (paid mode).
   const refreshEnrollment = useCallback(() => {
     if (!userId) return;
     api.getEnrollment(userId).then(setEnrollState).catch(() => {});
   }, [userId]);
+  // Free mode: a failed course starts again at once - every module quiz again, two fresh final attempts.
+  async function restartCourse(courseId) {
+    try {
+      const res = await api.enroll(userId, courseId);
+      setEnrollState(res);
+      saveUser({ ...studentUser, enrolledCourseIds: res.courseIds || enrolledIds });
+      refreshProgress(courseId);
+      toast('Fresh start! Complete every module again, then take the final assessment.', 'success', 5200);
+      navigate(paths.learn(courseId));
+    } catch (err) {
+      toast(err.message || 'Could not restart the course right now. Please try again.', 'error', 5200);
+    }
+  }
   const offerRetake = (courseId) => {
+    if (enrollState && !enrollState.nextPrice) { restartCourse(courseId); return; }
     const course = findCourse(courseId) || { id: courseId, title: courseId };
     setPaymentFor({ course, price: enrollState?.nextPrice || 99, retake: true });
     refreshEnrollment();
@@ -422,7 +440,7 @@ function AppShell() {
       page = !coursesLoaded || !studentUser ? loading : !course ? notFound('Course not found') : !enrolledIds.includes(course.id) ? loading : closedIds.includes(course.id) ? (
         <CourseClosed
           course={course}
-          price={courseOffer.price || 99}
+          price={courseOffer.price}
           onUnlock={() => requestEnroll(course.id)}
           onDashboard={() => navigate(paths.dashboard())}
         />
@@ -437,6 +455,7 @@ function AppShell() {
           onViewCertificate={() => navigate(paths.certificate(course.id))}
           onCourseLocked={refreshEnrollment}
           onUnlockAgain={() => offerRetake(course.id)}
+          retakePrice={courseOffer.price}
         />
       );
       break;
@@ -607,7 +626,9 @@ function AppShell() {
         title={`Enroll in ${enrollTarget?.title || 'this course'}?`}
         message={
           <>
-            <p>This will be your <strong>one free course</strong>. Every other course - and this one again if you fail its final assessment twice - costs ₹99 to unlock.</p>
+            {enrollState?.free !== false
+              ? <p>Every course is <strong>free</strong>. Finish all the modules, pass the final assessment and get your certificate. If you fail the final twice, you can start the course again.</p>
+              : <p>This will be your <strong>one free course</strong>. Every other course - and this one again if you fail its final assessment twice - costs ₹99 to unlock.</p>}
           </>
         }
         confirmLabel="Yes, enroll me"
@@ -660,17 +681,19 @@ function AuthModalLayer({ onClose, children }) {
   );
 }
 
-/** A failed course (both final attempts used): locked until the learner unlocks it again. */
+/** A failed course (both final attempts used): closed until the learner starts it again. */
 function CourseClosed({ course, price, onUnlock, onDashboard }) {
   return (
     <div className="bg-ivory min-h-[70vh] flex items-center justify-center px-4 py-16">
       <div className="edu-card max-w-md w-full p-7 text-center">
         <span className="mx-auto w-14 h-14 rounded-full bg-brand-100 text-forest flex items-center justify-center"><Lock className="w-7 h-7" /></span>
-        <h1 className="mt-4 text-[24px] font-bold text-evergreen leading-tight">{displayTitle(course.title)} is locked</h1>
+        <h1 className="mt-4 text-[24px] font-bold text-evergreen leading-tight">{price ? `${displayTitle(course.title)} is locked` : 'Better luck next time!'}</h1>
         <p className="mt-2 text-[14.5px] text-charcoal/70 leading-relaxed">
-          You used both final assessment attempts without passing. Unlock the course again for ₹{price} to study it and get two fresh attempts.
+          {price
+            ? `You used both final assessment attempts without passing. Unlock the course again for ₹${price} to study it and get two fresh attempts.`
+            : `You used both final assessment attempts for ${displayTitle(course.title)}. Start again: complete every module once more, then you get two fresh attempts at the final.`}
         </p>
-        <button onClick={onUnlock} className="font-display mt-6 w-full h-12 rounded-md bg-forest text-ivory text-[15.5px] font-semibold hover:bg-sage transition-colors">Unlock again for ₹{price}</button>
+        <button onClick={onUnlock} className="font-display mt-6 w-full h-12 rounded-md bg-forest text-ivory text-[15.5px] font-semibold hover:bg-sage transition-colors">{price ? `Unlock again for ₹${price}` : 'Start the course again'}</button>
         <button onClick={onDashboard} className="mt-3 text-[14px] font-medium text-charcoal/60 hover:text-forest">Back to my dashboard</button>
       </div>
     </div>
