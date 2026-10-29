@@ -473,8 +473,19 @@ function TopBar({ set, item, navigate, solved }) {
   );
 }
 
+/** Blank-line separated paragraphs; a paragraph whose lines all start with "- " becomes a bullet list. */
 function Paragraphs({ text, className = '' }) {
-  return String(text).split('\n\n').map((p, i) => <p key={i} className={`text-[15px] leading-relaxed text-charcoal/85 ${className}`}><Inline text={p} /></p>);
+  return String(text).split('\n\n').map((p, i) => {
+    const lines = p.split('\n');
+    if (lines.every(l => l.startsWith('- '))) {
+      return (
+        <ul key={i} className="space-y-1.5">
+          {lines.map((l, j) => <li key={j} className={`flex gap-2.5 text-[15px] leading-relaxed text-charcoal/85 ${className}`}><span className="mt-[9px] w-1.5 h-1.5 rounded-full bg-sage shrink-0" /><span><Inline text={l.slice(2)} /></span></li>)}
+        </ul>
+      );
+    }
+    return <p key={i} className={`text-[15px] leading-relaxed text-charcoal/85 ${className}`}><Inline text={p} /></p>;
+  });
 }
 
 function CodeView({ code }) {

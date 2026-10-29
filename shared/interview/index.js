@@ -4,6 +4,8 @@ import { DSA_PART1 } from './dsa75.part1.js';
 import { DSA_PART2 } from './dsa75.part2.js';
 import { QUESTIONS_60 } from './questions60.js';
 import { JS_30 } from './js30.js';
+import { QUESTIONS_PART2 } from './questions150.part2.js';
+import { QUESTIONS_PART3 } from './questions150.part3.js';
 
 export const INTERVIEW_SETS = [
   {
@@ -25,10 +27,10 @@ export const INTERVIEW_SETS = [
     summary: ['Built for JavaScript beginners and front-end interviews', 'Covers closures, promises, async/await and classes', 'Every problem has tests and a worked solution']
   },
   {
-    id: 'questions-60', kind: 'concept', title: 'Interview Questions 60', tagline: 'Theory questions with model answers',
-    description: 'Sixty concept questions interviewers love, across SQL, Python, web development and data science. Answer in your head, compare with ours, and mark the ones you know.',
-    icon: 'chat', theme: 'gold', items: QUESTIONS_60,
-    summary: ['Quick revision before technical interviews', 'SQL, Python, web and data science concepts', 'Model answers you can say out loud in two minutes']
+    id: 'interview-questions', kind: 'concept', title: 'Interview Questions 150', tagline: 'Every topic interviewers ask, with clear answers',
+    description: 'One hundred and fifty questions covering everything a technical interview can touch: SQL and databases, Python, OOP, data structures, operating systems, networks, web and React, data science, system design and the HR round. Think of your answer, then compare it with a detailed, easy-to-follow model answer.',
+    icon: 'chat', theme: 'gold', items: [...QUESTIONS_60, ...QUESTIONS_PART2, ...QUESTIONS_PART3],
+    summary: ['Complete revision before placement and job interviews', 'Covers 12 areas: SQL, Python, OOP, DSA, OS, networks, web, AI, system design, HR', 'Detailed model answers with examples and code']
   }
 ];
 

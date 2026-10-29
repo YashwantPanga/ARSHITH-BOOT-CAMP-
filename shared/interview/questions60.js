@@ -1,4 +1,4 @@
-// Interview Questions 60: common concept questions with model answers (original wording).
+// Interview Questions 150, questions 1-60: common concept questions with model answers (original wording).
 // Learners read the question, think of their answer, reveal ours and mark it as known.
 
 const Q = (n, topic, difficulty, title, answer, code) =>

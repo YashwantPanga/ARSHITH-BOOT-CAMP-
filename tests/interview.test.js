@@ -13,7 +13,7 @@ import { buildPythonCheck, parsePythonCheck, pyRepr } from '../shared/interview/
 // `npm run verify:interview`; here we check the content shape, the SQL answers and the API.
 describe('interview content', () => {
   it('has four sets with unique ids and complete items', () => {
-    expect(INTERVIEW_SETS.map(s => [s.id, s.items.length])).toEqual([['sql-50', 50], ['dsa-75', 75], ['js-30', 30], ['questions-60', 60]]);
+    expect(INTERVIEW_SETS.map(s => [s.id, s.items.length])).toEqual([['sql-50', 50], ['dsa-75', 75], ['js-30', 30], ['interview-questions', 150]]);
     const ids = INTERVIEW_SETS.flatMap(s => s.items.map(i => i.id));
     expect(new Set(ids).size).toBe(ids.length);
     for (const s of INTERVIEW_SETS) {
