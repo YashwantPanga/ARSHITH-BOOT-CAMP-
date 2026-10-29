@@ -460,3 +460,30 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 @media (prefers-reduced-motion: reduce) {
   .plan-ring, .plan-glow, .plan-arrow, .plan-arrow-hit, .plan-burst, .plan-sheet, .plan-day-pop, .plan-today, .plan-done-glow { animation: none !important; }
 }
+
+/* ---------- Interview Prep quest art ---------- */
+.quest-rays { position: absolute; inset: -40%; pointer-events: none; background: repeating-conic-gradient(from 0deg at 72% 40%, rgba(255,255,255,.07) 0deg 5deg, transparent 5deg 16deg); animation: questSpin 60s linear infinite; }
+.quest-dots { pointer-events: none; background-image: radial-gradient(rgba(255,255,255,.12) 1px, transparent 1.2px); background-size: 18px 18px; mask-image: linear-gradient(90deg, transparent, #000 35%, #000 70%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 35%, #000 70%, transparent); }
+@keyframes questSpin { to { transform: rotate(360deg); } }
+.quest-star { position: absolute; width: 10px; height: 10px; pointer-events: none; background: #fff; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); opacity: .8; animation: questTwinkle 3s ease-in-out infinite; }
+@keyframes questTwinkle { 0%, 100% { transform: scale(.5); opacity: .35; } 50% { transform: scale(1.1); opacity: 1; } }
+.quest-glyph { position: absolute; pointer-events: none; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800; font-size: 18px; text-shadow: 0 0 12px currentColor; opacity: .85; animation: questFloat 5s ease-in-out infinite; }
+@keyframes questFloat { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-10px) rotate(4deg); } }
+.quest-gold { background: linear-gradient(180deg, #FFF1A8 0%, #FFD34D 45%, #F59E0B 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 0 rgba(120,60,0,.45)); }
+.quest-btn { box-shadow: 0 5px 0 #C27A12, 0 12px 24px -8px rgba(255,180,40,.7); transition: transform .12s ease, box-shadow .12s ease; }
+.quest-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #C27A12, 0 6px 14px -8px rgba(255,180,40,.7); }
+.quest-btn-sm { box-shadow: 0 3px 0 #C27A12; }
+.quest-bob { animation: questBob 4s ease-in-out infinite; }
+@keyframes questBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.quest-blink { transform-box: fill-box; transform-origin: center; animation: questBlink 5s infinite; }
+@keyframes questBlink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+.quest-glow { transform-box: fill-box; transform-origin: center; animation: planGlow 3s ease-in-out infinite; }
+.quest-bubble { animation: questBubble .6s cubic-bezier(.2,1.5,.4,1) .4s both, questFloat 5s ease-in-out 1s infinite; }
+.quest-bubble::after { content: ''; position: absolute; left: 22px; bottom: -6px; width: 12px; height: 12px; background: #fff; transform: rotate(45deg); border-radius: 2px; }
+@keyframes questBubble { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.quest-card { transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s; }
+.quest-card:hover { transform: translateY(-4px); box-shadow: 0 30px 50px -26px rgba(20,10,60,.95); }
+.quest-card:active { transform: scale(.985); }
+@media (prefers-reduced-motion: reduce) {
+  .quest-rays, .quest-star, .quest-glyph, .quest-bob, .quest-blink, .quest-glow, .quest-bubble { animation: none !important; }
+}

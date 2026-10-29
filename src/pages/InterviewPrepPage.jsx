@@ -12,6 +12,7 @@ import { Inline } from '../components/lesson/Markdown';
 import { runJavaScript, runPython, runSqlFresh } from '../utils/runners';
 import { noteCoding } from '../utils/activity';
 import { MyPlanCard, PlanModal, planStats } from '../components/interview/StudyPlan';
+import { QUEST, QuestCard, QuestHero } from '../components/interview/QuestArt';
 import { api } from '../services/api';
 import { paths } from '../router';
 
@@ -102,7 +103,6 @@ function ProgressBar({ value, total, light = false }) {
   );
 }
 
-const countBy = (items, key) => items.reduce((m, it) => ({ ...m, [it[key]]: (m[it[key]] || 0) + 1 }), {});
 const draftKey = (id) => `arb_iv_draft_${id}`;
 const readDraft = (id) => { try { return localStorage.getItem(draftKey(id)); } catch { return null; } };
 const writeDraft = (id, code) => { try { localStorage.setItem(draftKey(id), code); } catch { /* storage unavailable */ } };
@@ -214,7 +214,7 @@ function PrepHome({ progress, signedIn, navigate }) {
                 const theme = THEMES[s.theme];
                 return (
                   <button key={s.id} onClick={() => navigate(paths.interview(s.id))} className="edu-card p-3 flex items-center gap-4 text-left hover:border-sage/50 hover:-translate-y-0.5 transition">
-                    <span className={`w-[72px] h-[72px] rounded-xl bg-gradient-to-br ${theme.tile} flex items-center justify-center shrink-0`}><SetIcon icon={s.icon} glow={theme.glow} className="w-12 h-12" /></span>
+                    <span className="w-[72px] h-[72px] rounded-xl flex items-center justify-center shrink-0 shadow-[0_8px_18px_-10px_rgba(20,10,60,.8)]" style={{ background: QUEST[s.id]?.bg }}><SetIcon icon={s.icon} glow={theme.glow} className="w-12 h-12" /></span>
                     <span className="flex-1 min-w-0 pr-2">
                       <span className="block font-display text-[16px] font-semibold text-evergreen truncate">{s.title}</span>
                       <span className="block mt-2.5"><ProgressBar value={solved} total={s.items.length} /></span>
@@ -229,28 +229,10 @@ function PrepHome({ progress, signedIn, navigate }) {
 
         <section className="mt-12">
           <h2 className="font-display text-[22px] font-bold text-evergreen">Featured</h2>
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-            {INTERVIEW_SETS.map(s => {
-              const theme = THEMES[s.theme];
-              const diff = countBy(s.items, 'difficulty');
-              const solved = Object.keys(progress[s.id] || {}).length;
-              return (
-                <button key={s.id} onClick={() => navigate(paths.interview(s.id))}
-                  className={`group relative overflow-hidden rounded-[22px] bg-gradient-to-br ${theme.card} p-5 sm:p-6 h-[220px] sm:h-[300px] flex flex-col items-start justify-start text-left text-ivory shadow-[0_22px_40px_-24px_rgba(12,45,38,.9)] hover:-translate-y-1 transition duration-300`}>
-                  <span className="absolute -right-10 -top-10 w-44 h-44 rounded-full opacity-20 blur-2xl" style={{ background: theme.glow }} />
-                  <span className="relative block font-display text-[21px] font-bold leading-tight">{s.title}</span>
-                  <span className="relative block mt-1.5 text-[14px] text-ivory/75">{s.tagline}</span>
-                  <span className="relative mt-4 flex flex-wrap gap-1.5 text-[11.5px] font-semibold">
-                    {['Easy', 'Medium', 'Hard'].filter(d => diff[d]).map(d => <span key={d} className="px-2 py-0.5 rounded-full bg-white/[.12] border border-white/15">{diff[d]} {d}</span>)}
-                  </span>
-                  <SetIcon icon={s.icon} glow={theme.glow} className="absolute right-4 bottom-4 w-20 h-20 sm:w-24 sm:h-24 group-hover:scale-105 group-hover:-rotate-3 transition duration-300" />
-                  <span className="absolute left-6 bottom-6 right-28">
-                    {signedIn && solved > 0 && <span className="block mb-2"><ProgressBar value={solved} total={s.items.length} light /></span>}
-                    <span className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold whitespace-nowrap">{solved ? `Continue · ${solved}/${s.items.length}` : `Start · ${s.items.length}`} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
-                  </span>
-                </button>
-              );
-            })}
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {INTERVIEW_SETS.map(s => (
+              <QuestCard key={s.id} set={s} solved={Object.keys(progress[s.id] || {}).length} signedIn={signedIn} onOpen={() => navigate(paths.interview(s.id))} />
+            ))}
           </div>
         </section>
 
@@ -262,7 +244,7 @@ function PrepHome({ progress, signedIn, navigate }) {
               const solved = Object.keys(progress[s.id] || {}).length;
               return (
                 <button key={s.id} onClick={() => navigate(paths.interview(s.id))} className="edu-card p-3 flex items-center gap-4 text-left hover:border-sage/50 hover:-translate-y-0.5 transition">
-                  <span className={`w-[76px] h-[76px] rounded-xl bg-gradient-to-br ${theme.tile} flex items-center justify-center shrink-0`}><SetIcon icon={s.icon} glow={theme.glow} className="w-14 h-14" /></span>
+                  <span className="w-[76px] h-[76px] rounded-xl flex items-center justify-center shrink-0 shadow-[0_8px_18px_-10px_rgba(20,10,60,.8)]" style={{ background: QUEST[s.id]?.bg }}><SetIcon icon={s.icon} glow={theme.glow} className="w-14 h-14" /></span>
                   <span className="flex-1 min-w-0 pr-2">
                     <span className="block font-display text-[17px] font-semibold text-evergreen">{s.title}</span>
                     <span className="block text-[13px] text-charcoal/60 mt-0.5">{s.tagline}</span>
@@ -297,7 +279,7 @@ function PrepHome({ progress, signedIn, navigate }) {
 /* One plan: progress + filterable list                                */
 /* ------------------------------------------------------------------ */
 
-function SetPage({ set, progress, plans, savePlan, signedIn, navigate }) {
+function SetPage({ set, progress, plans, savePlan, signedIn, navigate, studentUser }) {
   const solvedMap = progress[set.id] || {};
   const solved = Object.keys(solvedMap).length;
   const theme = THEMES[set.theme];
@@ -312,7 +294,6 @@ function SetPage({ set, progress, plans, savePlan, signedIn, navigate }) {
     && (status === 'All' || (status === 'Solved') === !!solvedMap[i.id])
     && (!q.trim() || i.title.toLowerCase().includes(q.trim().toLowerCase())));
   const next = set.items.find(i => !solvedMap[i.id]) || set.items[0];
-  const byDiff = ['Easy', 'Medium', 'Hard'].map(d => [d, set.items.filter(i => i.difficulty === d).length, set.items.filter(i => i.difficulty === d && solvedMap[i.id]).length]);
   const noun = set.kind === 'concept' ? 'questions' : 'problems';
   const plan = plans?.[set.id] || null;
   const [planOpen, setPlanOpen] = useState(false);
@@ -327,34 +308,9 @@ function SetPage({ set, progress, plans, savePlan, signedIn, navigate }) {
           <button onClick={() => navigate(paths.interview())} className="hover:text-forest">Interview Prep</button><ChevronRight className="w-3.5 h-3.5" /><span className="text-charcoal">{set.title}</span>
         </nav>
 
-        <div className={`mt-4 relative overflow-hidden rounded-[24px] bg-gradient-to-br ${theme.card} text-ivory p-6 sm:p-8`}>
-          <span className="absolute -right-16 -bottom-16 w-72 h-72 rounded-full opacity-15 blur-3xl" style={{ background: theme.glow }} />
-          <div className="relative flex flex-col md:flex-row gap-5 lg:gap-6 md:items-center">
-            <SetIcon icon={set.icon} glow={theme.glow} className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-ivory/70">{set.tagline}</p>
-              <h1 className="font-display text-[28px] sm:text-[32px] lg:text-[38px] font-bold leading-tight mt-1">{set.title}</h1>
-              <p className="mt-2 text-[15px] text-ivory/80 max-w-2xl">{set.description}</p>
-              <div className="mt-5 flex flex-wrap gap-2.5">
-                <button onClick={() => navigate(paths.interview(set.id, next.id))} className="inline-flex items-center gap-2 h-11 px-5 rounded-md bg-ivory text-forest font-display font-semibold text-[15px] hover:bg-white active:scale-[.98] transition">
-                  <Play className="w-4 h-4" /> {solved ? 'Continue' : 'Start'} with #{next.n}
-                </button>
-                {set.kind !== 'concept' && (
-                  <button onClick={openPlan} className="inline-flex items-center gap-2 h-11 px-4 rounded-md border border-white/40 text-ivory font-display font-semibold text-[14.5px] hover:bg-white/10 active:scale-[.98] transition">
-                    <Flame className="w-4 h-4 text-[#F2D27A]" /> {plan ? 'Edit daily plan' : 'Set a daily plan'}
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="md:w-56 lg:w-64 shrink-0 rounded-2xl bg-white/10 border border-white/15 p-4">
-              <div className="flex items-baseline justify-between"><span className="text-[13px] text-ivory/70">Progress</span><span className="font-display text-[22px] font-bold">{solved}<span className="text-ivory/60 text-[14px]"> / {set.items.length}</span></span></div>
-              <div className="mt-2"><ProgressBar value={solved} total={set.items.length} light /></div>
-              <div className="mt-3 space-y-1 text-[12.5px]">
-                {byDiff.filter(([, n]) => n).map(([d, n, s]) => <div key={d} className="flex justify-between text-ivory/80"><span>{d}</span><span>{s} / {n}</span></div>)}
-              </div>
-              {!signedIn && <button onClick={() => navigate(paths.login(paths.interview(set.id)))} className="mt-3 text-[12.5px] underline underline-offset-2 text-ivory/85 hover:text-white">Sign in to save your progress</button>}
-            </div>
-          </div>
+        <div className="mt-4">
+          <QuestHero set={set} solvedMap={solvedMap} signedIn={signedIn} playerName={studentUser?.name} next={next} topics={topics}
+            onStart={() => navigate(paths.interview(set.id, next.id))} onPlan={set.kind !== 'concept' ? openPlan : null} hasPlan={!!plan} />
         </div>
 
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-7 items-start">
