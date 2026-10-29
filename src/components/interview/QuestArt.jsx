@@ -212,21 +212,21 @@ export function QuestCard({ set, solved, signedIn, onOpen }) {
   const q = QUEST[set.id] || QUEST['programming-essentials'];
   const diff = ['Easy', 'Medium', 'Hard'].map(d => [d, set.items.filter(i => i.difficulty === d).length]).filter(([, n]) => n);
   return (
-    <button onClick={onOpen} className="quest-card group relative overflow-hidden rounded-[22px] text-left text-white h-[250px] sm:h-[290px] p-5 flex flex-col items-start shadow-[0_22px_44px_-26px_rgba(20,10,60,.9)]" style={{ background: q.bg }}>
+    <button onClick={onOpen} className="quest-card group relative overflow-hidden rounded-[22px] text-left text-white shrink-0 snap-start w-[78%] sm:w-auto h-[214px] sm:h-[290px] p-4 sm:p-5 flex flex-col items-start shadow-[0_22px_44px_-26px_rgba(20,10,60,.9)]" style={{ background: q.bg }}>
       <Sky q={q} glyphs={false} />
       <span className="relative inline-block px-2.5 py-0.5 rounded-md bg-[#FFD34D] text-[#2A1A05] text-[10px] font-extrabold tracking-[0.16em] shadow-[0_2px_0_#C99A1E]">QUEST · {q.track}</span>
-      <span className="relative mt-2.5 block font-display text-[22px] font-extrabold leading-tight max-w-[78%] drop-shadow-[0_2px_0_rgba(0,0,0,.2)]">{set.title}</span>
+      <span className="relative mt-2 sm:mt-2.5 block font-display text-[19px] sm:text-[22px] font-extrabold leading-tight max-w-[78%] drop-shadow-[0_2px_0_rgba(0,0,0,.2)]">{set.title}</span>
       <span className="relative mt-1 block text-[13px] text-white/75 max-w-[62%] leading-snug">{set.tagline}</span>
-      <span className="relative mt-3 flex flex-wrap gap-1.5 max-w-[60%]">
+      <span className="relative mt-2.5 sm:mt-3 hidden min-[380px]:flex sm:flex flex-wrap gap-1.5 max-w-[60%]">
         {diff.map(([d, n], i) => (
           <span key={d} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-[11px] font-semibold">
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: ['#3FD69B', '#FFC34D', '#FF6B8B'][i] }} />{n} {d}
           </span>
         ))}
       </span>
-      <Mascot q={q} className="absolute -right-6 -bottom-10 w-[170px] sm:w-[190px] transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:scale-[1.03]" />
+      <Mascot q={q} className="absolute -right-6 -bottom-9 w-[135px] sm:w-[190px] transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:scale-[1.03]" />
       <span className="quest-bubble-sm absolute right-4 top-4 px-2 py-1 rounded-lg bg-white text-[#1B1440] text-[11px] font-extrabold shadow-[0_3px_0_rgba(0,0,0,.2)]">{q.bubble}</span>
-      <span className="absolute left-5 bottom-5 right-[44%]">
+      <span className="absolute left-4 bottom-4 sm:left-5 sm:bottom-5 right-[42%]">
         {signedIn && solved > 0 && (
           <span className="block mb-2 h-1.5 rounded-full bg-white/20 overflow-hidden"><span className="block h-full rounded-full bg-gradient-to-r from-[#FFD95A] to-[#FFB52E]" style={{ width: `${(solved / set.items.length) * 100}%` }} /></span>
         )}

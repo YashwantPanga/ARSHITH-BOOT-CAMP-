@@ -6,7 +6,9 @@ import WhyLearnWithUs from './components/WhyLearnWithUs';
 import CtaSection from './components/CtaSection';
 import HomeButton from './components/HomeButton';
 import Footer from './components/Footer';
-import MobileBottomNav from './components/MobileBottomNav';
+import MobileBottomNav, { hidesTabBar } from './components/MobileBottomNav';
+import MobileHome from './components/mobile/MobileHome';
+import PromoStory from './components/mobile/PromoStory';
 import DesktopNotice from './components/DesktopNotice';
 import { WhatBringsYou } from './components/MobileWelcome';
 import EnrollCelebration from './components/EnrollCelebration';
@@ -391,6 +393,9 @@ function AppShell() {
     case 'home':
       page = (
         <div className="landing-type">
+          <MobileHome courses={decoratedCourses} coursesLoaded={coursesLoaded} studentUser={studentUser} offer={courseOffer} navigate={navigate} />
+          <PromoStory navigate={navigate} />
+          <div className="hidden sm:block">
           <HeroSection onExploreClick={() => goCourses()} onSearch={(q) => goCourses(q ? { q } : undefined)} onVerifyClick={() => navigate(paths.verify())} onRegisterClick={() => navigate(studentUser ? paths.dashboard() : paths.register())} courses={courses} />
           <PopularCourses
             courses={decoratedCourses}
@@ -400,8 +405,9 @@ function AppShell() {
             onEnrollCourse={requestEnroll}
             onViewAllCourses={() => goCourses()}
           />
+          </div>
           <WhatBringsYou onCourses={() => goCourses()} onCategories={() => navigate(paths.categories())} />
-          <WhyLearnWithUs />
+          <div className="hidden sm:block"><WhyLearnWithUs /></div>
           <CtaSection onExploreClick={() => goCourses()} />
         </div>
       );
@@ -628,7 +634,7 @@ function AppShell() {
       {!adminUser && <DesktopNotice />}
 
       {!isAuthModal && route.name !== 'home' && !(adminUser && route.name === 'dashboard') && (
-        <HomeButton onClick={() => navigate(paths.home())} aboveBottomNav={!isChromeless} />
+        <HomeButton onClick={() => navigate(paths.home())} aboveBottomNav={!isChromeless && !hidesTabBar(displayRoute)} />
       )}
 
       <ConfirmDialog

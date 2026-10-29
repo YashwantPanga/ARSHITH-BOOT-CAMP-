@@ -230,7 +230,7 @@ function PrepHome({ progress, signedIn, navigate }) {
 
         <section className="mt-12">
           <h2 className="font-display text-[22px] font-bold text-evergreen">Featured</h2>
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="mt-4 -mx-4 px-4 flex gap-3.5 overflow-x-auto no-scrollbar snap-x scroll-px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-5 sm:overflow-visible">
             {INTERVIEW_SETS.map(s => (
               <QuestCard key={s.id} set={s} solved={Object.keys(progress[s.id] || {}).length} signedIn={signedIn} onOpen={() => navigate(paths.interview(s.id))} />
             ))}

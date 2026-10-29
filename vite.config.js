@@ -17,7 +17,8 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        // API_PORT lets the dev site talk to an API on another port when 5000 is busy
+        target: `http://localhost:${process.env.API_PORT || 5000}`,
         changeOrigin: true,
         secure: false
       }
