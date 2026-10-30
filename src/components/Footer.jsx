@@ -7,7 +7,7 @@ export default function Footer({ navigate }) {
     <li>
       <button 
         onClick={() => navigate(to)} 
-        className="text-charcoal/75 hover:text-sage transition-colors text-[15px] leading-8"
+        className="text-charcoal/75 hover:text-leaf-dark transition-colors text-[15px] leading-8"
       >
         {label}
       </button>
@@ -22,9 +22,21 @@ export default function Footer({ navigate }) {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand Info & Social Links */}
           <div className="space-y-4">
-            <button onClick={() => navigate(paths.home())} aria-label="Home" className="block text-left">
-              <img src="/arshith-bootcamp-logo.png" alt="Arshith Bootcamp" className="h-12 w-auto object-contain" />
-            </button>
+            <div>
+              <button onClick={() => navigate(paths.home())} aria-label="Home" className="block text-left">
+                <img src="/codelekho-logo.svg" alt="CodeLekho" className="h-8 w-auto object-contain" />
+              </button>
+              {/* endorsement line, like "A TATA Enterprise" */}
+              <a
+                href="https://arshithgroup.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group mt-2.5 inline-flex items-baseline gap-1.5 whitespace-nowrap text-[11px] uppercase tracking-[0.18em] transition-colors"
+              >
+                <span className="font-medium text-charcoal/50">A Product of</span>
+                <span className="font-bold text-forest group-hover:text-leaf-dark transition-colors">Arshith Group</span>
+              </a>
+            </div>
             <p className="text-[15px] text-charcoal/70 leading-relaxed max-w-xs">
               Learn today, build tomorrow. Structured courses, honest assessments and verifiable certificates.
             </p>
@@ -96,9 +108,9 @@ export default function Footer({ navigate }) {
             <h4 className="font-display text-[20px] font-bold text-evergreen mb-5">Contact</h4>
             <ul className="space-y-4 text-[15px] text-charcoal/75">
               <li>
-                <a href="mailto:bootcamp@arshithgroup.com" className="flex items-start gap-2.5 hover:text-sage transition-colors group">
+                <a href="mailto:codelekho@arshithgroup.com" className="flex items-start gap-2.5 hover:text-sage transition-colors group">
                   <Mail className="w-4 h-4 mt-0.5 text-sage shrink-0 group-hover:text-forest transition-colors" />
-                  <span className="break-all">bootcamp@arshithgroup.com</span>
+                  <span className="break-all">codelekho@arshithgroup.com</span>
                 </a>
               </li>
               <li>

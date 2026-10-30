@@ -4,6 +4,7 @@ import {
   TrendingUp, RefreshCw, AlertCircle, Clock, BookOpen
 } from 'lucide-react';
 import { api } from '../services/adminApi';
+import { BrandLoader } from './ui';
 
 export default function AdminQuizAnalytics() {
   const [analytics, setAnalytics] = useState(null);
@@ -35,7 +36,7 @@ export default function AdminQuizAnalytics() {
   if (loading) {
     return (
       <div className="p-12 text-center text-xs font-bold text-slate-400 space-y-2">
-        <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin mx-auto" />
+        <div className="flex justify-center"><BrandLoader size={56} /></div>
         <p>Calculating Quiz System Analytics & Performance Metrics...</p>
       </div>
     );

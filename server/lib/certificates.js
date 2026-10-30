@@ -70,7 +70,7 @@ export function ensureCertificate(db, userId, course, passedAttempt, { studentNa
     grade: `${pct}% ${gradeLabel(pct)}`,
     issueDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
     createdAt: new Date().toISOString(),
-    instructorName: course.instructor?.name || 'Arshith Bootcamp',
+    instructorName: course.instructor?.name || 'CodeLekho',
     status: 'active',
     skills: course.skills || []
   };

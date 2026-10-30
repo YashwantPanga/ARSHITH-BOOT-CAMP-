@@ -4,6 +4,7 @@ import {
   Search, Filter, BookOpen, AlertCircle, Save, X, Eye, EyeOff
 } from 'lucide-react';
 import { api } from '../services/adminApi';
+import { BrandLoader } from './ui';
 
 export default function AdminQuizManager() {
   const [questions, setQuestions] = useState([]);
@@ -222,7 +223,7 @@ export default function AdminQuizManager() {
       {/* Questions List Table / Cards */}
       {loading ? (
         <div className="p-12 text-center text-xs font-bold text-slate-400 space-y-2">
-          <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin mx-auto" />
+          <div className="flex justify-center"><BrandLoader size={56} /></div>
           <p>Fetching Question Bank Data...</p>
         </div>
       ) : filteredQuestions.length === 0 ? (

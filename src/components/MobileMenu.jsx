@@ -105,7 +105,7 @@ export default function MobileMenu({ open, onClose, route, navigate, studentUser
             </button>
           ) : (
             <div className="pr-10">
-              <p className="font-display text-[20px] font-bold text-evergreen">Welcome to Arshith Bootcamp</p>
+              <p className="font-display text-[20px] font-bold text-evergreen">Welcome to CodeLekho</p>
               <p className="text-[13.5px] text-charcoal/60 mt-0.5">Every course is free. Learn, practise and get certified.</p>
               <div className="mt-3.5 grid grid-cols-2 gap-2.5">
                 <button onClick={() => go(paths.register())} className="font-display h-11 rounded-lg bg-forest text-ivory text-[15px] font-semibold active:scale-[.98] transition">Join for free</button>

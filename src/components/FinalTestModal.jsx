@@ -8,7 +8,7 @@ import { examGuard } from '../router';
 import { userIdOf, displayNameOf } from '../utils/session';
 import { cleanText, displayTitle } from '../utils/textUtils';
 import { QuestionCard } from './ModuleQuizModal';
-import { Spinner } from './ui';
+import { BrandLoader } from './ui';
 import IdentityCheck from './proctor/IdentityCheck';
 import { analyzeFrame, handNearFace, matchPercent, gazeState } from '../utils/aiProctor';
 import CertificateCelebration from './CertificateCelebration';
@@ -583,7 +583,7 @@ export default function FinalTestModal({ isOpen, onClose: closeModal, course, st
 
         {(phase === 'starting' || phase === 'submitting') && (
           <Centered>
-            <Spinner className="w-10 h-10 mx-auto" />
+            <div className="flex justify-center"><BrandLoader size={64} /></div>
             <p className="mt-4 text-slate-500">{phase === 'starting' ? 'Preparing your question paper…' : 'Submitting and grading your answers…'}</p>
           </Centered>
         )}

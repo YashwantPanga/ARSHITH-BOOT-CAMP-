@@ -31,7 +31,7 @@ export default function DesktopNotice() {
         <span className="mx-auto w-14 h-14 rounded-full bg-brand-100 text-forest flex items-center justify-center"><Laptop className="w-7 h-7" /></span>
         <h2 id="desktop-notice-title" className="mt-4 text-[22px] font-semibold text-evergreen leading-tight">Best on a laptop or desktop</h2>
         <p className="mt-2 text-[14.5px] text-charcoal/70 leading-relaxed">
-          For the best experience, open Arshith Bootcamp on a laptop or desktop. The code practice and the
+          For the best experience, open CodeLekho on a laptop or desktop. The code practice and the
           AI-proctored final assessment need a larger screen and a webcam.
         </p>
         <button onClick={close} className="font-display mt-5 w-full h-12 rounded-md bg-forest text-ivory text-[15.5px] font-semibold hover:bg-sage transition-colors">Continue on mobile</button>

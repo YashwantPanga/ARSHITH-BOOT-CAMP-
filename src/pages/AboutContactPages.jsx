@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Target, Eye, HeartHandshake, Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
-import { Reveal, SafeImg, PageTop } from '../components/ui';
+import { Reveal, SafeImg, PageTop, RevealText } from '../components/ui';
 import { IMAGES } from '../data/meta';
 import { api } from '../services/api';
 
@@ -21,8 +21,8 @@ export function AboutPage({ onExplore, onHome }) {
           </Reveal>
           <Reveal>
             <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">About us</p>
-            <h2 className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight">We provide <b>exclusive coaching courses</b> &amp; life-building education</h2>
-            <p className="mt-4 text-charcoal/70 leading-relaxed">Arshith Bootcamp is an online academy built around complete, textbook-quality courses. Every module ends with a quiz, every course ends with a proctored final assessment, and every certificate carries the learner's real score and a unique verification ID.</p>
+            <RevealText as="h2" className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight">We provide <b>exclusive coaching courses</b> &amp; life-building education</RevealText>
+            <p className="mt-4 text-charcoal/70 leading-relaxed">CodeLekho is an online academy built around complete, textbook-quality courses. Every module ends with a quiz, every course ends with a proctored final assessment, and every certificate carries the learner's real score and a unique verification ID.</p>
             <button onClick={onExplore} className="btn-primary font-display !rounded-md mt-7 px-7 py-3.5 text-[15.5px]">Explore courses</button>
           </Reveal>
         </div>
@@ -57,12 +57,12 @@ export function ContactPage({ onHome }) {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid lg:grid-cols-12 gap-10">
       <div className="lg:col-span-5">
         <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Contact</p>
-        <h2 className="edu-title mt-2 text-3xl sm:text-[38px]">Contact <b>Arshith Bootcamp</b></h2>
+        <RevealText as="h2" className="edu-title mt-2 text-3xl sm:text-[38px]">Contact <b>CodeLekho</b></RevealText>
         <p className="mt-3 text-charcoal/70">Questions about a course, your assessment or a certificate? We usually reply within one working day.</p>
         <div className="mt-8 bg-forest text-white rounded-[20px] p-7 space-y-5">
           <p className="flex gap-3"><MapPin className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Headquarters</span>Bengaluru, Karnataka, India</span></p>
           <p className="flex gap-3"><Phone className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Phone</span>+91 82177 29744</span></p>
-          <p className="flex gap-3"><Mail className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Email</span>bootcamp@arshithgroup.com</span></p>
+          <p className="flex gap-3"><Mail className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Email</span>codelekho@arshithgroup.com</span></p>
         </div>
       </div>
       <div className="lg:col-span-7">

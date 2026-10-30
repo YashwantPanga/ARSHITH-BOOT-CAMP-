@@ -130,15 +130,15 @@ export default function CertificatePage({ course, studentUser, onBack, onVerify,
       pdf.setProperties({
         title: `Certificate ${cert.certificateId} – ${cert.studentName}`,
         subject: `Certificate of Completion: ${cert.courseTitle}`,
-        author: 'Arshith Bootcamp',
+        author: 'CodeLekho',
         keywords: `certificate, ${cert.certificateId}, ${cert.regNo || ''}`,
-        creator: 'Arshith Bootcamp Certificate Service'
+        creator: 'CodeLekho Certificate Service'
       });
       pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 297, 210, undefined, 'FAST');
       // Make the QR corner clickable in the PDF as well.
       const mm = 297 / W;
       pdf.link(QR_BOX.x * mm, QR_BOX.y * mm, QR_BOX.s * mm, QR_BOX.s * mm, { url: verifyUrl });
-      pdf.save(`ArshithBootcamp_Certificate_${cert.certificateId}.pdf`);
+      pdf.save(`CodeLekho_Certificate_${cert.certificateId}.pdf`);
     } catch (err) {
       console.error(err);
       toast('Could not create the PDF. Please try again.', 'error');
@@ -154,7 +154,7 @@ export default function CertificatePage({ course, studentUser, onBack, onVerify,
       const canvas = await render();
       const a = document.createElement('a');
       a.href = canvas.toDataURL('image/png');
-      a.download = `ArshithBootcamp_Certificate_${cert.certificateId}.png`;
+      a.download = `CodeLekho_Certificate_${cert.certificateId}.png`;
       a.click();
     } catch {
       toast('Could not create the image. Please try again.', 'error');
@@ -256,7 +256,7 @@ function Seal() {
       <circle cx="60" cy="60" r="45" fill="none" stroke={IVORY} strokeOpacity=".6" strokeWidth="1" />
       <circle cx="60" cy="60" r="41" fill={EVERGREEN} />
       <text x="60" y="34" textAnchor="middle" fontFamily="DM Sans, system-ui, sans-serif" fontSize="7" fontWeight="700" letterSpacing="2" fill={IVORY} fillOpacity=".85">VERIFIED</text>
-      <text x="60" y="94" textAnchor="middle" fontFamily="DM Sans, system-ui, sans-serif" fontSize="7" fontWeight="700" letterSpacing="2" fill={IVORY} fillOpacity=".85">ARSHITH</text>
+      <text x="60" y="94" textAnchor="middle" fontFamily="DM Sans, system-ui, sans-serif" fontSize="7" fontWeight="700" letterSpacing="2" fill={IVORY} fillOpacity=".85">CODELEKHO</text>
       <path d="M60 46 C60 56 60 62 60 78" stroke={IVORY} strokeWidth="2" fill="none" strokeLinecap="round" />
       <path d="M60 66 C52 66 46 61 45 53 C53 53 59 58 60 66Z" fill="#90B1A2" />
       <path d="M60 58 C68 58 74 53 75 45 C67 45 61 50 60 58Z" fill={IVORY} />
@@ -276,7 +276,7 @@ function CertificateArt({ cert, verifyUrl, qr }) {
       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 210, background: `linear-gradient(180deg, ${FOREST} 0%, ${EVERGREEN} 100%)` }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(251,248,241,.10) 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
         <div style={{ position: 'absolute', left: 0, right: 0, top: 46, display: 'flex', justifyContent: 'center' }}>
-          <img src="/arshith-bootcamp-logo-white.png" alt="" style={{ width: 150, objectFit: 'contain' }} crossOrigin="anonymous" />
+          <img src="/codelekho-logo-white.png" alt="" style={{ width: 170, objectFit: 'contain' }} crossOrigin="anonymous" />
         </div>
         <div style={{ position: 'absolute', left: 0, right: 0, top: 250, display: 'flex', justifyContent: 'center' }}><Seal /></div>
         <div style={{ position: 'absolute', left: 26, right: 26, bottom: 44, color: IVORY }}>

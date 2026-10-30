@@ -328,7 +328,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
 
     XLSX.utils.book_append_sheet(wb, ws, 'Students');
     const dateStr = new Date().toISOString().slice(0, 10);
-    XLSX.writeFile(wb, `Arshith_Bootcamp_Students_${dateStr}.xlsx`);
+    XLSX.writeFile(wb, `CodeLekho_Students_${dateStr}.xlsx`);
     showToast(`Exported ${rows.length} records to Excel`);
   };
 
@@ -596,7 +596,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
       }`}>
         <div className="h-[70px] px-6 flex items-center justify-between shrink-0">
           <button onClick={() => go('dashboard')} className="flex items-center gap-2" aria-label="Admin dashboard">
-            <img src="/arshith-bootcamp-logo.png" alt="Arshith Bootcamp" className="h-9 w-auto" />
+            <img src="/codelekho-logo.svg" alt="CodeLekho" className="h-6 w-auto" />
             <span className="px-1.5 py-0.5 rounded-md bg-[#E8EFEA] text-[#013A2B] text-[10px] font-bold uppercase tracking-wider">Admin</span>
           </button>
           <button onClick={() => setMobileSidebarOpen(false)} className="lg:hidden p-1.5 rounded-full text-[#302B25]/60 hover:bg-[#E8EFEA]" aria-label="Close menu">
@@ -1641,7 +1641,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
         {activeSection === 'courses' && (
           <div className="bg-white rounded-3xl dark-bezel p-6 space-y-4">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h2 className="text-lg font-black text-slate-900">Bootcamp Courses ({courses.length})</h2>
+              <h2 className="text-lg font-black text-slate-900">CodeLekho Courses ({courses.length})</h2>
               <button
                 onClick={() => { setEditingCourse(null); setCourseModalOpen(true); }}
                 className="px-4 py-2 text-xs font-black text-white bg-brand-900 hover:bg-brand-800 rounded-xl flex items-center gap-2"
@@ -2214,7 +2214,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
             </button>
 
             <h2 className="text-xl font-black text-slate-900 mb-4">
-              {editingCourse ? `Edit Course — ${editingCourse.title}` : 'Publish New Bootcamp Course'}
+              {editingCourse ? `Edit Course — ${editingCourse.title}` : 'Publish New Course'}
             </h2>
 
             <form onSubmit={handleSaveCourseSubmit} className="space-y-4">

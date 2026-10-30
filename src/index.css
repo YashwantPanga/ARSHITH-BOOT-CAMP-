@@ -111,27 +111,32 @@
 .skeleton { background: linear-gradient(90deg, #F1EEE5 0%, #E6EDE8 50%, #F1EEE5 100%); background-size: 200% 100%; animation: shimmer 1.6s linear infinite; }
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
-/* ---------- Brand loader: a growing sapling inside a ring ---------- */
+/* ---------- Brand loader: the CodeLekho app icon – the brackets breathe while the nib writes a line ---------- */
 .arb-loader { position: relative; width: 84px; height: 84px; }
 .arb-loader svg { width: 100%; height: 100%; overflow: visible; }
-.arb-loader .ring { fill: none; stroke: #DDE8E2; stroke-width: 3; }
-.arb-loader .ring-arc { fill: none; stroke: #013A2B; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 60 240; transform-origin: 50% 50%; animation: arb-spin 1.4s cubic-bezier(.6,.1,.4,.9) infinite; }
-.arb-loader .stem { fill: none; stroke: #013A2B; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 40; stroke-dashoffset: 40; animation: arb-draw 2.4s ease-in-out infinite; }
-.arb-loader .leaf { transform-box: fill-box; transform-origin: bottom center; transform: scale(0); animation: arb-leaf 2.4s ease-in-out infinite; }
-.arb-loader .leaf-l { fill: #426557; transform-origin: right bottom; animation-delay: .35s; }
-.arb-loader .leaf-r { fill: #013A2B; transform-origin: left bottom; animation-delay: .55s; }
-.arb-loader .seed { fill: #426557; animation: arb-pulse 2.4s ease-in-out infinite; }
-@keyframes arb-spin { to { transform: rotate(360deg); } }
-@keyframes arb-draw { 0% { stroke-dashoffset: 40; } 35%, 80% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 40; } }
-@keyframes arb-leaf { 0%, 20% { transform: scale(0); } 45%, 80% { transform: scale(1); } 100% { transform: scale(0); } }
-@keyframes arb-pulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+.arb-loader .cl-tile { fill: #013A2B; }
+.arb-loader .cl-glow { fill: none; stroke: #4CA153; stroke-width: 1.6; opacity: 0; transform-box: fill-box; transform-origin: center; animation: cl-glow 2s ease-out infinite; }
+.arb-loader .cl-br { fill: none; stroke: #FBF8F1; stroke-width: 4.4; stroke-linecap: round; stroke-linejoin: round; animation: cl-br-l 2s ease-in-out infinite; }
+.arb-loader .cl-br-r { animation-name: cl-br-r; }
+.arb-loader .cl-nib { transform-box: view-box; transform-origin: 42.7px 68.1px; animation: cl-write 2s ease-in-out infinite; }
+.arb-loader .cl-nib path { fill: #4CA153; }
+.arb-loader .cl-nib circle { fill: #013A2B; }
+.arb-loader .cl-nib line { stroke: #013A2B; stroke-width: .9; stroke-linecap: round; }
+.arb-loader .cl-ink { fill: none; stroke: #4CA153; stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 26; stroke-dashoffset: 26; animation: cl-ink 2s ease-in-out infinite; }
+@keyframes cl-br-l { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-3px); } }
+@keyframes cl-br-r { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
+@keyframes cl-write { 0% { transform: translateX(-9px) rotate(-7deg); } 55% { transform: translateX(10px) rotate(5deg); } 75% { transform: translateX(10px) rotate(5deg); } 100% { transform: translateX(-9px) rotate(-7deg); } }
+@keyframes cl-ink { 0%, 8% { stroke-dashoffset: 26; opacity: 1; } 55%, 75% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes cl-glow { 0% { opacity: .55; transform: scale(1); } 100% { opacity: 0; transform: scale(1.22); } }
+@media (prefers-reduced-motion: reduce) { .arb-loader * { animation: none !important; } .arb-loader .cl-ink { stroke-dashoffset: 0; } }
 
 .splash { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; background: #FBF8F1; transition: opacity .5s ease, visibility .5s ease; }
 .splash.hide { opacity: 0; visibility: hidden; }
-.splash-word { font-family: 'DM Serif Display', Georgia, 'Times New Roman', serif; font-size: 24px; letter-spacing: .3em; color: #013A2B; font-weight: 400; }
+.splash-word { font-family: 'Jost', 'DM Sans', system-ui, sans-serif; font-size: 26px; letter-spacing: .02em; color: #013A2B; font-weight: 600; }
+.splash-word .lk { color: #4CA153; }
 .splash-word span { display: inline-block; opacity: 0; transform: translateY(8px); animation: splash-letter .6s cubic-bezier(.2,.7,.2,1) forwards; }
 .splash-bar { width: 160px; height: 2px; background: #DDE8E2; border-radius: 9px; overflow: hidden; }
-.splash-bar i { display: block; height: 100%; width: 40%; background: #013A2B; border-radius: 9px; animation: splash-bar 1.2s ease-in-out infinite; }
+.splash-bar i { display: block; height: 100%; width: 40%; background: linear-gradient(90deg, #013A2B, #4CA153); border-radius: 9px; animation: splash-bar 1.2s ease-in-out infinite; }
 @keyframes splash-letter { to { opacity: 1; transform: none; } }
 @keyframes splash-bar { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
 
@@ -140,8 +145,13 @@
 @media (min-width: 768px) { .has-bottom-nav { padding-bottom: 0; } }
 
 /* Reveal-on-scroll (see useReveal hook) */
-.reveal { opacity: 0; transform: translate3d(0, 22px, 0); transition: opacity .7s ease, transform .7s cubic-bezier(.16,1,.3,1); }
-.reveal.is-visible { opacity: 1; transform: none; }
+.reveal { opacity: 0; filter: blur(8px); transform: translate3d(0, 22px, 0); transition: opacity .8s ease, filter .8s ease, transform .8s cubic-bezier(.16,1,.3,1); }
+.reveal.is-visible { opacity: 1; filter: none; transform: none; }
+
+/* Blur-in text (RevealText): each word fades in from a soft blur and settles into place */
+.blur-word { display: inline-block; opacity: 0; filter: blur(12px); transform: translate3d(0, .35em, 0); }
+.blur-in .blur-word { animation: blur-word .9s cubic-bezier(.22, .61, .36, 1) both; animation-delay: calc(min(var(--i), 24) * 55ms); }
+@keyframes blur-word { to { opacity: 1; filter: blur(0); transform: none; } }
 
 /* Exam: block text selection during proctored final */
 .no-select, .no-select * { -webkit-user-select: none !important; user-select: none !important; }
@@ -199,7 +209,7 @@
 /* eduleb-style building blocks */
 .edu-card { background: #fff; border: 1px solid rgba(66,101,87,.16); border-radius: 20px; box-shadow: 10px 15px 18px rgba(12,45,38,.04); }
 .edu-title { font-family: var(--font-display); font-weight: 600; color: #0C2D26; letter-spacing: -0.01em; }
-.edu-title b { color: #426557; font-weight: 600; }
+.edu-title b { color: #3B8743; font-weight: 600; }
 .edu-nav { font-family: var(--font-display); text-transform: uppercase; font-weight: 600; font-size: 15px; letter-spacing: .02em; }
 .edu-shape { background-image: radial-gradient(circle at 8% 18%, rgba(66,101,87,.10) 0 90px, transparent 91px), radial-gradient(circle at 94% 82%, rgba(1,58,43,.07) 0 130px, transparent 131px); }
 
@@ -262,7 +272,8 @@
 @media (prefers-reduced-motion: reduce) {
   .pdf-fly-page { display: none; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
-  .reveal { opacity: 1; transform: none; }
+  .reveal { opacity: 1; filter: none; transform: none; }
+  .blur-word { opacity: 1; filter: none; transform: none; animation: none !important; }
 }
 
 /* Study scenes (src/components/StudyScenes.jsx) */

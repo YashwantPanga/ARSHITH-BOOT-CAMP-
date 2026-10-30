@@ -17,7 +17,7 @@ export default function LinkedInShare({ cert, verifyUrl, renderCanvas, onClose }
 
   const text = useMemo(() => {
     const tag = String(cert.courseTitle || '').replace(/[^A-Za-z0-9]+/g, '');
-    return `I'm happy to share that I've earned my certificate in ${cert.courseTitle} from Arshith Bootcamp${cert.percentage != null ? `, scoring ${cert.percentage}% in the proctored final assessment` : ''}!\n\nVerify it here: ${verifyUrl}\n\n#ArshithBootcamp #Certificate #Learning${tag ? ` #${tag}` : ''}`;
+    return `I'm happy to share that I've earned my certificate in ${cert.courseTitle} from CodeLekho${cert.percentage != null ? `, scoring ${cert.percentage}% in the proctored final assessment` : ''}!\n\nVerify it here: ${verifyUrl}\n\n#CodeLekho #Certificate #Learning${tag ? ` #${tag}` : ''}`;
   }, [cert, verifyUrl]);
 
   const confetti = useMemo(() => Array.from({ length: 34 }, (_, i) => {
@@ -46,7 +46,7 @@ export default function LinkedInShare({ cert, verifyUrl, renderCanvas, onClose }
   }, [cert.certificateId, renderCanvas, onClose]);
 
   const post = () => window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank', 'noopener');
-  const addToProfile = () => window.open(`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(cert.courseTitle)}&organizationName=${encodeURIComponent('Arshith Bootcamp')}&certId=${encodeURIComponent(cert.certificateId)}&certUrl=${encodeURIComponent(verifyUrl)}${cert.issueDate ? `&issueYear=${new Date(cert.issueDate).getFullYear()}&issueMonth=${new Date(cert.issueDate).getMonth() + 1}` : ''}`, '_blank', 'noopener');
+  const addToProfile = () => window.open(`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(cert.courseTitle)}&organizationName=${encodeURIComponent('CodeLekho')}&certId=${encodeURIComponent(cert.certificateId)}&certUrl=${encodeURIComponent(verifyUrl)}${cert.issueDate ? `&issueYear=${new Date(cert.issueDate).getFullYear()}&issueMonth=${new Date(cert.issueDate).getMonth() + 1}` : ''}`, '_blank', 'noopener');
   const copy = async () => { try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1600); } catch { /* blocked */ } };
   const initials = String(cert.studentName || '?').split(/\s+/).map(s => s[0]).join('').slice(0, 2).toUpperCase();
 

@@ -130,6 +130,50 @@ export function Reveal({ as: Tag = 'div', className = '', delay = 0, children, .
 }
 
 /* ------------------------------------------------------------------ */
+/* Blur-in text: a heading's words fade in from a soft blur, one after */
+/* another, the first time it scrolls into view                        */
+/* ------------------------------------------------------------------ */
+const plainText = (node) => {
+  if (node == null || typeof node === 'boolean') return '';
+  if (typeof node === 'string' || typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(plainText).join('');
+  return React.isValidElement(node) ? plainText(node.props.children) : '';
+};
+
+/** Wraps each word in a span; nested elements such as <b> keep their styling and have their own words wrapped. */
+function splitWords(node, counter) {
+  if (typeof node === 'string' || typeof node === 'number') {
+    return String(node).split(/(\s+)/).map((part, i) => (
+      !part || /^\s+$/.test(part) ? part : <span key={i} className="blur-word" style={{ '--i': counter.n++ }}>{part}</span>
+    ));
+  }
+  if (Array.isArray(node)) return node.map((child, i) => <React.Fragment key={i}>{splitWords(child, counter)}</React.Fragment>);
+  if (React.isValidElement(node) && node.props.children != null) {
+    return React.cloneElement(node, undefined, splitWords(node.props.children, counter));
+  }
+  return node;
+}
+
+export function RevealText({ as: Tag = 'h2', className = '', children, ...rest }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (!('IntersectionObserver' in window)) { el.classList.add('blur-in'); return; }
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { el.classList.add('blur-in'); io.disconnect(); }
+    }, { threshold: 0.2, rootMargin: '0px 0px -40px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <Tag ref={ref} className={`blur-text ${className}`} aria-label={plainText(children).replace(/\s+/g, ' ').trim()} {...rest}>
+      <span aria-hidden="true">{splitWords(children, { n: 0 })}</span>
+    </Tag>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Misc                                                                */
 /* ------------------------------------------------------------------ */
 export function SafeImg({ src, alt = '', className = '', fallbackClass = 'bg-gradient-to-br from-brand-900 via-brand-700 to-sage' }) {
@@ -171,7 +215,7 @@ export function PageTop({ title, crumb, eyebrow, onHome, children }) {
       <div className="absolute inset-0 edu-shape pointer-events-none" aria-hidden="true" />
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 text-center">
         {eyebrow && <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">{eyebrow}</p>}
-        <h1 className="mt-2 text-[34px] sm:text-[48px] font-bold leading-tight text-evergreen">{title}</h1>
+        <RevealText as="h1" className="mt-2 text-[34px] sm:text-[48px] font-bold leading-tight text-evergreen">{title}</RevealText>
         {children}
         <nav aria-label="Breadcrumb" className="mt-5 font-display text-[15.5px] text-evergreen">
           {onHome ? <button onClick={onHome} className="font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
@@ -184,11 +228,11 @@ export function PageTop({ title, crumb, eyebrow, onHome, children }) {
 
 export function Logo({ onClick, light = false, className = '' }) {
   return (
-    <button onClick={onClick} className={`flex items-center gap-2 group ${className}`} aria-label="Arshith Bootcamp home">
+    <button onClick={onClick} className={`flex items-center gap-2 group ${className}`} aria-label="CodeLekho home">
       <img
-        src={light ? '/arshith-bootcamp-logo-white.png' : '/arshith-bootcamp-logo.png'}
-        alt="Arshith Bootcamp"
-        className="h-11 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+        src={light ? '/codelekho-logo-white.svg' : '/codelekho-logo.svg'}
+        alt="CodeLekho"
+        className="h-6 sm:h-[30px] w-auto object-contain transition-transform duration-300 group-hover:scale-[1.03]"
       />
     </button>
   );
@@ -198,18 +242,22 @@ export function Spinner({ className = 'w-6 h-6' }) {
   return <span className={`inline-block ${className} border-[3px] border-brand-100 border-t-brand-900 rounded-full animate-spin`} />;
 }
 
-/** Brand loader – a sapling growing inside a ring (same art as the splash screen). */
+/** Brand loader – the CodeLekho app icon with the nib writing (same art as the splash screen). */
 export function BrandLoader({ size = 72, label }) {
   return (
     <div className="flex flex-col items-center gap-4" role="status" aria-label={label || 'Loading'}>
       <div className="arb-loader" style={{ width: size, height: size }} aria-hidden="true">
         <svg viewBox="0 0 100 100">
-          <circle className="ring" cx="50" cy="50" r="46" />
-          <circle className="ring-arc" cx="50" cy="50" r="46" />
-          <path className="stem" d="M50 74 C50 62 50 52 50 40" />
-          <path className="leaf leaf-l" d="M50 56 C40 56 32 50 30 40 C40 40 48 46 50 56Z" />
-          <path className="leaf leaf-r" d="M50 46 C60 46 68 40 70 30 C60 30 52 36 50 46Z" />
-          <circle className="seed" cx="50" cy="76" r="3" />
+          <rect className="cl-glow" width="100" height="100" rx="22.4" />
+          <rect className="cl-tile" width="100" height="100" rx="22.4" />
+          <polyline className="cl-br cl-br-l" points="31.2,35.4 19.2,50 31.2,64.6" />
+          <polyline className="cl-br cl-br-r" points="68.8,35.4 80.8,50 68.8,64.6" />
+          <path className="cl-ink" d="M38 77 L62 77" />
+          <g className="cl-nib">
+            <path d="M51.22 34.47 C52.19 32.06 54.92 30.9 57.32 31.87 C59.73 32.84 60.89 35.58 59.92 37.98 C52.89 55.38 46.61 63.39 42.68 68.13 C43.13 61.99 44.18 51.87 51.22 34.47Z" />
+            <circle cx="51.46" cy="46.37" r="1.43" />
+            <line x1="50.4" y1="48.9" x2="44.7" y2="63" />
+          </g>
         </svg>
       </div>
       {label && <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sage">{label}</p>}

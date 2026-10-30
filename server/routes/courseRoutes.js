@@ -117,7 +117,7 @@ router.post('/admin/courses', verifyAdminToken, (req, res) => {
     shortDescription: shortDescription || description.slice(0, 120),
     description: description || '',
     instructor: {
-      name: instructorName || 'Arshith Bootcamp Instructor',
+      name: instructorName || 'CodeLekho Instructor',
       role: instructorRole || 'Lead Educator',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
     },

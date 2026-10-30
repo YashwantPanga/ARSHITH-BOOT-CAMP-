@@ -16,6 +16,7 @@ import { QUEST, QuestCard, QuestHero } from '../components/interview/QuestArt';
 import Approaches from '../components/interview/Approaches';
 import { api } from '../services/api';
 import { paths } from '../router';
+import { BrandLoader } from '../components/ui';
 
 /* ------------------------------------------------------------------ */
 /* Shared bits                                                         */
@@ -117,17 +118,23 @@ let progressCache = { user: null, data: null };
 
 function useInterviewProgress(studentUser) {
   const email = studentUser?.email || null;
-  const [progress, setProgress] = useState(progressCache.user === email ? progressCache.data || {} : {});
-  const [plans, setPlans] = useState(progressCache.user === email ? progressCache.plans || {} : {});
+  const cached = progressCache.user === email;
+  const [progress, setProgress] = useState(cached ? progressCache.data || {} : {});
+  const [plans, setPlans] = useState(cached ? progressCache.plans || {} : {});
+  // Interview Prep unlocks once the learner holds 4 certificates: null while checking.
+  const [unlocked, setUnlocked] = useState(cached ? progressCache.unlocked ?? null : null);
+  const [certificates, setCertificates] = useState(cached ? progressCache.certificates || null : null);
   useEffect(() => {
-    if (!email) { setProgress({}); setPlans({}); return; }
+    if (!email) { setProgress({}); setPlans({}); setUnlocked(false); setCertificates(null); return; }
     let live = true;
     api.getInterviewProgress().then(r => {
       if (!live) return;
-      progressCache = { user: email, data: r.progress || {}, plans: r.plans || {} };
+      progressCache = { user: email, data: r.progress || {}, plans: r.plans || {}, unlocked: r.unlocked !== false, certificates: r.certificates || null };
       setProgress(r.progress || {});
       setPlans(r.plans || {});
-    }).catch(() => {});
+      setUnlocked(r.unlocked !== false);
+      setCertificates(r.certificates || null);
+    }).catch(() => { if (live) setUnlocked(false); });
     return () => { live = false; };
   }, [email]);
   const mark = useCallback(async (setId, itemId, solved = true) => {
@@ -153,7 +160,7 @@ function useInterviewProgress(studentUser) {
       return false;
     }
   }, [email]);
-  return { progress, plans, mark, savePlan, signedIn: !!email };
+  return { progress, plans, mark, savePlan, unlocked, certificates, signedIn: !!email };
 }
 
 /* ------------------------------------------------------------------ */
@@ -166,11 +173,74 @@ export default function InterviewPrepPage({ setId, itemId, tab, studentUser, nav
   const item = set && itemId ? set.items.find(i => i.id === itemId) : null;
   const props = { ...state, navigate, toast, studentUser, startTab: tab };
 
+  if (state.unlocked === null) return <div className="bg-ivory min-h-[60vh] flex items-center justify-center"><BrandLoader label="Checking access" /></div>;
+  if (!state.unlocked) return <LockedPrep signedIn={state.signedIn} certificates={state.certificates} navigate={navigate} />;
   if (setId && !set) return <NotFound navigate={navigate} what="This study plan" />;
   if (itemId && !item) return <NotFound navigate={navigate} what="This question" back={paths.interview(set.id)} />;
   if (item) return set.kind === 'concept' ? <ConceptCard key={item.id} set={set} item={item} {...props} /> : <Workspace key={item.id} set={set} item={item} {...props} />;
   if (set) return <SetPage set={set} {...props} />;
   return <PrepHome {...props} />;
+}
+
+/** Shown until the learner holds 4 certificates: what unlocks it, their progress, and a locked preview of the plans. */
+function LockedPrep({ signedIn, certificates, navigate }) {
+  const required = certificates?.required || 4;
+  const earned = Math.min(certificates?.earned || 0, required);
+  const steps = ['Finish every module quiz of a course', 'Submit one project on GitHub', 'Pass the proctored final (70%+)', `Earn ${required} course certificates: Interview Prep unlocks`];
+  return (
+    <div className="bg-ivory min-h-screen">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-20">
+        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-forest via-[#0B3E30] to-evergreen text-ivory px-6 py-8 sm:px-10 sm:py-10">
+          <div className="relative grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <p className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#BCD1C6]"><Lock className="w-3.5 h-3.5" /> Locked</p>
+              <h1 className="mt-4 font-display text-[28px] sm:text-[38px] font-bold leading-tight">Interview Prep unlocks after {required} certificates</h1>
+              <p className="mt-3 text-[15px] text-ivory/75 max-w-xl">{INTERVIEW_SETS.reduce((n, s) => n + s.items.length, 0)} real interview problems in SQL, Python and JavaScript are waiting for you. Complete {required} courses and earn their certificates to open them.</p>
+              {signedIn && (
+                <div className="mt-5 max-w-sm">
+                  <div className="flex items-center justify-between text-[13px]">
+                    <span className="text-ivory/70">Your certificates</span>
+                    <span className="font-semibold"><span className="text-[#9FD8A4]">{earned}</span> of {required}</span>
+                  </div>
+                  <div className="mt-2 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${required}, minmax(0, 1fr))` }}>
+                    {Array.from({ length: required }, (_, i) => (
+                      <span key={i} className={`h-1.5 rounded-full ${i < earned ? 'bg-leaf' : 'bg-white/15'}`} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="mt-6 flex flex-wrap gap-3">
+                {signedIn
+                  ? <button onClick={() => navigate(paths.dashboard())} className="btn bg-ivory text-forest hover:bg-white">Continue my course <ArrowRight className="w-4 h-4" /></button>
+                  : <button onClick={() => navigate(paths.login(paths.interview()))} className="btn bg-ivory text-forest hover:bg-white">Sign in <ArrowRight className="w-4 h-4" /></button>}
+                <button onClick={() => navigate(paths.courses())} className="btn border border-white/30 text-ivory hover:bg-white/10">Browse courses</button>
+              </div>
+            </div>
+            <ol className="space-y-2.5 md:w-[300px]">
+              {steps.map((t, i) => (
+                <li key={t} className="flex items-center gap-3 rounded-xl bg-white/[.07] border border-white/10 px-3.5 py-2.5 text-[13.5px]">
+                  <span className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-[12px] font-bold ${i === steps.length - 1 ? 'bg-leaf text-white' : 'bg-white/15 text-ivory'}`}>{i === steps.length - 1 ? <Award className="w-3.5 h-3.5" /> : i + 1}</span>
+                  {t}
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        <section className="mt-12">
+          <h2 className="font-display text-[22px] font-bold text-evergreen">What you will unlock</h2>
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" aria-hidden="true">
+            {INTERVIEW_SETS.map(s => (
+              <div key={s.id} className="relative pointer-events-none select-none">
+                <div className="grayscale-[.35] opacity-60"><QuestCard set={s} solved={0} signedIn={false} onOpen={() => {}} /></div>
+                <span className="absolute right-3 bottom-3 w-9 h-9 rounded-full bg-ivory/95 text-forest flex items-center justify-center shadow"><Lock className="w-4 h-4" /></span>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
 }
 
 function NotFound({ navigate, what, back = paths.interview() }) {
@@ -230,7 +300,7 @@ function PrepHome({ progress, signedIn, navigate }) {
 
         <section className="mt-12">
           <h2 className="font-display text-[22px] font-bold text-evergreen">Featured</h2>
-          <div className="mt-4 -mx-4 px-4 flex gap-3.5 overflow-x-auto no-scrollbar snap-x scroll-px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-5 sm:overflow-visible">
+          <div className="mt-4 -mx-4 px-4 flex gap-3.5 overflow-x-auto no-scrollbar snap-x scroll-px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-4 sm:overflow-visible">
             {INTERVIEW_SETS.map(s => (
               <QuestCard key={s.id} set={s} solved={Object.keys(progress[s.id] || {}).length} signedIn={signedIn} onOpen={() => navigate(paths.interview(s.id))} />
             ))}

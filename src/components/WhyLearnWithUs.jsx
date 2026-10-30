@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check } from 'lucide-react';
-import { Reveal, SafeImg } from './ui';
+import { Reveal, SafeImg, RevealText } from './ui';
 import { IMAGES } from '../data/meta';
 
 const STEPS = [
@@ -28,7 +28,7 @@ export default function WhyLearnWithUs() {
 
           <Reveal>
             <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">How it works</p>
-            <h2 className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight">Construct a stunning career perspective — <b>one verified step at a time</b></h2>
+            <RevealText as="h2" className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight">Construct a stunning career perspective — <b>one verified step at a time</b></RevealText>
             <p className="mt-4 text-charcoal/70 leading-relaxed max-w-xl">Every course follows the same honest path. Nothing is skipped, and your certificate shows exactly what you scored.</p>
             <ul className="mt-6 space-y-3">
               {['70% pass mark for the final assessment', '3 mini projects'].map(t => (

@@ -1,4 +1,4 @@
-// API Service for Arshith Bootcamp Backend Integration
+// API Service for CodeLekho Backend Integration
 
 import { readStudent } from '../utils/session';
 

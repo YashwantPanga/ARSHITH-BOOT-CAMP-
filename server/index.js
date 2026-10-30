@@ -26,7 +26,7 @@ app.listen(PORT, async () => {
   const mode = await connectDb();
   for (const change of applyAdminSettings()) console.log(`[admin] ${change}`);
   console.log(`=================================================`);
-  console.log(` Arshith Bootcamp Secure Backend API Running     `);
+  console.log(` CodeLekho Secure Backend API Running     `);
   console.log(` Port: http://localhost:${PORT}                   `);
   console.log(` Health: http://localhost:${PORT}/api/health     `);
   console.log(` Database: ${mode === 'supabase' ? 'Supabase' : 'local file (server/data/db.json)'}`);

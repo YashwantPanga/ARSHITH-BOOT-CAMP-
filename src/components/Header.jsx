@@ -110,7 +110,7 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
 
           <nav className="hidden xl:flex items-center gap-7" aria-label="Main">
             {NAV.filter(l => ['home', 'courses', 'interview', 'about', 'contact'].includes(l.id)).map(l => (
-              <button key={l.id} onClick={() => go(l.to)} className={`edu-nav relative py-2 transition-colors ${isActive(l.id) ? 'text-sage after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-0.5 after:rounded after:bg-sage' : 'text-evergreen hover:text-sage'}`}>
+              <button key={l.id} onClick={() => go(l.to)} className={`edu-nav relative py-2 transition-colors ${isActive(l.id) ? 'text-sage after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-0.5 after:rounded after:bg-leaf' : 'text-evergreen hover:text-sage'}`}>
                 {l.id === 'courses' ? 'Courses' : l.name}
               </button>
             ))}

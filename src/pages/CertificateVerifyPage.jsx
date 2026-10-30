@@ -45,7 +45,7 @@ export default function CertificateVerifyPage({ certId = '', onSearch, onHome })
         <div className="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-white/5" />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 py-16 text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-200">Certificate verification</p>
-          <h1 className="mt-3 text-3xl sm:text-[2.6rem] font-medium leading-tight">Verify an Arshith Bootcamp certificate</h1>
+          <h1 className="mt-3 text-3xl sm:text-[2.6rem] font-medium leading-tight">Verify an CodeLekho certificate</h1>
           <p className="mt-3 text-brand-100/90">Enter the certificate ID, or scan the QR code on the certificate with your phone camera.</p>
           <form onSubmit={submit} className="mt-8 flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
             <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="e.g. ARB-PY-2026-7KQ2M9XD" className="flex-1 px-5 py-3.5 rounded-xl text-charcoal bg-ivory font-mono uppercase outline-none placeholder:normal-case placeholder:font-sans focus:ring-4 focus:ring-brand-300/40" />
@@ -111,7 +111,7 @@ function VerifiedCard({ cert, active, onHome }) {
           <div className="flex flex-wrap gap-1.5">{cert.skills.slice(0, 12).map(s => <span key={s} className="chip bg-brand-50 text-brand-900">{s}</span>)}</div>
         </div>
       )}
-      <div className="px-6 pb-6"><button onClick={onHome} className="btn-outline"><Award className="w-4 h-4" /> Explore Arshith Bootcamp</button></div>
+      <div className="px-6 pb-6"><button onClick={onHome} className="btn-outline"><Award className="w-4 h-4" /> Explore CodeLekho</button></div>
     </div>
   );
 }

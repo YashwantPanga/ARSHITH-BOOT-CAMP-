@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
-import { Reveal, SafeImg } from './ui';
+import { Reveal, SafeImg, RevealText } from './ui';
 import { IMAGES } from '../data/meta';
 
 export default function CtaSection({ onExploreClick }) {
@@ -12,7 +12,7 @@ export default function CtaSection({ onExploreClick }) {
           <div className="relative grid md:grid-cols-2 items-center">
             <div className="p-8 sm:p-12 lg:p-14">
               <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-[#BCD1C6]">Get control of your learning</p>
-              <h2 className="mt-3 text-3xl sm:text-[38px] font-semibold leading-tight text-ivory">Start today. Finish with a certificate that proves it.</h2>
+              <RevealText as="h2" className="mt-3 text-3xl sm:text-[38px] font-semibold leading-tight text-ivory">Start today. Finish with a certificate that proves it.</RevealText>
               <p className="mt-4 text-brand-100 max-w-md">Free courses, real assessments and a credential with your exact score and a unique ID employers can verify online.</p>
               <button onClick={onExploreClick} className="btn font-display !rounded-md bg-ivory text-forest text-[15.5px] hover:bg-white mt-8 px-7 py-3.5 group">
                 Choose your course <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

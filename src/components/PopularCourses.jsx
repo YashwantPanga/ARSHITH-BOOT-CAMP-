@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { Star } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import CourseCard, { courseArt } from './CourseCard';
 import { SafeImg } from './ui';
 import { hoursOf } from '../data/meta';
 import { cleanText, displayTitle } from '../utils/textUtils';
-import { Reveal } from './ui';
+import { Reveal, RevealText } from './ui';
 import { TrackMark } from './TrackBadge';
 import { TRACKS } from '../data/meta';
 
@@ -20,7 +20,7 @@ export default function PopularCourses({ courses, enrolledCourseId, offer, onSel
         <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Free certificate courses</p>
-            <h2 className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight max-w-2xl">Access <b>free certificate courses</b>, built by industry mentors</h2>
+            <RevealText as="h2" className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight max-w-2xl">Access <b>free certificate courses</b>, built by industry mentors</RevealText>
           </div>
           <button onClick={onViewAllCourses} className="hidden sm:inline-flex font-display items-center gap-2 h-12 px-6 rounded-md bg-forest text-ivory text-[15px] font-semibold hover:bg-sage transition-colors self-start sm:self-auto group shrink-0">
             View all courses <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -49,7 +49,7 @@ export default function PopularCourses({ courses, enrolledCourseId, offer, onSel
             {list.slice(0, 4).map(c => <CourseRow key={`${track}-${c.id}`} course={c} enrolledCourseId={enrolledCourseId} offer={offer} onSelect={onSelectCourse} />)}
             <button onClick={onViewAllCourses} className="font-display w-full h-12 rounded-md bg-forest text-ivory text-[15px] font-semibold hover:bg-sage transition">Show all courses</button>
           </div>
-          <div className="mt-8 hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="mt-8 hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-5">
             {list.map((c, i) => (
               <div key={`${track}-${c.id}`} className="h-full animate-fade-up" style={{ animationDelay: `${i * 70}ms` }}>
                 <CourseCard course={c} index={i} enrolledCourseId={enrolledCourseId} offer={offer} onSelect={onSelectCourse} onEnroll={onEnrollCourse} />
@@ -76,13 +76,13 @@ export function CourseRow({ course, enrolledCourseId, offer, onSelect }) {
       </span>
       <span className="flex-1 flex flex-col p-2.5">
         <span className="flex items-center gap-1 min-w-0">
-          <img src="/arshith-bootcamp-icon.png" alt="" className="w-4 h-4 rounded border border-brand-900/10 bg-white object-contain p-[1px] shrink-0" />
-          <span className="text-[10.5px] text-charcoal/55 truncate">Arshith Bootcamp</span>
+          <img src="/codelekho-icon.png" alt="" className="w-4 h-4 rounded border border-brand-900/10 bg-white object-contain p-[1px] shrink-0" />
+          <span className="text-[10.5px] text-charcoal/55 truncate">CodeLekho</span>
         </span>
         <span className="mt-1 block text-[13.5px] font-bold leading-snug text-charcoal line-clamp-2 min-h-[36px]">{displayTitle(course.title)}</span>
         <span className="mt-auto pt-1.5 flex items-center gap-1 text-[11px] text-charcoal/60 min-w-0">
-          <Star className="w-3 h-3 shrink-0 fill-amber-400 text-amber-400" />
-          <span className="truncate">{course.rating} · {hoursOf(course)}</span>
+          <Clock className="w-3 h-3 shrink-0 text-sage" />
+          <span className="truncate">{hoursOf(course)}</span>
         </span>
       </span>
     </button>

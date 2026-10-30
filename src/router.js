@@ -23,6 +23,8 @@ export function parseLocation(loc = window.location) {
     case 'interview': return { name: 'interview', params: { setId: a || null, itemId: b || null }, query };
     case 'verify': return { name: 'verify', params: { certId: a || '' }, query };
     case 'login': return { name: 'login', params: {}, query };
+    // the admin signs in on the normal login form; /admin and /admin/login are older bookmarks
+    case 'admin': return !a || a === 'login' ? { name: 'login', params: {}, query } : { name: 'not-found', params: {}, query };
     case 'register': return { name: 'register', params: {}, query };
     case 'verify-email': return { name: 'verify-email', params: {}, query };
     case 'forgot-password': return { name: 'forgot-password', params: {}, query };

@@ -3,7 +3,7 @@ import { Search, SlidersHorizontal, Lock, BookOpen } from 'lucide-react';
 import { CourseTile } from '../components/CourseCard';
 import { CourseRow } from '../components/PopularCourses';
 import { LaptopScene, ExamScene } from '../components/StudyScenes';
-import { Reveal } from '../components/ui';
+import { Reveal, RevealText } from '../components/ui';
 import { displayTitle } from '../utils/textUtils';
 
 import { CATEGORIES } from '../data/meta';
@@ -21,7 +21,6 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
       (category === 'All Categories' || c.category === category) &&
       (!q || [c.title, c.description, c.category, c.level].join(' ').toLowerCase().includes(q))
     );
-    if (sort === 'rating') out = [...out].sort((a, b) => (b.rating || 0) - (a.rating || 0));
     if (sort === 'title') out = [...out].sort((a, b) => a.title.localeCompare(b.title));
     if (sort === 'popular') out = [...out].sort((a, b) => (b.studentsNumeric || 0) - (a.studentsNumeric || 0));
     return out;
@@ -36,7 +35,7 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
         <ExamScene className="hidden xl:block absolute right-[2%] 2xl:right-[5%] bottom-0 w-[250px] 2xl:w-[330px] pointer-events-none" />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 sm:pt-20 xl:pb-20 text-left sm:text-center">
           <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Our services</p>
-          <h1 className="mt-2 text-[28px] sm:text-[48px] font-bold leading-tight text-evergreen">Online courses for focused learners</h1>
+          <RevealText as="h1" className="mt-2 text-[28px] sm:text-[48px] font-bold leading-tight text-evergreen">Online courses for focused learners</RevealText>
           <p className="mt-3 text-[15px] sm:text-base text-charcoal/70 max-w-2xl sm:mx-auto">{offer?.price > 0 ? `Unlock more courses for ₹${offer.price} each.` : 'Every course is free. Learn, pass the final assessment and get your certificate.'}</p>
           <nav aria-label="Breadcrumb" className="mt-5 font-display text-[15.5px] text-evergreen">
             {onHome ? <button onClick={onHome} className="font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
@@ -59,8 +58,7 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
             </div>
             <div className="relative">
               <select value={sort} onChange={(e) => setSort(e.target.value)} className="appearance-none w-full lg:w-52 h-12 pl-11 pr-4 rounded-md bg-cream border border-brand-900/10 text-charcoal/80 outline-none focus:bg-white focus:border-sage focus:ring-4 focus:ring-brand-100">
-                <option value="popular">Most popular</option>
-                <option value="rating">Highest rated</option>
+                <option value="popular">Recommended</option>
                 <option value="title">A – Z</option>
               </select>
               <SlidersHorizontal className="w-4 h-4 text-charcoal/40 absolute left-4 top-1/2 -translate-y-1/2" />
@@ -83,7 +81,7 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
         )}
 
         <div className="mt-10 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-          <h2 className="edu-title text-[28px] sm:text-[34px] leading-tight">Join our <b>free certificate</b> courses</h2>
+          <RevealText as="h2" className="edu-title text-[28px] sm:text-[34px] leading-tight">Join our <b>free certificate</b> courses</RevealText>
           <p className="flex items-center gap-2 text-[15px] text-charcoal/65"><BookOpen className="w-4 h-4 text-sage" />{list.length} course{list.length !== 1 ? 's' : ''} found</p>
         </div>
 
@@ -98,7 +96,7 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
           <div className="mt-5 grid grid-cols-2 gap-3 sm:hidden">
             {list.map(c => <CourseRow key={c.id} course={c} enrolledCourseId={enrolledCourseId} offer={offer} onSelect={onSelectCourse} />)}
           </div>
-          <div className="mt-8 hidden sm:grid sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          <div className="mt-8 hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-5">
             {list.map((c, i) => (
               <Reveal key={c.id} delay={(i % 4) * 80} className="h-full">
                 <CourseTile course={c} enrolledCourseId={enrolledCourseId} offer={offer} onSelect={onSelectCourse} onEnroll={onEnrollCourse} />

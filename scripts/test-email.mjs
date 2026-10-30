@@ -12,7 +12,7 @@ const to = process.argv[2] || process.env.SMTP_USER;
 console.log(`Sending a test email via ${mailMode()} from ${process.env.MAIL_FROM || process.env.SMTP_USER} to ${to} ...`);
 const res = await sendMail({
   to,
-  subject: 'Arshith Bootcamp - test email',
+  subject: 'CodeLekho - test email',
   text: 'Email sending works. Verification, password reset and course-completion emails will now be delivered.',
   html: '<p>Email sending works. Verification, password reset and course-completion emails will now be delivered.</p>'
 });

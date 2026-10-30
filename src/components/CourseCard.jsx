@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Clock, Lock, PlayCircle, Users, BadgeCheck, ArrowRight, BookOpen } from 'lucide-react';
+import { Clock, Lock, PlayCircle, BadgeCheck, ArrowRight, BookOpen } from 'lucide-react';
 import { SafeImg, ProgressBar } from './ui';
 import TrackBadge from './TrackBadge';
 import { cleanText, displayTitle } from '../utils/textUtils';
@@ -44,11 +44,7 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
         <div className="mt-auto pt-5">
           <p className="flex items-center gap-2 text-sm text-charcoal/70"><BadgeCheck className="w-4 h-4 text-sage" /> Completion Certificate · {modules} modules</p>
           <div className="mt-2 flex items-center gap-2 text-sm text-charcoal/70">
-            <span className="flex items-center gap-1"><Star className="w-4 h-4 fill-[#E0B54A] text-[#E0B54A]" />{course.rating}</span>
-            <span className="text-charcoal/30">•</span>
             <span className="flex items-center gap-1"><Clock className="w-4 h-4 text-sage" />{hoursOf(course)}</span>
-            <span className="text-charcoal/30">•</span>
-            <span className="flex items-center gap-1"><Users className="w-4 h-4 text-sage" />{course.studentsCount}</span>
           </div>
 
           {isMine && (
@@ -83,7 +79,6 @@ export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll, offer
   const isMine = offer?.enrolledIds ? offer.enrolledIds.includes(course.id) : enrolledCourseId === course.id;
   const isLocked = false;
   const modules = course.modules?.length || 0;
-  const rating = Number(course.rating) || 0;
 
   return (
     <article className={`edu-card group relative flex flex-col h-full overflow-hidden text-center transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_48px_-26px_rgba(1,58,43,.45)] ${isLocked ? 'opacity-80' : ''}`}>
@@ -94,46 +89,41 @@ export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll, offer
           {isLocked && <span className="absolute top-3 right-3 chip bg-white/90 text-charcoal/70"><Lock className="w-3 h-3" /> Locked</span>}
         </div>
         {/* vertical category tag on the image's left edge */}
-        <span className="absolute left-0 bottom-6 [writing-mode:vertical-rl] rotate-180 rounded-l-md bg-sage group-hover:bg-forest transition-colors text-ivory font-display text-[12.5px] font-medium tracking-wide whitespace-nowrap px-1.5 py-3">
+        <span className="absolute left-0 bottom-5 [writing-mode:vertical-rl] rotate-180 rounded-l-md bg-sage group-hover:bg-forest transition-colors text-ivory font-display text-[11.5px] font-medium tracking-wide whitespace-nowrap px-1 py-2.5">
           {TRACKS[course.iconType]?.label || course.category}
         </span>
       </button>
 
-      <div className="px-6 pt-5 pb-6 flex flex-col flex-1 items-center">
-        <div className="flex items-center gap-0.5" aria-label={`Rated ${rating} out of 5`}>
-          {[1, 2, 3, 4, 5].map(n => <Star key={n} className={`w-4 h-4 ${n <= Math.round(rating) ? 'fill-[#E0B54A] text-[#E0B54A]' : 'text-charcoal/20'}`} />)}
-          <span className="ml-1.5 text-[13px] font-semibold text-charcoal/70">{course.rating}</span>
-        </div>
-        <h3 className="mt-3 font-display text-[21px] font-semibold text-evergreen leading-snug">
+      <div className="px-5 pt-4 pb-5 flex flex-col flex-1 items-center">
+        <h3 className="font-display text-[18px] font-semibold text-evergreen leading-snug">
           <button onClick={() => onSelect(course.id)} className="hover:text-sage transition-colors">{displayTitle(course.title)}</button>
         </h3>
-        <p className="mt-2 text-[14px] text-charcoal/60 line-clamp-2">{cleanText(course.shortDescription || course.description)}</p>
+        <p className="mt-1.5 text-[13.5px] leading-relaxed text-charcoal/60 line-clamp-2">{cleanText(course.shortDescription || course.description)}</p>
 
-        <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1.5 text-[14px] text-charcoal/70">
-          <span className="flex items-center gap-1.5"><BookOpen className="w-4 h-4 text-sage" />{modules} modules</span>
-          <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-sage" />{hoursOf(course)}</span>
-          <span className="flex items-center gap-1.5"><Users className="w-4 h-4 text-sage" />{course.studentsCount}</span>
+        <div className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[12.5px] text-charcoal/65">
+          <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5 text-sage" />{modules} modules</span>
+          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-sage" />{hoursOf(course)}</span>
         </div>
-        <p className="mt-2 flex items-center gap-1.5 text-[13.5px] text-charcoal/60"><BadgeCheck className="w-4 h-4 text-sage" /> Completion Certificate</p>
+        <p className="mt-1.5 flex items-center gap-1 text-[12.5px] text-charcoal/55"><BadgeCheck className="w-3.5 h-3.5 text-leaf" /> Completion Certificate</p>
 
         {isMine && (
-          <div className="mt-4 w-full text-left">
-            <div className="flex justify-between text-xs mb-1.5"><span className="text-charcoal/60">Your progress</span><span className="font-semibold text-brand-900">{course.progress || 0}%</span></div>
+          <div className="mt-3 w-full text-left">
+            <div className="flex justify-between text-[11.5px] mb-1"><span className="text-charcoal/60">Your progress</span><span className="font-semibold text-brand-900">{course.progress || 0}%</span></div>
             <ProgressBar value={course.progress || 0} />
           </div>
         )}
 
-        <div className="mt-auto pt-5 w-full">
-          <p className="py-2.5 rounded-md bg-cream border border-brand-900/10 font-display text-[15px] font-semibold text-forest">{isMine ? 'Unlocked - yours to learn' : `Course Fee - ${priceLabel(offer)}`}</p>
-          <div className="mt-3">
+        <div className="mt-auto pt-4 w-full">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-charcoal/50">{isMine ? 'Unlocked · yours to learn' : `Course fee · ${priceLabel(offer)}`}</p>
+          <div className="mt-2">
             {isMine ? (
-              <button onClick={() => onEnroll(course.id)} className="btn-primary font-display w-full py-3 !rounded-md"><PlayCircle className="w-4 h-4" /> Continue learning</button>
+              <button onClick={() => onEnroll(course.id)} className="btn-primary font-display w-full py-2.5 text-[14px] !rounded-md"><PlayCircle className="w-4 h-4" /> Continue learning</button>
             ) : isLocked ? (
-              <button disabled className="btn font-display w-full py-3 !rounded-md bg-cream text-charcoal/50 border border-brand-900/10" title="Finish your current course first">
+              <button disabled className="btn font-display w-full py-2.5 text-[14px] !rounded-md bg-cream text-charcoal/50 border border-brand-900/10" title="Finish your current course first">
                 <Lock className="w-4 h-4" /> Finish current course first
               </button>
             ) : (
-              <button onClick={() => onEnroll(course.id)} className="btn font-display w-full py-3 !rounded-md bg-forest text-ivory hover:bg-sage group/btn">
+              <button onClick={() => onEnroll(course.id)} className="btn font-display w-full py-2.5 text-[14px] !rounded-md bg-forest text-ivory hover:bg-sage group/btn">
                 {offer?.price > 0 ? `Unlock for ₹${offer.price}` : 'Enroll for Free'} <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
               </button>
             )}

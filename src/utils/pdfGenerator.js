@@ -83,6 +83,28 @@ async function prepareWorkflows(course) {
   return out;
 }
 
+/** Loads an image from the site as a data URL for jsPDF (browser only; null when it cannot be loaded). */
+async function loadImageData(src) {
+  if (typeof window === 'undefined' || typeof fetch !== 'function') return null;
+  try {
+    const res = await fetch(src);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    if (!/^image\/png/.test(blob.type)) return null; // e.g. the site's HTML page when the file is missing
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+// codelekho-logo-white.png is 1200 px wide; height / width of the artwork
+const LOGO_RATIO = 52 / 322;
+
 /**
  * Builds and downloads the course manual. `onProgress({ step, total, label })` is called as the PDF is
  * assembled (used by the download animation); the build yields between modules so the page can repaint.
@@ -110,6 +132,7 @@ export async function generateCoursePDF(course, studentName = 'Student', { onPro
   const contentWidth = pageWidth - (margin * 2);
   let y = margin;
 
+  const logoWhite = await loadImageData('/codelekho-logo-white.png');
   const cleanCourseTitle = cleanText(displayTitle(course.title));
   const cleanStudentName = cleanText(studentName);
 
@@ -133,7 +156,7 @@ export async function generateCoursePDF(course, studentName = 'Student', { onPro
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(44);
-    doc.text("ARSHITH BOOTCAMP", centerX, centerY - 6, {
+    doc.text("CODELEKHO", centerX, centerY - 6, {
       align: "center",
       angle: 35
     });
@@ -165,13 +188,19 @@ export async function generateCoursePDF(course, studentName = 'Student', { onPro
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(255, 255, 255);
-    doc.text("ARSHITH BOOTCAMP - Official Course Manual", margin, 8);
+    if (logoWhite) {
+      doc.addImage(logoWhite, 'PNG', margin, 3.4, 30, 30 * LOGO_RATIO);
+      doc.text("Official Course Manual", margin + 33, 8);
+    } else {
+      doc.text("CodeLekho - Official Course Manual", margin, 8);
+    }
 
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     // Shorten a long course title so it never runs into the left-hand label.
     let headerTitle = cleanCourseTitle;
-    const maxHeaderW = contentWidth - doc.getTextWidth("ARSHITH BOOTCAMP - Official Course Manual") * (8 / 9) - 14;
+    const headerLabelW = logoWhite ? 33 + doc.getTextWidth("Official Course Manual") * (8 / 9) : doc.getTextWidth("CodeLekho - Official Course Manual") * (8 / 9);
+    const maxHeaderW = contentWidth - headerLabelW - 14;
     while (headerTitle.length > 4 && doc.getTextWidth(headerTitle) > maxHeaderW) headerTitle = headerTitle.slice(0, -2);
     if (headerTitle !== cleanCourseTitle) headerTitle = headerTitle.replace(/\s+\S*$/, '') + '...';
     doc.text(headerTitle, pageWidth - margin, 8, { align: "right" });
@@ -400,19 +429,20 @@ export async function generateCoursePDF(course, studentName = 'Student', { onPro
   doc.rect(0, 0, pageWidth, pageHeight, 'F');
   addWatermark(true);
 
-  // Mint decorative accent bar
-  doc.setFillColor(66, 101, 87); // Sage #426557
+  // Leaf-green accent bar (the green of the CodeLekho nib)
+  doc.setFillColor(76, 161, 83); // #4CA153
   doc.rect(margin, 35, 6, 95, 'F');
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(26);
   doc.setTextColor(255, 255, 255);
-  doc.text("ARSHITH BOOTCAMP", margin + 14, 47);
+  if (logoWhite) doc.addImage(logoWhite, 'PNG', margin + 14, 36, 70, 70 * LOGO_RATIO);
+  else doc.text("CodeLekho", margin + 14, 47);
 
   doc.setFontSize(13);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(188, 209, 198);
-  doc.text("Learn Today, Build Tomorrow  |  Official Learning Platform", margin + 14, 57);
+  doc.text("Learn Today, Build Tomorrow  |  An Arshith Group company", margin + 14, 57);
 
   doc.setDrawColor(255, 255, 255);
   doc.setLineWidth(0.5);
@@ -448,10 +478,10 @@ export async function generateCoursePDF(course, studentName = 'Student', { onPro
   doc.setFontSize(9);
   doc.setTextColor(163, 157, 145);
   const authorText = isWebDev
-    ? "Chief Architect: Vikramaditya Rao | Arshith Bootcamp Technical Curriculum Board"
+    ? "Chief Architect: Vikramaditya Rao | CodeLekho Technical Curriculum Board"
     : isAIDataScience
-      ? "Chief AI Scientist: Dr. Ananya Sharma | Arshith Bootcamp Advanced AI Research Board"
-      : "Chief Architect & Lead Educators | Arshith Bootcamp Technical Curriculum Board";
+      ? "Chief AI Scientist: Dr. Ananya Sharma | CodeLekho Advanced AI Research Board"
+      : "Chief Architect & Lead Educators | CodeLekho Technical Curriculum Board";
   doc.text(doc.splitTextToSize(authorText, contentWidth - 20), margin + 14, coverY);
 
   // Student Enrollment Card Box
@@ -474,7 +504,7 @@ export async function generateCoursePDF(course, studentName = 'Student', { onPro
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(228, 224, 215);
-  doc.text(`Platform: Arshith Bootcamp Learning Systems`, margin + 10, 193);
+  doc.text(`Platform: CodeLekho Learning Systems`, margin + 10, 193);
   const curriculumSummary = isAIDataScience
     ? "Curriculum: 15 Core Modules + 5 Capstone Projects + 25-Question Certification Exam"
     : "Curriculum: 15 Core Modules + 3 Mini Projects + 1 Capstone + 25-Question Certification Exam";
@@ -1402,7 +1432,7 @@ GET    /api/v1/jobs/:id/applicants -> Review candidate applications [Recruiter P
       : `Practical Portfolio: ${course.projects?.length || 3} Mini Projects`;
   doc.text(portfolioText, margin + 15, y + 88);
   doc.text(`Certification Assessment: 25-question proctored final (70% to pass)`, margin + 15, y + 98);
-  doc.text(`Official Issuer: Arshith Bootcamp Platform (arshithgroup.com)`, margin + 15, y + 108);
+  doc.text(`Official Issuer: CodeLekho, an Arshith Group company (arshithgroup.com)`, margin + 15, y + 108);
 
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
@@ -1413,10 +1443,10 @@ GET    /api/v1/jobs/:id/applicants -> Review candidate applications [Recruiter P
 
   if (typeof doc.save === 'function' && typeof window !== 'undefined') {
     const filename = isWebDev
-      ? 'ArshithBootcamp_Web_Development_Complete_Course.pdf'
+      ? 'CodeLekho_Web_Development_Complete_Course.pdf'
       : isAIDataScience
-        ? 'ArshithBootcamp_AI_With_Data_Science_Complete_Course.pdf'
-        : `ArshithBootcamp_${course.id}_Complete_Course.pdf`;
+        ? 'CodeLekho_AI_With_Data_Science_Complete_Course.pdf'
+        : `CodeLekho_${course.id}_Complete_Course.pdf`;
     doc.save(filename);
   }
 

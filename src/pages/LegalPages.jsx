@@ -2,7 +2,7 @@ import React from 'react';
 import { PageTop } from '../components/ui';
 
 const UPDATED = '24 October 2026';
-const CONTACT = 'bootcamp@arshithgroup.com';
+const CONTACT = 'codelekho@arshithgroup.com';
 
 /** One legal document: banner, a sticky contents list and numbered sections in a card. */
 function LegalDoc({ title, intro, sections, onHome }) {
@@ -46,7 +46,7 @@ export function TermsPage({ onHome }) {
     <LegalDoc
       title="Terms of Use"
       onHome={onHome}
-      intro="These Terms of Use govern your use of Arshith Bootcamp (arshithbootcamp.com), operated by Arshith Group, Bengaluru, India. By creating an account or using the site you agree to them. If you do not agree, please do not use the site."
+      intro="These Terms of Use govern your use of CodeLekho, operated by Arshith Group, Bengaluru, India. By creating an account or using the site you agree to them. If you do not agree, please do not use the site."
       sections={[
         { title: 'Your account', body: [
           'You must give your full name exactly as it appears on a government or college photo ID, and a working email address. Your name is printed on your certificate and checked against your ID before the final assessment.',
@@ -55,7 +55,7 @@ export function TermsPage({ onHome }) {
         { title: 'Courses and certificates', body: [
           'All courses are currently free, and you may take as many as you like. If paid courses are introduced, the price is shown before you enrol and payments follow the Refund and Cancellation Policy.',
           'Each course has two attempts at its final assessment. If you fail both, you can start the course again: every module quiz is reset and you get two fresh attempts. A certificate of completion is issued when you finish every module quiz, submit the required project and score at least 70% in the proctored final assessment.',
-          'Certificates confirm completion of an Arshith Bootcamp course. They are not a degree, diploma or university qualification, and are not issued under UGC or AICTE approval. Each certificate has a unique ID that anyone can verify on this site.',
+          'Certificates confirm completion of an CodeLekho course. They are not a degree, diploma or university qualification, and are not issued under UGC or AICTE approval. Each certificate has a unique ID that anyone can verify on this site.',
           'We may revoke a certificate obtained through cheating, impersonation or false information.'
         ] },
         { title: 'Proctored assessment', body: [
@@ -74,7 +74,7 @@ export function TermsPage({ onHome }) {
         ] },
         { title: 'Intellectual property', body: [
           '© 2026 Arshith Group. All rights reserved. The course content, lessons, quizzes, diagrams, code, design, logos and certificates on this site belong to Arshith Group or its licensors and are protected by the Copyright Act, 1957 and other laws.',
-          'You may read the material and download your own course PDF and certificate for personal learning only. No other copying, reproduction, adaptation or redistribution is permitted without our written permission. "Arshith Bootcamp" and its logo are brand names of Arshith Group.'
+          'You may read the material and download your own course PDF and certificate for personal learning only. No other copying, reproduction, adaptation or redistribution is permitted without our written permission. "CodeLekho" and its logo are brand names of Arshith Group.'
         ] },
         { title: 'Availability and changes', body: [
           'We work to keep the site available and accurate but provide it "as is". Courses, features and these terms may change; we will update the date above when they do. Continuing to use the site after a change means you accept it.'
@@ -98,7 +98,7 @@ export function PrivacyPage({ onHome }) {
     <LegalDoc
       title="Privacy Policy"
       onHome={onHome}
-      intro="This policy explains what personal data Arshith Group collects through Arshith Bootcamp, why, and the choices you have. It is written to meet the Digital Personal Data Protection Act, 2023 and the Information Technology Act, 2000."
+      intro="This policy explains what personal data Arshith Group collects through CodeLekho, why, and the choices you have. It is written to meet the Digital Personal Data Protection Act, 2023 and the Information Technology Act, 2000."
       sections={[
         { title: 'Data we collect', body: [
           [
@@ -151,10 +151,10 @@ export function RefundPage({ onHome }) {
     <LegalDoc
       title="Refund and Cancellation Policy"
       onHome={onHome}
-      intro="This policy covers payments made on Arshith Bootcamp (arshithbootcamp.com), operated by Arshith Group, Bengaluru, India. Payments are processed securely by Razorpay; we never see or store your card, UPI or bank details."
+      intro="This policy covers payments made on CodeLekho, operated by Arshith Group, Bengaluru, India. Payments are processed securely by Razorpay; we never see or store your card, UPI or bank details."
       sections={[
         { title: 'What you pay for', body: [
-          'All courses on Arshith Bootcamp are currently free, so no payment is taken. This policy applies if paid courses are introduced, when the price is shown before you enrol.',
+          'All courses on CodeLekho are currently free, so no payment is taken. This policy applies if paid courses are introduced, when the price is shown before you enrol.',
           'A payment unlocks one course for the account that paid: all its modules, quizzes, the project and the proctored final assessment. The course is unlocked as soon as the payment is confirmed, and a receipt is emailed to you.'
         ] },
         { title: 'Cancellation', body: [

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, QrCode, BookOpen, Award, Layers, Timer, Search } from 'lucide-react';
 import { MobileHero } from './MobileWelcome';
+import { RevealText } from './ui';
 
 /**
  * Landing hero (eduleb layout): headline, course search and actions on the left; the student in
@@ -38,10 +39,10 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-6 items-center">
         {/* Copy */}
         <div className="relative z-10 pt-6 lg:pt-4 lg:pb-16 animate-fade-up">
-          <p className="font-display text-[13px] font-semibold uppercase tracking-[0.24em] text-[#BCD1C6] lg:text-sage">Arshith Bootcamp</p>
-          <h1 className="mt-3 lg:mt-4 text-[36px] sm:text-[52px] lg:text-[62px] leading-[1.1] text-ivory lg:text-evergreen">
+          <p className="font-display text-[13px] font-semibold uppercase tracking-[0.24em] text-[#BCD1C6] lg:text-leaf-dark">CodeLekho</p>
+          <RevealText as="h1" className="mt-3 lg:mt-4 text-[36px] sm:text-[52px] lg:text-[62px] leading-[1.1] text-ivory lg:text-evergreen">
             Achieve your career goals with <span className="text-[#BCD1C6] lg:text-sage">free online courses</span>
-          </h1>
+          </RevealText>
           <p className="mt-4 lg:mt-5 text-[15.5px] sm:text-[17px] text-ivory/80 lg:text-charcoal/70 leading-relaxed max-w-lg">
             Mentor-written programs in Python, SQL, Web Development and AI — with deep-dive modules, live code practice,
             quizzes after every module, a proctored final and a QR-verified certificate.

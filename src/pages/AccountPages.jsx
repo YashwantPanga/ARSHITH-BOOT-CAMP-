@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AlertCircle, CheckCircle2, Eye, EyeOff, RefreshCw, Info, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Eye, EyeOff, RefreshCw, Info, X, Mail } from 'lucide-react';
 import { api } from '../services/api';
 
 /* Shared frame for the account screens: the same centred card as the login / register page. */
@@ -22,8 +22,8 @@ function Frame({ title, subtitle, onBack, onHome, asModal, children }) {
       <div className="absolute -top-40 -right-40 w-[520px] h-[520px] rounded-full bg-brand-100/60 blur-3xl pointer-events-none" aria-hidden="true" />
       <div className="absolute -bottom-48 -left-40 w-[480px] h-[480px] rounded-full bg-[#E9DFC9]/70 blur-3xl pointer-events-none" aria-hidden="true" />
 
-      <button onClick={onHome} className="relative mb-6" aria-label="Arshith Bootcamp home">
-        <img src="/arshith-bootcamp-logo.png" alt="Arshith Bootcamp" className="h-11 w-auto" />
+      <button onClick={onHome} className="relative mb-6" aria-label="CodeLekho home">
+        <img src="/codelekho-logo.svg" alt="CodeLekho" className="h-7 w-auto" />
       </button>
 
       <div className="relative w-full max-w-[460px] bg-white rounded-2xl shadow-[0_30px_80px_-30px_rgba(1,58,43,.35)] ring-1 ring-black/5 px-6 sm:px-10 pt-9 pb-8 animate-fade-up">
@@ -35,7 +35,7 @@ function Frame({ title, subtitle, onBack, onHome, asModal, children }) {
         {children}
       </div>
 
-      <p className="relative mt-6 text-[12px] text-charcoal/45">© {new Date().getFullYear()} Arshith Bootcamp</p>
+      <p className="relative mt-6 text-[12px] text-charcoal/45">© {new Date().getFullYear()} CodeLekho</p>
     </div>
   );
 }
@@ -116,6 +116,19 @@ function useCooldown() {
 const readDev = () => { try { return JSON.parse(sessionStorage.getItem('arb_dev_mail') || 'null'); } catch { return null; } };
 export const rememberDevMail = (info) => { try { sessionStorage.setItem('arb_dev_mail', JSON.stringify(info)); } catch { /* ignore */ } };
 
+/** Where to find the emailed code: new senders often land in Spam or Promotions at first. */
+function MailHint() {
+  return (
+    <div className="mt-5 flex gap-3 rounded-xl border border-leaf/30 bg-leaf-light px-4 py-3">
+      <span className="mt-0.5 w-8 h-8 shrink-0 rounded-full bg-white flex items-center justify-center text-leaf-dark"><Mail className="w-4 h-4" /></span>
+      <div className="text-[13.5px] leading-relaxed text-charcoal/80">
+        <p className="font-semibold text-evergreen">Check your Inbox and your Spam folder</p>
+        <p className="mt-0.5">The email comes from <b className="font-semibold">CodeLekho</b>. If it is in <b className="font-semibold">Spam</b> or <b className="font-semibold">Promotions</b>, open it and tap <b className="font-semibold">“Not spam”</b> so our next emails reach your inbox.</p>
+      </div>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /* Verify email                                                         */
 /* ------------------------------------------------------------------ */
@@ -169,6 +182,7 @@ export function VerifyEmailPage({ email: initialEmail = '', token, onVerified, o
   return (
     <Frame title="Verify your email" subtitle={<>Enter the 6-digit code we sent{email ? <> to <strong className="font-semibold text-charcoal">{email}</strong></> : ''} to activate your account.</>} onBack={onBack} onHome={onHome} asModal={asModal}>
       <DevNotice code={dev?.email === email ? dev.code : null} status={dev?.email === email ? dev.status : null} />
+      <MailHint />
       <ErrorBox>{state.status === 'error' && state.message}</ErrorBox>
       <InfoBox>{state.status === 'sent' && state.message}</InfoBox>
       <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
@@ -186,7 +200,7 @@ export function VerifyEmailPage({ email: initialEmail = '', token, onVerified, o
       <button type="button" onClick={resend} disabled={cooldown > 0 || !email} className={secondaryBtn}>
         <RefreshCw className="w-4 h-4" />{cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
       </button>
-      <p className="mt-6 text-[13px] leading-relaxed text-charcoal/60">The code expires in 24 hours. If you don't see the email within a minute, check your spam or promotions folder.</p>
+      <p className="mt-6 text-[13px] leading-relaxed text-charcoal/60">The code expires in 24 hours. Still nothing after a minute? Tap Resend code.</p>
     </Frame>
   );
 }
@@ -267,6 +281,7 @@ export function ResetPasswordPage({ email: initialEmail = '', token, onDone, onR
     >
       {!token && <DevNotice code={dev?.kind === 'reset' && dev.email === email ? dev.code : null} status={dev?.kind === 'reset' && dev.email === email ? dev.status : null} />}
       {!token && !dev?.code && <InfoBox>If an account exists for this email, a reset code is on its way. It expires in 30 minutes.</InfoBox>}
+      {!token && <MailHint />}
       <ErrorBox>{state.status === 'error' && state.message}</ErrorBox>
       <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
         {!initialEmail && (

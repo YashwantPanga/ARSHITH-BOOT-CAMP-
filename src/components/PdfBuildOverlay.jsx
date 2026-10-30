@@ -52,7 +52,7 @@ export default function PdfBuildOverlay({ open, progress, done, courseTitle }) {
                 <div className="absolute left-[18px] right-3 top-4 h-[3px] rounded bg-white/70" />
                 <div className="absolute left-[18px] right-6 top-[22px] h-[3px] rounded bg-white/35" />
                 <div className="absolute left-[18px] right-3 bottom-4 h-[18px] rounded bg-white/10" />
-                <div className="absolute left-[18px] bottom-[22px] text-[7px] font-bold tracking-[0.18em] text-white/70">ARSHITH</div>
+                <div className="absolute left-[18px] bottom-[22px] text-[7px] font-bold tracking-[0.18em] text-white/70">CODELEKHO</div>
                 {done && (
                   <div className="pdf-stamp absolute inset-0 flex items-center justify-center">
                     <span className="w-14 h-14 rounded-full bg-ivory text-forest flex items-center justify-center shadow-lg ring-4 ring-sage/40"><Check className="w-8 h-8" strokeWidth={3} /></span>

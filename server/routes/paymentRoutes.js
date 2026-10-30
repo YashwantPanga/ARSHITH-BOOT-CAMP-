@@ -34,12 +34,12 @@ function sendReceipt(db, order) {
   sendMail({
     to: order.email,
     subject: `Payment received - ${order.courseTitle} is unlocked`,
-    text: `Hi ${name},\n\nThank you for your payment. ${order.courseTitle} is now unlocked in your dashboard.\n\n${rows.map(([k, v]) => `${k}: ${v}`).join('\n')}\n\nArshith Bootcamp`,
+    text: `Hi ${name},\n\nThank you for your payment. ${order.courseTitle} is now unlocked in your dashboard.\n\n${rows.map(([k, v]) => `${k}: ${v}`).join('\n')}\n\nCodeLekho`,
     html: `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#302B25">
       <h2 style="color:#013A2B">Payment received</h2>
       <p>Hi ${name},</p><p>Thank you for your payment. <strong>${order.courseTitle}</strong> is now unlocked in your dashboard.</p>
       <table style="border-collapse:collapse;width:100%;font-size:14px">${rows.map(([k, v]) => `<tr><td style="padding:6px 0;color:#426557">${k}</td><td style="padding:6px 0;text-align:right"><strong>${v}</strong></td></tr>`).join('')}</table>
-      <p style="font-size:12px;color:#888;margin-top:24px">Questions about this payment? Reply to this email or write to bootcamp@arshithgroup.com.</p></div>`
+      <p style="font-size:12px;color:#888;margin-top:24px">Questions about this payment? Reply to this email or write to codelekho@arshithgroup.com.</p></div>`
   }).catch(() => {});
 }
 

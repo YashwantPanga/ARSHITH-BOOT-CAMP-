@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Star, Clock, Users, Award, CheckCircle2, ChevronDown, BookOpen, ShieldCheck, Lock, PlayCircle, ListChecks, FileText, BarChart3, Layers, Languages } from 'lucide-react';
-import { ProgressBar } from '../components/ui';
+import { ArrowLeft, Clock, Award, CheckCircle2, ChevronDown, BookOpen, ShieldCheck, Lock, PlayCircle, ListChecks, FileText, BarChart3, Layers, Languages } from 'lucide-react';
+import { ProgressBar, RevealText } from '../components/ui';
 import CourseSlideshow from '../components/CourseSlideshow';
 import { slidesForCourse } from '../data/courseGallery';
 import { cleanText, displayTitle } from '../utils/textUtils';
@@ -40,7 +40,6 @@ export default function CourseDetailsPage({ course, enrolledCourseId, offer, isL
     { icon: Clock, label: 'Duration', value: course.duration },
     { icon: BookOpen, label: 'Modules', value: total },
     { icon: ListChecks, label: 'Quizzes', value: total },
-    { icon: Users, label: 'Learners', value: course.studentsCount },
     { icon: Languages, label: 'Language', value: 'English' }
   ];
 
@@ -64,13 +63,11 @@ export default function CourseDetailsPage({ course, enrolledCourseId, offer, isL
               <p className="mt-4 text-[16px] sm:text-[17px] text-charcoal/70 leading-relaxed max-w-2xl">{cleanText(course.description)}</p>
               <div className="mt-7 flex flex-wrap gap-3">
                 {[
-                  { icon: Star, text: `${course.rating} rating`, star: true },
-                  { icon: Users, text: `${course.studentsCount} learners` },
                   { icon: Clock, text: course.duration },
                   { icon: BookOpen, text: `${total} modules` }
-                ].map(({ icon: Icon, text, star }) => (
+                ].map(({ icon: Icon, text }) => (
                   <span key={text} className="inline-flex items-center gap-2 rounded-full bg-white border border-brand-900/10 px-4 py-2 text-[14px] font-medium text-charcoal/80 shadow-[0_6px_14px_-10px_rgba(12,45,38,.3)]">
-                    <Icon className={`w-4 h-4 ${star ? 'fill-[#E0B54A] text-[#E0B54A]' : 'text-sage'}`} />{text}
+                    <Icon className="w-4 h-4 text-sage" />{text}
                   </span>
                 ))}
               </div>
@@ -87,7 +84,7 @@ export default function CourseDetailsPage({ course, enrolledCourseId, offer, isL
           {course.whatYouWillLearn?.length > 0 && (
             <section className="edu-card p-6 sm:p-9">
               <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Outcomes</p>
-              <h2 className="edu-title mt-1 text-[28px]">What you'll <b>learn</b></h2>
+              <RevealText as="h2" className="edu-title mt-1 text-[28px]">What you'll <b>learn</b></RevealText>
               <ul className="mt-6 grid sm:grid-cols-2 gap-x-6 gap-y-3.5">
                 {course.whatYouWillLearn.map((w, i) => (
                   <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-charcoal/75">
@@ -102,7 +99,7 @@ export default function CourseDetailsPage({ course, enrolledCourseId, offer, isL
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Curriculum</p>
-                <h2 className="edu-title mt-1 text-[28px]">{total} modules · <b>quiz after each</b></h2>
+                <RevealText as="h2" className="edu-title mt-1 text-[28px]">{total} modules · <b>quiz after each</b></RevealText>
               </div>
               {isMine && <span className="rounded-full bg-brand-50 px-3 py-1 text-[13px] font-semibold text-forest">{done}/{total} quizzes completed</span>}
             </div>

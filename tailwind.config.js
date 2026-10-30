@@ -60,6 +60,8 @@ export default {
           900: '#302B25',
           950: '#1F1B17',
         },
+        // CodeLekho nib green – used sparingly as an accent
+        leaf: { DEFAULT: '#4CA153', dark: '#3B8743', light: '#E6F2E7' },
         ivory: '#FBF8F1',
         cream: '#F8F5EE',
         sage: '#426557',

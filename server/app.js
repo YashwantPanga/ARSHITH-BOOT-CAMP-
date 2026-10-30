@@ -52,7 +52,7 @@ app.use((req, res, next) => {
 app.get('/api/health', (req, res) => {
   res.status(dbReady() ? 200 : 503).json({
     status: dbReady() ? 'ok' : 'starting',
-    service: 'Arshith Bootcamp Secure Backend API',
+    service: 'CodeLekho Secure Backend API',
     database: dbReady() ? storageMode() : 'connecting',
     email: mailMode(),
     payments: razorpayConfigured() ? 'on' : 'off',
@@ -111,11 +111,11 @@ if (fs.existsSync(path.join(distDir, 'index.html'))) {
       if (!cert) return next();
       const base = publicBase(req).publicUrl;
       const esc = (v) => String(v || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-      const title = `${cert.studentName} - ${cert.courseTitle} | Arshith Bootcamp certificate`;
+      const title = `${cert.studentName} - ${cert.courseTitle} | CodeLekho certificate`;
       const desc = `Verified certificate of completion${cert.percentage != null ? ` with ${cert.percentage}%` : ''}. Certificate ID ${cert.certificateId}.`;
       const image = fs.existsSync(certImagePath(id)) ? `${base}/api/certificates/${encodeURIComponent(id)}/image.jpg` : `${base}/hero-student.webp`;
       const tags = [
-        ['og:type', 'website'], ['og:site_name', 'Arshith Bootcamp'], ['og:title', title], ['og:description', desc],
+        ['og:type', 'website'], ['og:site_name', 'CodeLekho'], ['og:title', title], ['og:description', desc],
         ['og:url', `${base}/verify/${encodeURIComponent(id)}`], ['og:image', image], ['og:image:width', '1600'], ['og:image:height', '1131']
       ].map(([k, v]) => `<meta property="${k}" content="${esc(v)}" />`).join('')
         + `<meta name="twitter:card" content="summary_large_image" /><meta name="twitter:image" content="${esc(image)}" />`;

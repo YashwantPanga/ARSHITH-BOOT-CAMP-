@@ -50,7 +50,7 @@ export default function PaymentNotice({ course, price = 99, retake = false, paym
         order_id: order.orderId,
         amount: order.amount,
         currency: order.currency,
-        name: 'Arshith Bootcamp',
+        name: 'CodeLekho',
         description: displayTitle(order.courseTitle),
         prefill: order.prefill,
         theme: { color: '#013A2B' },
@@ -67,7 +67,7 @@ export default function PaymentNotice({ course, price = 99, retake = false, paym
             } catch (err) {
               const retryable = !err.status || err.status >= 500;
               if (!retryable || attempt === 4) {
-                setError(`${err.message || 'We could not confirm the payment.'} Your payment ID is ${resp.razorpay_payment_id} - if money was taken, send it to bootcamp@arshithgroup.com and we will unlock the course.`);
+                setError(`${err.message || 'We could not confirm the payment.'} Your payment ID is ${resp.razorpay_payment_id} - if money was taken, send it to codelekho@arshithgroup.com and we will unlock the course.`);
                 setBusy(false);
                 setConfirming(false);
                 return;
@@ -90,7 +90,7 @@ export default function PaymentNotice({ course, price = 99, retake = false, paym
   const subject = encodeURIComponent(`Enrol in ${course?.title || 'a course'} (₹${price})`);
   const contact = (
     <div className="mt-3 grid gap-1.5">
-      <a href={`mailto:bootcamp@arshithgroup.com?subject=${subject}`} className="inline-flex items-center gap-2 text-forest font-semibold hover:underline"><Mail className="w-4 h-4" /> bootcamp@arshithgroup.com</a>
+      <a href={`mailto:codelekho@arshithgroup.com?subject=${subject}`} className="inline-flex items-center gap-2 text-forest font-semibold hover:underline"><Mail className="w-4 h-4" /> codelekho@arshithgroup.com</a>
       <a href="tel:+918217729744" className="inline-flex items-center gap-2 text-forest font-semibold hover:underline"><Phone className="w-4 h-4" /> +91 82177 29744</a>
     </div>
   );

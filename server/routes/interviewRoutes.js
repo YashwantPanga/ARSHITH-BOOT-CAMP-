@@ -7,17 +7,43 @@ import { findInterviewItem, findInterviewSet } from '../../shared/interview/inde
 // a certificate. Stored as db.interviewProgress[email][setId][itemId] = ISO date.
 // A learner may also commit to a daily plan per set: db.interviewPlans[email][setId] =
 // { perDay, days (0 = Sunday ... 6 = Saturday), startedAt }.
+// Interview Prep unlocks once the learner holds active (not revoked) certificates for 4 different courses.
 const router = express.Router();
+
+export const INTERVIEW_CERTIFICATES_REQUIRED = 4;
+export const INTERVIEW_LOCKED_MESSAGE = `Interview Prep unlocks after you earn ${INTERVIEW_CERTIFICATES_REQUIRED} CodeLekho certificates.`;
+
+/** Number of different courses the learner holds an active certificate for. */
+export function certificateCount(db, email) {
+  const id = String(email || '').trim().toLowerCase();
+  if (!id) return 0;
+  const courses = (db.certificates || [])
+    .filter(c => String(c.userId || '').trim().toLowerCase() === id && c.status === 'active')
+    .map(c => c.courseId);
+  return new Set(courses).size;
+}
+
+export function interviewUnlocked(db, email) {
+  return certificateCount(db, email) >= INTERVIEW_CERTIFICATES_REQUIRED;
+}
+
+/** Learners without a certificate may not record progress; admins (no learner session) pass. */
+function lockedFor(req, db) {
+  return req.learnerEmail && !interviewUnlocked(db, req.learnerEmail);
+}
 
 router.get('/interview/progress', (req, res) => {
   const db = getDb();
-  res.json({ success: true, progress: db.interviewProgress?.[req.query.userId] || {}, plans: db.interviewPlans?.[req.query.userId] || {} });
+  const unlocked = !req.learnerEmail || interviewUnlocked(db, req.learnerEmail);
+  const certificates = { earned: certificateCount(db, req.learnerEmail), required: INTERVIEW_CERTIFICATES_REQUIRED };
+  res.json({ success: true, unlocked, certificates, progress: db.interviewProgress?.[req.query.userId] || {}, plans: db.interviewPlans?.[req.query.userId] || {} });
 });
 
 router.post('/interview/solved', (req, res) => {
   const { userId, setId, itemId, solved = true } = req.body || {};
   if (!findInterviewItem(setId, itemId)) return res.status(404).json({ success: false, message: 'Problem not found.' });
   const db = getDb();
+  if (lockedFor(req, db)) return res.status(403).json({ success: false, code: 'INTERVIEW_LOCKED', message: INTERVIEW_LOCKED_MESSAGE });
   if (!db.interviewProgress) db.interviewProgress = {};
   const mine = (db.interviewProgress[userId] ||= {});
   const set = (mine[setId] ||= {});
@@ -31,6 +57,7 @@ router.post('/interview/plan', (req, res) => {
   const { userId, setId, perDay, days, clear = false } = req.body || {};
   if (!findInterviewSet(setId)) return res.status(404).json({ success: false, message: 'Study plan not found.' });
   const db = getDb();
+  if (lockedFor(req, db)) return res.status(403).json({ success: false, code: 'INTERVIEW_LOCKED', message: INTERVIEW_LOCKED_MESSAGE });
   if (!db.interviewPlans) db.interviewPlans = {};
   const mine = (db.interviewPlans[userId] ||= {});
   if (clear) {

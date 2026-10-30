@@ -68,7 +68,7 @@ export async function warmUpMailer() {
   const from = process.env.MAIL_FROM || process.env.SMTP_USER || '';
   if (FREE_MAILBOX.test(from)) {
     console.warn('[mail] Emails are sent from a free mailbox (' + from.replace(/^.*@/, '@') + '). Mail providers often put such codes in spam.'
-      + ' For inbox delivery send from your own domain, e.g. Brevo with MAIL_FROM=Arshith Bootcamp <no-reply@arshithgroup.com> (see .env.example).');
+      + ' For inbox delivery send from your own domain, e.g. Brevo with MAIL_FROM=CodeLekho <no-reply@arshithgroup.com> (see .env.example).');
   }
   try {
     await getTransport().verify();
@@ -81,7 +81,7 @@ export async function warmUpMailer() {
 
 /** Returns { delivered, mode: 'brevo-api' | 'smtp' | 'outbox', error? }. Never throws. */
 export async function sendMail({ to, subject, html, text }) {
-  const from = process.env.MAIL_FROM || (process.env.SMTP_USER ? `Arshith Bootcamp <${process.env.SMTP_USER}>` : 'Arshith Bootcamp <no-reply@arshithbootcamp.local>');
+  const from = process.env.MAIL_FROM || (process.env.SMTP_USER ? `CodeLekho <${process.env.SMTP_USER}>` : 'CodeLekho <no-reply@arshithbootcamp.local>');
   if (brevoApi()) {
     try {
       await sendViaBrevoApi({ from, to, subject, html, text });

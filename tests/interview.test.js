@@ -89,7 +89,49 @@ describe('interview progress API', () => {
     expect((await request(app).get('/api/interview/progress')).status).toBe(401);
   });
 
+  const COURSES = ['python-programming', 'sql-mastery', 'web-development', 'data-science-ai'];
+  /** Gives the learner one certificate per entry: [courseId, status]. */
+  const setCertificates = async (list) => {
+    const db$ = await import('../server/db.js');
+    const db = db$.getDb();
+    db.certificates = (db.certificates || []).filter(c => c.userId !== E);
+    list.forEach(([courseId, status], i) => db.certificates.push({ certificateId: `ARB-T-2026-PREP000${i}`, userId: E, courseId, status }));
+    db$.saveDb(db);
+  };
+  const allFour = () => setCertificates(COURSES.map(c => [c, 'active']));
+
+  it('stays locked until the learner holds 4 active certificates for different courses', async () => {
+    const progress = () => request(app).get('/api/interview/progress').set('X-Learner-Token', tok);
+    const mark = () => request(app).post('/api/interview/solved').set('X-Learner-Token', tok).send({ setId: 'sql-50', itemId: 'sql-01' });
+    const plan = () => request(app).post('/api/interview/plan').set('X-Learner-Token', tok).send({ setId: 'sql-50', perDay: 2, days: [1] });
+
+    await setCertificates([]);
+    let p = (await progress()).body;
+    expect(p.unlocked).toBe(false);
+    expect(p.certificates).toEqual({ earned: 0, required: 4 });
+    expect((await mark()).body.code).toBe('INTERVIEW_LOCKED');
+    expect((await plan()).status).toBe(403);
+
+    await setCertificates(COURSES.slice(0, 3).map(c => [c, 'active']));
+    p = (await progress()).body;
+    expect(p.unlocked).toBe(false);
+    expect(p.certificates.earned).toBe(3);
+    expect((await mark()).status).toBe(403);
+
+    await setCertificates(COURSES.map((c, i) => [c, i === 3 ? 'revoked' : 'active']));
+    expect((await progress()).body.unlocked).toBe(false);
+
+    await setCertificates(COURSES.map(() => ['python-programming', 'active'])); // 4 copies of one course
+    expect((await progress()).body.certificates.earned).toBe(1);
+
+    await allFour();
+    p = (await progress()).body;
+    expect(p.unlocked).toBe(true);
+    expect(p.certificates.earned).toBe(4);
+  });
+
   it('records, lists and clears solved items', async () => {
+    await allFour();
     const mark = (body) => request(app).post('/api/interview/solved').set('X-Learner-Token', tok).send(body);
     expect((await mark({ setId: 'sql-50', itemId: 'sql-01' })).status).toBe(200);
     expect((await mark({ setId: 'dsa-75', itemId: 'dsa-10' })).status).toBe(200);

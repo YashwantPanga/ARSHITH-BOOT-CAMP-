@@ -92,7 +92,7 @@ export default function StreakCard() {
   }, [email]);
 
   const count = useCountUp(s?.current || 0);
-  if (!s) return <div className="h-[230px] rounded-[24px] bg-[#073B2F] animate-pulse" />;
+  if (!s) return <div className="h-[132px] rounded-2xl bg-white border border-brand-900/10 animate-pulse" />;
 
   const lit = s.current > 0 && s.codedToday;
   const week = s.recent.slice(-7);
@@ -102,46 +102,33 @@ export default function StreakCard() {
 
   return (
     <>
-      <section className="streak-emerald relative overflow-hidden rounded-[20px] sm:rounded-[24px] text-ivory p-4 sm:p-7">
-        <span className="absolute -left-10 -bottom-16 w-72 h-72 rounded-full bg-[#FF8A1F] opacity-[.10] blur-3xl" />
-        <span className="absolute right-10 -top-20 w-64 h-64 rounded-full bg-[#3FD6A0] opacity-[.12] blur-3xl" />
-        <span className="streak-emerald-sheen" aria-hidden="true" />
-        {lit && Array.from({ length: 9 }).map((_, i) => (
-          <span key={i} className="streak-ember" style={{ left: `${6 + i * 3.2}%`, animationDelay: `${i * 0.45}s`, animationDuration: `${3 + (i % 3)}s` }} />
-        ))}
-
-        <div className="relative grid grid-cols-1 md:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr_auto] gap-4 md:gap-8 lg:gap-10 items-center">
+      <section className="relative rounded-2xl bg-white border border-brand-900/10 shadow-[0_14px_34px_-24px_rgba(1,58,43,.45)] px-4 py-4 sm:px-6 sm:py-5">
+        <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-7">
           {/* flame + number */}
-          <div className="flex items-center gap-3 sm:gap-4">
-            <span className="shrink-0 w-[52px] sm:w-[84px]"><Flame lit={lit} size={84} className="w-full h-auto" /></span>
-            <div className="min-w-0">
-              <p className="font-display text-[40px] sm:text-[64px] font-bold leading-none tabular-nums">{count}</p>
-              <p className="text-[11.5px] sm:text-[13px] font-semibold uppercase tracking-[0.18em] text-[#FFD580]">day{s.current === 1 ? '' : 's'} streak</p>
-            </div>
-            {/* phones: the key numbers sit next to the streak instead of in three boxes */}
-            <div className="md:hidden ml-auto text-right text-[11.5px] leading-snug text-ivory/70">
-              <p className="flex items-center justify-end gap-1"><Trophy className="w-3.5 h-3.5 text-[#FFD580]" /> Best <b className="text-ivory">{s.best}</b></p>
-              <p className="flex items-center justify-end gap-1"><Code2 className="w-3.5 h-3.5 text-[#7DB59A]" /> <b className="text-ivory">{s.totalDays}</b> coding days</p>
-              {next && <p>Next badge <b className="text-ivory">{next}</b></p>}
+          <div className="flex items-center gap-3 md:pr-7 md:border-r md:border-brand-900/10">
+            <span className="shrink-0 w-12 h-12 rounded-xl bg-[#FFF4E3] border border-[#F6DDB5] flex items-center justify-center">
+              <Flame lit={lit} size={28} className="w-7 h-auto" />
+            </span>
+            <div>
+              <p className="font-display text-[30px] font-bold leading-none text-evergreen tabular-nums">{count}<span className="ml-1.5 text-[13px] font-semibold text-charcoal/55">day{s.current === 1 ? '' : 's'}</span></p>
+              <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-charcoal/45">Coding streak</p>
             </div>
           </div>
 
-          {/* week + status */}
-          <div className="min-w-0">
-            <p className="hidden sm:block font-display text-[21px] font-semibold">Daily coding streak</p>
-            <p className="text-[13px] sm:text-[14px] text-ivory/70 sm:mt-0.5">{statusLine(s)}</p>
-            <div className="mt-3 sm:mt-4 flex justify-between sm:justify-start gap-1 sm:gap-3">
+          {/* this week + status */}
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] text-charcoal/65">{statusLine(s)}</p>
+            <div className="mt-2.5 flex gap-2 sm:gap-2.5">
               {week.map((d, i) => {
                 const isToday = d.date === s.today;
                 return (
-                  <div key={d.date} className="flex flex-col items-center gap-1.5">
-                    <span className={`relative w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-[13px] font-semibold transition
-                      ${d.active ? 'bg-gradient-to-br from-[#FFC24B] to-[#E8641C] text-[#3D1A05] shadow-[0_6px_16px_-6px_rgba(255,138,31,.9)]' : 'bg-white/[.08] border border-white/15 text-ivory/45'}
-                      ${isToday && !d.active ? 'streak-today-ring' : ''}`}
-                      style={d.active ? { animation: `streakPop .45s ${i * 0.07}s backwards` } : undefined}>
-                      {d.active ? <CheckCircle2 className="w-4 h-4" /> : ''}
+                  <div key={d.date} className="flex flex-col items-center gap-1">
+                    <span className={`w-7 h-7 rounded-full flex items-center justify-center transition
+                      ${d.active ? 'bg-forest text-ivory' : 'bg-cream border border-brand-900/10'}
+                      ${isToday ? 'ring-2 ring-leaf ring-offset-2 ring-offset-white' : ''}`}>
+                      {d.active && <CheckCircle2 className="w-3.5 h-3.5" />}
                     </span>
-                    <span className={`text-[11px] ${isToday ? 'text-[#FFD580] font-semibold' : 'text-ivory/50'}`}>{WEEKDAYS[(startPad + i) % 7]}</span>
+                    <span className={`text-[10.5px] ${isToday ? 'text-leaf-dark font-semibold' : 'text-charcoal/45'}`}>{WEEKDAYS[(startPad + i) % 7]}</span>
                   </div>
                 );
               })}
@@ -149,51 +136,53 @@ export default function StreakCard() {
           </div>
 
           {/* stats */}
-          <div className="hidden md:grid grid-cols-3 lg:grid-cols-1 gap-3 md:col-span-2 lg:col-span-1 lg:w-48">
-            <div className="rounded-xl bg-white/[.08] border border-white/10 px-3.5 py-2.5">
-              <p className="text-[11.5px] text-ivory/60 flex items-center gap-1.5"><Trophy className="w-3.5 h-3.5 text-[#FFD580]" /> Best streak</p>
-              <p className="font-display text-[20px] font-bold">{s.best} <span className="text-[12px] font-normal text-ivory/60">days</span></p>
+          <div className="grid grid-cols-3 gap-2 md:w-[300px] shrink-0">
+            <div className="rounded-xl bg-cream/70 border border-brand-900/[.07] px-3 py-2">
+              <p className="text-[10.5px] text-charcoal/55 flex items-center gap-1"><Trophy className="w-3 h-3 text-[#C9962B]" /> Best</p>
+              <p className="font-display text-[17px] font-bold text-evergreen leading-tight">{s.best}<span className="ml-1 text-[11px] font-normal text-charcoal/50">days</span></p>
             </div>
-            <div className="rounded-xl bg-white/[.08] border border-white/10 px-3.5 py-2.5">
-              <p className="text-[11.5px] text-ivory/60 flex items-center gap-1.5"><Code2 className="w-3.5 h-3.5 text-[#7DB59A]" /> Coding days</p>
-              <p className="font-display text-[20px] font-bold">{s.totalDays}</p>
+            <div className="rounded-xl bg-cream/70 border border-brand-900/[.07] px-3 py-2">
+              <p className="text-[10.5px] text-charcoal/55 flex items-center gap-1"><Code2 className="w-3 h-3 text-leaf-dark" /> Coded</p>
+              <p className="font-display text-[17px] font-bold text-evergreen leading-tight">{s.totalDays}<span className="ml-1 text-[11px] font-normal text-charcoal/50">days</span></p>
             </div>
-            <div className="rounded-xl bg-white/[.08] border border-white/10 px-3.5 py-2.5">
-              <p className="text-[11.5px] text-ivory/60">{next ? `Next badge: ${next} days` : 'All badges earned'}</p>
-              <div className="mt-2 h-1.5 rounded-full bg-white/15 overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-[#FFC24B] to-[#E8641C] transition-all duration-700" style={{ width: `${toNext}%` }} /></div>
+            <div className="rounded-xl bg-cream/70 border border-brand-900/[.07] px-3 py-2">
+              <p className="text-[10.5px] text-charcoal/55">{next ? `Next: ${next} days` : 'All badges'}</p>
+              <div className="mt-2 h-1.5 rounded-full bg-brand-900/10 overflow-hidden"><div className="h-full rounded-full bg-leaf transition-all duration-700" style={{ width: `${toNext}%` }} /></div>
             </div>
           </div>
         </div>
 
-        {/* last 5 weeks + badges */}
-        <button onClick={() => setMore(m => !m)} className="md:hidden relative mt-3 w-full flex items-center justify-center gap-1 text-[12.5px] font-semibold text-[#FFD580]">
-          {more ? 'Hide calendar & badges' : 'Show calendar & badges'} <ChevronDown className={`w-4 h-4 transition-transform ${more ? 'rotate-180' : ''}`} />
+        {/* last 5 weeks + badges, folded away to keep the card compact */}
+        <button onClick={() => setMore(m => !m)} className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-sage hover:text-forest transition-colors">
+          {more ? 'Hide calendar & badges' : 'Calendar & badges'} <ChevronDown className={`w-3.5 h-3.5 transition-transform ${more ? 'rotate-180' : ''}`} />
         </button>
-        <div className={`${more ? 'flex' : 'hidden'} md:flex relative mt-4 md:mt-6 pt-4 md:pt-5 border-t border-white/10 flex-col md:flex-row gap-5 md:items-center md:justify-between`}>
-          <div>
-            <p className="text-[11.5px] uppercase tracking-[0.16em] text-ivory/50 mb-2">Last 5 weeks</p>
-            <div className="grid grid-flow-col grid-rows-7 gap-1 w-max">
-              {Array.from({ length: weekdayIndex(s.recent[0].date) }).map((_, i) => <span key={`p${i}`} className="w-3.5 h-3.5" />)}
-              {s.recent.map(d => (
-                <span key={d.date} title={`${d.date}${d.active ? ' · coded' : ''}`}
-                  className={`w-3.5 h-3.5 rounded-[4px] ${d.active ? (d.runs >= 10 ? 'bg-[#FF7A1A]' : d.runs >= 3 ? 'bg-[#FFA43D]' : 'bg-[#FFD07A]') : 'bg-white/10'} ${d.date === s.today ? 'ring-2 ring-[#FFD580] ring-offset-1 ring-offset-[#073B2F]' : ''}`} />
-              ))}
+        {more && (
+          <div className="mt-3 pt-4 border-t border-brand-900/10 flex flex-col md:flex-row gap-5 md:items-start md:justify-between animate-fade-in">
+            <div>
+              <p className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-charcoal/45 mb-2">Last 5 weeks</p>
+              <div className="grid grid-flow-col grid-rows-7 gap-1 w-max">
+                {Array.from({ length: weekdayIndex(s.recent[0].date) }).map((_, i) => <span key={`p${i}`} className="w-3 h-3" />)}
+                {s.recent.map(d => (
+                  <span key={d.date} title={`${d.date}${d.active ? ' · coded' : ''}`}
+                    className={`w-3 h-3 rounded-[3px] ${d.active ? (d.runs >= 10 ? 'bg-forest' : d.runs >= 3 ? 'bg-sage' : 'bg-leaf/60') : 'bg-brand-900/[.07]'} ${d.date === s.today ? 'ring-1 ring-leaf ring-offset-1 ring-offset-white' : ''}`} />
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-charcoal/45 mb-2">Streak badges</p>
+              <div className="flex flex-wrap gap-2">
+                {s.milestones.map(m => (
+                  <span key={m.days} title={m.reached ? `Reached a ${m.days}-day streak` : `Reach a ${m.days}-day streak`}
+                    className={`w-11 h-11 rounded-full flex flex-col items-center justify-center text-center leading-none border
+                      ${m.reached ? 'bg-forest border-[#D9B25A] text-ivory' : 'bg-white border-brand-900/15 text-charcoal/35'}`}>
+                    <span className="font-display text-[14px] font-bold">{m.days}</span>
+                    <span className="text-[8px] uppercase tracking-wider mt-0.5">days</span>
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
-          <div>
-            <p className="text-[11.5px] uppercase tracking-[0.16em] text-ivory/50 mb-2">Streak badges</p>
-            <div className="flex flex-wrap gap-2">
-              {s.milestones.map(m => (
-                <span key={m.days} title={m.reached ? `Reached a ${m.days}-day streak` : `Reach a ${m.days}-day streak`}
-                  className={`w-12 h-12 rounded-full flex flex-col items-center justify-center text-center leading-none border transition
-                    ${m.reached ? 'bg-gradient-to-br from-[#FFD580] to-[#E8641C] border-[#FFE3A8] text-[#3D1A05] shadow-[0_8px_18px_-8px_rgba(255,138,31,.9)] streak-badge-shine' : 'bg-white/5 border-white/15 text-ivory/40'}`}>
-                  <span className="font-display text-[15px] font-bold">{m.days}</span>
-                  <span className="text-[8.5px] uppercase tracking-wider mt-0.5">days</span>
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
+        )}
       </section>
       {party && <StreakCelebration streak={s} onClose={() => setParty(false)} />}
     </>
@@ -220,11 +209,7 @@ export function StreakCelebration({ streak, onClose }) {
       <div className="relative w-full max-w-sm max-h-[92vh] overflow-y-auto rounded-[28px] bg-gradient-to-b from-[#123E30] to-[#0C2D26] text-ivory text-center px-6 pt-10 pb-7 shadow-2xl streak-pop-in">
         <button onClick={onClose} className="absolute right-4 top-4 text-ivory/60 hover:text-ivory" aria-label="Close"><X className="w-5 h-5" /></button>
         <div className="relative mx-auto w-44 h-44 flex items-center justify-center">
-          <span className="absolute inset-0 streak-rays" />
-          <span className="absolute inset-6 rounded-full bg-[#FF8A1F] opacity-30 blur-2xl streak-glow" />
-          {Array.from({ length: 14 }).map((_, i) => (
-            <span key={i} className="streak-spark" style={{ '--a': `${(360 / 14) * i}deg`, animationDelay: `${0.25 + (i % 4) * 0.06}s` }} />
-          ))}
+          <span className="absolute inset-8 rounded-full bg-[#FF8A1F] opacity-20 blur-2xl" />
           <Flame lit size={110} className="relative streak-flame-zoom" />
         </div>
         <p key={shown} className="font-display text-[64px] font-bold leading-none mt-1 streak-number-flip tabular-nums">{shown}</p>

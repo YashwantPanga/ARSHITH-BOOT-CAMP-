@@ -20,6 +20,7 @@ import webSec3 from './web-sections.part3.js';
 import aiSec1 from './ai-sections.part1.js';
 import aiSec2 from './ai-sections.part2.js';
 import aiSec3 from './ai-sections.part3.js';
+import EXAMPLE_FIXES from './example-fixes.js';
 
 /** { [courseId]: { [moduleId]: sections[] } } - the detailed step-by-step sections. */
 const SECTIONS = {
@@ -48,6 +49,19 @@ const sectionsFor = (courseId, moduleId) => {
   });
 };
 
+/** The module's code examples with the corrections from example-fixes.js applied, or null when none apply. */
+const fixedExamples = (courseId, moduleId, examples) => {
+  if (!Array.isArray(examples)) return null;
+  let changed = false;
+  const out = examples.map((ex, i) => {
+    const code = EXAMPLE_FIXES[`${courseId}/${moduleId}/${i}`];
+    if (code === undefined || code === ex.code) return ex;
+    changed = true;
+    return { ...ex, code };
+  });
+  return changed ? out : null;
+};
+
 /** The course with the rewritten lessons applied (the stored course is not changed). */
 export function withLessons(course) {
   if (!course || (!SECTIONS[course.id] && !FULL[course.id])) return course;
@@ -56,12 +70,14 @@ export function withLessons(course) {
     modules: (course.modules || []).map(m => {
       const full = FULL[course.id]?.[m.id];
       const sections = sectionsFor(course.id, m.id);
-      if (!full && !sections) return m;
+      const examples = full ? null : fixedExamples(course.id, m.id, m.readingMaterial?.codeExamples);
+      if (!full && !sections && !examples) return m;
       const rm = { ...(full ? full.readingMaterial : m.readingMaterial) };
       if (sections) {
         rm.sections = sections;
         delete rm.theory; // the sections replace a Markdown theory text (some AI modules)
       }
+      if (examples) rm.codeExamples = examples;
       return { ...m, ...(full?.description ? { description: full.description } : {}), readingMaterial: rm };
     })
   };
