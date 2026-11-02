@@ -5,7 +5,7 @@
 @layer base {
   html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
   body {
-    font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Source Sans 3', 'Source Sans Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     background-color: #FBF8F1;
     color: #302B25;
     font-feature-settings: 'cv11', 'ss01';
@@ -14,18 +14,18 @@
   :root {
     --color-forest: #013A2B; --color-evergreen: #0C2D26; --color-ivory: #FBF8F1; --color-cream: #F8F5EE;
     --color-sage: #426557; --color-charcoal: #302B25;
-    --font-sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    --font-display: 'Jost', 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-sans: 'Source Sans 3', 'Source Sans Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Source Sans 3', 'Source Sans Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     --radius-card: 1rem; --content-width: 72rem; --reading-width: 46rem;
   }
-  /* Headings in Jost (eduleb template type) */
-  h1, h2, h3, .font-display { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; overflow-wrap: break-word; }
+  /* One family for text and headings (Source Sans, as on W3Schools); headings are bold */
+  h1, h2, h3, .font-display { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.005em; text-wrap: balance; overflow-wrap: break-word; }
   h4, h5, h6 { text-wrap: balance; overflow-wrap: break-word; }
   p, li, dd { text-wrap: pretty; overflow-wrap: break-word; }
   body { text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
   ::selection { background: #BCD1C6; color: #013A2B; }
-  pre, code, textarea.font-mono, .font-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-ligatures: none; }
+  pre, code, textarea.font-mono, .font-mono { font-family: var(--font-mono); font-variant-ligatures: none; }
   button { -webkit-user-select: none; user-select: none; }
   :focus-visible { outline: 2px solid #426557; outline-offset: 2px; }
 }
@@ -132,7 +132,7 @@
 
 .splash { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; background: #FBF8F1; transition: opacity .5s ease, visibility .5s ease; }
 .splash.hide { opacity: 0; visibility: hidden; }
-.splash-word { font-family: 'Jost', 'DM Sans', system-ui, sans-serif; font-size: 26px; letter-spacing: .02em; color: #013A2B; font-weight: 600; }
+.splash-word { font-family: var(--font-sans); font-size: 26px; letter-spacing: .02em; color: #013A2B; font-weight: 600; }
 .splash-word .lk { color: #4CA153; }
 .splash-word span { display: inline-block; opacity: 0; transform: translateY(8px); animation: splash-letter .6s cubic-bezier(.2,.7,.2,1) forwards; }
 .splash-bar { width: 160px; height: 2px; background: #DDE8E2; border-radius: 9px; overflow: hidden; }
@@ -178,7 +178,7 @@
 .admin-ui .rounded-xl { border-radius: 8px; }
 .admin-ui .font-black { font-weight: 700; }
 .admin-ui .font-extrabold { font-weight: 600; }
-.admin-ui h1, .admin-ui h2, .admin-ui h3, .admin-ui h4 { color: #302B25; font-family: 'DM Sans', system-ui, sans-serif; letter-spacing: -0.01em; }
+.admin-ui h1, .admin-ui h2, .admin-ui h3, .admin-ui h4 { color: #302B25; font-family: var(--font-sans); letter-spacing: -0.01em; }
 .admin-ui .border-slate-100 { border-color: #EFEBE3; }
 .admin-ui .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #EFEBE3; }
 .admin-ui table thead tr { background: #FBF8F1; }
@@ -200,8 +200,8 @@
 
 /* Home page: Coursera-style type. Source Sans 3 everywhere on the landing page; headings that use
    the serif display face elsewhere become bold, tightly set sans headlines here. */
-.landing-type { font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
-.landing-type .font-display, .landing-type h1, .landing-type h2, .landing-type h3 { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em; }
+.landing-type { font-family: var(--font-sans); }
+.landing-type .font-display, .landing-type h1, .landing-type h2, .landing-type h3 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em; }
 .landing-type h1 { font-weight: 700; letter-spacing: -0.02em; }
 
 /* eduleb-style building blocks */
@@ -475,7 +475,7 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 @keyframes questSpin { to { transform: rotate(360deg); } }
 .quest-star { position: absolute; width: 10px; height: 10px; pointer-events: none; background: #fff; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); opacity: .8; animation: questTwinkle 3s ease-in-out infinite; }
 @keyframes questTwinkle { 0%, 100% { transform: scale(.5); opacity: .35; } 50% { transform: scale(1.1); opacity: 1; } }
-.quest-glyph { position: absolute; pointer-events: none; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800; font-size: 18px; text-shadow: 0 0 12px currentColor; opacity: .85; animation: questFloat 5s ease-in-out infinite; }
+.quest-glyph { position: absolute; pointer-events: none; font-family: var(--font-mono); font-weight: 800; font-size: 18px; text-shadow: 0 0 12px currentColor; opacity: .85; animation: questFloat 5s ease-in-out infinite; }
 @keyframes questFloat { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-10px) rotate(4deg); } }
 .quest-gold { background: linear-gradient(180deg, #FFF1A8 0%, #FFD34D 45%, #F59E0B 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 0 rgba(120,60,0,.45)); }
 .quest-btn { box-shadow: 0 5px 0 #C27A12, 0 12px 24px -8px rgba(255,180,40,.7); transition: transform .12s ease, box-shadow .12s ease; }

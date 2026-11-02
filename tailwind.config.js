@@ -78,12 +78,13 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['DM Sans', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
-        display: ['Jost', 'DM Sans', 'system-ui', 'sans-serif'],
+        // Source Sans for all UI text and headings, Source Code Pro for code (the W3Schools pairing)
+        sans: ['"Source Sans 3"', '"Source Sans Pro"', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        display: ['"Source Sans 3"', '"Source Sans Pro"', 'system-ui', 'sans-serif'],
         serif: ['DM Serif Display', 'Georgia', 'Times New Roman', 'serif'],
         // Home page type (Coursera-style humanist sans)
         landing: ['"Source Sans 3"', 'Source Sans Pro', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
-        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        mono: ['"Source Code Pro"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
       },
       // Central type scale: display sizes are fluid, body sizes fixed for readability.
       fontSize: {
