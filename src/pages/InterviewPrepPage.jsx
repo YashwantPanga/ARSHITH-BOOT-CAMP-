@@ -116,7 +116,7 @@ const clearDraft = (id) => { try { localStorage.removeItem(draftKey(id)); } catc
 
 let progressCache = { user: null, data: null };
 
-function useInterviewProgress(studentUser) {
+function useInterviewProgress(studentUser, isAdmin = false) {
   const email = studentUser?.email || null;
   const cached = progressCache.user === email;
   const [progress, setProgress] = useState(cached ? progressCache.data || {} : {});
@@ -125,7 +125,8 @@ function useInterviewProgress(studentUser) {
   const [unlocked, setUnlocked] = useState(cached ? progressCache.unlocked ?? null : null);
   const [certificates, setCertificates] = useState(cached ? progressCache.certificates || null : null);
   useEffect(() => {
-    if (!email) { setProgress({}); setPlans({}); setUnlocked(false); setCertificates(null); return; }
+    // Admins (signed in to the staff portal, no learner session) can always open Interview Prep to review it.
+    if (!email) { setProgress({}); setPlans({}); setUnlocked(!!isAdmin); setCertificates(null); return; }
     let live = true;
     api.getInterviewProgress().then(r => {
       if (!live) return;
@@ -136,7 +137,7 @@ function useInterviewProgress(studentUser) {
       setCertificates(r.certificates || null);
     }).catch(() => { if (live) setUnlocked(false); });
     return () => { live = false; };
-  }, [email]);
+  }, [email, isAdmin]);
   const mark = useCallback(async (setId, itemId, solved = true) => {
     if (!email) return false;
     setProgress(p => ({ ...p, [setId]: { ...(p[setId] || {}), ...(solved ? { [itemId]: new Date().toISOString() } : {}) } }));
@@ -167,8 +168,8 @@ function useInterviewProgress(studentUser) {
 /* Page router                                                         */
 /* ------------------------------------------------------------------ */
 
-export default function InterviewPrepPage({ setId, itemId, tab, studentUser, navigate, toast }) {
-  const state = useInterviewProgress(studentUser);
+export default function InterviewPrepPage({ setId, itemId, tab, studentUser, isAdmin = false, navigate, toast }) {
+  const state = useInterviewProgress(studentUser, isAdmin);
   const set = setId ? findInterviewSet(setId) : null;
   const item = set && itemId ? set.items.find(i => i.id === itemId) : null;
   const props = { ...state, navigate, toast, studentUser, startTab: tab };
