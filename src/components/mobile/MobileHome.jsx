@@ -301,7 +301,7 @@ export default function MobileHome({ courses = [], enrolledCourseId, offer, stud
           <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search courses"
             className="w-full h-12 pl-11 pr-4 rounded-2xl bg-white text-[15px] text-pine-950 outline-none shadow-[0_14px_30px_-16px_rgba(0,0,0,.6)] focus:ring-4 focus:ring-pine-300/40" />
           {!query && (
-            <span className="pointer-events-none absolute left-11 top-1/2 -translate-y-1/2 text-[15px] text-pine-800/45 flex gap-1">
+            <span className="pointer-events-none absolute left-11 top-1/2 -translate-y-1/2 h-[23px] overflow-hidden text-[15px] text-pine-800/45 flex gap-1">
               Search for <span key={hint} className="mh-hint text-pine-800/70">‘{SEARCH_HINTS[hint]}’</span>
             </span>
           )}

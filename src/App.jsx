@@ -665,7 +665,7 @@ function AppShell() {
       {!adminUser && <DesktopNotice />}
 
       {!isAuthModal && route.name !== 'home' && !(adminUser && route.name === 'dashboard') && (
-        <HomeButton onClick={() => navigate(paths.home())} hideOnPhone={showsBottomBar(displayRoute)} />
+        <HomeButton onClick={() => navigate(paths.home())} hideOnPhone={displayRoute.name !== 'learning'} />
       )}
 
       <ConfirmDialog

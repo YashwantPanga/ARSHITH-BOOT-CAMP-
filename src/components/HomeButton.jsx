@@ -4,7 +4,8 @@ import { Home } from 'lucide-react';
 /**
  * Floating "Home" button shown on every page except the home page. A forest-green orb with a
  * soft halo; on hover/focus it widens into a pill that reads "Home". Sits above the mobile
- * bottom navigation when that bar is shown; hidden on phones where the tab bar already has Home.
+ * bottom navigation when that bar is shown. On phones it shows only in lessons: elsewhere the header logo
+ * and the bottom tab bar already lead home, and a floating button would cover content.
  */
 export default function HomeButton({ onClick, aboveBottomNav, hideOnPhone = false }) {
   return (
