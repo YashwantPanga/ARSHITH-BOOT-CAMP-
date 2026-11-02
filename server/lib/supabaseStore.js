@@ -34,9 +34,13 @@ async function check(res, what) {
   throw new Error(`Supabase ${what} failed (${res.status}): ${body.slice(0, 300)}`);
 }
 
+// Saved AI-tutor answers live in the same table as rows named "tutor:<id>" (server/lib/tutorStore.js).
+// They are not part of the app database, so loadAll skips them.
+export const TUTOR_PREFIX = 'tutor:';
+
 /** Reads every collection. Returns null when the table is empty (first run). */
 export async function loadAll() {
-  const res = await check(await fetch(endpoint('?select=key,data'), { headers: headers() }), 'read');
+  const res = await check(await fetch(endpoint(`?select=key,data&key=not.like.${encodeURIComponent(`${TUTOR_PREFIX}*`)}`), { headers: headers() }), 'read');
   const rows = await res.json();
   if (!rows.length) return null;
   return Object.fromEntries(rows.map(r => [r.key, r.data]));
@@ -51,6 +55,13 @@ export async function upsert(collections) {
     headers: headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
     body: JSON.stringify(rows)
   }), 'save');
+}
+
+/** One row's data, or null. */
+export async function getRow(key) {
+  const res = await check(await fetch(endpoint(`?select=data&key=eq.${encodeURIComponent(key)}`), { headers: headers() }), 'read');
+  const rows = await res.json();
+  return rows[0]?.data ?? null;
 }
 
 export async function removeKeys(keys) {

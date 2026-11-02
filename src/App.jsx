@@ -21,16 +21,40 @@ const AdminCourseBar = lazy(() => import('./components/staff/AdminCourseBar'));
 import AuthPage from './components/LoginModal';
 import { ToastProvider, useToast, ConfirmDialog, PageLoader } from './components/ui';
 
-import CoursesPage from './pages/CoursesPage';
-import CourseDetailsPage from './pages/CourseDetailsPage';
-import LearningPage from './pages/LearningPage';
-import CertificatePage from './pages/CertificatePage';
-import CertificateVerifyPage from './pages/CertificateVerifyPage';
-import StudentDashboard from './pages/StudentDashboard';
-import CategoriesPage from './pages/CategoriesPage';
-import { AboutPage, ContactPage } from './pages/AboutContactPages';
-import { TermsPage, PrivacyPage, RefundPage } from './pages/LegalPages';
-import { VerifyEmailPage, ForgotPasswordPage, ResetPasswordPage, rememberDevMail } from './pages/AccountPages';
+import { rememberDevMail } from './utils/devMail';
+
+// Pages load on demand so the first visit downloads only the home page; the likely next pages are
+// fetched in the background once the browser is idle (see prefetchPages below).
+const loadCourses = () => import('./pages/CoursesPage');
+const loadCourseDetails = () => import('./pages/CourseDetailsPage');
+const loadLearning = () => import('./pages/LearningPage');
+const loadDashboard = () => import('./pages/StudentDashboard');
+const CoursesPage = lazy(loadCourses);
+const CourseDetailsPage = lazy(loadCourseDetails);
+const LearningPage = lazy(loadLearning);
+const StudentDashboard = lazy(loadDashboard);
+const CertificatePage = lazy(() => import('./pages/CertificatePage'));
+const CertificateVerifyPage = lazy(() => import('./pages/CertificateVerifyPage'));
+const CategoriesPage = lazy(() => import('./pages/CategoriesPage'));
+const named = (load, name) => lazy(() => load().then(m => ({ default: m[name] })));
+const loadAbout = () => import('./pages/AboutContactPages');
+const loadLegal = () => import('./pages/LegalPages');
+const loadAccount = () => import('./pages/AccountPages');
+const AboutPage = named(loadAbout, 'AboutPage');
+const ContactPage = named(loadAbout, 'ContactPage');
+const TermsPage = named(loadLegal, 'TermsPage');
+const PrivacyPage = named(loadLegal, 'PrivacyPage');
+const RefundPage = named(loadLegal, 'RefundPage');
+const VerifyEmailPage = named(loadAccount, 'VerifyEmailPage');
+const ForgotPasswordPage = named(loadAccount, 'ForgotPasswordPage');
+const ResetPasswordPage = named(loadAccount, 'ResetPasswordPage');
+let prefetched = false;
+const prefetchPages = (signedIn) => {
+  if (prefetched) return;
+  prefetched = true;
+  const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1500));
+  idle(() => { loadCourses(); loadCourseDetails(); if (signedIn) { loadDashboard(); loadLearning(); } });
+};
 
 import { api, getAdminToken, setAdminToken } from './services/api';
 import { parseLocation, paths, examGuard } from './router';
@@ -373,6 +397,7 @@ function AppShell() {
   const isChromeless = displayRoute.name === 'learning';
 
   const loading = <PageLoader />;
+  useEffect(() => { prefetchPages(!!studentUser); }, [studentUser]);
 
   const notFound = (title = 'Page not found', text = "The page you're looking for doesn't exist or has moved.") => (
     <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-6 py-20">
@@ -626,7 +651,7 @@ function AppShell() {
           </Suspense>
         )}
         {/* no fade wrapper on the staff page: its animation would keep the page's pop-ups under the header */}
-        <div className={isChromeless || (adminUser && displayRoute.name === 'dashboard') ? '' : 'animate-fade-in'}>{page}</div>
+        <div className={isChromeless || (adminUser && displayRoute.name === 'dashboard') ? '' : 'animate-fade-in'}><Suspense fallback={loading}>{page}</Suspense></div>
       </main>
 
       {!isChromeless && <Footer navigate={navigate} />}
@@ -635,7 +660,7 @@ function AppShell() {
         <MobileBottomNav route={displayRoute} navigate={navigate} studentUser={studentUser} />
       )}
 
-      {authModal && <AuthModalLayer onClose={closeAuthModal}>{authModal}</AuthModalLayer>}
+      {authModal && <AuthModalLayer onClose={closeAuthModal}><Suspense fallback={null}>{authModal}</Suspense></AuthModalLayer>}
       {!adminUser && !isChromeless && <WelcomeCard navigate={navigate} signedIn={!!studentUser} />}
       {!adminUser && <DesktopNotice />}
 

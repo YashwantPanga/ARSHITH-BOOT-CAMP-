@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { rememberDevMail } from '../utils/devMail';
 import { AlertCircle, CheckCircle2, Eye, EyeOff, RefreshCw, Info, X, Mail } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -114,7 +115,7 @@ function useCooldown() {
 }
 
 const readDev = () => { try { return JSON.parse(sessionStorage.getItem('arb_dev_mail') || 'null'); } catch { return null; } };
-export const rememberDevMail = (info) => { try { sessionStorage.setItem('arb_dev_mail', JSON.stringify(info)); } catch { /* ignore */ } };
+export { rememberDevMail };
 
 /** Where to find the emailed code: new senders often land in Spam or Promotions at first. */
 function MailHint() {

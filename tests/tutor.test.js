@@ -62,7 +62,7 @@ describe('tutor API', () => {
     db$.saveDb(db);
     tok = (await request(app).post('/api/learners/login').send({ email: E, password: 'Pw#12345', regNo: 'TUT01' })).body.token;
   });
-  afterAll(() => { tutor.setTutorClient(null); try { fs.unlinkSync(tmp); } catch { /* ignore */ } });
+  afterAll(() => { tutor.setTutorClient(null); try { fs.unlinkSync(tmp); fs.rmSync(`${tmp}.tutor`, { recursive: true, force: true }); } catch { /* ignore */ } });
   beforeEach(() => { calls = []; });
 
   const explain = (body) => request(app).post('/api/tutor/explain').set('X-Learner-Token', tok).send(body);
@@ -103,6 +103,10 @@ describe('tutor API', () => {
     const quizQ = mod.readingMaterial.selfAssessment?.questions?.[0]?.question || mod.readingMaterial.mcqs?.[0]?.question;
     if (quizQ) expect(prompt).not.toContain(quizQ);
 
+    const db$ = await import('../server/db.js');
+    expect(db$.getDb().tutorExplanations).toBeUndefined(); // kept outside the main database
+    (await import('../server/lib/tutorStore.js')).clearTutorMemory(); // next read comes from disk
+
     const again = await explain({ courseId, moduleId, lang: 'te', style: 'simple' });
     expect(again.headers['x-tutor-cache']).toBe('hit');
     expect(again.text).toBe(first.text);
@@ -122,13 +126,15 @@ describe('tutor API', () => {
     await explain({ courseId, moduleId, lang: 'ta' });
     expect(calls).toHaveLength(2); // not cached, so asked again
 
-    const db = (await import('../server/db.js')).getDb();
-    const before = db.tutorUsage[E].explain;
+    const db$ = await import('../server/db.js');
+    const store = await import('../server/lib/tutorStore.js');
+    const before = db$.getDb().tutorUsage[E].explain;
     tutor.setTutorClient(fakeClient({ fail: true }));
     const res = await explain({ courseId, moduleId, lang: 'ml' });
     expect(res.text).toContain('[[TUTOR_ERROR]]');
-    expect(db.tutorUsage[E].explain).toBe(before);
-    expect(db.tutorExplanations[`${courseId}::${moduleId}::ml::simple`]).toBeUndefined();
+    expect(db$.getDb().tutorUsage[E].explain).toBe(before); // read again: the refund must be saved
+    expect(await store.getAnswer(`${courseId}::${moduleId}::ml::simple::boards1`)).toBeNull();
+    expect(await store.getAnswer(`${courseId}::${moduleId}::te::simple::boards1`)).not.toBeNull();
   });
 
   const askReq = (body) => request(app).post('/api/tutor/ask').set('X-Learner-Token', tok).send(body);

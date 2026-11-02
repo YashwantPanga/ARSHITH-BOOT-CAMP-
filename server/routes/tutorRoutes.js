@@ -1,14 +1,15 @@
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { getDb, saveDb } from '../db.js';
+import { getAnswer, saveAnswer } from '../lib/tutorStore.js';
 import { findTutorLanguage, isTutorStyle, TUTOR_ACTIONS } from '../../shared/tutor/languages.js';
 
 // "Lekha", the AI tutor. Two endpoints:
 //   POST /tutor/explain - explains one module in the learner's language, written to be read aloud.
 //   POST /tutor/ask     - follow-ups: a quick action ("explain simpler", "quiz me"...), a typed or spoken
 //                         doubt, or "explain this part" for one sentence, with the conversation so far.
-// Explanations and quick-action answers are generated once per module, language and depth and saved in
-// db.tutorExplanations, so later learners get them instantly without a new API call. Personal doubts
+// Explanations and quick-action answers are generated once per module, language and depth and saved
+// (server/lib/tutorStore.js, outside the main database), so later learners get them instantly. Personal doubts
 // are not saved. Both kinds of new generation have a daily allowance per learner.
 
 const router = express.Router();
@@ -26,14 +27,30 @@ export const tutorEnabled = () => !!(client || process.env.ANTHROPIC_API_KEY || 
 
 const SYSTEM_PROMPT = `You are Lekha, the AI tutor of CodeLekho, an Indian online academy for programming, SQL, web development and AI. A student is studying one lesson module and has chosen a language. What you write is shown on screen and read aloud by a text-to-speech voice, so write the way a warm, patient teacher speaks to one student. Your goal is that the student truly understands, not that they hear everything.
 
-Teaching approach for a full explanation:
-- Start with one or two sentences on why this topic matters for the student's career.
-- Explain the concepts in order, one idea at a time, building on what came before. Use analogies from everyday Indian life (a railway reservation chart, a kirana shop's ledger, a cricket scorecard, a tiffin box) where they genuinely make the idea clearer.
-- Walk through one or two of the module's code examples line by line: what each line does and what it prints.
-- Point out the mistakes beginners usually make, taken from the module.
-- After the main concept, add one check-yourself question; at the end add a short recap and two more.
+A full explanation is a lesson shown as a series of animated boards, like slides, each narrated by the voice. Write 8 to 12 boards that build one idea at a time:
+- a "why" board: why this topic matters for the student's career;
+- "idea" boards: one concept each, in order;
+- at least one "analogy" board using everyday Indian life (a railway reservation chart, a kirana shop's ledger, a cricket scorecard, a tiffin box) where it genuinely makes the idea clearer;
+- one or two "code" boards walking through the module's own code examples line by line;
+- a "mistake" board with the mistakes beginners usually make, taken from the module;
+- a "check" board after the main concept, a "recap" board, and a final "check" board.
 
-Check-yourself questions use exactly this format, each on its own lines, so the app can show them as cards the student answers before seeing the answer:
+Board format, exactly:
+[[BOARD type]]
+## Short board title (2 to 6 words)
+- one point the voice reads, one or two short sentences
+- another point (2 to 4 points per board)
+> optional one-line big idea shown in large text
+[[/BOARD]]
+
+type is one of: why, idea, analogy, code, steps, mistake, recap, check.
+A code board has the title, a fenced code block (at most 12 lines, from the module), then one note per important line, written as "@N " followed by what line N does, for example:
+@1 This line creates a variable called name and stores the text in it.
+@2 print shows the value on the screen, so the output is CodeLekho.
+A check board contains only the title and one check-yourself question in the check-yourself format.
+Write nothing outside the boards.
+
+Check-yourself questions (in check boards and in quizzes) use exactly this format, each on its own lines, so the app can show them as cards the student answers before seeing the answer:
 [[CHECK]]
 Q: the question
 A: the answer, one to three sentences
@@ -45,9 +62,9 @@ Language rules:
 - For Hinglish, write Hindi and English mixed naturally, the way students talk, using English (Latin) letters only.
 
 Format rules (the voice reads everything except code):
-- Use "## " headings for each part. Keep paragraphs short: two to four sentences.
+- In follow-up answers use "## " headings for parts and short paragraphs of two to four sentences; in a full explanation use the board format.
 - Put code only inside fenced code blocks. Never put code, symbols or URLs inside sentences that will be read aloud; describe them in words instead.
-- No tables, no emojis, no markdown other than headings, short "- " bullet lists, **bold** for key terms, fenced code and the check-yourself format.
+- No tables, no emojis, no markdown other than headings, short "- " bullet lists, "> " big-idea lines, **bold** for key terms, fenced code, "@N " code notes, boards and the check-yourself format.
 - Stay with the module content provided. Do not invent facts, outputs or statistics that the module does not support; if the module's own example output is given, use it.
 
 Follow-up turns (after the explanation):
@@ -56,8 +73,8 @@ Follow-up turns (after the explanation):
 - If the question is unrelated to this module or to learning programming, gently bring the student back to the module in one or two sentences.`;
 
 const STYLE_GUIDE = {
-  simple: 'Style: the student is a beginner. Use very simple words, more analogies, and keep it to about 600 to 900 words.',
-  exam: 'Style: the student is preparing for interviews and exams. Be more precise, include key definitions, edge cases and how this topic is asked in interviews, about 900 to 1300 words.'
+  simple: 'Style: the student is a beginner. Use very simple words and more analogies; about 8 to 10 boards.',
+  exam: 'Style: the student is preparing for interviews and exams. Be more precise: key definitions, edge cases and how this topic is asked in interviews; about 10 to 12 boards.'
 };
 
 /** Instructions for each quick action (shared/tutor/languages.js lists their labels). */
@@ -97,7 +114,9 @@ const languageLine = (language) => (language.code === 'hinglish'
 const explainRequest = (course, mod, language, style) =>
   `${languageLine(language)}\n${STYLE_GUIDE[style]}\n\nExplain this module:\n\n<module>\n${moduleText(course, mod)}\n</module>`;
 
-const explainKey = (courseId, moduleId, lang, style) => `${courseId}::${moduleId}::${lang}::${style}`;
+// FORMAT is part of every saved key: changing how explanations are written starts a fresh set.
+const FORMAT = 'boards1';
+const explainKey = (courseId, moduleId, lang, style) => `${courseId}::${moduleId}::${lang}::${style}::${FORMAT}`;
 const today = () => new Date().toISOString().slice(0, 10);
 const inFlight = new Map(); // cache key -> Promise<string>, so two learners asking at once share one generation
 
@@ -126,7 +145,11 @@ function takeAllowance(db, who, kind, limit) {
   if ((prev[kind] || 0) >= limit) return null;
   usage[who] = { ...prev, [kind]: (prev[kind] || 0) + 1 };
   saveDb(db);
-  return () => { const u = getDb().tutorUsage?.[who]; if (u?.[kind]) { u[kind] -= 1; saveDb(getDb()); } };
+  return () => {
+    const fresh = getDb(); // getDb returns a new copy each call: change and save the same one
+    const u = fresh.tutorUsage?.[who];
+    if (u?.[kind]) { u[kind] -= 1; saveDb(fresh); }
+  };
 }
 
 /**
@@ -152,9 +175,7 @@ async function generate(res, { messages, saveAs, refund }) {
     const text = message.content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
     if (!text) throw new Error('empty');
     if (saveAs && message.stop_reason === 'end_turn') {
-      const fresh = getDb();
-      (fresh.tutorExplanations ||= {})[saveAs] = { text, model: message.model, createdAt: new Date().toISOString() };
-      saveDb(fresh);
+      await saveAnswer(saveAs, { text, model: message.model, createdAt: new Date().toISOString() });
     }
     return text;
   })();
@@ -172,8 +193,8 @@ async function generate(res, { messages, saveAs, refund }) {
 }
 
 /** Serves a saved or in-progress shared answer; returns true when it did. */
-async function serveShared(res, db, key) {
-  const saved = db.tutorExplanations?.[key];
+async function serveShared(res, key) {
+  const saved = await getAnswer(key);
   if (saved?.text) { sendText(res, saved.text, 'hit'); return true; }
   if (inFlight.has(key)) {
     try { sendText(res, await inFlight.get(key), 'shared'); }
@@ -194,7 +215,7 @@ router.post('/tutor/explain', async (req, res) => {
   if (!ctx) return;
   const { db, course, mod, language, style, courseId, moduleId, lang } = ctx;
   const key = explainKey(courseId, moduleId, lang, style);
-  if (await serveShared(res, db, key)) return;
+  if (await serveShared(res, key)) return;
   if (!tutorEnabled()) return tutorOff(res);
 
   const refund = takeAllowance(db, req.learnerEmail, 'explain', DAILY_EXPLAIN);
@@ -219,13 +240,13 @@ router.post('/tutor/ask', async (req, res) => {
 
   // A quick action with no conversation is the same for every learner: share and save it.
   const shared = action && !question && !focus && !history.length ? `${explainKey(courseId, moduleId, lang, style)}::ask::${action}` : null;
-  if (shared && await serveShared(res, db, shared)) return;
+  if (shared && await serveShared(res, shared)) return;
   if (!tutorEnabled()) return tutorOff(res);
 
   const refund = takeAllowance(db, req.learnerEmail, 'ask', DAILY_QUESTIONS);
   if (!refund) return res.status(429).json({ success: false, message: `You have asked ${DAILY_QUESTIONS} new questions today. Saved answers still open, and you can ask more tomorrow.` });
 
-  const explanation = db.tutorExplanations?.[explainKey(courseId, moduleId, lang, style)]?.text;
+  const explanation = (await getAnswer(explainKey(courseId, moduleId, lang, style)))?.text;
   let ask = action ? ACTION_PROMPTS[action] : question;
   if (focus) ask = `About this part of your explanation: "${focus}"\n${question || 'I did not understand this part. Explain it again more simply, with an example.'}`;
 

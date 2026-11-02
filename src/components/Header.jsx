@@ -62,15 +62,25 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
   };
   const initials = (studentUser?.name || studentUser?.email || '?').split(/\s+/).map(s => s[0]).join('').slice(0, 2).toUpperCase();
 
+  // Phones: on the home page the header is deep pine and flows into the hero; elsewhere it is frosted glass.
+  const darkTop = route.name === 'home';
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) return;
+    const phone = window.matchMedia?.('(max-width: 767px)').matches;
+    meta.setAttribute('content', phone ? (darkTop ? '#051F20' : '#FFFFFF') : '#013A2B');
+  }, [darkTop]);
+
   return (
-    <header className={`sticky top-0 z-50 bg-white transition-shadow duration-300 ${scrolled ? 'shadow-[0_8px_28px_-14px_rgba(1,58,43,.35)]' : 'border-b border-brand-900/5'}`}>
+    <header className={`sticky top-0 z-50 bg-white pt-[env(safe-area-inset-top)] transition-[box-shadow,background-color] duration-300 ${darkTop ? 'max-md:bg-pine-950 max-md:text-pine-100' : 'max-md:bg-white/80 max-md:backdrop-blur-xl max-md:backdrop-saturate-150'} ${scrolled ? 'shadow-[0_8px_28px_-14px_rgba(1,58,43,.35)]' : `border-b ${darkTop ? 'border-brand-900/5 max-md:border-transparent' : 'border-brand-900/5'}`}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-16 lg:h-[78px] gap-2 sm:gap-4 lg:gap-6">
           {/* phones: menu button on the left of the logo (Coursera-style mobile header) */}
-          <button onClick={() => (open ? setOpen(false) : openMenu())} className="lg:hidden -ml-1.5 p-2.5 rounded-xl text-brand-900 hover:bg-brand-50" aria-label="Menu" aria-expanded={open}>
+          <button onClick={() => (open ? setOpen(false) : openMenu())} className={`lg:hidden -ml-1.5 p-2.5 rounded-xl text-brand-900 hover:bg-brand-50 ${darkTop ? 'max-md:text-pine-100 max-md:hover:bg-white/10' : ''}`} aria-label="Menu" aria-expanded={open}>
             {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
-          <Logo onClick={() => go(paths.home())} />
+          <Logo onClick={() => go(paths.home())} className={darkTop ? 'max-md:hidden' : ''} />
+          {darkTop && <Logo light onClick={() => go(paths.home())} className="md:hidden" />}
 
           {/* Explore mega-menu */}
           <div ref={exploreRef} className="relative hidden md:block" onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
@@ -147,11 +157,11 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
           </div>
 
           <div className="flex lg:hidden items-center gap-1 ml-auto">
-            <button onClick={() => openMenu(true)} className="p-2.5 rounded-xl text-brand-900 hover:bg-brand-50" aria-label="Search courses">
+            <button onClick={() => openMenu(true)} className={`p-2.5 rounded-xl text-brand-900 hover:bg-brand-50 ${darkTop ? 'max-md:text-pine-100 max-md:hover:bg-white/10' : ''}`} aria-label="Search courses">
               <Search className="w-[22px] h-[22px]" />
             </button>
             {studentUser && (
-              <button onClick={() => openMenu()} className="w-9 h-9 rounded-full bg-brand-900 text-ivory text-xs font-bold flex items-center justify-center active:scale-95 transition" aria-label="Open account menu">
+              <button onClick={() => openMenu()} className={`w-9 h-9 rounded-full bg-brand-900 text-ivory text-xs font-bold flex items-center justify-center active:scale-95 transition ${darkTop ? 'max-md:bg-pine-100 max-md:text-pine-950' : ''}`} aria-label="Open account menu">
                 {initials}
               </button>
             )}

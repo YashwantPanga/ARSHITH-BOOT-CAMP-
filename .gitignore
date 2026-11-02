@@ -16,3 +16,6 @@ public/__ref-*
 dist-new/
 dist-old/
 .env.backup-*
+
+# Saved AI-tutor answers (server/lib/tutorStore.js)
+server/data/*.tutor/

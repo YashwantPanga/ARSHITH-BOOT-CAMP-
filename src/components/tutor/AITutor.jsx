@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import confetti from 'canvas-confetti';
 import { ArrowLeft, Briefcase, Code2, Eye, Gauge, HelpCircle, Lightbulb, ListChecks, Mic, Pause, Play, RotateCcw, Search, Send, Sparkles, ThumbsUp, Volume2, VolumeX, Wand2, X } from 'lucide-react';
 import { SCRIPT_FONTS, TUTOR_ACTIONS, TUTOR_LANGUAGES, TUTOR_STYLES, findTutorLanguage } from '../../../shared/tutor/languages.js';
+import { NAME_STACK, Rich, loadFont, loadNameFonts, parseAnswer, pickVoice, scriptStack, synth, useVoices } from './tutorKit';
+import BoardPlayer, { parseBoards } from './BoardPlayer';
 import { api } from '../../services/api';
 import { moduleTitle } from '../../utils/textUtils';
 
@@ -76,128 +78,6 @@ export function TutorHeroButton({ onClick }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Fonts: Noto for each Indian script, loaded only when needed         */
-/* ------------------------------------------------------------------ */
-
-const loadedFonts = new Set();
-function loadFont(family, text) {
-  const id = text ? `${family}|names` : family;
-  if (!family || loadedFonts.has(id) || typeof document === 'undefined') return;
-  loadedFonts.add(id);
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  // with `text`, Google sends only those letters (a few KB) - enough for the language names
-  link.href = `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, '+')}:wght@400;600;700&display=swap${text ? `&text=${encodeURIComponent(text)}` : ''}`;
-  document.head.appendChild(link);
-}
-/** Just the letters of the language names (and the launcher's cycling words), in each script's font. */
-function loadNameFonts() {
-  const byFamily = {};
-  for (const l of TUTOR_LANGUAGES) if (SCRIPT_FONTS[l.code]) byFamily[SCRIPT_FONTS[l.code]] = (byFamily[SCRIPT_FONTS[l.code]] || '') + l.native;
-  Object.entries(byFamily).forEach(([family, chars]) => loadFont(family, chars));
-}
-const NAME_STACK = `'Source Sans 3', ${[...new Set(Object.values(SCRIPT_FONTS))].map(f => `'${f}'`).join(', ')}, system-ui, sans-serif`;
-const scriptStack = (code) => (SCRIPT_FONTS[code] ? `'Source Sans 3', '${SCRIPT_FONTS[code]}', system-ui, sans-serif` : undefined);
-
-/* ------------------------------------------------------------------ */
-/* Text: split the explanation into blocks and speakable sentences    */
-/* ------------------------------------------------------------------ */
-
-const SENTENCE_SPLIT = /(?<=[.!?।॥؟])\s+/u;
-const plain = (s) => s.replace(/\*\*(.+?)\*\*/g, '$1').replace(/`([^`]+)`/g, '$1').replace(/\s+/g, ' ').trim();
-
-/**
- * Splits one answer into blocks (headings, paragraphs, bullets, code, check cards) and speakable
- * sentences. Sentence numbers start at `offset` so several answers share one voice queue. Answer
- * sentences of a check card carry `gate` (the card id): the voice waits there until it is revealed.
- */
-function parseAnswer(text, offset = 0, idPrefix = 'c') {
-  const blocks = [];
-  const units = [];
-  let unit = offset;
-  let checks = 0;
-  const sentencesOf = (raw, gate) => raw.split(SENTENCE_SPLIT).map(x => x.trim()).filter(Boolean)
-    .map(p => { const u = { i: unit++, raw: p, speak: plain(p), gate }; units.push(u); return u; });
-  const addText = (type, raw) => { const sentences = sentencesOf(raw); if (sentences.length) blocks.push({ type, sentences }); };
-  const lines = text.replace(/\r/g, '').split('\n');
-  for (let k = 0; k < lines.length; k++) {
-    const line = lines[k];
-    if (/^\s*\[\[CHECK\]\]/.test(line)) {
-      const body = [];
-      k++;
-      while (k < lines.length && !/^\s*\[\[\/CHECK\]\]/.test(lines[k])) body.push(lines[k++]);
-      const joined = body.join('\n');
-      const q = (joined.match(/Q:\s*([\s\S]*?)(?=\n\s*A:|$)/) || [])[1]?.trim() || '';
-      const a = (joined.match(/A:\s*([\s\S]*)$/) || [])[1]?.trim() || '';
-      const id = `${idPrefix}${checks++}`;
-      blocks.push({ type: 'check', id, q: sentencesOf(q.replace(/\s+/g, ' ')), a: sentencesOf(a.replace(/\s+/g, ' '), id) });
-      continue;
-    }
-    if (/^```/.test(line.trim())) {
-      const code = [];
-      k++;
-      while (k < lines.length && !/^```/.test(lines[k].trim())) code.push(lines[k++]);
-      blocks.push({ type: 'code', code: code.join('\n') });
-      continue;
-    }
-    if (!line.trim()) continue;
-    const h = line.match(/^#{1,4}\s+(.*)/);
-    if (h) { addText('h', h[1]); continue; }
-    const li = line.match(/^\s*(?:[-*•]|\d+[.)])\s+(.*)/);
-    if (li) { addText('li', li[1]); continue; }
-    let para = line; // join soft-wrapped paragraph lines
-    while (k + 1 < lines.length && lines[k + 1].trim() && !/^(#{1,4}\s|\s*(?:[-*•]|\d+[.)])\s|```|\s*\[\[\/?CHECK\]\])/.test(lines[k + 1])) para += ` ${lines[++k]}`;
-    addText('p', para);
-  }
-  return { blocks, units, next: unit };
-}
-
-function Rich({ text }) {
-  // **bold** and `code` inside a sentence
-  const out = [];
-  const re = /\*\*(.+?)\*\*|`([^`]+)`/g;
-  let last = 0; let m;
-  while ((m = re.exec(text))) {
-    if (m.index > last) out.push(text.slice(last, m.index));
-    out.push(m[1] ? <strong key={m.index} className="font-semibold text-pine-950">{m[1]}</strong> : <code key={m.index} className="px-1 rounded bg-pine-100 text-pine-900 text-[0.9em]">{m[2]}</code>);
-    last = m.index + m[0].length;
-  }
-  if (last < text.length) out.push(text.slice(last));
-  return out;
-}
-
-/* ------------------------------------------------------------------ */
-/* Voice                                                              */
-/* ------------------------------------------------------------------ */
-
-const synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
-const NATURAL = /natural|neural|google|premium|enhanced|online|wavenet|siri/i;
-
-function pickVoice(voices, tag) {
-  if (!tag) return null;
-  const t = tag.toLowerCase();
-  const base = t.split('-')[0];
-  const norm = (v) => v.lang.replace('_', '-').toLowerCase();
-  const exact = voices.filter(v => norm(v) === t);
-  const same = exact.length ? exact : voices.filter(v => norm(v).split('-')[0] === base);
-  if (!same.length) return null;
-  return [...same].sort((a, b) => (NATURAL.test(b.name) - NATURAL.test(a.name)) || (a.localService - b.localService))[0];
-}
-
-function useVoices() {
-  const [voices, setVoices] = useState(() => synth?.getVoices() || []);
-  useEffect(() => {
-    if (!synth) return undefined;
-    const load = () => setVoices(synth.getVoices());
-    load();
-    synth.addEventListener?.('voiceschanged', load);
-    const t = setTimeout(load, 800); // some browsers fill the list late without the event
-    return () => { synth.removeEventListener?.('voiceschanged', load); clearTimeout(t); };
-  }, []);
-  return voices;
-}
-
-/* ------------------------------------------------------------------ */
 /* Sheet: language picker, then the explanation and the conversation */
 /* ------------------------------------------------------------------ */
 
@@ -255,6 +135,7 @@ function TutorSheet({ course, mod, onClose }) {
   const [draft, setDraft] = useState('');
   const [listening, setListening] = useState(false);
   const [feedback, setFeedback] = useState(null); // null | 'yes' | 'no'
+  const [view, setView] = useState('boards'); // boards | chat
   const abortRef = useRef(null);
   const scrollRef = useRef(null);
   const recRef = useRef(null);
@@ -295,7 +176,7 @@ function TutorSheet({ course, mod, onClose }) {
 
   /* ---- voice queue: speaks sentence `index`, then the next when it is ready ---- */
   const speakFrom = useCallback((index) => {
-    if (!synth || !voiceOn) return;
+    if (!synth || !voiceOn || !voice) return; // no voice for this language: text only (a notice explains why)
     synth.cancel();
     setWaiting(null);
     playRef.current = { playing: true, index };
@@ -317,9 +198,13 @@ function TutorSheet({ course, mod, onClose }) {
       if (voice) utter.voice = voice;
       utter.lang = voice?.lang || language.speech;
       utter.rate = rate;
-      utter.onend = () => step(i + 1);
-      utter.onerror = (e) => { if (e.error !== 'interrupted' && e.error !== 'canceled') step(i + 1); };
+      let moved = false;
+      let guard = null;
+      const next = () => { if (!moved) { moved = true; clearTimeout(guard); step(i + 1); } };
+      utter.onend = next;
+      utter.onerror = (e) => { if (e.error !== 'interrupted' && e.error !== 'canceled') next(); };
       synth.speak(utter);
+      guard = setTimeout(() => { if (playRef.current.playing && playRef.current.index === i) next(); }, Math.max(6000, u.speak.length * 160) / rate);
     };
     step(index);
   }, [voice, language.speech, rate, voiceOn]);
@@ -354,7 +239,7 @@ function TutorSheet({ course, mod, onClose }) {
     const patch = (p) => setThread(t => t.map(x => (x.id === id ? { ...x, ...p } : x)));
     const ctrl = new AbortController();
     abortRef.current = ctrl;
-    if (voiceOn) setTimeout(() => speakFrom(startAt), 60); // waits until the first sentence is complete
+    if (voiceOn && !fresh) setTimeout(() => speakFrom(startAt), 60); // boards narrate the explanation; follow-ups start here
     if (seg > 0) setTimeout(() => scrollRef.current?.querySelector(`[data-seg="${seg}"]`)?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 120);
     try {
       const result = await call((t) => patch({ text: t }), ctrl.signal);
@@ -374,6 +259,7 @@ function TutorSheet({ course, mod, onClose }) {
   const history = () => thread.filter(t => t.kind === 'ask' && t.text && !t.error).map(t => ({ q: t.label, a: t.text }));
   const ask = ({ action, question, focus, label }) => {
     if (busy) return;
+    setView('chat');
     const body = { courseId: course.id, moduleId: mod.id, lang, style, action, question, focus, history: action ? [] : history() };
     run({ kind: 'ask', label }, (onText, signal) => api.tutorAsk(body, onText, signal));
   };
@@ -407,6 +293,32 @@ function TutorSheet({ course, mod, onClose }) {
 
   const back = () => { abortRef.current?.abort(); pause(); setPhase('pick'); setThread([]); };
   const explainDone = thread[0] && !thread[0].streaming && !thread[0].error && thread[0].text;
+  const boards = useMemo(() => (thread[0]?.kind === 'explain' ? parseBoards(thread[0].text) : []), [thread]);
+  // boards view while the lesson is coming in as boards (or before the first text arrives)
+  const boardsMode = phase === 'learn' && (boards.length > 0 || (thread[0]?.streaming && !thread[0]?.text.trim()));
+  const showBoards = boardsMode && view === 'boards' && !thread[0]?.error;
+
+  const feedbackCard = (onStage) => (
+    <div className={`tutor-in rounded-[22px] bg-gradient-to-br from-pine-800 to-pine-950 text-white ${onStage ? 'h-full flex flex-col justify-center p-6 ring-1 ring-white/10' : 'mt-7 p-4'}`} dir="ltr">
+      {feedback === 'yes' ? (
+        <>
+          <p className="font-display text-[20px] font-bold">Superb! You've got it.</p>
+          <p className="mt-1 text-[13.5px] text-pine-100/75">Lock it in with a quick quiz before you move on.</p>
+          <button onClick={() => ask({ action: 'quiz', label: 'Quiz me' })} className="mt-4 h-11 px-5 self-start rounded-xl bg-pine-100 text-pine-950 text-[14px] font-bold inline-flex items-center gap-1.5 active:scale-95 transition"><ListChecks className="w-4 h-4" /> Quiz me</button>
+        </>
+      ) : (
+        <>
+          {onStage && <span className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-4"><Sparkles className="w-7 h-7 text-pine-300" /></span>}
+          <p className="font-display text-[20px] font-bold">Did that make sense?</p>
+          <p className="mt-1 text-[13.5px] text-pine-100/75">Be honest. I can explain it another way.</p>
+          <div className="mt-4 flex gap-2">
+            <button onClick={() => { setFeedback('yes'); cheer(); }} className="flex-1 h-12 rounded-xl bg-pine-100 text-pine-950 text-[14.5px] font-bold inline-flex items-center justify-center gap-1.5 active:scale-95 transition"><ThumbsUp className="w-4 h-4" /> Yes, got it!</button>
+            <button onClick={() => { setFeedback('no'); ask({ action: 'simpler', label: 'Not yet. Please explain it more simply.' }); }} className="flex-1 h-12 rounded-xl bg-white/10 ring-1 ring-white/20 text-[14.5px] font-bold active:bg-white/20">Not yet</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
 
   const sentence = (u) => <Sentence key={u.i} u={u} current={current} selected={selected?.i === u.i} onPick={setSelected} />;
 
@@ -428,7 +340,7 @@ function TutorSheet({ course, mod, onClose }) {
             <button onClick={onClose} className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center active:bg-white/20" aria-label="Close"><X className="w-4 h-4" /></button>
           </div>
 
-          {phase === 'learn' && (
+          {phase === 'learn' && !showBoards && (
             <div className="relative mt-4 flex items-center gap-2.5">
               <button onClick={playing ? pause : resume} disabled={!synth || !voiceOn || (!parsed.units.length && !busy)} aria-label={playing ? 'Pause voice' : 'Play voice'}
                 className="relative w-12 h-12 shrink-0 rounded-full bg-pine-100 text-pine-950 flex items-center justify-center shadow-lg active:scale-95 transition disabled:opacity-40">
@@ -455,7 +367,7 @@ function TutorSheet({ course, mod, onClose }) {
         </div>
 
         {/* body */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain px-5 py-5">
+        <div ref={scrollRef} className={`flex-1 overscroll-contain px-5 ${showBoards ? 'pt-4 pb-3 overflow-hidden flex flex-col' : 'py-5 overflow-y-auto'}`}>
           {phase === 'pick' ? (
             <div className="tutor-in">
               <h2 className="font-display text-[19px] font-bold text-pine-950">Which language should I explain in?</h2>
@@ -489,6 +401,21 @@ function TutorSheet({ course, mod, onClose }) {
               </div>
             </div>
           ) : (
+            <>
+            {boardsMode && (
+              <div className="shrink-0 -mt-1 mb-3 grid grid-cols-2 gap-1 rounded-2xl bg-pine-800/[.07] p-1" role="tablist" aria-label="View" dir="ltr">
+                {[['boards', 'Lesson boards'], ['chat', `Ask & notes${thread.length > 1 ? ` · ${thread.length - 1}` : ''}`]].map(([id, label]) => (
+                  <button key={id} role="tab" aria-selected={view === id} onClick={() => { setView(id); pause(); }}
+                    className={`h-9 rounded-xl text-[13px] font-bold transition-all duration-300 ${view === id ? 'bg-white text-pine-950 shadow-[0_6px_14px_-8px_rgba(5,31,32,.5)]' : 'text-pine-800/70'}`}>{label}</button>
+                ))}
+              </div>
+            )}
+            {showBoards ? (
+              <div className="flex-1 min-h-0">
+                <BoardPlayer boards={boards} streaming={!!thread[0]?.streaming} voice={voice} speechLang={language.speech} active={showBoards}
+                  fontFamily={scriptStack(language.code)} dir={language.rtl ? 'rtl' : undefined} ending={feedbackCard(true)} />
+              </div>
+            ) : (
             <article className="tutor-in" dir={language.rtl ? 'rtl' : undefined} lang={language.code === 'hinglish' ? 'en' : language.code} style={{ fontFamily: scriptStack(language.code) }}>
               {!voice && voiceOn && synth && (
                 <p className="mb-4 rounded-2xl bg-white ring-1 ring-pine-800/10 p-3 text-[12.5px] text-pine-800/80" dir="ltr">
@@ -525,8 +452,8 @@ function TutorSheet({ course, mod, onClose }) {
                 </section>
               ))}
 
-              {/* did it make sense? */}
-              {explainDone && thread.length === 1 && (
+              {/* did it make sense? (the boards show it on their last screen) */}
+              {explainDone && thread.length === 1 && !boards.length && (
                 <div className="tutor-in mt-7 rounded-[22px] bg-gradient-to-br from-pine-800 to-pine-950 p-4 text-white" dir="ltr">
                   {feedback === 'yes' ? (
                     <>
@@ -548,6 +475,8 @@ function TutorSheet({ course, mod, onClose }) {
               )}
               {explainDone && <p className="mt-6 text-[11.5px] text-pine-800/50" dir="ltr">Tap any sentence to replay it or ask about it. AI can make mistakes; the module text is the final reference.</p>}
             </article>
+            )}
+            </>
           )}
         </div>
 
@@ -560,7 +489,7 @@ function TutorSheet({ course, mod, onClose }) {
           </div>
         ) : (
           <div className="shrink-0 bg-white border-t border-pine-800/10 pb-[calc(10px+env(safe-area-inset-bottom))]">
-            {selected ? (
+            {showBoards ? null : selected ? (
               <div className="tutor-in flex items-center gap-2 px-4 pt-3">
                 <p className="min-w-0 flex-1 text-[12.5px] text-pine-800/70 truncate" style={{ fontFamily: scriptStack(language.code) }}>“{selected.speak}”</p>
                 <button onClick={() => { speakFrom(selected.i); setSelected(null); }} disabled={!voiceOn} className="h-9 px-3 rounded-full bg-pine-100 text-pine-950 text-[12.5px] font-bold inline-flex items-center gap-1 disabled:opacity-40"><Volume2 className="w-3.5 h-3.5" /> Replay</button>
