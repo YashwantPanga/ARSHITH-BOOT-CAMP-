@@ -31,7 +31,7 @@ export default function Footer({ navigate }) {
                 href="https://arshithgroup.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group mt-2.5 inline-flex items-baseline gap-1.5 whitespace-nowrap text-[11px] uppercase tracking-[0.18em] transition-colors"
+                className="group mt-1 py-2 inline-flex items-baseline gap-1.5 whitespace-nowrap text-[11px] uppercase tracking-[0.18em] transition-colors"
               >
                 <span className="font-medium text-charcoal/50">A Product of</span>
                 <span className="font-bold text-forest group-hover:text-leaf-dark transition-colors">Arshith Group</span>
@@ -135,11 +135,11 @@ export default function Footer({ navigate }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 text-[13px] text-ivory/75 flex flex-col md:flex-row gap-3 md:gap-6 justify-between items-center text-center md:text-left">
           <span>© 2026 Arshith Group. All rights reserved. Course content, code and certificates may not be copied or redistributed.</span>
           <span className="flex items-center gap-4 shrink-0">
-            <button onClick={() => navigate(paths.terms())} className="hover:text-ivory transition-colors">Terms of Use</button>
+            <button onClick={() => navigate(paths.terms())} className="py-2.5 px-1 hover:text-ivory transition-colors">Terms of Use</button>
             <span className="text-ivory/30">|</span>
-            <button onClick={() => navigate(paths.privacy())} className="hover:text-ivory transition-colors">Privacy Policy</button>
+            <button onClick={() => navigate(paths.privacy())} className="py-2.5 px-1 hover:text-ivory transition-colors">Privacy Policy</button>
             <span className="text-ivory/30">|</span>
-            <button onClick={() => navigate(paths.refunds())} className="hover:text-ivory transition-colors">Refunds</button>
+            <button onClick={() => navigate(paths.refunds())} className="py-2.5 px-1 hover:text-ivory transition-colors">Refunds</button>
           </span>
         </div>
       </div>

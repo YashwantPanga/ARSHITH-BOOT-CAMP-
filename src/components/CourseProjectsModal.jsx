@@ -3,7 +3,7 @@ import { readStudent, userIdOf } from '../utils/session';
 import { api } from '../services/api';
 import { 
   X, Briefcase, Code, CheckCircle, ExternalLink, Copy, Check, 
-  Terminal, Sparkles, AlertCircle, Clock, FileText, ChevronRight, ArrowRight, Lock 
+  Terminal, Feather, AlertCircle, Clock, FileText, ChevronRight, ArrowRight, Lock 
 } from 'lucide-react';
 
 const GITHUB_REPO_RE = /^https:\/\/github\.com\/[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})\/[A-Za-z0-9._-]{1,100}(?:\.git)?\/?$/;
@@ -190,7 +190,7 @@ export default function CourseProjectsModal({ isOpen, onClose, course, onSubmitt
 
             <div className="p-3 bg-white rounded-2xl border border-slate-200 text-[11px] text-slate-500 space-y-1 mt-4">
               <span className="font-semibold text-brand-900 flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-peach-500" />
+                <Feather className="w-3.5 h-3.5 text-peach-500" />
                 <span>Lightweight Design</span>
               </span>
               <p>Each project is sized to 1–2 pages of code (50–90 lines) and directly applies modules you studied.</p>

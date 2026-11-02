@@ -661,7 +661,7 @@ function AppShell() {
       )}
 
       {authModal && <AuthModalLayer onClose={closeAuthModal}><Suspense fallback={null}>{authModal}</Suspense></AuthModalLayer>}
-      {!adminUser && !isChromeless && <WelcomeCard navigate={navigate} signedIn={!!studentUser} />}
+      {!adminUser && !isChromeless && <WelcomeCard navigate={navigate} signedIn={!!studentUser} routeName={displayRoute.name} />}
       {!adminUser && <DesktopNotice />}
 
       {!isAuthModal && route.name !== 'home' && !(adminUser && route.name === 'dashboard') && (

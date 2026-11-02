@@ -94,7 +94,7 @@ export function Mascot({ q, className = '' }) {
   );
 }
 
-/* Sparkles and drifting code glyphs layered over a banner. */
+/* Soft lights and drifting code glyphs layered over a banner. */
 function Sky({ q, glyphs = true }) {
   const stars = [[8, 18], [22, 72], [36, 12], [52, 80], [61, 22], [74, 64], [86, 14], [93, 78], [46, 46]];
   return (
@@ -236,7 +236,7 @@ export function QuestCard({ set, solved, signedIn, onOpen }) {
       <Mascot q={q} className="absolute -right-5 -bottom-7 w-[112px] sm:-right-5 sm:-bottom-8 sm:w-[148px] transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:scale-[1.03]" />
       <span className="quest-bubble-sm absolute right-4 top-4 hidden xl:block px-2 py-1 rounded-lg bg-white text-[#1B1440] text-[10.5px] font-extrabold shadow-[0_3px_0_rgba(0,0,0,.2)]">{q.bubble}</span>
 
-      <span className="relative z-10 inline-block px-2 py-0.5 rounded-md bg-[#FFD34D] text-[#2A1A05] text-[9.5px] sm:text-[10px] font-extrabold tracking-[0.14em] shadow-[0_2px_0_#C99A1E]"><span className="hidden sm:inline">QUEST · </span>{q.track}</span>
+      <span className="relative z-10 inline-block px-2 py-0.5 rounded-md bg-[#FFD34D] text-[#2A1A05] text-[10.5px] font-extrabold tracking-[0.12em] shadow-[0_2px_0_#C99A1E]"><span className="hidden sm:inline">QUEST · </span>{q.track}</span>
       <span className="relative z-10 mt-2 block font-display text-[18px] sm:text-[19px] font-extrabold leading-tight max-w-[70%] sm:max-w-[78%] line-clamp-2 drop-shadow-[0_2px_0_rgba(0,0,0,.2)]">{set.title}</span>
       <span className="relative z-10 mt-1 block text-[12px] sm:text-[12.5px] text-white/75 max-w-[62%] leading-snug line-clamp-2">{set.tagline}</span>
       <span className="relative z-10 mt-2.5 hidden sm:flex flex-wrap gap-1.5 max-w-[62%]">

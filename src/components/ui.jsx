@@ -218,7 +218,7 @@ export function PageTop({ title, crumb, eyebrow, onHome, children }) {
         <RevealText as="h1" className="mt-2 text-[34px] sm:text-[48px] font-bold leading-tight text-evergreen">{title}</RevealText>
         {children}
         <nav aria-label="Breadcrumb" className="mt-5 font-display text-[15.5px] text-evergreen">
-          {onHome ? <button onClick={onHome} className="font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
+          {onHome ? <button onClick={onHome} className="py-2 -my-2 font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
           <span className="mx-2 text-charcoal/40">/</span>{crumb || title}
         </nav>
       </div>
@@ -228,7 +228,7 @@ export function PageTop({ title, crumb, eyebrow, onHome, children }) {
 
 export function Logo({ onClick, light = false, className = '' }) {
   return (
-    <button onClick={onClick} className={`flex items-center gap-2 group ${className}`} aria-label="CodeLekho home">
+    <button onClick={onClick} className={`flex items-center gap-2 group py-2.5 -my-2.5 ${className}`} aria-label="CodeLekho home">
       <img
         src={light ? '/codelekho-logo-white.svg' : '/codelekho-logo.svg'}
         alt="CodeLekho"

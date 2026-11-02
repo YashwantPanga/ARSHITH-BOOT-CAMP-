@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, Award, CheckCircle2, ChevronLeft, ChevronRight, Circle, Eye, FileText, Flame, Lightbulb,
-  Loader2, Lock, Play, RotateCcw, Search, Send, Sparkles, Table2, Trophy, XCircle
+  ArrowLeft, ArrowRight, Award, CheckCircle2, ChevronLeft, ChevronRight, Circle, Eye, FileText, Flame,
+  Lightbulb, Loader2, Lock, Play, RotateCcw, Search, Send, Table2, Trophy, XCircle,
+  Mic
 } from 'lucide-react';
 import { INTERVIEW_SETS, findInterviewSet } from '../../shared/interview/index.js';
 import { INTERVIEW_SQL_SCHEMA } from '../../shared/interview/sqlSchema.js';
@@ -852,7 +853,7 @@ function ConceptCard({ set, item, progress, mark, signedIn, navigate, toast, sta
           <h1 className="mt-4 font-display text-[26px] sm:text-[30px] font-bold text-evergreen leading-tight">{item.title}</h1>
           {!open ? (
             <div className="mt-8 rounded-2xl border border-dashed border-brand-900/20 bg-cream/60 p-6 text-center">
-              <Sparkles className="w-6 h-6 text-sage mx-auto" />
+              <Mic className="w-6 h-6 text-sage mx-auto" />
               <p className="mt-2 text-[14.5px] text-charcoal/70">Say your answer out loud as if you were in the interview, then compare it with ours.</p>
               <button onClick={() => setOpen(true)} className="btn-primary mt-4"><Eye className="w-4 h-4" /> Show the answer</button>
             </div>

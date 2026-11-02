@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import confetti from 'canvas-confetti';
-import { ArrowLeft, Briefcase, Code2, Eye, Gauge, HelpCircle, Lightbulb, ListChecks, Mic, Pause, Play, RotateCcw, Search, Send, Sparkles, ThumbsUp, Volume2, VolumeX, Wand2, X } from 'lucide-react';
+import { ArrowLeft, Briefcase, Code2, Eye, Gauge, HelpCircle, Lightbulb, ListChecks, Feather, MessageCircleQuestion, Mic, Pause, Play, RotateCcw, Search, Send, ThumbsUp, Volume2, VolumeX, X } from 'lucide-react';
 import { SCRIPT_FONTS, TUTOR_ACTIONS, TUTOR_LANGUAGES, TUTOR_STYLES, findTutorLanguage } from '../../../shared/tutor/languages.js';
 import { NAME_STACK, Rich, loadFont, loadNameFonts, parseAnswer, pickVoice, scriptStack, synth, useVoices } from './tutorKit';
 import BoardPlayer, { parseBoards } from './BoardPlayer';
@@ -43,7 +43,6 @@ export function TutorGlyph({ className = 'w-7 h-7', speaking = false }) {
         <path d="M21 11.8c2.6 2.6 2.6 6.8 0 9.4" />
         <path d="M24 9.4c4 4 4 10.2 0 14.2" />
       </g>
-      <path className="tutor-spark" d="M26 3.2l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" fill="#DAF1DE" />
     </svg>
   );
 }
@@ -52,9 +51,9 @@ export function TutorGlyph({ className = 'w-7 h-7', speaking = false }) {
 function TutorOrb({ size = 56, speaking = false }) {
   return (
     <span className="tutor-orb relative inline-flex items-center justify-center rounded-full text-pine-100" style={{ width: size, height: size }}>
-      <span className="tutor-orbit absolute inset-[-9px] rounded-full" aria-hidden="true">
+      <span className="tutor-orbit absolute inset-0 rounded-full" aria-hidden="true">
         {ORBIT.map((ch, i) => (
-          <span key={ch} className="absolute left-1/2 top-1/2 text-[10px] font-bold text-pine-300" style={{ transform: `rotate(${i * 45}deg) translateY(-${size / 2 + 4}px) rotate(-${i * 45}deg)`, marginLeft: -4, marginTop: -7 }}>{ch}</span>
+          <span key={ch} className="absolute left-1/2 top-1/2 text-[10px] font-bold text-pine-300" style={{ transform: `rotate(${i * 45}deg) translateY(-${size / 2 + 1}px) rotate(-${i * 45}deg)`, marginLeft: -4, marginTop: -7 }}>{ch}</span>
         ))}
       </span>
       <span className="absolute inset-0 rounded-full bg-gradient-to-br from-pine-700 via-pine-900 to-pine-950 shadow-[0_14px_30px_-10px_rgba(5,31,32,.9)] ring-1 ring-pine-300/30" />
@@ -81,7 +80,7 @@ export function TutorHeroButton({ onClick }) {
 /* Sheet: language picker, then the explanation and the conversation */
 /* ------------------------------------------------------------------ */
 
-const ACTION_ICONS = { simpler: Wand2, example: Lightbulb, reallife: Briefcase, code: Code2, quiz: ListChecks };
+const ACTION_ICONS = { simpler: Feather, example: Lightbulb, reallife: Briefcase, code: Code2, quiz: ListChecks };
 const Recognition = typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
 const cheer = () => {
   try {
@@ -308,7 +307,7 @@ function TutorSheet({ course, mod, onClose }) {
         </>
       ) : (
         <>
-          {onStage && <span className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-4"><Sparkles className="w-7 h-7 text-pine-300" /></span>}
+          {onStage && <span className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-4"><MessageCircleQuestion className="w-7 h-7 text-pine-300" /></span>}
           <p className="font-display text-[20px] font-bold">Did that make sense?</p>
           <p className="mt-1 text-[13.5px] text-pine-100/75">Be honest. I can explain it another way.</p>
           <div className="mt-4 flex gap-2">
@@ -484,7 +483,7 @@ function TutorSheet({ course, mod, onClose }) {
         {phase === 'pick' ? (
           <div className="shrink-0 px-5 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))] bg-[#F3F8F4] border-t border-pine-800/10">
             <button onClick={explain} className="wc-cta relative overflow-hidden w-full h-[52px] rounded-2xl bg-pine-950 text-pine-100 font-display text-[16px] font-bold inline-flex items-center justify-center gap-2 active:scale-[.98] transition">
-              <Sparkles className="w-4 h-4" /> Explain in <span style={{ fontFamily: NAME_STACK }}>{language.native}</span>
+              <Play className="w-4 h-4 fill-current" /> Explain in <span style={{ fontFamily: NAME_STACK }}>{language.native}</span>
             </button>
           </div>
         ) : (
@@ -500,7 +499,7 @@ function TutorSheet({ course, mod, onClose }) {
               <div className="flex gap-2 overflow-x-auto no-scrollbar px-4 pt-3" aria-label="Quick questions">
                 <span className="shrink-0 self-center text-[12px] font-bold text-pine-700 pr-0.5">Still confused?</span>
                 {TUTOR_ACTIONS.map(a => {
-                  const Icon = ACTION_ICONS[a.id] || Sparkles;
+                  const Icon = ACTION_ICONS[a.id] || Lightbulb;
                   return (
                     <button key={a.id} onClick={() => ask({ action: a.id, label: a.label })} disabled={busy}
                       className="shrink-0 h-9 px-3.5 rounded-full bg-[#F3F8F4] ring-1 ring-pine-800/10 text-pine-900 text-[13px] font-semibold inline-flex items-center gap-1.5 active:scale-95 transition disabled:opacity-40">
@@ -551,7 +550,7 @@ export default function AITutor({ course, mod, open, onOpen, onClose }) {
     <>
       {!open && (
         <button onClick={launch} aria-label="Open the AI tutor: explain this module in your language"
-          className="tutor-fab fixed z-40 right-4 sm:right-6 bottom-[84px] sm:bottom-[92px] flex items-center gap-2">
+          className="tutor-fab fixed z-40 right-[22px] sm:right-7 bottom-[84px] sm:bottom-[92px] flex items-center gap-3">
           {!seen && (
             <span className="tutor-label hidden min-[360px]:inline-flex items-center h-9 pl-3.5 pr-3 rounded-full bg-pine-950 text-pine-100 text-[13px] font-semibold shadow-lg ring-1 ring-pine-300/20">
               Explain in&nbsp;<span key={word} className="mh-hint text-pine-300" style={{ fontFamily: NAME_STACK }}>{CYCLE[word]}</span>

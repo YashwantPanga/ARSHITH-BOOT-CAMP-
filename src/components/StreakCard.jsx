@@ -153,7 +153,7 @@ export default function StreakCard() {
         </div>
 
         {/* last 5 weeks + badges, folded away to keep the card compact */}
-        <button onClick={() => setMore(m => !m)} className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-sage hover:text-forest transition-colors">
+        <button onClick={() => setMore(m => !m)} className="mt-2 py-2 inline-flex items-center gap-1 text-[12.5px] font-semibold text-sage hover:text-forest transition-colors">
           {more ? 'Hide calendar & badges' : 'Calendar & badges'} <ChevronDown className={`w-3.5 h-3.5 transition-transform ${more ? 'rotate-180' : ''}`} />
         </button>
         {more && (

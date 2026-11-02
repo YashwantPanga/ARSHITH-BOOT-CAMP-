@@ -50,9 +50,9 @@ export default function CourseDetailsPage({ course, enrolledCourseId, offer, isL
         <div className="absolute inset-0 edu-shape pointer-events-none" aria-hidden="true" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-14">
           <nav aria-label="Breadcrumb" className="font-display text-[15px] text-evergreen flex flex-wrap items-center gap-x-2">
-            {onHome ? <button onClick={onHome} className="font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
+            {onHome ? <button onClick={onHome} className="py-2 -my-2 font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
             <span className="text-charcoal/40">/</span>
-            <button onClick={onBack} className="font-semibold text-sage hover:underline inline-flex items-center gap-1"><ArrowLeft className="w-3.5 h-3.5 sm:hidden" />Courses</button>
+            <button onClick={onBack} className="py-2 -my-2 font-semibold text-sage hover:underline inline-flex items-center gap-1"><ArrowLeft className="w-3.5 h-3.5 sm:hidden" />Courses</button>
             <span className="text-charcoal/40">/</span>
             <span className="truncate max-w-[60vw]">{displayTitle(course.title)}</span>
           </nav>

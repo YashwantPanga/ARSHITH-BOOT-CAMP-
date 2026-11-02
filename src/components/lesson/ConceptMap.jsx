@@ -130,7 +130,7 @@ export default function ConceptMap({ title, concepts = [], onPick }) {
         <circle cx="50" cy="2" r="1.8" fill="#D9B44A" />
       </svg>
       <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_25%,#0E5C45,#013A2B_62%,#00261C)] shadow-[0_20px_40px_-14px_rgba(1,58,43,.7),inset_0_2px_0_rgba(255,255,255,.12)] flex flex-col items-center justify-center text-center px-5">
-        <span className="text-[9.5px] font-bold uppercase tracking-[0.2em] text-brand-200/80">Module topic</span>
+        <span className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-brand-200/80">Module topic</span>
         <span className={`mt-1.5 font-display text-ivory leading-tight ${long ? 'text-[13.5px]' : 'text-[16px]'}`}>{title}</span>
         <span className="mt-2 text-[10.5px] font-semibold text-[#E9D79A]">{concepts.length} key ideas</span>
       </div>

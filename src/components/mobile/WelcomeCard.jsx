@@ -4,7 +4,9 @@ import { ArrowRight, Award, BookOpen, Code2, ListChecks, MonitorCheck, Target, X
 import { paths } from '../../router';
 import { INTERVIEW_SETS } from '../../../shared/interview/index.js';
 
-// Shown once per visit on phones. It also tells DesktopNotice not to open, so two popups never stack.
+// Phones, browsing pages only (never over a lesson, dashboard or form). Visitors see it once per visit;
+// signed-in learners see it once ever. It also tells DesktopNotice not to open, so popups never stack.
+const PAGES = ['home', 'courses', 'categories', 'interview'];
 const KEY = 'arb_welcome_card';
 export const DESKTOP_NOTICE_KEY = 'desktopNoticeSeen';
 const QUESTION_COUNT = INTERVIEW_SETS.reduce((n, s) => n + s.items.length, 0);
@@ -79,20 +81,22 @@ function Card({ onClose, navigate, signedIn }) {
 }
 
 /** Phones: an animated welcome card the first time the site opens in a visit. */
-export default function WelcomeCard({ navigate, signedIn }) {
+export default function WelcomeCard({ navigate, signedIn, routeName }) {
   const [open, setOpen] = useState(false);
+  const onPage = PAGES.includes(routeName);
   useEffect(() => {
+    const storage = () => (signedIn ? localStorage : sessionStorage);
     let seen = false;
-    try { seen = sessionStorage.getItem(KEY) === '1'; } catch { seen = true; }
+    try { seen = storage().getItem(KEY) === '1' || sessionStorage.getItem(KEY) === '1'; } catch { seen = true; }
     const phone = window.matchMedia?.('(max-width: 767px)').matches;
-    if (seen || !phone) return undefined;
+    if (seen || !phone || !onPage) return undefined;
     const t = setTimeout(() => {
       // opens before the laptop notice (700 ms) and keeps it closed; its tip is inside this card
-      try { sessionStorage.setItem(KEY, '1'); sessionStorage.setItem(DESKTOP_NOTICE_KEY, '1'); } catch { /* storage blocked */ }
+      try { storage().setItem(KEY, '1'); sessionStorage.setItem(KEY, '1'); sessionStorage.setItem(DESKTOP_NOTICE_KEY, '1'); } catch { /* storage blocked */ }
       setOpen(true);
     }, 600);
     return () => clearTimeout(t);
-  }, []);
+  }, [onPage, signedIn]);
   // on <body>: the page wrapper is transformed by its enter animation, which would trap a fixed overlay
   return open ? createPortal(<Card navigate={navigate} signedIn={signedIn} onClose={() => setOpen(false)} />, document.body) : null;
 }

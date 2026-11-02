@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft, CheckCircle2, Circle, Award, Download, ChevronRight, ChevronLeft, BookOpen, ExternalLink,
-  Code, Sparkles, AlertTriangle, ListChecks, HelpCircle, Briefcase, Terminal, Layers, Lock, Menu, X,
-  ShieldCheck, Lightbulb, Target, ClipboardList, MessageSquare, Clock, Network, PlayCircle, FlaskConical, Timer
+  ArrowLeft, CheckCircle2, Circle, Award, Download, ChevronRight, ChevronLeft, BookOpen, ExternalLink, Code,
+  AlertTriangle, ListChecks, HelpCircle, Briefcase, Terminal, Layers, Lock, Menu, X, ShieldCheck,
+  Lightbulb, Target, ClipboardList, MessageSquare, Clock, Network, PlayCircle, FlaskConical, Timer, Dumbbell
 } from 'lucide-react';
 import { generateCoursePDF } from '../utils/pdfGenerator';
 import { cleanText, moduleTitle, displayTitle } from '../utils/textUtils';
@@ -473,7 +473,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
     // 7. Practice: the module's original exercise, the new graded exercises and mini tasks
     const pe = nm.practiceExercise;
     if (pe || E?.exercises?.length || nm.miniTasks.length || enrLoading || enrFailed) s.push({
-      id: 'exercise', title: 'Practice exercises', icon: Sparkles, body: (
+      id: 'exercise', title: 'Practice exercises', icon: Dumbbell, body: (
         <div className="space-y-6">
           {pe && (
             <div className="rounded-2xl border border-brand-900/10 p-4 sm:p-5 space-y-3">
@@ -746,7 +746,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
             {sections.length > 2 && (
               <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1">
                 {sections.map((s, i) => (
-                  <button key={s.id} onClick={() => jumpTo(s.id)} className="chip whitespace-nowrap bg-white border border-slate-200 text-slate-600 hover:border-peach-300 hover:text-brand-900">
+                  <button key={s.id} onClick={() => jumpTo(s.id)} className="chip whitespace-nowrap min-h-[34px] bg-white border border-slate-200 text-slate-600 hover:border-peach-300 hover:text-brand-900">
                     <span className="text-peach-500">{i + 1}.</span> {s.title}
                   </button>
                 ))}

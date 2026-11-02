@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Award, BookOpen, ChevronRight, Code2, Play, QrCode, Search, Sparkles, Target, Timer, Layers, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Award, BookOpen, ChevronRight, Code2, Moon, Play, QrCode, Search, Sun, Sunrise, Target, Timer, Layers, ShieldCheck, ArrowRight } from 'lucide-react';
 import { paths } from '../../router';
 import { INTERVIEW_SETS } from '../../../shared/interview/index.js';
 import { CourseRow } from '../PopularCourses';
@@ -191,7 +191,7 @@ function PanelHead({ title, action, onAction }) {
   return (
     <div className="flex items-center justify-between gap-3">
       <h2 className="font-display text-[17px] font-bold text-pine-950">{title}</h2>
-      {action && <button onClick={onAction} className="shrink-0 text-[13px] font-semibold text-pine-700 inline-flex items-center gap-0.5 active:opacity-70">{action} <ChevronRight className="w-4 h-4" /></button>}
+      {action && <button onClick={onAction} className="shrink-0 -mr-2 py-2 px-2 text-[13px] font-semibold text-pine-700 inline-flex items-center gap-0.5 active:opacity-70">{action} <ChevronRight className="w-4 h-4" /></button>}
     </div>
   );
 }
@@ -260,6 +260,8 @@ export default function MobileHome({ courses = [], enrolledCourseId, offer, stud
   const active = TABS.find(t => t.id === tab);
   const firstName = (studentUser?.name || '').trim().split(/\s+/)[0];
   const moduleCount = courses.reduce((n, c) => n + (c.modules?.length || 0), 0) || 60;
+  const hour = new Date().getHours();
+  const Greeting = hour < 5 || hour >= 19 ? { icon: Moon, text: 'Good evening' } : hour < 12 ? { icon: Sunrise, text: 'Good morning' } : { icon: Sun, text: 'Good afternoon' };
 
   useEffect(() => {
     const t = setInterval(() => setHint(h => (h + 1) % SEARCH_HINTS.length), 2600);
@@ -290,7 +292,7 @@ export default function MobileHome({ courses = [], enrolledCourseId, offer, stud
         <span className="pointer-events-none absolute -right-16 top-10 w-48 h-48 rounded-full bg-pine-300/10 blur-2xl" aria-hidden="true" />
 
         <div className="relative mh-rise">
-          <p className="text-[13px] font-medium text-pine-300 flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> {firstName ? `Hi ${firstName}, welcome back` : 'Learn today, build tomorrow'}</p>
+          <p className="text-[13px] font-medium text-pine-300 flex items-center gap-1.5"><Greeting.icon className="w-4 h-4" /> {Greeting.text}{firstName ? `, ${firstName}` : ''}</p>
           <h1 className="mt-1 font-display text-[27px] font-bold leading-[1.12] text-white">Learn. Practise.<br /><span className="text-pine-300">Get hired.</span></h1>
         </div>
 
@@ -315,7 +317,7 @@ export default function MobileHome({ courses = [], enrolledCourseId, offer, stud
                 {on && <><span className="mh-corner-l" aria-hidden="true" /><span className="mh-corner-r" aria-hidden="true" /></>}
                 <span className={`relative w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-300 ${on ? 'bg-gradient-to-br from-pine-700 to-pine-950 text-pine-100 shadow-[0_10px_18px_-10px_rgba(5,31,32,.9)] scale-105' : 'bg-white/10 text-pine-100'}`}>
                   <Icon className="w-5 h-5" />
-                  {badge && <span className="absolute -top-1.5 -right-2 rounded-full bg-pine-300 px-1.5 text-[8.5px] font-extrabold leading-[14px] text-pine-950">{badge}</span>}
+                  {badge && <span className="absolute -top-1.5 -right-2 rounded-full bg-pine-300 px-1.5 text-[9.5px] font-extrabold leading-[15px] text-pine-950">{badge}</span>}
                 </span>
                 <span className={`text-[12px] ${on ? 'font-bold' : 'font-medium'}`}>{label}</span>
               </button>

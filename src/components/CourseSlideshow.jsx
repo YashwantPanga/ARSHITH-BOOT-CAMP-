@@ -112,7 +112,7 @@ export default function CourseSlideshow({ slides, courseTitle, iconType, interva
           <button type="button" onClick={next} aria-label="Next image" className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-ivory/90 text-brand-900 flex items-center justify-center shadow-floating hover:bg-white focus-visible:ring-4 focus-visible:ring-brand-200">
             <ChevronRight className="w-5 h-5" />
           </button>
-          <div className="absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full bg-evergreen/70 backdrop-blur px-2 py-1.5">
+          <div className="absolute right-3 bottom-3 flex items-center rounded-full bg-evergreen/70 backdrop-blur px-1 py-0.5">
             {slides.map((s, i) => (
               <button
                 key={s.src}
@@ -120,10 +120,12 @@ export default function CourseSlideshow({ slides, courseTitle, iconType, interva
                 onClick={() => go(i)}
                 aria-label={`Show image ${i + 1}`}
                 aria-current={i === index}
-                className={`h-2 rounded-full transition-all ${i === index ? 'w-5 bg-ivory' : 'w-2 bg-ivory/50 hover:bg-ivory/80'}`}
-              />
+                className="group h-8 px-[3px] flex items-center"
+              >
+                <span className={`block h-2 rounded-full transition-all ${i === index ? 'w-5 bg-ivory' : 'w-2 bg-ivory/50 group-hover:bg-ivory/80'}`} />
+              </button>
             ))}
-            <button type="button" onClick={() => setPaused(p => !p)} aria-label={paused ? 'Start automatic slideshow' : 'Pause automatic slideshow'} className="ml-1 w-6 h-6 rounded-full text-ivory flex items-center justify-center hover:bg-white/15">
+            <button type="button" onClick={() => setPaused(p => !p)} aria-label={paused ? 'Start automatic slideshow' : 'Pause automatic slideshow'} className="ml-0.5 w-8 h-8 rounded-full text-ivory flex items-center justify-center hover:bg-white/15">
               {paused ? <Play className="w-3 h-3 fill-current" /> : <Pause className="w-3 h-3 fill-current" />}
             </button>
           </div>
