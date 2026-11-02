@@ -123,12 +123,62 @@ describe('tutor API', () => {
     expect(calls).toHaveLength(2); // not cached, so asked again
 
     const db = (await import('../server/db.js')).getDb();
-    const before = db.tutorUsage[E].count;
+    const before = db.tutorUsage[E].explain;
     tutor.setTutorClient(fakeClient({ fail: true }));
     const res = await explain({ courseId, moduleId, lang: 'ml' });
     expect(res.text).toContain('[[TUTOR_ERROR]]');
-    expect(db.tutorUsage[E].count).toBe(before);
+    expect(db.tutorUsage[E].explain).toBe(before);
     expect(db.tutorExplanations[`${courseId}::${moduleId}::ml::simple`]).toBeUndefined();
+  });
+
+  const askReq = (body) => request(app).post('/api/tutor/ask').set('X-Learner-Token', tok).send(body);
+
+  it('answers a quick action once and shares it with everyone after that', async () => {
+    tutor.setTutorClient(fakeClient({ chunks: ['Simpler: think of a tiffin box.'] }));
+    const { courseId, moduleId } = await firstModule();
+    const a = await askReq({ courseId, moduleId, lang: 'te', style: 'simple', action: 'simpler' });
+    expect(a.status).toBe(200);
+    expect(a.headers['x-tutor-cache']).toBe('miss');
+    expect(a.text).toBe('Simpler: think of a tiffin box.');
+    const p = calls[0];
+    // module request, then the saved explanation (cached prefix), then the action
+    expect(p.messages.map(m => m.role)).toEqual(['user', 'assistant', 'user']);
+    expect(p.messages[1].content[0].text).toContain('Python is easy.');
+    expect(p.messages[1].content[0].cache_control).toEqual({ type: 'ephemeral' });
+    expect(p.messages[2].content).toContain('Explain the main idea of this module again');
+    expect(p.messages[2].content).toContain('Answer in Telugu');
+
+    const b = await askReq({ courseId, moduleId, lang: 'te', style: 'simple', action: 'simpler' });
+    expect(b.headers['x-tutor-cache']).toBe('hit');
+    expect(calls).toHaveLength(1);
+  });
+
+  it('answers a typed doubt with the conversation so far, and a doubt about one sentence', async () => {
+    tutor.setTutorClient(fakeClient({ chunks: ['A variable is a labelled box.'] }));
+    const { courseId, moduleId } = await firstModule();
+    const history = [{ q: 'What is print?', a: 'print shows text.' }];
+    const r = await askReq({ courseId, moduleId, lang: 'te', question: 'What is a variable?', history });
+    expect(r.status).toBe(200);
+    expect(r.headers['x-tutor-cache']).toBe('miss');
+    const msgs = calls[0].messages;
+    expect(msgs.map(m => m.role)).toEqual(['user', 'assistant', 'user', 'assistant', 'user']);
+    expect(msgs[2].content).toBe('What is print?');
+    expect(msgs[4].content).toContain('What is a variable?');
+    // personal doubts are not saved for others
+    await askReq({ courseId, moduleId, lang: 'te', question: 'What is a variable?', history });
+    expect(calls).toHaveLength(2);
+
+    await askReq({ courseId, moduleId, lang: 'te', focus: 'Python is easy.' });
+    expect(calls[2].messages.at(-1).content).toContain('About this part of your explanation: "Python is easy."');
+  });
+
+  it('rejects an empty question or an unknown action', async () => {
+    tutor.setTutorClient(fakeClient());
+    const { courseId, moduleId } = await firstModule();
+    expect((await askReq({ courseId, moduleId, lang: 'te' })).status).toBe(400);
+    expect((await askReq({ courseId, moduleId, lang: 'te', action: 'dance' })).status).toBe(400);
+    expect((await request(app).post('/api/tutor/ask').send({ courseId, moduleId, lang: 'te', question: 'hi' })).status).toBe(401);
+    expect(calls).toHaveLength(0);
   });
 
   it('says so when the tutor has no API key', async () => {

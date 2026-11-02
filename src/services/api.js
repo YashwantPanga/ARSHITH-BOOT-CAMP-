@@ -71,13 +71,17 @@ export async function request(url, options = {}) {
  * AI tutor: streams the explanation text. Calls onText(fullTextSoFar) as chunks arrive and resolves
  * with { text, cached }. Throws an Error with .status for HTTP errors.
  */
-async function tutorExplain({ courseId, moduleId, lang, style }, onText, signal) {
+async function tutorExplain(body, onText, signal) { return tutorStream('/tutor/explain', body, onText, signal); }
+/** Follow-up: { courseId, moduleId, lang, style, action? | question?, focus?, history? } - same streaming contract. */
+async function tutorAsk(body, onText, signal) { return tutorStream('/tutor/ask', body, onText, signal); }
+
+async function tutorStream(path, body, onText, signal) {
   const headers = { 'Content-Type': 'application/json' };
   const staff = getAdminToken();
   if (staff) headers.Authorization = `Bearer ${staff}`;
   const learnerToken = readStudent()?.token;
   if (learnerToken) headers['X-Learner-Token'] = learnerToken;
-  const res = await fetch(`${API_BASE}/tutor/explain`, { method: 'POST', headers, body: JSON.stringify({ courseId, moduleId, lang, style }), signal });
+  const res = await fetch(`${API_BASE}${path}`, { method: 'POST', headers, body: JSON.stringify(body), signal });
   if (!res.ok) {
     let data = {};
     try { data = await res.json(); } catch { /* not JSON */ }
@@ -140,6 +144,7 @@ export const api = {
   // AI tutor
   tutorStatus: () => request('/tutor/status'),
   tutorExplain,
+  tutorAsk,
 
   // Interview Prep (practice credit only)
   getInterviewProgress: () => request('/interview/progress'),

@@ -52,7 +52,7 @@ const PROTECTED = [
   ['GET', /^\/interview\/progress$/],
   ['POST', /^\/interview\/solved$/],
   ['POST', /^\/interview\/plan$/],
-  ['POST', /^\/tutor\/explain$/],
+  ['POST', /^\/tutor\/(explain|ask)$/],
   ['POST', /^\/activity$/],
   ['GET', /^\/activity\/streak$/]
 ];

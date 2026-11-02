@@ -100,12 +100,21 @@ Every lesson has an **Explain with AI tutor** button and a floating tutor orb. T
 explanation is written by Claude (`claude-opus-5-5`) from that module's own lesson text, streams in as it is written,
 and the device's voice reads it aloud sentence by sentence while the spoken sentence is highlighted.
 
+After the explanation it becomes a conversation:
+- **Check-yourself cards** inside the explanation: the voice asks, then waits until the student taps *Show answer*.
+- **Still confused?** buttons: *Explain simpler*, *Another example*, *Real-life use*, *Code line by line*, *Quiz me*.
+- **Ask a doubt** by typing or speaking (mic, in the chosen language where the browser supports it); Lekha remembers the conversation.
+- **Tap any sentence** to replay it or ask "Explain this part".
+- **Did that make sense?** - *Not yet* explains again more simply; *Yes* celebrates and offers a quiz.
+
 1. Create an API key at https://console.anthropic.com (API Keys) and add it to `.env`: `ANTHROPIC_API_KEY=sk-ant-...`
 2. Restart the server. Until a key is set the tutor shows "not switched on yet".
 
 Cost control: each explanation is generated once per module, language and depth and then saved in the database
 (`tutorExplanations`), so every later learner gets it instantly and free. New explanations are limited per learner
-per day (`TUTOR_DAILY_LIMIT`, default 40). Quiz questions and answers are never sent to the AI.
+per day (`TUTOR_DAILY_LIMIT`, default 40). Quick-button answers are saved and shared the same way; personal doubts are
+not saved and are limited to `TUTOR_DAILY_QUESTIONS` (default 60) per learner per day. Follow-ups reuse the module and
+explanation through prompt caching, so each doubt costs much less than a new explanation. Quiz questions and answers are never sent to the AI.
 
 Voice: the browser's built-in voices are used (free). Android phones with Google voices sound the most natural;
 if a phone has no voice for a language, the tutor says how to install one and shows the text.

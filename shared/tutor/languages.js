@@ -44,5 +44,14 @@ export const TUTOR_STYLES = [
   { id: 'exam', label: 'Interview & exam ready', hint: 'Deeper: key terms, edge cases, likely questions.' }
 ];
 
+// Follow-up buttons under an explanation ("Still confused?").
+export const TUTOR_ACTIONS = [
+  { id: 'simpler', label: 'Explain simpler' },
+  { id: 'example', label: 'Another example' },
+  { id: 'reallife', label: 'Real-life use' },
+  { id: 'code', label: 'Code line by line' },
+  { id: 'quiz', label: 'Quiz me' }
+];
+
 export const findTutorLanguage = (code) => TUTOR_LANGUAGES.find(l => l.code === code) || null;
 export const isTutorStyle = (id) => TUTOR_STYLES.some(s => s.id === id);
