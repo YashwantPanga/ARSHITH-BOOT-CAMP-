@@ -38,15 +38,15 @@ export function WhatBringsYou({ onCourses, onCategories }) {
     { icon: Binoculars, label: 'Explore topics outside of work', go: onCategories }
   ];
   return (
-    <section className="sm:hidden px-4 py-6 bg-ivory">
-      <div className="rounded-2xl border border-brand-900/15 bg-white p-4">
-        <h2 className="text-center text-[19px] font-semibold text-evergreen">What brings you to CodeLekho today?</h2>
-        <div className="mt-4 grid gap-2.5">
+    <section className="sm:hidden px-4 pb-7">
+      <div className="rounded-[22px] bg-white p-4 ring-1 ring-pine-800/10 shadow-[0_18px_36px_-28px_rgba(5,31,32,.7)]">
+        <h2 className="font-display text-[17px] font-bold text-pine-950">What brings you to CodeLekho?</h2>
+        <div className="mt-3 grid gap-2">
           {items.map(({ icon: Icon, label, go }) => (
-            <button key={label} onClick={go} className="flex items-center gap-3 rounded-xl border border-brand-900/15 bg-white p-2.5 text-left active:bg-cream transition">
-              <span className="w-10 h-10 rounded-lg bg-forest text-ivory flex items-center justify-center shrink-0"><Icon className="w-5 h-5" /></span>
-              <span className="flex-1 text-[14.5px] font-semibold text-charcoal">{label}</span>
-              <ChevronRight className="w-4 h-4 text-charcoal/40" />
+            <button key={label} onClick={go} className="flex items-center gap-3 rounded-2xl bg-[#F3F8F4] p-2.5 text-left active:scale-[.99] active:bg-pine-100 transition">
+              <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-pine-700 to-pine-950 text-pine-100 flex items-center justify-center shrink-0"><Icon className="w-[18px] h-[18px]" /></span>
+              <span className="flex-1 text-[14px] font-semibold text-pine-950">{label}</span>
+              <ChevronRight className="w-4 h-4 text-pine-700/50" />
             </button>
           ))}
         </div>

@@ -8,13 +8,15 @@ export default function DesktopNotice() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    let seen = false;
-    try { seen = sessionStorage.getItem(KEY) === '1'; } catch { /* storage blocked */ }
-    if (seen) return undefined;
     const small = window.matchMedia?.('(max-width: 767px)').matches;
     const touchTablet = window.matchMedia?.('(pointer: coarse) and (max-width: 1024px)').matches;
     if (!small && !touchTablet) return undefined;
-    const t = setTimeout(() => setOpen(true), 700);
+    // checked when the timer fires: the phone welcome card (opens first) marks this notice as seen
+    const t = setTimeout(() => {
+      let seen = false;
+      try { seen = sessionStorage.getItem(KEY) === '1'; } catch { /* storage blocked */ }
+      if (!seen) setOpen(true);
+    }, 700);
     return () => clearTimeout(t);
   }, []);
 

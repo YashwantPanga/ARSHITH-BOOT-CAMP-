@@ -62,6 +62,8 @@ export default {
         },
         // CodeLekho nib green – used sparingly as an accent
         leaf: { DEFAULT: '#4CA153', dark: '#3B8743', light: '#E6F2E7' },
+        // Mobile palette (deep pine to mint) used by the phone home page, welcome card and bottom bar
+        pine: { 950: '#051F20', 900: '#0B2B26', 800: '#163832', 700: '#235347', 300: '#8EB69B', 100: '#DAF1DE' },
         ivory: '#FBF8F1',
         cream: '#F8F5EE',
         sage: '#426557',

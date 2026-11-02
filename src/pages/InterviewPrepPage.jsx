@@ -229,9 +229,9 @@ function LockedPrep({ signedIn, certificates, navigate }) {
 
         <section className="mt-12">
           <h2 className="font-display text-[22px] font-bold text-evergreen">What you will unlock</h2>
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" aria-hidden="true">
+          <div className="mt-4 -mx-4 px-4 scroll-px-4 flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-2 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-4 sm:overflow-visible" aria-hidden="true">
             {INTERVIEW_SETS.map(s => (
-              <div key={s.id} className="relative pointer-events-none select-none">
+              <div key={s.id} className="relative shrink-0 snap-start pointer-events-none select-none">
                 <div className="grayscale-[.35] opacity-60"><QuestCard set={s} solved={0} signedIn={false} onOpen={() => {}} /></div>
                 <span className="absolute right-3 bottom-3 w-9 h-9 rounded-full bg-ivory/95 text-forest flex items-center justify-center shadow"><Lock className="w-4 h-4" /></span>
               </div>

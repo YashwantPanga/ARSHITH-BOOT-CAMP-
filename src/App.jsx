@@ -7,9 +7,9 @@ import CtaSection from './components/CtaSection';
 import HomeButton from './components/HomeButton';
 import Footer from './components/Footer';
 import MobileBottomNav, { showsBottomBar } from './components/MobileBottomNav';
-import PromoStory from './components/mobile/PromoStory';
+import MobileHome from './components/mobile/MobileHome';
+import WelcomeCard from './components/mobile/WelcomeCard';
 import DesktopNotice from './components/DesktopNotice';
-import { WhatBringsYou } from './components/MobileWelcome';
 import EnrollCelebration from './components/EnrollCelebration';
 import { Lock } from 'lucide-react';
 import { displayTitle } from './utils/textUtils';
@@ -392,7 +392,16 @@ function AppShell() {
     case 'home':
       page = (
         <div className="landing-type">
-          <PromoStory navigate={navigate} />
+          {/* phones get an app-style home; tablets and desktops keep the full landing page */}
+          <MobileHome
+            courses={decoratedCourses}
+            enrolledCourseId={enrolledCourseId}
+            offer={courseOffer}
+            studentUser={studentUser}
+            navigate={navigate}
+            goCourses={goCourses}
+          />
+          <div className="hidden md:block">
           <HeroSection onExploreClick={() => goCourses()} onSearch={(q) => goCourses(q ? { q } : undefined)} onVerifyClick={() => navigate(paths.verify())} onRegisterClick={() => navigate(studentUser ? paths.dashboard() : paths.register())} courses={courses} />
           <PopularCourses
             courses={decoratedCourses}
@@ -402,9 +411,9 @@ function AppShell() {
             onEnrollCourse={requestEnroll}
             onViewAllCourses={() => goCourses()}
           />
-          <WhatBringsYou onCourses={() => goCourses()} onCategories={() => navigate(paths.categories())} />
           <WhyLearnWithUs />
           <CtaSection onExploreClick={() => goCourses()} />
+          </div>
         </div>
       );
       break;
@@ -627,10 +636,11 @@ function AppShell() {
       )}
 
       {authModal && <AuthModalLayer onClose={closeAuthModal}>{authModal}</AuthModalLayer>}
+      {!adminUser && !isChromeless && <WelcomeCard navigate={navigate} signedIn={!!studentUser} />}
       {!adminUser && <DesktopNotice />}
 
       {!isAuthModal && route.name !== 'home' && !(adminUser && route.name === 'dashboard') && (
-        <HomeButton onClick={() => navigate(paths.home())} aboveBottomNav={false} />
+        <HomeButton onClick={() => navigate(paths.home())} hideOnPhone={showsBottomBar(displayRoute)} />
       )}
 
       <ConfirmDialog
