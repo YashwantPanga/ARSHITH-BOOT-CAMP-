@@ -67,6 +67,45 @@ export async function request(url, options = {}) {
   }
 }
 
+/**
+ * AI tutor: streams the explanation text. Calls onText(fullTextSoFar) as chunks arrive and resolves
+ * with { text, cached }. Throws an Error with .status for HTTP errors.
+ */
+async function tutorExplain({ courseId, moduleId, lang, style }, onText, signal) {
+  const headers = { 'Content-Type': 'application/json' };
+  const staff = getAdminToken();
+  if (staff) headers.Authorization = `Bearer ${staff}`;
+  const learnerToken = readStudent()?.token;
+  if (learnerToken) headers['X-Learner-Token'] = learnerToken;
+  const res = await fetch(`${API_BASE}/tutor/explain`, { method: 'POST', headers, body: JSON.stringify({ courseId, moduleId, lang, style }), signal });
+  if (!res.ok) {
+    let data = {};
+    try { data = await res.json(); } catch { /* not JSON */ }
+    const error = new Error(data.message || `The tutor is unavailable (${res.status}).`);
+    error.status = res.status;
+    error.code = data.code;
+    if (res.status === 401 && data.code === 'LEARNER_AUTH_REQUIRED') window.dispatchEvent(new CustomEvent('arb:learner-session-expired'));
+    throw error;
+  }
+  const cached = res.headers.get('X-Tutor-Cache') !== 'miss';
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let text = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    text += decoder.decode(value, { stream: true });
+    onText?.(text.replace('[[TUTOR_ERROR]]', ''));
+  }
+  text += decoder.decode();
+  if (text.includes('[[TUTOR_ERROR]]')) {
+    const error = new Error('The tutor stopped before finishing. Please try again.');
+    error.partial = text.replace('[[TUTOR_ERROR]]', '').trim();
+    throw error;
+  }
+  return { text, cached };
+}
+
 export const api = {
   // Public Courses
   getPublicCourses: () => request('/courses'),
@@ -97,6 +136,10 @@ export const api = {
   // Daily coding streak
   recordActivity: (kind = 'code') => request('/activity', { method: 'POST', body: JSON.stringify({ kind }) }),
   getStreak: () => request('/activity/streak'),
+
+  // AI tutor
+  tutorStatus: () => request('/tutor/status'),
+  tutorExplain,
 
   // Interview Prep (practice credit only)
   getInterviewProgress: () => request('/interview/progress'),

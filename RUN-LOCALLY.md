@@ -92,3 +92,20 @@ Without any settings the app keeps using `server/data/db.json`. To move the data
 From then on every change is saved to Supabase within a second, so data survives restarts and redeploys. `npm run db:backup` downloads a copy of the live data into `backups/`.
 
 Supabase only stores the data. The website itself (the Node server) still needs a host - your own PC, or a free host such as Render - with the same two `SUPABASE_` settings.
+
+## AI tutor (Lekha)
+
+Every lesson has an **Explain with AI tutor** button and a floating tutor orb. The learner picks one of 24 languages
+(English, Hinglish and the 22 scheduled languages of India) and a depth (simple, or interview & exam ready). The
+explanation is written by Claude (`claude-opus-5-5`) from that module's own lesson text, streams in as it is written,
+and the device's voice reads it aloud sentence by sentence while the spoken sentence is highlighted.
+
+1. Create an API key at https://console.anthropic.com (API Keys) and add it to `.env`: `ANTHROPIC_API_KEY=sk-ant-...`
+2. Restart the server. Until a key is set the tutor shows "not switched on yet".
+
+Cost control: each explanation is generated once per module, language and depth and then saved in the database
+(`tutorExplanations`), so every later learner gets it instantly and free. New explanations are limited per learner
+per day (`TUTOR_DAILY_LIMIT`, default 40). Quiz questions and answers are never sent to the AI.
+
+Voice: the browser's built-in voices are used (free). Android phones with Google voices sound the most natural;
+if a phone has no voice for a language, the tutor says how to install one and shows the text.

@@ -16,6 +16,7 @@ import practiceRoutes from './routes/practiceRoutes.js';
 import interviewRoutes from './routes/interviewRoutes.js';
 import activityRoutes from './routes/activityRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import tutorRoutes from './routes/tutorRoutes.js';
 import { learnerGuard } from './middleware/learnerAuth.js';
 import { adminGate } from './middleware/auth.js';
 import { getDb, dbReady, storageMode } from './db.js';
@@ -86,6 +87,7 @@ app.use('/api', quizRoutes);
 app.use('/api', learnerRoutes);
 app.use('/api', practiceRoutes);
 app.use('/api', interviewRoutes);
+app.use('/api', tutorRoutes);
 app.use('/api', activityRoutes);
 app.use('/api', paymentRoutes);
 

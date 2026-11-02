@@ -1,0 +1,146 @@
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import request from 'supertest';
+import bcrypt from 'bcryptjs';
+import { TUTOR_LANGUAGES } from '../shared/tutor/languages.js';
+
+// AI tutor: the Anthropic client is replaced by a fake, so these tests never call the real API.
+
+const tmp = path.join(os.tmpdir(), `arb-tutor-db-${process.pid}-${Date.now()}.json`);
+const E = 'tutor@example.test';
+let app; let tok; let tutor; let calls;
+
+/** A fake of client.beta.messages.stream(): emits `chunks` as text deltas, then the final message. */
+function fakeClient({ chunks = ['## Why it matters\n', 'Python is easy. ', 'It reads like English.'], fail = false, stop = 'end_turn' } = {}) {
+  return {
+    beta: {
+      messages: {
+        stream(params) {
+          calls.push(params);
+          const listeners = [];
+          return {
+            on(event, cb) { if (event === 'text') listeners.push(cb); return this; },
+            async finalMessage() {
+              if (fail) throw new Error('boom');
+              for (const c of chunks) listeners.forEach(cb => cb(c));
+              return { model: params.model, stop_reason: stop, content: [{ type: 'text', text: chunks.join('') }] };
+            }
+          };
+        }
+      }
+    }
+  };
+}
+
+const firstModule = async () => {
+  const db = (await import('../server/db.js')).getDb();
+  const course = db.courses[0];
+  return { courseId: course.id, moduleId: course.modules[0].id, mod: course.modules[0] };
+};
+
+describe('tutor languages', () => {
+  it('covers English, Hinglish and the 22 scheduled languages with unique codes', () => {
+    expect(TUTOR_LANGUAGES).toHaveLength(24);
+    const codes = TUTOR_LANGUAGES.map(l => l.code);
+    expect(new Set(codes).size).toBe(codes.length);
+    for (const c of ['en', 'hinglish', 'hi', 'te', 'ta', 'ml', 'kn', 'bn', 'mr', 'gu', 'pa', 'or', 'ur', 'as', 'sa', 'sat', 'mni', 'ks', 'sd', 'kok', 'mai', 'doi', 'brx', 'ne']) expect(codes).toContain(c);
+    for (const l of TUTOR_LANGUAGES) expect(l.name && l.native && l.speech, l.code).toBeTruthy();
+  });
+});
+
+describe('tutor API', () => {
+  beforeAll(async () => {
+    fs.copyFileSync(path.join(__dirname, '..', 'server', 'data', 'db.json'), tmp);
+    Object.assign(process.env, { ARB_DB_FILE: tmp, NODE_ENV: 'test' });
+    app = (await import('../server/app.js')).default;
+    tutor = await import('../server/routes/tutorRoutes.js');
+    const db$ = await import('../server/db.js');
+    const db = db$.getDb();
+    db.learners[E] = { name: 'Tutor Learner', email: E, regNo: 'TUT01', phone: '9999999999', learnerId: 'ARB-STU-TUT01', passwordHash: bcrypt.hashSync('Pw#12345', 10), emailVerified: true };
+    db$.saveDb(db);
+    tok = (await request(app).post('/api/learners/login').send({ email: E, password: 'Pw#12345', regNo: 'TUT01' })).body.token;
+  });
+  afterAll(() => { tutor.setTutorClient(null); try { fs.unlinkSync(tmp); } catch { /* ignore */ } });
+  beforeEach(() => { calls = []; });
+
+  const explain = (body) => request(app).post('/api/tutor/explain').set('X-Learner-Token', tok).send(body);
+
+  it('needs a signed-in learner', async () => {
+    const { courseId, moduleId } = await firstModule();
+    expect((await request(app).post('/api/tutor/explain').send({ courseId, moduleId, lang: 'te' })).status).toBe(401);
+  });
+
+  it('rejects an unknown language or module', async () => {
+    tutor.setTutorClient(fakeClient());
+    const { courseId, moduleId } = await firstModule();
+    expect((await explain({ courseId, moduleId, lang: 'xx' })).status).toBe(400);
+    expect((await explain({ courseId, moduleId, lang: 'te', style: 'loud' })).status).toBe(400);
+    expect((await explain({ courseId, moduleId: 'nope', lang: 'te' })).status).toBe(404);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('streams a new explanation, then serves it from the cache', async () => {
+    tutor.setTutorClient(fakeClient());
+    const { courseId, moduleId, mod } = await firstModule();
+    const first = await explain({ courseId, moduleId, lang: 'te', style: 'simple' });
+    expect(first.status).toBe(200);
+    expect(first.headers['x-tutor-cache']).toBe('miss');
+    expect(first.text).toBe('## Why it matters\nPython is easy. It reads like English.');
+
+    expect(calls).toHaveLength(1);
+    const p = calls[0];
+    expect(p.model).toBe('claude-opus-5-5');
+    expect(p.fallbacks).toBe('default');
+    expect(p.betas).toContain('server-side-fallback-2026-07-01');
+    expect(p.output_config).toEqual({ effort: 'medium' });
+    expect(p.thinking).toBeUndefined();
+    const prompt = p.messages[0].content;
+    expect(prompt).toContain('Language: Telugu (తెలుగు).');
+    expect(prompt).toContain(mod.readingMaterial.sections[0].heading);
+    // quiz questions and answers never go to the model
+    const quizQ = mod.readingMaterial.selfAssessment?.questions?.[0]?.question || mod.readingMaterial.mcqs?.[0]?.question;
+    if (quizQ) expect(prompt).not.toContain(quizQ);
+
+    const again = await explain({ courseId, moduleId, lang: 'te', style: 'simple' });
+    expect(again.headers['x-tutor-cache']).toBe('hit');
+    expect(again.text).toBe(first.text);
+    expect(calls).toHaveLength(1); // no second API call
+
+    // another style or language is a separate explanation
+    await explain({ courseId, moduleId, lang: 'te', style: 'exam' });
+    await explain({ courseId, moduleId, lang: 'hinglish' });
+    expect(calls).toHaveLength(3);
+    expect(calls[2].messages[0].content).toContain('Hinglish');
+  });
+
+  it('does not cache a cut-off answer and gives the allowance back on failure', async () => {
+    const { courseId, moduleId } = await firstModule();
+    tutor.setTutorClient(fakeClient({ stop: 'max_tokens' }));
+    await explain({ courseId, moduleId, lang: 'ta' });
+    await explain({ courseId, moduleId, lang: 'ta' });
+    expect(calls).toHaveLength(2); // not cached, so asked again
+
+    const db = (await import('../server/db.js')).getDb();
+    const before = db.tutorUsage[E].count;
+    tutor.setTutorClient(fakeClient({ fail: true }));
+    const res = await explain({ courseId, moduleId, lang: 'ml' });
+    expect(res.text).toContain('[[TUTOR_ERROR]]');
+    expect(db.tutorUsage[E].count).toBe(before);
+    expect(db.tutorExplanations[`${courseId}::${moduleId}::ml::simple`]).toBeUndefined();
+  });
+
+  it('says so when the tutor has no API key', async () => {
+    const saved = { k: process.env.ANTHROPIC_API_KEY, t: process.env.ANTHROPIC_AUTH_TOKEN };
+    delete process.env.ANTHROPIC_API_KEY; delete process.env.ANTHROPIC_AUTH_TOKEN;
+    tutor.setTutorClient(null);
+    const { courseId, moduleId } = await firstModule();
+    const res = await explain({ courseId, moduleId, lang: 'kn' });
+    expect(res.status).toBe(503);
+    expect(res.body.code).toBe('TUTOR_OFF');
+    expect((await request(app).get('/api/tutor/status')).body.enabled).toBe(false);
+    if (saved.k) process.env.ANTHROPIC_API_KEY = saved.k;
+    if (saved.t) process.env.ANTHROPIC_AUTH_TOKEN = saved.t;
+  });
+});

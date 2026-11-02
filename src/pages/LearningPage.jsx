@@ -22,6 +22,7 @@ import { displayNameOf, userIdOf } from '../utils/session';
 import { api } from '../services/api';
 import { normalizeModule } from '../utils/normalizeModule';
 import Markdown from '../components/lesson/Markdown';
+import AITutor, { TutorHeroButton } from '../components/tutor/AITutor';
 import WorkflowDiagram from '../components/lesson/WorkflowDiagram';
 import PracticeExercises from '../components/lesson/PracticeExercises';
 import {
@@ -124,6 +125,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
     }
   };
   const [drawer, setDrawer] = useState(false);
+  const [tutorOpen, setTutorOpen] = useState(false);
   const [revealed, setRevealed] = useState({});
   const mainRef = useRef(null);
   const readBarRef = useRef(null);
@@ -654,6 +656,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
 
   return (
     <div className="h-[100dvh] flex flex-col bg-cream overflow-hidden">
+      <AITutor key={current.id} course={course} mod={current} open={tutorOpen} onOpen={() => setTutorOpen(true)} onClose={() => setTutorOpen(false)} />
       {/* Top bar */}
       <header className="h-16 shrink-0 bg-white border-b border-slate-200 flex items-center gap-3 px-3 sm:px-5 z-30">
         <button onClick={() => setDrawer(true)} className="lg:hidden p-2 rounded-xl hover:bg-slate-100" aria-label="Open modules"><Menu className="w-5 h-5 text-brand-900" /></button>
@@ -720,6 +723,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                 </div>
                 <h1 className="mt-3 text-[1.7rem] sm:text-[2.3rem] font-medium leading-tight max-w-3xl">{moduleTitle(current.title)}</h1>
                 {current.description && <p className="mt-3 text-brand-100/90 leading-relaxed max-w-3xl">{cleanText(current.description)}</p>}
+                <TutorHeroButton onClick={() => setTutorOpen(true)} />
                 <div className="mt-6 flex flex-wrap items-center gap-2 text-xs">
                   <span className={`chip ${current.completed ? 'bg-ivory text-brand-900' : 'bg-white/10 text-brand-100'}`}>
                     {current.completed ? <><CheckCircle2 className="w-3.5 h-3.5" /> Quiz done {myScore !== undefined ? `(${myScore}%)` : ''}</> : 'Quiz not taken yet'}
