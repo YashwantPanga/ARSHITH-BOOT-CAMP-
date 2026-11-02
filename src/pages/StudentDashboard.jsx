@@ -47,7 +47,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
         <div className="absolute inset-0 edu-shape pointer-events-none" aria-hidden="true" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-10">
           <nav aria-label="Breadcrumb" className="font-display text-[15px] text-evergreen">
-            {onHome ? <button onClick={onHome} className="font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
+            {onHome ? <button onClick={onHome} className="py-2 -my-2 font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
             <span className="mx-2 text-charcoal/40">/</span>My dashboard
           </nav>
           <div className="mt-5">

@@ -120,7 +120,7 @@ export default function CourseSlideshow({ slides, courseTitle, iconType, interva
                 onClick={() => go(i)}
                 aria-label={`Show image ${i + 1}`}
                 aria-current={i === index}
-                className="group h-8 px-[3px] flex items-center"
+                className="group h-8 px-[6px] flex items-center"
               >
                 <span className={`block h-2 rounded-full transition-all ${i === index ? 'w-5 bg-ivory' : 'w-2 bg-ivory/50 group-hover:bg-ivory/80'}`} />
               </button>

@@ -38,7 +38,7 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
           <RevealText as="h1" className="mt-2 text-[28px] sm:text-[48px] font-bold leading-tight text-evergreen">Online courses for focused learners</RevealText>
           <p className="mt-3 text-[15px] sm:text-base text-charcoal/70 max-w-2xl sm:mx-auto">{offer?.price > 0 ? `Unlock more courses for ₹${offer.price} each.` : 'Every course is free. Learn, pass the final assessment and get your certificate.'}</p>
           <nav aria-label="Breadcrumb" className="mt-5 font-display text-[15.5px] text-evergreen">
-            {onHome ? <button onClick={onHome} className="font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
+            {onHome ? <button onClick={onHome} className="py-2 -my-2 font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
             <span className="mx-2 text-charcoal/40">/</span>Courses
           </nav>
           <div className="hidden sm:flex xl:hidden mt-6 justify-center gap-8" aria-hidden="true">

@@ -121,7 +121,7 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
           <Field
             label="Password"
             aside={!isSignup && (
-              <button type="button" onClick={() => onForgotPassword(form.email.trim())} className="text-[14px] font-semibold text-brand-900 underline underline-offset-2 hover:text-forest">Forgot password?</button>
+              <button type="button" onClick={() => onForgotPassword(form.email.trim())} className="py-1.5 -my-1.5 text-[14px] font-semibold text-brand-900 underline underline-offset-2 hover:text-forest">Forgot password?</button>
             )}
           >
             <span className="relative block">

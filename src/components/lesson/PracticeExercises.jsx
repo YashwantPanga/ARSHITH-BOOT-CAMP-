@@ -123,7 +123,7 @@ export function ExerciseCard({ ex, index, courseId, moduleId, completed, onCompl
               const isWrongPick = result && picked && !result.correct;
               return (
                 <label key={i} className={`flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition ${isRight ? 'border-brand-900 bg-brand-50' : isWrongPick ? 'border-rose-300 bg-rose-50' : picked ? 'border-sage bg-cream' : 'border-brand-900/10 hover:border-brand-300'}`}>
-                  <input type="radio" name={`ans-${ex.id}`} value={i} checked={picked} onChange={() => setAnswer(String(i))} className="mt-1.5 accent-[#013A2B]" />
+                  <input type="radio" name={`ans-${ex.id}`} value={i} checked={picked} onChange={() => setAnswer(String(i))} className="mt-1 w-[18px] h-[18px] shrink-0 accent-[#013A2B]" />
                   <span className="text-sm whitespace-pre-wrap break-words min-w-0">{o}</span>
                 </label>
               );
@@ -181,7 +181,7 @@ export function ExerciseCard({ ex, index, courseId, moduleId, completed, onCompl
               <p key={i} className="flex gap-2 text-sm rounded-xl bg-cream border border-brand-900/10 px-3 py-2 animate-fade-in"><Lightbulb className="w-4 h-4 mt-0.5 text-sage shrink-0" /><span><strong className="text-charcoal">Hint {i + 1}:</strong> {h}</span></p>
             ))}
             {hintsShown < ex.hints.length && (
-              <button onClick={() => setHintsShown(n => n + 1)} className="text-sm font-semibold text-sage hover:text-brand-900 flex items-center gap-1.5">
+              <button onClick={() => setHintsShown(n => n + 1)} className="py-2 text-sm font-semibold text-sage hover:text-brand-900 flex items-center gap-1.5">
                 <Lightbulb className="w-4 h-4" /> {hintsShown === 0 ? 'Show a hint' : 'Show next hint'} ({hintsShown}/{ex.hints.length})
               </button>
             )}
