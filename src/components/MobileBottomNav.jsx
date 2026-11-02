@@ -20,7 +20,7 @@ export default function MobileBottomNav({ route, navigate, studentUser }) {
   const activeId = tabs.find(t => t.id === route.name || t.also?.includes(route.name))?.id;
 
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 px-3 pb-[calc(8px+env(safe-area-inset-bottom))] pt-2 bg-gradient-to-t from-[#F3F8F4] via-[#F3F8F4]/95 to-transparent" aria-label="Main">
+    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 px-3 pb-[calc(8px+env(safe-area-inset-bottom))] pt-2 bg-gradient-to-t from-[#F3F8F4] via-[#F3F8F4]/95 to-transparent" aria-label="Quick tabs">
       <div className="mx-auto max-w-md grid grid-cols-4 rounded-[22px] bg-pine-950 p-1.5 shadow-[0_18px_36px_-16px_rgba(5,31,32,.85)] ring-1 ring-white/5">
         {tabs.map(({ id, label, icon: Icon, to }) => {
           const on = id === activeId;
