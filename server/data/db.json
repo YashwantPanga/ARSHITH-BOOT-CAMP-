@@ -1,15 +1,15 @@
 {
   "admin": {
     "adminId": "ARB-ADMIN-001",
-    "passwordHash": "$2b$10$agN1MKk4YQbeBsslwysNYu3gsDkbFfszOvpiTT2JGul38KnwI8Pna",
+    "passwordHash": "$2b$10$YHP0jndpWparCEJQPwhyeuIJbnKjYf5NgLSnoaIFjf3UD1ctkxTQe",
     "name": "Arshith Bootcamp Administrator",
-    "email": "bootcamp@arshithgroup.com",
+    "email": "admin@arshithbootcamp.com",
     "role": "admin",
     "createdAt": "2026-01-01T00:00:00.000Z",
     "lastLogin": "2026-10-22T11:01:20.571Z",
     "username": "arshithbootcamp",
-    "passwordEnvHash": "$2b$10$jNJh.6KJJXpbS/WAsUHXGu4VT4hC857hHGHlh.cbBFrZKV0fLkOga",
-    "passwordChangedAt": "2026-11-02T20:41:54.161Z"
+    "passwordEnvHash": "$2b$10$pOtYk.5z9YWWnpgPoVkWiOlrz3Ce8c6uienAmmLIWPGoNMElqDuWm",
+    "passwordChangedAt": "2026-10-22T10:55:25.016Z"
   },
   "courses": [
     {
