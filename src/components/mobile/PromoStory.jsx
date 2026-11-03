@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, Code2, Laptop, X } from 'lucide-react';
 import { paths } from '../../router';
+import { CodingSticker, InterviewSticker } from './Stickers';
 
 const SHEET_KEY = 'arb_welcome_card_v4';
 // shown once per visit (browser tab session), the first time a phone opens the site
@@ -48,8 +49,8 @@ function ScenePair() {
   );
 }
 
-/** Scenes 2 and 3: a phone rises with the learner's plan; in scene 3 two ticked chips pop out of it. */
-function ScenePhone({ chips }) {
+/** Scene 2: a phone rises with the learner's plan. */
+function ScenePhone() {
   const rows = [
     { t: 'Python Programming', s: 'Course · 15 modules', c: P.green },
     { t: 'SQL Interview 50', s: 'Interview Prep', c: P.forest },
@@ -57,10 +58,10 @@ function ScenePhone({ chips }) {
   ];
   return (
     <div className="ws-scene relative h-full flex items-end justify-center">
-      <div className={`${chips ? '' : 'ws-rise'} w-[200px] h-[196px] rounded-t-[26px] border-[5px] border-b-0 p-2.5 pt-3`} style={{ background: P.cream, borderColor: '#111' }}>
+      <div className="ws-rise w-[200px] h-[196px] rounded-t-[26px] border-[5px] border-b-0 p-2.5 pt-3" style={{ background: P.cream, borderColor: '#111' }}>
         <p className="flex items-center gap-1 text-[10px] font-bold" style={{ color: P.forest }}>‹ My learning</p>
         {rows.map((r, i) => (
-          <div key={r.t} className={`${chips ? '' : 'ws-row'} mt-2 flex items-center gap-2 rounded-xl bg-white p-2 shadow-[0_2px_6px_rgba(0,0,0,.08)]`} style={{ animationDelay: `${250 + i * 140}ms` }}>
+          <div key={r.t} className="ws-row mt-2 flex items-center gap-2 rounded-xl bg-white p-2 shadow-[0_2px_6px_rgba(0,0,0,.08)]" style={{ animationDelay: `${250 + i * 140}ms` }}>
             <span className="w-6 h-6 rounded-lg shrink-0" style={{ background: r.c }} />
             <span className="flex-1 min-w-0">
               <span className="block text-[10.5px] font-bold text-[#1d2b26] truncate">{r.t}</span>
@@ -70,18 +71,24 @@ function ScenePhone({ chips }) {
           </div>
         ))}
       </div>
-      {chips && (
-        <>
-          <span className="ws-chip absolute left-0 top-[34px] flex items-center gap-2 rounded-2xl px-3 py-2 shadow-[0_12px_26px_-10px_rgba(0,0,0,.7)]" style={{ background: P.mint, color: P.night }}>
-            <span className="text-left leading-tight"><span className="block text-[12.5px] font-extrabold">Course done</span><span className="block text-[10px] opacity-60">15 of 15 modules</span></span>
-            <span className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: P.green }}><Check className="w-3 h-3 text-white" strokeWidth={3.5} /></span>
-          </span>
-          <span className="ws-chip ws-chip-2 absolute right-0 top-[34px] flex items-center gap-2 rounded-2xl px-3 py-2 shadow-[0_12px_26px_-10px_rgba(0,0,0,.7)]" style={{ background: P.lime, color: P.night }}>
-            <span className="text-left leading-tight"><span className="block text-[12.5px] font-extrabold">Interview ready</span><span className="block text-[10px] opacity-60">50 of 50 solved</span></span>
-            <span className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: P.night }}><Check className="w-3 h-3" style={{ color: P.lime }} strokeWidth={3.5} /></span>
-          </span>
-        </>
-      )}
+    </div>
+  );
+}
+
+/** Scene 3: two animated stickers - coding every day, then cracking the interview. */
+function SceneStickers() {
+  return (
+    <div className="ws-scene h-full grid grid-cols-2 gap-3 items-center">
+      {[
+        { el: <CodingSticker className="w-full h-auto" />, title: 'Code every day', sub: 'Real problems, real editor', cls: 'ws-from-left' },
+        { el: <InterviewSticker className="w-full h-auto" />, title: 'Crack the interview', sub: 'Walk in prepared', cls: 'ws-from-right' }
+      ].map(({ el, title, sub, cls }) => (
+        <div key={title} className={`${cls} text-center`}>
+          <div className="rounded-[18px] overflow-hidden shadow-[0_16px_30px_-14px_rgba(0,0,0,.8)] ring-1 ring-white/15">{el}</div>
+          <p className="mt-2.5 font-display text-[15px] font-bold leading-tight">{title}</p>
+          <p className="text-[11.5px] text-white/60">{sub}</p>
+        </div>
+      ))}
     </div>
   );
 }
@@ -103,8 +110,8 @@ function SceneDone() {
 
 function Stage({ scene }) {
   if (scene === 0) return <ScenePair />;
-  if (scene === 1) return <ScenePhone chips={false} />;
-  if (scene === 2) return <ScenePhone chips />;
+  if (scene === 1) return <ScenePhone />;
+  if (scene === 2) return <SceneStickers />;
   return <SceneDone />;
 }
 

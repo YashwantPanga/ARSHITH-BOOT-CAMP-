@@ -28,7 +28,7 @@ function useFontSize() {
   return size;
 }
 
-export default function CodeEditor({ value, onChange, lang, onRun, minHeight = 220, label = 'Code editor', className = '' }) {
+export default function CodeEditor({ value, onChange, lang, onRun, minHeight = 220, label = 'Code editor', className = '', light = false }) {
   const preRef = useRef(null);
   const gutterRef = useRef(null);
   const lines = useMemo(() => tokenLines(value, lang), [value, lang]);
@@ -55,11 +55,11 @@ export default function CodeEditor({ value, onChange, lang, onRun, minHeight = 2
 
   const layer = { padding: wrap ? `${PAD_Y}px ${PAD_X}px` : `${PAD_Y}px 24px ${PAD_Y}px ${PAD_X}px`, fontFamily: 'inherit', fontSize: 'inherit', lineHeight: 'inherit', tabSize: 4, letterSpacing: 0 };
   return (
-    <div className={`relative font-mono leading-[1.7] bg-evergreen ${className}`} style={{ minHeight, fontSize }}>
+    <div className={`relative font-mono leading-[1.7] ${light ? 'bg-white code-light' : 'bg-evergreen'} ${className}`} style={{ minHeight, fontSize }}>
       {!wrap && <div ref={gutterRef} aria-hidden="true" className="absolute top-0 bottom-0 left-0 overflow-hidden select-none text-right text-brand-400/70 text-[12px]" style={{ width: gutter, paddingTop: PAD_Y }}>
         {lines.map((_, i) => <div key={i} className="pr-1" style={{ height: LINE, lineHeight: `${LINE}px` }}>{i + 1}</div>)}
       </div>}
-      <pre ref={preRef} aria-hidden="true" className={`absolute top-0 bottom-0 right-0 overflow-hidden m-0 text-[#E9F1EC] pointer-events-none ${wrap ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'}`} style={{ left: gutter, ...layer }}>
+      <pre ref={preRef} aria-hidden="true" className={`absolute top-0 bottom-0 right-0 overflow-hidden m-0 ${light ? 'text-[#1F2D28]' : 'text-[#E9F1EC]'} pointer-events-none ${wrap ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'}`} style={{ left: gutter, ...layer }}>
         {lines.map((toks, i) => (
           <div key={i}>{toks.length ? toks.map((t, k) => (t.t ? <span key={k} className={`tok-${t.t}`}>{t.v}</span> : <React.Fragment key={k}>{t.v}</React.Fragment>)) : ' '}</div>
         ))}
@@ -78,7 +78,7 @@ export default function CodeEditor({ value, onChange, lang, onRun, minHeight = 2
         data-gramm_editor="false"
         data-enable-grammarly="false"
         aria-label={label}
-        className={`absolute top-0 bottom-0 right-0 m-0 border-0 resize-none bg-transparent text-transparent caret-ivory outline-none ${wrap ? 'whitespace-pre-wrap break-words overflow-y-auto overflow-x-hidden no-scrollbar' : 'whitespace-pre overflow-auto thin-scroll'} selection:bg-white/20 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-300`}
+        className={`absolute top-0 bottom-0 right-0 m-0 border-0 resize-none bg-transparent text-transparent ${light ? 'caret-charcoal selection:bg-brand-200/60' : 'caret-ivory selection:bg-white/20'} outline-none ${wrap ? 'whitespace-pre-wrap break-words overflow-y-auto overflow-x-hidden no-scrollbar' : 'whitespace-pre overflow-auto thin-scroll'} focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-300`}
         style={{ left: gutter, width: `calc(100% - ${gutter}px)`, ...layer }}
       />
     </div>

@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { Play, Square, RotateCcw, X, Terminal, Copy, Check, Database, Keyboard, Eye, Loader2, Maximize2, Minimize2 } from 'lucide-react';
 import { LANG_LABEL } from '../utils/highlight';
 import CodeEditor from './CodeEditor';
+import useIsPhone from '../utils/useIsPhone';
 import { runPython, runSql, resetSqlDb, buildWebDoc, SAMPLE_SCHEMA } from '../utils/runners';
 import { noteCoding } from '../utils/activity';
 
@@ -41,6 +42,7 @@ const RUN_HINT = {
 };
 
 export function PlaygroundModal({ initial, onClose }) {
+  const phone = useIsPhone(); // phones get a light, try-it style editor
   const [lang, setLang] = useState(initial.lang);
   const [code, setCode] = useState(initial.code);
   const [stdin, setStdin] = useState('');
@@ -158,13 +160,13 @@ export function PlaygroundModal({ initial, onClose }) {
 
         <div className="flex-1 min-h-0 grid grid-rows-[minmax(0,1.1fr)_minmax(0,1fr)] lg:grid-rows-1 lg:grid-cols-2">
           {/* Editor */}
-          <div className="flex flex-col min-h-0 border-b lg:border-b-0 lg:border-r border-brand-900/10 bg-evergreen">
-            <div className="flex items-center gap-2 px-3 h-10 sm:h-11 bg-black/20 border-b border-white/5">
-              <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-300">editor · {LANG_LABEL[lang]}</span>
+          <div className={`flex flex-col min-h-0 border-b lg:border-b-0 lg:border-r border-brand-900/10 ${phone ? 'bg-white' : 'bg-evergreen'}`}>
+            <div className={`flex items-center gap-2 px-3 h-10 sm:h-11 border-b ${phone ? 'bg-cream border-brand-900/10' : 'bg-black/20 border-white/5'}`}>
+              <span className={`text-[10.5px] font-semibold uppercase tracking-[0.16em] ${phone ? 'text-charcoal/55' : 'text-brand-300'}`}>{phone ? 'Code' : 'editor'} · {LANG_LABEL[lang]}</span>
               <span className="ml-auto flex items-center gap-1">
-                {lang === 'python' && <button onClick={() => setShowStdin(s => !s)} className={`flex items-center gap-1 h-7 px-2 rounded-md text-[11px] ${showStdin ? 'bg-white/15 text-white' : 'text-brand-200 hover:bg-white/10'}`}><Keyboard className="w-3.5 h-3.5" /> Input</button>}
-                <button onClick={copy} className="flex items-center gap-1 h-7 px-2 rounded-md text-[11px] text-brand-200 hover:bg-white/10">{copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}</button>
-                <button onClick={() => setCode(initial.lang === lang ? initial.code : STARTERS[lang])} className="flex items-center gap-1 h-7 px-2 rounded-md text-[11px] text-brand-200 hover:bg-white/10" title="Reset code"><RotateCcw className="w-3.5 h-3.5" /></button>
+                {lang === 'python' && <button onClick={() => setShowStdin(s => !s)} className={`flex items-center gap-1 h-7 px-2 rounded-md text-[11px] ${phone ? (showStdin ? 'bg-brand-900 text-ivory' : 'text-charcoal/70') : showStdin ? 'bg-white/15 text-white' : 'text-brand-200 hover:bg-white/10'}`}><Keyboard className="w-3.5 h-3.5" /> Input</button>}
+                <button onClick={copy} className={`flex items-center gap-1 h-7 px-2 rounded-md text-[11px] ${phone ? 'text-charcoal/70' : 'text-brand-200 hover:bg-white/10'}`} aria-label="Copy code">{copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}</button>
+                <button onClick={() => setCode(initial.lang === lang ? initial.code : STARTERS[lang])} className={`flex items-center gap-1 h-7 px-2 rounded-md text-[11px] ${phone ? 'text-charcoal/70' : 'text-brand-200 hover:bg-white/10'}`} title="Reset code" aria-label="Reset code"><RotateCcw className="w-3.5 h-3.5" /></button>
                 {running && lang === 'python' ? (
                   <button onClick={stop} className="hidden sm:flex items-center gap-1.5 h-7 px-3 rounded-md bg-rose-500 text-white text-xs font-bold"><Square className="w-3 h-3 fill-current" /> Stop</button>
                 ) : (
@@ -174,7 +176,7 @@ export function PlaygroundModal({ initial, onClose }) {
                 )}
               </span>
             </div>
-            <CodeEditor value={code} onChange={setCode} lang={lang} onRun={run} minHeight={160} className="flex-1 min-h-0" label="Code editor" />
+            <CodeEditor value={code} onChange={setCode} lang={lang} onRun={run} minHeight={160} className="flex-1 min-h-0" label="Code editor" light={phone} />
             {showStdin && lang === 'python' && (
               <div className="border-t border-white/10 p-3 bg-black/20">
                 <p className="text-[10.5px] uppercase tracking-[0.16em] text-brand-300 mb-1.5">Program input (one value per line for each input())</p>

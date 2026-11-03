@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { Copy, Check, Play, FileCode2 } from 'lucide-react';
+import { Copy, Check, Play, FileCode2, ChevronRight } from 'lucide-react';
 import { tokenLines, detectLanguage, LANG_LABEL, isRunnable } from '../utils/highlight';
 import { usePlayground } from './CodePlayground';
+import useIsPhone from '../utils/useIsPhone';
 
 /**
  * Premium code block: editor-style window chrome with an optional file title and language pill,
@@ -15,6 +16,7 @@ export default function CodeBlock({ code, label, language, courseId, compact = f
   const lines = useMemo(() => tokenLines(String(code || '').replace(/\s+$/, ''), lang), [code, lang]);
   const [copied, setCopied] = useState(false);
   const playground = usePlayground();
+  const phone = useIsPhone(); // phones: light try-it card
 
   if (!code) return null;
 
@@ -35,6 +37,33 @@ export default function CodeBlock({ code, label, language, courseId, compact = f
       : 'border-black/25 shadow-[0_22px_48px_-26px_rgba(12,45,38,.7)]';
   const glow = tone === 'bad' ? 'via-rose-300/60' : tone === 'good' ? 'via-mint-300/70' : 'via-brand-200/40';
   const gutterW = String(lines.length).length > 2 ? 'w-10 sm:w-12' : 'w-8 sm:w-10';
+
+  if (phone) {
+    const edge = tone === 'bad' ? 'border-rose-500' : tone === 'good' ? 'border-leaf' : 'border-forest';
+    return (
+      <div className="code-card relative max-w-full min-w-0 rounded-xl bg-[#E9EEEB] border border-brand-900/10 p-2.5">
+        <div className="flex items-center gap-2 px-1 pb-2">
+          <span className="flex gap-1.5 shrink-0" aria-hidden="true"><i className="w-2.5 h-2.5 rounded-full bg-[#E5534B]" /><i className="w-2.5 h-2.5 rounded-full bg-[#E9B53F]" /><i className="w-2.5 h-2.5 rounded-full bg-[#3FB66B]" /></span>
+          <span className="min-w-0 truncate text-[12.5px] font-semibold text-charcoal/80">{title || `${label && label !== langLabel ? label : langLabel} example`}</span>
+          <button onClick={copy} className="ml-auto flex items-center gap-1 h-7 px-2 rounded-md text-[11.5px] font-medium text-charcoal/60 active:bg-white/70" aria-label="Copy code">
+            {copied ? <Check className="w-3.5 h-3.5 text-leaf" /> : <Copy className="w-3.5 h-3.5" />}{copied ? 'Copied' : 'Copy'}
+          </button>
+        </div>
+        <div className={`rounded-lg bg-white border-l-4 ${edge} overflow-y-auto ${compact ? 'max-h-64' : 'max-h-[360px]'} thin-scroll`}>
+          <pre className="code-light m-0 px-3 py-2.5 text-[12.5px] leading-[1.7] text-[#1F2D28] font-mono whitespace-pre-wrap break-words" style={{ tabSize: 4 }}>
+            {lines.map((toks, i) => (
+              <span key={i} className="block">{toks.length ? toks.map((t, k) => (t.t ? <span key={k} className={`tok-${t.t}`}>{t.v}</span> : <React.Fragment key={k}>{t.v}</React.Fragment>)) : ' '}</span>
+            ))}
+          </pre>
+        </div>
+        {canRun && (
+          <button onClick={() => playground.open({ code: String(code), lang })} className="mt-2.5 inline-flex items-center gap-1 h-9 px-4 rounded-md bg-forest text-ivory text-[13.5px] font-semibold active:scale-[.98] transition">
+            Try it yourself <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={`code-card group relative max-w-full min-w-0 rounded-xl sm:rounded-2xl overflow-hidden bg-evergreen border ${frame}`}>

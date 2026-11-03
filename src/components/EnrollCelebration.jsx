@@ -39,11 +39,13 @@ export default function EnrollCelebration({ course, learnerName, paid = 0, onSta
   if (!course) return null;
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-evergreen/70 backdrop-blur-sm animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="enroll-done-title">
-      <div className="relative w-full max-w-md rounded-[24px] bg-ivory shadow-2xl overflow-hidden en-card">
-        <button onClick={onClose} className="absolute top-3 right-3 z-20 p-2 rounded-full text-charcoal/50 hover:bg-cream" aria-label="Close"><X className="w-4 h-4" /></button>
+      <div className="relative w-full max-w-[330px] sm:max-w-md rounded-[22px] sm:rounded-[24px] bg-ivory shadow-2xl overflow-hidden en-card">
+        <button onClick={onClose} className="absolute top-2.5 right-2.5 z-30 p-1.5 rounded-full bg-black/20 text-ivory sm:bg-transparent sm:text-charcoal/50 hover:bg-cream" aria-label="Close"><X className="w-4 h-4" /></button>
 
         {/* stage: rays, confetti, gift box with the course card rising out */}
-        <div className="relative h-[230px] bg-[radial-gradient(120%_90%_at_50%_100%,#0E5C45,#013A2B_70%)] overflow-hidden">
+        <div className="relative h-[164px] sm:h-[230px] bg-[radial-gradient(120%_90%_at_50%_100%,#0E5C45,#013A2B_70%)] overflow-hidden">
+          {/* phones draw the scene smaller so the card stays compact */}
+          <div className="absolute inset-0 origin-bottom scale-[.72] sm:scale-100">
           <div className="en-rays absolute left-1/2 top-[62%] w-[520px] h-[520px] -ml-[260px] -mt-[260px]" aria-hidden="true" />
           <div className="absolute left-1/2 top-[58%]" aria-hidden="true">
             {pieces.map((p, i) => (
@@ -76,34 +78,35 @@ export default function EnrollCelebration({ course, learnerName, paid = 0, onSta
               <span className="absolute left-1/2 top-0 bottom-0 w-6 -ml-3 bg-[#B98F2E]" />
             </div>
           </div>
+          </div>
         </div>
 
-        <div className="px-6 pt-6 pb-6 text-center">
-          <p className="en-up font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage" style={{ animationDelay: '.7s' }}>Enrolment confirmed</p>
-          <h2 id="enroll-done-title" className="en-up mt-1.5 text-[25px] leading-tight font-bold text-evergreen" style={{ animationDelay: '.8s' }}>
+        <div className="px-5 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-6 text-center">
+          <p className="en-up font-display text-[11px] sm:text-[13px] font-semibold uppercase tracking-[0.22em] text-sage" style={{ animationDelay: '.7s' }}>Enrolment confirmed</p>
+          <h2 id="enroll-done-title" className="en-up mt-1 sm:mt-1.5 text-[21px] sm:text-[25px] leading-tight font-bold text-evergreen" style={{ animationDelay: '.8s' }}>
             {first ? `Congratulations, ${first}!` : 'Congratulations!'}
           </h2>
-          <p className="en-up mt-2 text-[15px] text-charcoal/70" style={{ animationDelay: '.9s' }}>
+          <p className="en-up mt-1 sm:mt-2 text-[13.5px] sm:text-[15px] text-charcoal/70" style={{ animationDelay: '.9s' }}>
             <strong className="text-evergreen">{displayTitle(course.title)}</strong> is now yours.
           </p>
 
           {/* course fee with the FREE / PAID stamp */}
-          <div className="en-up relative mt-5 mx-auto w-fit rounded-xl border border-dashed border-sage/50 bg-white pl-6 pr-24 py-3 text-left" style={{ animationDelay: '1s' }}>
-            <p className="text-[12px] uppercase tracking-[0.18em] text-charcoal/50">Course fee</p>
-            <p className="font-display text-[28px] font-bold text-evergreen leading-none mt-1">₹{paid}</p>
-            <span className="en-stamp absolute right-3 top-1/2 -mt-4 rotate-[-14deg] rounded-md border-[3px] border-[#2F7A5C] text-[#2F7A5C] bg-ivory/90 font-display font-bold text-[17px] tracking-[0.12em] px-2.5 py-0.5">{paid ? 'PAID' : 'FREE'}</span>
+          <div className="en-up relative mt-3.5 sm:mt-5 mx-auto w-fit rounded-xl border border-dashed border-sage/50 bg-white pl-4 sm:pl-6 pr-20 sm:pr-24 py-2 sm:py-3 text-left" style={{ animationDelay: '1s' }}>
+            <p className="text-[10.5px] sm:text-[12px] uppercase tracking-[0.18em] text-charcoal/50">Course fee</p>
+            <p className="font-display text-[22px] sm:text-[28px] font-bold text-evergreen leading-none mt-1">₹{paid}</p>
+            <span className="en-stamp absolute right-3 top-1/2 -mt-4 rotate-[-14deg] rounded-md border-[3px] border-[#2F7A5C] text-[#2F7A5C] bg-ivory/90 font-display font-bold text-[14px] sm:text-[17px] tracking-[0.12em] px-2 sm:px-2.5 py-0.5">{paid ? 'PAID' : 'FREE'}</span>
           </div>
 
-          <ul className="en-up mt-5 flex flex-wrap justify-center gap-2 text-[13px] text-charcoal/75" style={{ animationDelay: '1.15s' }}>
-            <li className="inline-flex items-center gap-1.5 rounded-full bg-cream px-3 py-1.5"><BookOpen className="w-3.5 h-3.5 text-sage" />{modules} modules</li>
-            <li className="inline-flex items-center gap-1.5 rounded-full bg-cream px-3 py-1.5"><ListChecks className="w-3.5 h-3.5 text-sage" />{modules} quizzes</li>
-            <li className="inline-flex items-center gap-1.5 rounded-full bg-cream px-3 py-1.5"><Award className="w-3.5 h-3.5 text-sage" />Certificate</li>
+          <ul className="en-up mt-3.5 sm:mt-5 flex flex-wrap justify-center gap-1.5 sm:gap-2 text-[12px] sm:text-[13px] text-charcoal/75" style={{ animationDelay: '1.15s' }}>
+            <li className="inline-flex items-center gap-1.5 rounded-full bg-cream px-2.5 sm:px-3 py-1 sm:py-1.5"><BookOpen className="w-3.5 h-3.5 text-sage" />{modules} modules</li>
+            <li className="inline-flex items-center gap-1.5 rounded-full bg-cream px-2.5 sm:px-3 py-1 sm:py-1.5"><ListChecks className="w-3.5 h-3.5 text-sage" />{modules} quizzes</li>
+            <li className="inline-flex items-center gap-1.5 rounded-full bg-cream px-2.5 sm:px-3 py-1 sm:py-1.5"><Award className="w-3.5 h-3.5 text-sage" />Certificate</li>
           </ul>
 
-          <button onClick={onStart} className="en-up en-cta font-display mt-6 w-full h-12 rounded-md bg-forest text-ivory text-[16px] font-semibold inline-flex items-center justify-center gap-2 hover:bg-sage transition-colors" style={{ animationDelay: '1.3s' }}>
+          <button onClick={onStart} className="en-up en-cta font-display mt-4 sm:mt-6 w-full h-11 sm:h-12 rounded-xl sm:rounded-md bg-forest text-ivory text-[16px] font-semibold inline-flex items-center justify-center gap-2 hover:bg-sage transition-colors" style={{ animationDelay: '1.3s' }}>
             Start learning <ArrowRight className="w-4 h-4" />
           </button>
-          <button onClick={onClose} className="en-up mt-2 text-[13.5px] font-medium text-charcoal/55 hover:text-forest" style={{ animationDelay: '1.4s' }}>Maybe later</button>
+          <button onClick={onClose} className="en-up mt-1.5 sm:mt-2 text-[13px] sm:text-[13.5px] font-medium text-charcoal/55 hover:text-forest" style={{ animationDelay: '1.4s' }}>Maybe later</button>
         </div>
       </div>
     </div>

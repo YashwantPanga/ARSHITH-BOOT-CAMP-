@@ -69,6 +69,15 @@
 .tok-tag { color: #F2C879; }
 .tok-attr { color: #C7B8F0; }
 .tok-op { color: #D5E3DB; }
+/* light code (phone try-it editor and examples) */
+.code-light .tok-kw { color: #0B57C4; }
+.code-light .tok-str { color: #A3341B; }
+.code-light .tok-num { color: #098658; }
+.code-light .tok-com { color: #6A7D74; font-style: italic; }
+.code-light .tok-fn { color: #795E26; }
+.code-light .tok-tag { color: #A52A2A; }
+.code-light .tok-attr { color: #D2381F; }
+.code-light .tok-op { color: #3B4A44; }
 
 /* Subtle decorative leaf shapes (replace the old confetti triangles) */
 .tri { position: absolute; width: 14px; height: 14px; pointer-events: none; border-radius: 0 100% 0 100%; }
@@ -536,9 +545,21 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 @keyframes wsRise { from { transform: translateY(80px); } to { transform: none; } }
 .ws-row { animation: wsRow .4s ease both; }
 @keyframes wsRow { from { transform: translateY(12px) scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
-.ws-chip { animation: wsChip .55s .1s cubic-bezier(.2,1.5,.4,1) both; }
-.ws-chip-2 { animation-delay: .32s; }
-@keyframes wsChip { from { transform: translateY(70px) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+.stk-type { transform-box: fill-box; transform-origin: left center; animation: stkType 2.2s ease-in-out infinite; }
+@keyframes stkType { 0% { transform: scaleX(0); } 35%, 85% { transform: scaleX(1); } 100% { transform: scaleX(1); opacity: .2; } }
+.stk-caret { animation: stkBlink .8s steps(1) infinite; }
+@keyframes stkBlink { 50% { opacity: 0; } }
+.stk-bob { animation: stkBob 2.4s ease-in-out infinite; }
+@keyframes stkBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+.stk-float { animation: stkFloat 2.6s ease-in-out infinite; }
+.stk-float-2 { animation-delay: 1.1s; }
+@keyframes stkFloat { 0% { transform: translateY(6px); opacity: 0; } 30%, 70% { opacity: 1; } 100% { transform: translateY(-10px); opacity: 0; } }
+.stk-nod { transform-box: fill-box; transform-origin: 50% 100%; animation: stkNod 2.2s ease-in-out infinite; }
+@keyframes stkNod { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-3deg); } }
+.stk-bubble { transform-box: fill-box; transform-origin: 20% 100%; animation: stkPop .45s .35s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes stkPop { from { transform: scale(0); } to { transform: scale(1); } }
+.stk-stamp { transform-box: fill-box; transform-origin: center; animation: stkStamp .5s 1.1s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes stkStamp { from { transform: scale(2.2) rotate(-14deg); opacity: 0; } to { transform: scale(1) rotate(-8deg); opacity: 1; } }
 .ws-ring { animation: wsRing 1.4s .2s ease-out infinite; }
 @keyframes wsRing { from { transform: scale(.85); opacity: 1; } to { transform: scale(1.22); opacity: 0; } }
 .ws-orbit { animation: wsOrbit 2.4s linear infinite; }
@@ -546,6 +567,6 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 .ws-check { stroke-dasharray: 40; stroke-dashoffset: 40; animation: wsDraw .45s .45s ease-out forwards; }
 @keyframes wsDraw { to { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .welcome-sheet, .welcome-shine, .welcome-cta::after, .ws-scene, .ws-from-left, .ws-from-right, .ws-plus, .ws-pop, .ws-rise, .ws-row, .ws-chip, .ws-ring, .ws-orbit { animation: none !important; }
+  .welcome-sheet, .welcome-shine, .welcome-cta::after, .ws-scene, .ws-from-left, .ws-from-right, .ws-plus, .ws-pop, .ws-rise, .ws-row, .ws-ring, .stk-type, .stk-caret, .stk-bob, .stk-float, .stk-nod, .stk-bubble, .stk-stamp, .ws-orbit { animation: none !important; }
   .ws-check { stroke-dashoffset: 0; animation: none; }
 }
