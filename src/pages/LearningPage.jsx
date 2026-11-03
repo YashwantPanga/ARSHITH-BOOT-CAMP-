@@ -711,8 +711,8 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         <button onClick={onExit} className="hidden lg:flex items-center gap-2.5 shrink-0 pr-2 group" title="Back to dashboard">
           <span className="w-9 h-9 rounded-full border border-[#C49A52]/60 flex items-center justify-center text-[#E5C88E] group-hover:bg-white/5"><ArrowLeft className="w-4 h-4" /></span>
           <span className="text-left leading-tight">
-            <span className="block font-lesson text-[19px] font-semibold">CodeLekho</span>
-            <span className="block text-[9.5px] font-semibold uppercase tracking-[0.2em] text-[#D9B776] max-w-[160px] truncate">{displayTitle(course.title)}</span>
+            <img src="/codelekho-logo-white.svg" alt="CodeLekho" className="block h-[26px] w-auto object-contain" />
+            <span className="mt-1 block text-[9.5px] font-semibold uppercase tracking-[0.2em] text-[#D9B776] max-w-[170px] truncate">{displayTitle(course.title)}</span>
           </span>
         </button>
         <div className="flex-1 min-w-0 flex items-center gap-3">
