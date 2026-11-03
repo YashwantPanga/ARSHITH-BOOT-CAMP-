@@ -1,16 +1,30 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Award, BookOpen, Laptop, Target, X } from 'lucide-react';
+import { Award, BookOpen, Code2, Laptop, Target, X } from 'lucide-react';
 import { paths } from '../../router';
 
-const SHEET_KEY = 'arb_welcome_card_v2';
+const SHEET_KEY = 'arb_welcome_card_v3';
 // shown once per visit (browser tab session), the first time a phone opens the site
 const seen = () => { try { return sessionStorage.getItem(SHEET_KEY) === '1'; } catch { return true; } };
 const mark = () => { try { sessionStorage.setItem(SHEET_KEY, '1'); } catch { /* ignore */ } };
 const isPhone = () => typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)').matches;
 
-/** The six greens of the welcome card, darkest first. */
-export const PALETTE = ['#051F20', '#0B2B26', '#163832', '#235347', '#8EB69B', '#DAF1DE'];
+/** The welcome card's own palette (lime to deep forest). The rest of the site keeps its colours. */
+export const PALETTE = { cream: '#FFFDEE', mint: '#E2FBCE', lime: '#E3EF26', green: '#076653', forest: '#0C342C', night: '#06231D' };
+const P = PALETTE;
+/** The four gradients of the palette, light to dark: one per fanned card. */
+const GRADIENTS = [
+  `linear-gradient(180deg, ${P.cream}, ${P.lime})`,
+  `linear-gradient(180deg, ${P.mint}, ${P.lime} 45%, ${P.green})`,
+  `linear-gradient(180deg, ${P.lime}, ${P.green} 50%, ${P.forest})`,
+  `linear-gradient(180deg, ${P.green}, ${P.forest} 55%, ${P.night})`
+];
+const CARDS = [
+  { label: 'Learn', ink: P.green, icon: BookOpen },
+  { label: 'Practise', ink: P.forest, icon: Code2 },
+  { label: 'Crack', ink: P.cream, icon: Target },
+  { label: 'Get hired', ink: P.lime, icon: Award }
+];
 
 const WORDS = ['Python', 'SQL', 'Web Development', 'AI & Data', 'DSA'];
 
@@ -21,7 +35,7 @@ function RotatingWord() {
     const t = setInterval(() => setI(n => (n + 1) % WORDS.length), 1600);
     return () => clearInterval(t);
   }, []);
-  return <span key={i} className="welcome-word inline-block text-[#8EB69B]">{WORDS[i]}</span>;
+  return <span key={i} className="welcome-word inline-block" style={{ color: P.lime }}>{WORDS[i]}</span>;
 }
 
 function WelcomeCard({ onClose, navigate, signedIn }) {
@@ -41,38 +55,41 @@ function WelcomeCard({ onClose, navigate, signedIn }) {
 
   return (
     <div className="fixed inset-0 z-[125] flex items-end" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
-      <div className="absolute inset-0 bg-[#051F20]/70 backdrop-blur-[3px] animate-fade-in" onClick={onClose} />
-      <div className="welcome-sheet relative w-full max-h-[94dvh] overflow-y-auto no-scrollbar rounded-t-[30px] text-[#DAF1DE] pb-[calc(18px+env(safe-area-inset-bottom))]"
-        style={{ background: 'radial-gradient(130% 70% at 50% 0%, #235347 0%, #163832 38%, #0B2B26 68%, #051F20 100%)' }}>
-        <span className="welcome-shine" aria-hidden="true" />
-        <span className="mx-auto mt-2.5 block w-10 h-1 rounded-full bg-[#DAF1DE]/30" aria-hidden="true" />
-        <button onClick={onClose} className="absolute right-4 top-4 z-10 w-9 h-9 rounded-full bg-[#DAF1DE]/15 border border-[#DAF1DE]/25 text-[#DAF1DE] flex items-center justify-center active:scale-95 transition" aria-label="Close"><X className="w-4 h-4" /></button>
-
-        {/* the palette: six stacked pills that slide up one after another, then fan out */}
-        <div className="relative mx-auto mt-4 h-[118px] w-[78%] max-w-[300px]" aria-hidden="true">
-          {PALETTE.map((c, i) => (
-            <span key={c} className="welcome-pill absolute inset-x-0 h-[52px] rounded-full border border-white/10"
-              style={{ background: `linear-gradient(180deg, ${c}, ${PALETTE[Math.max(0, i - 1)]})`, top: `${i * 13}px`, zIndex: i, '--d': `${120 + i * 90}ms`,
-                boxShadow: `0 -6px 18px -8px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,${i > 3 ? 0.5 : 0.12})` }} />
-          ))}
-          <span className="welcome-badge absolute left-1/2 -translate-x-1/2 bottom-[-6px] z-10 px-3 py-1 rounded-full bg-[#051F20] border border-[#8EB69B]/50 text-[10.5px] font-bold tracking-[0.2em] text-[#DAF1DE] whitespace-nowrap">100% FREE</span>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-[3px] animate-fade-in" onClick={onClose} />
+      <div className="welcome-sheet relative w-full max-h-[94dvh] overflow-y-auto no-scrollbar rounded-t-[28px] text-white pb-[calc(18px+env(safe-area-inset-bottom))]"
+        style={{ background: `linear-gradient(180deg, ${P.green} 0%, ${P.forest} 42%, ${P.night} 100%)` }}>
+        {/* hero band: the four palette gradients as cards that rise and fan out */}
+        <div className="relative h-[200px] overflow-hidden" style={{ background: `radial-gradient(90% 85% at 50% 100%, ${P.lime}55 0%, transparent 60%), linear-gradient(180deg, ${P.forest}, ${P.green})` }}>
+          <span className="welcome-shine" aria-hidden="true" />
+          <span className="absolute left-1/2 top-2.5 -translate-x-1/2 w-10 h-1 rounded-full bg-white/35" aria-hidden="true" />
+          <button onClick={onClose} className="absolute right-4 top-4 z-20 w-9 h-9 rounded-full bg-black/25 border border-white/25 text-white flex items-center justify-center active:scale-95 transition" aria-label="Close"><X className="w-4 h-4" /></button>
+          <div className="absolute inset-x-0 bottom-[-30px] flex justify-center" aria-hidden="true">
+            {CARDS.map(({ label, ink, icon: Icon }, i) => (
+              <span key={label} className="welcome-card-fan relative -mx-2.5 w-[78px] h-[168px] rounded-[18px] border border-white/25 flex flex-col items-center justify-start gap-2.5 py-3 shadow-[0_18px_30px_-14px_rgba(0,0,0,.7)]"
+                style={{ background: GRADIENTS[i], color: ink, zIndex: i === 1 || i === 2 ? 2 : 1, '--r': `${(i - 1.5) * 9}deg`, '--y': `${Math.abs(i - 1.5) * 14}px`, '--d': `${150 + i * 110}ms` }}>
+                <Icon className="w-5 h-5" strokeWidth={2.3} />
+                <span className="font-display text-[13px] font-extrabold tracking-wide [writing-mode:vertical-rl] rotate-180">{label}</span>
+              </span>
+            ))}
+          </div>
+          <span className="welcome-badge absolute left-1/2 top-7 z-10 px-3 py-1 rounded-full text-[10.5px] font-extrabold tracking-[0.2em] whitespace-nowrap shadow-[0_6px_16px_-6px_rgba(0,0,0,.5)]" style={{ background: P.lime, color: P.night }}>100% FREE</span>
         </div>
 
-        <div className="px-6 text-center">
-          <p className="welcome-up mt-6 text-[11px] font-bold tracking-[0.24em] text-[#8EB69B]" style={{ '--d': '650ms' }}>ENROLL FREE · LEARN · GET HIRED</p>
-          <h2 id="welcome-title" className="welcome-up mt-2 font-display text-[28px] leading-[1.12] font-extrabold text-white" style={{ '--d': '730ms' }}>
+        <div className="relative px-6 pt-7 text-center">
+          <p className="welcome-up text-[11px] font-bold tracking-[0.24em]" style={{ color: P.mint, '--d': '650ms' }}>ENROLL FREE · LEARN · GET HIRED</p>
+          <h2 id="welcome-title" className="welcome-up mt-2 font-display text-[28px] leading-[1.12] font-extrabold" style={{ '--d': '730ms' }}>
             Crack any job<span className="block h-[34px] overflow-hidden whitespace-nowrap text-[26px]">with <RotatingWord /></span>
           </h2>
-          <p className="welcome-up mt-2 text-[14px] leading-snug text-[#DAF1DE]/75" style={{ '--d': '810ms' }}>Learn free, practise real interview questions and earn a certificate that proves it.</p>
+          <p className="welcome-up mt-2 text-[14px] leading-snug text-white/70" style={{ '--d': '810ms' }}>Learn free, practise real interview questions and earn a certificate that proves it.</p>
         </div>
 
         <ul className="mt-4 mx-5 grid gap-2">
           {perks.map(({ icon: Icon, title, text }, i) => (
-            <li key={title} className="welcome-up flex items-center gap-3 rounded-2xl bg-[#DAF1DE]/[.07] border border-[#DAF1DE]/[.12] px-3 py-2.5" style={{ '--d': `${900 + i * 90}ms` }}>
-              <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: PALETTE[3 - i] }}><Icon className="w-5 h-5 text-[#DAF1DE]" /></span>
+            <li key={title} className="welcome-up flex items-center gap-3 rounded-2xl bg-white/[.06] border border-white/10 px-3 py-2.5" style={{ '--d': `${900 + i * 90}ms` }}>
+              <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: GRADIENTS[i + 1] }}><Icon className="w-5 h-5" style={{ color: i === 0 ? P.forest : P.cream }} /></span>
               <span className="min-w-0 text-left">
-                <span className="block text-[14.5px] font-semibold text-white leading-tight">{title}</span>
-                <span className="block text-[12.5px] text-[#DAF1DE]/65 leading-snug">{text}</span>
+                <span className="block text-[14.5px] font-semibold leading-tight">{title}</span>
+                <span className="block text-[12.5px] text-white/60 leading-snug">{text}</span>
               </span>
             </li>
           ))}
@@ -80,12 +97,13 @@ function WelcomeCard({ onClose, navigate, signedIn }) {
 
         <div className="welcome-up px-5 mt-4 grid gap-2.5" style={{ '--d': '1200ms' }}>
           <button onClick={() => go(signedIn ? paths.dashboard() : paths.register())}
-            className="welcome-cta relative overflow-hidden w-full h-[52px] rounded-2xl bg-gradient-to-b from-[#DAF1DE] to-[#8EB69B] text-[#051F20] font-display font-bold text-[17px] shadow-[0_4px_0_#235347,0_16px_30px_-12px_rgba(142,182,155,.7)] active:translate-y-[3px] active:shadow-[0_1px_0_#235347] transition">
+            className="welcome-cta relative overflow-hidden w-full h-[52px] rounded-2xl font-display font-bold text-[17px] active:translate-y-[3px] transition"
+            style={{ background: `linear-gradient(180deg, ${P.mint}, ${P.lime})`, color: P.night, boxShadow: `0 4px 0 ${P.green}, 0 16px 30px -12px ${P.lime}99` }}>
             {signedIn ? 'Continue learning' : 'Enroll for free'}
           </button>
-          <button onClick={() => go(paths.interview())} className="w-full h-11 rounded-2xl border border-[#8EB69B]/45 text-[#DAF1DE] font-semibold text-[14.5px] active:bg-white/5 transition">See Interview Prep</button>
+          <button onClick={() => go(paths.interview())} className="w-full h-11 rounded-2xl border text-[14.5px] font-semibold active:bg-white/5 transition" style={{ borderColor: `${P.lime}66`, color: P.mint }}>See Interview Prep</button>
         </div>
-        <p className="welcome-up mt-3 px-6 flex items-center justify-center gap-1.5 text-[11.5px] text-[#DAF1DE]/55" style={{ '--d': '1300ms' }}>
+        <p className="welcome-up mt-3 px-6 flex items-center justify-center gap-1.5 text-[11.5px] text-white/50" style={{ '--d': '1300ms' }}>
           <Laptop className="w-3.5 h-3.5 shrink-0" /> The proctored final needs a laptop and webcam.
         </p>
       </div>

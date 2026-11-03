@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Check, Flag, Minus, Pencil, Plus, Rocket, Sparkles, X, Zap } from 'lucide-react';
+import { Check, Flag, Minus, Pencil, Plus, Rocket, X, Zap } from 'lucide-react';
 import { Flame } from '../StreakCard';
 
 /* ------------------------------------------------------------------ */
@@ -322,7 +322,7 @@ export function MyPlanCard({ set, plan, solvedMap, signedIn, onSetUp, onEdit, co
       {!compact && (
         <div className="mt-2 flex items-center justify-between gap-2 text-[12px] text-charcoal/60">
           <span className="inline-flex items-center gap-1.5"><Flag className="w-3.5 h-3.5 text-sage" />{finish ? <>Finish line <b className="text-evergreen">{finish}</b></> : 'All problems solved'}</span>
-          <span className="inline-flex items-center gap-1"><Sparkles className="w-3.5 h-3.5 text-[#E8A13A]" />{plan.perDay}/day · {plan.days.length === 7 ? 'daily' : `${plan.days.length} days/wk`}</span>
+          <span className="inline-flex items-center gap-1"><Zap className="w-3.5 h-3.5 text-[#E8A13A]" />{plan.perDay}/day · {plan.days.length === 7 ? 'daily' : `${plan.days.length} days/wk`}</span>
         </div>
       )}
     </div>

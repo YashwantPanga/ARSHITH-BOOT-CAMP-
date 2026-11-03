@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft, ArrowRight, Award, CheckCircle2, ChevronLeft, ChevronRight, Circle, Eye, FileText, Flame, Lightbulb,
-  Loader2, Lock, Play, RotateCcw, Search, Send, Sparkles, Table2, Trophy, XCircle
+  Loader2, Lock, Play, RotateCcw, Search, Send, Table2, Trophy, XCircle
 } from 'lucide-react';
 import { INTERVIEW_SETS, findInterviewSet } from '../../shared/interview/index.js';
 import { INTERVIEW_SQL_SCHEMA } from '../../shared/interview/sqlSchema.js';
@@ -188,17 +188,18 @@ function LockedPrep({ signedIn, certificates, navigate }) {
   const required = certificates?.required || 4;
   const earned = Math.min(certificates?.earned || 0, required);
   const steps = ['Finish every module quiz of a course', 'Submit one project on GitHub', 'Pass the proctored final (70%+)', `Earn ${required} course certificates: Interview Prep unlocks`];
+  const short = ['Module quizzes', 'GitHub project', 'Final 70%+', `${required} certificates`]; // phone labels
   return (
     <div className="bg-ivory min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-20">
-        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-forest via-[#0B3E30] to-evergreen text-ivory px-6 py-8 sm:px-10 sm:py-10">
-          <div className="relative grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-5 sm:pt-14 pb-12 sm:pb-20">
+        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-forest via-[#0B3E30] to-evergreen text-ivory px-4 py-5 sm:px-10 sm:py-10">
+          <div className="relative grid gap-5 sm:gap-8 md:grid-cols-[1fr_auto] md:items-center">
             <div>
               <p className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#BCD1C6]"><Lock className="w-3.5 h-3.5" /> Locked</p>
-              <h1 className="mt-4 font-display text-[28px] sm:text-[38px] font-bold leading-tight">Interview Prep unlocks after {required} certificates</h1>
-              <p className="mt-3 text-[15px] text-ivory/75 max-w-xl">{INTERVIEW_SETS.reduce((n, s) => n + s.items.length, 0)} real interview problems in SQL, Python and JavaScript are waiting for you. Complete {required} courses and earn their certificates to open them.</p>
+              <h1 className="mt-3 sm:mt-4 font-display text-[22px] sm:text-[38px] font-bold leading-tight">Interview Prep unlocks after {required} certificates</h1>
+              <p className="mt-2 sm:mt-3 text-[13.5px] sm:text-[15px] text-ivory/75 max-w-xl">{INTERVIEW_SETS.reduce((n, s) => n + s.items.length, 0)} real interview problems in SQL, Python and JavaScript are waiting for you.<span className="hidden sm:inline"> Complete {required} courses and earn their certificates to open them.</span></p>
               {signedIn && (
-                <div className="mt-5 max-w-sm">
+                <div className="mt-4 sm:mt-5 max-w-sm">
                   <div className="flex items-center justify-between text-[13px]">
                     <span className="text-ivory/70">Your certificates</span>
                     <span className="font-semibold"><span className="text-[#9FD8A4]">{earned}</span> of {required}</span>
@@ -210,14 +211,22 @@ function LockedPrep({ signedIn, certificates, navigate }) {
                   </div>
                 </div>
               )}
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="mt-4 sm:mt-6 grid grid-cols-2 sm:flex sm:flex-wrap gap-2.5 sm:gap-3">
                 {signedIn
-                  ? <button onClick={() => navigate(paths.dashboard())} className="btn bg-ivory text-forest hover:bg-white">Continue my course <ArrowRight className="w-4 h-4" /></button>
-                  : <button onClick={() => navigate(paths.login(paths.interview()))} className="btn bg-ivory text-forest hover:bg-white">Sign in <ArrowRight className="w-4 h-4" /></button>}
-                <button onClick={() => navigate(paths.courses())} className="btn border border-white/30 text-ivory hover:bg-white/10">Browse courses</button>
+                  ? <button onClick={() => navigate(paths.dashboard())} className="btn bg-ivory text-forest hover:bg-white !px-3 sm:!px-6 !py-2.5 sm:!py-3 text-[14px] sm:text-[15px] justify-center">Continue<span className="hidden sm:inline">&nbsp;my course</span> <ArrowRight className="w-4 h-4" /></button>
+                  : <button onClick={() => navigate(paths.login(paths.interview()))} className="btn bg-ivory text-forest hover:bg-white !px-3 sm:!px-6 !py-2.5 sm:!py-3 text-[14px] sm:text-[15px] justify-center">Sign in <ArrowRight className="w-4 h-4" /></button>}
+                <button onClick={() => navigate(paths.courses())} className="btn border border-white/30 text-ivory hover:bg-white/10 !px-3 sm:!px-6 !py-2.5 sm:!py-3 text-[14px] sm:text-[15px] justify-center">Browse courses</button>
               </div>
             </div>
-            <ol className="space-y-2.5 md:w-[300px]">
+            <ol className="grid grid-cols-2 gap-2 sm:hidden">
+              {short.map((t, i) => (
+                <li key={t} className="flex items-center gap-2 rounded-xl bg-white/[.07] border border-white/10 px-2.5 py-2 text-[12.5px] font-medium">
+                  <span className={`w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[11px] font-bold ${i === short.length - 1 ? 'bg-leaf text-white' : 'bg-white/15 text-ivory'}`}>{i === short.length - 1 ? <Award className="w-3 h-3" /> : i + 1}</span>
+                  {t}
+                </li>
+              ))}
+            </ol>
+            <ol className="hidden sm:block space-y-2.5 md:w-[300px]">
               {steps.map((t, i) => (
                 <li key={t} className="flex items-center gap-3 rounded-xl bg-white/[.07] border border-white/10 px-3.5 py-2.5 text-[13.5px]">
                   <span className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-[12px] font-bold ${i === steps.length - 1 ? 'bg-leaf text-white' : 'bg-white/15 text-ivory'}`}>{i === steps.length - 1 ? <Award className="w-3.5 h-3.5" /> : i + 1}</span>
@@ -228,11 +237,12 @@ function LockedPrep({ signedIn, certificates, navigate }) {
           </div>
         </section>
 
-        <section className="mt-12">
-          <h2 className="font-display text-[22px] font-bold text-evergreen">What you will unlock</h2>
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" aria-hidden="true">
+        <section className="mt-7 sm:mt-12">
+          <h2 className="font-display text-[19px] sm:text-[22px] font-bold text-evergreen">What you will unlock</h2>
+          {/* phones: one row that scrolls sideways */}
+          <div className="mt-3 sm:mt-4 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto no-scrollbar snap-x scroll-px-4 -mx-4 px-4 sm:mx-0 sm:px-0 pb-1" aria-hidden="true">
             {INTERVIEW_SETS.map(s => (
-              <div key={s.id} className="relative pointer-events-none select-none">
+              <div key={s.id} className="relative pointer-events-none select-none shrink-0 snap-start">
                 <div className="grayscale-[.35] opacity-60"><QuestCard set={s} solved={0} signedIn={false} onOpen={() => {}} /></div>
                 <span className="absolute right-3 bottom-3 w-9 h-9 rounded-full bg-ivory/95 text-forest flex items-center justify-center shadow"><Lock className="w-4 h-4" /></span>
               </div>
@@ -853,7 +863,7 @@ function ConceptCard({ set, item, progress, mark, signedIn, navigate, toast, sta
           <h1 className="mt-4 font-display text-[26px] sm:text-[30px] font-bold text-evergreen leading-tight">{item.title}</h1>
           {!open ? (
             <div className="mt-8 rounded-2xl border border-dashed border-brand-900/20 bg-cream/60 p-6 text-center">
-              <Sparkles className="w-6 h-6 text-sage mx-auto" />
+              <Trophy className="w-6 h-6 text-sage mx-auto" />
               <p className="mt-2 text-[14.5px] text-charcoal/70">Say your answer out loud as if you were in the interview, then compare it with ours.</p>
               <button onClick={() => setOpen(true)} className="btn-primary mt-4"><Eye className="w-4 h-4" /> Show the answer</button>
             </div>

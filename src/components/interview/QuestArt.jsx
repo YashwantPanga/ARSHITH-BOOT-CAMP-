@@ -94,16 +94,12 @@ export function Mascot({ q, className = '' }) {
   );
 }
 
-/* Sparkles and drifting code glyphs layered over a banner. */
+/* Light rays, a dot grid and drifting code glyphs layered over a banner. */
 function Sky({ q, glyphs = true }) {
-  const stars = [[8, 18], [22, 72], [36, 12], [52, 80], [61, 22], [74, 64], [86, 14], [93, 78], [46, 46]];
   return (
     <>
       <span className="quest-rays" />
       <span className="absolute inset-0 quest-dots" />
-      {stars.map(([x, y], i) => (
-        <span key={i} className="quest-star" style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${(i % 5) * 0.6}s` }} />
-      ))}
       {glyphs && q.glyphs.map((g, i) => (
         <span key={g} className="quest-glyph hidden md:block" style={{ right: `${[45, 31, 43][i]}%`, top: `${[16, 20, 70][i]}%`, animationDelay: `${i * 1.1}s`, color: [q.glow, '#FFE08A', '#FFFFFF'][i] }}>{g}</span>
       ))}

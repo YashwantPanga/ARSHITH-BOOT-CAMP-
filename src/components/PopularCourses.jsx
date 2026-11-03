@@ -18,9 +18,9 @@ export default function PopularCourses({ courses, enrolledCourseId, offer, onSel
     <section className="py-12 sm:py-20 bg-ivory">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div className="text-center sm:text-left">
+          <div>
             <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Free certificate courses</p>
-            <RevealText as="h2" className="edu-title mt-2 text-[26px] sm:text-[38px] leading-tight max-w-2xl">Access <b>free certificate courses</b>, built by industry mentors</RevealText>
+            <RevealText as="h2" className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight max-w-2xl">Access <b>free certificate courses</b>, built by industry mentors</RevealText>
           </div>
           <button onClick={onViewAllCourses} className="hidden sm:inline-flex font-display items-center gap-2 h-12 px-6 rounded-md bg-forest text-ivory text-[15px] font-semibold hover:bg-sage transition-colors self-start sm:self-auto group shrink-0">
             View all courses <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -28,7 +28,7 @@ export default function PopularCourses({ courses, enrolledCourseId, offer, onSel
         </Reveal>
 
         {/* Track filter – like the partner tabs in the reference */}
-        <div className="mt-6 sm:mt-8 flex flex-nowrap gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x">
+        <div className="mt-6 sm:mt-8 flex flex-wrap sm:flex-nowrap gap-2 sm:gap-3 sm:overflow-x-auto no-scrollbar pb-1">
           <button onClick={() => setTrack('all')} className={`font-display shrink-0 h-10 sm:h-[54px] px-4 sm:px-6 rounded-full border text-[14px] sm:text-[15px] font-medium transition ${track === 'all' ? 'bg-forest border-forest text-ivory' : 'bg-white border-brand-900/15 text-charcoal/75 hover:border-sage hover:text-forest'}`}>All Tracks</button>
           {tracks.map(t => (
             <button key={t} onClick={() => setTrack(t)} className={`shrink-0 h-10 sm:h-[54px] pl-1 sm:pl-1.5 pr-3.5 sm:pr-5 rounded-full border flex items-center gap-1.5 sm:gap-2.5 transition ${track === t ? 'bg-forest border-forest text-ivory' : 'bg-white border-brand-900/15 text-charcoal/80 hover:border-sage'}`}>

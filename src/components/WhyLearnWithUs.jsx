@@ -13,11 +13,11 @@ const STEPS = [
 /** "How it works" in the eduleb about layout (image + checklist) with numbered step cards below. */
 export default function WhyLearnWithUs() {
   return (
-    <section className="relative py-10 sm:py-16 md:py-24 bg-cream overflow-hidden">
+    <section className="relative py-16 md:py-24 bg-cream overflow-hidden">
       <div className="absolute inset-0 edu-shape pointer-events-none" aria-hidden="true" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
-          <Reveal className="hidden sm:block">
+          <Reveal>
             <div className="relative mx-auto max-w-md">
               <div className="absolute -left-4 -top-4 w-full h-full rounded-[28px] border-2 border-sage/30" aria-hidden="true" />
               <div className="relative rounded-[28px] overflow-hidden shadow-[0_30px_60px_-30px_rgba(1,58,43,.5)] aspect-[4/5] sm:aspect-[5/5]">
@@ -26,11 +26,11 @@ export default function WhyLearnWithUs() {
             </div>
           </Reveal>
 
-          <Reveal className="text-center sm:text-left">
+          <Reveal>
             <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">How it works</p>
-            <RevealText as="h2" className="edu-title mt-2 text-[26px] sm:text-[38px] leading-tight">Construct a stunning career perspective — <b>one verified step at a time</b></RevealText>
-            <p className="mt-3 sm:mt-4 text-[14.5px] sm:text-base text-charcoal/70 leading-relaxed max-w-xl mx-auto sm:mx-0">Every course follows the same honest path. Nothing is skipped, and your certificate shows exactly what you scored.</p>
-            <ul className="mt-5 sm:mt-6 space-y-3 inline-block text-left">
+            <RevealText as="h2" className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight">Construct a stunning career perspective — <b>one verified step at a time</b></RevealText>
+            <p className="mt-4 text-charcoal/70 leading-relaxed max-w-xl">Every course follows the same honest path. Nothing is skipped, and your certificate shows exactly what you scored.</p>
+            <ul className="mt-6 space-y-3">
               {['70% pass mark for the final assessment', '3 mini projects'].map(t => (
                 <li key={t} className="flex items-center gap-3 font-display text-[16.5px] font-medium text-evergreen">
                   <span className="w-7 h-7 rounded-full bg-forest text-ivory flex items-center justify-center shrink-0"><Check className="w-4 h-4" /></span>{t}
@@ -40,15 +40,15 @@ export default function WhyLearnWithUs() {
           </Reveal>
         </div>
 
-        <div className="mt-8 sm:mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+        <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {STEPS.map((s, i) => (
             <Reveal key={s.title} delay={i * 90}>
-              <div className="edu-card h-full p-4 sm:p-7 hover:-translate-y-1 transition-transform duration-300">
+              <div className="edu-card h-full p-7 hover:-translate-y-1 transition-transform duration-300">
                 <div className="flex items-center gap-4">
-                  <span className={`w-11 h-11 sm:w-[58px] sm:h-[58px] rounded-full flex items-center justify-center font-display text-[18px] sm:text-[24px] font-semibold shrink-0 ${s.tone}`}>0{i + 1}</span>
-                  <h3 className="font-display text-[16px] sm:text-[18px] font-semibold text-evergreen leading-snug">{s.title}</h3>
+                  <span className={`w-[58px] h-[58px] rounded-full flex items-center justify-center font-display text-[24px] font-semibold shrink-0 ${s.tone}`}>0{i + 1}</span>
+                  <h3 className="font-display text-[18px] font-semibold text-evergreen leading-snug">{s.title}</h3>
                 </div>
-                <p className="mt-2.5 sm:mt-5 text-[13.5px] sm:text-[14.5px] leading-relaxed text-charcoal/65">{s.text}</p>
+                <p className="mt-5 text-[14.5px] leading-relaxed text-charcoal/65">{s.text}</p>
               </div>
             </Reveal>
           ))}

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft, CheckCircle2, Circle, Award, Download, ChevronRight, ChevronLeft, BookOpen, ExternalLink,
-  Code, Sparkles, AlertTriangle, ListChecks, HelpCircle, Briefcase, Terminal, Layers, Lock, Menu, X,
+  Code, Dumbbell, AlertTriangle, ListChecks, HelpCircle, Briefcase, Terminal, Layers, Lock, Menu, X,
   ShieldCheck, Lightbulb, Target, ClipboardList, MessageSquare, Clock, Network, PlayCircle, FlaskConical, Timer
 } from 'lucide-react';
 import { generateCoursePDF } from '../utils/pdfGenerator';
@@ -471,7 +471,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
     // 7. Practice: the module's original exercise, the new graded exercises and mini tasks
     const pe = nm.practiceExercise;
     if (pe || E?.exercises?.length || nm.miniTasks.length || enrLoading || enrFailed) s.push({
-      id: 'exercise', title: 'Practice exercises', icon: Sparkles, body: (
+      id: 'exercise', title: 'Practice exercises', icon: Dumbbell, body: (
         <div className="space-y-6">
           {pe && (
             <div className="rounded-2xl border border-brand-900/10 p-4 sm:p-5 space-y-3">

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CheckCircle2, XCircle, Lightbulb, Play, Loader2, RotateCcw, Trophy, AlertTriangle, Target, ListChecks, Sparkles } from 'lucide-react';
+import { CheckCircle2, XCircle, Lightbulb, Play, Loader2, RotateCcw, Trophy, AlertTriangle, Target, ListChecks } from 'lucide-react';
 import { api } from '../../services/api';
 import CodeEditor from '../CodeEditor';
 import CodeBlock from '../CodeBlock';
@@ -241,7 +241,7 @@ export default function PracticeExercises({ exercises, courseId, moduleId, compl
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-3 text-sm text-charcoal/70">
-        <Sparkles className="w-4 h-4 text-sage" />
+        <Target className="w-4 h-4 text-sage" />
         <span><strong className="text-brand-900">{[...done].filter(id => exercises.some(e => e.id === id)).length}</strong> of {exercises.length} exercises completed · answers are checked on the server; solutions appear after your first attempt.</span>
       </div>
       {exercises.map((ex, i) => (

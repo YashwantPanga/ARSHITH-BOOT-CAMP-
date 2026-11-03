@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowRightLeft, Clock, Copy, Lightbulb, Sparkles, Star, Turtle } from 'lucide-react';
+import { ArrowRightLeft, Award, Clock, Copy, Lightbulb, Star, Turtle } from 'lucide-react';
 import { approachesFor } from '../../../shared/interview/approaches/index.js';
 import { Inline } from '../lesson/Markdown';
 
@@ -81,7 +81,7 @@ export default function Approaches({ item, onCopy }) {
           </div>
 
           <div className="mt-4 rounded-2xl p-4 bg-gradient-to-br from-[#013A2B] to-[#1E5141] text-ivory">
-            <p className="flex items-center gap-2 font-display font-bold text-[15px]"><Sparkles className="w-4 h-4 text-[#F2D27A]" /> For your interview, use Approach {recIndex + 1}</p>
+            <p className="flex items-center gap-2 font-display font-bold text-[15px]"><Award className="w-4 h-4 text-[#F2D27A]" /> For your interview, use Approach {recIndex + 1}</p>
             <p className="mt-1.5 text-[14px] text-ivory/85 leading-relaxed"><Inline text={pick || item.explanation} /></p>
             <p className="mt-2 text-[12.5px] text-ivory/60">Tip: explain the brute force first in one sentence, then improve it. Interviewers love seeing how you get to the better answer.</p>
           </div>

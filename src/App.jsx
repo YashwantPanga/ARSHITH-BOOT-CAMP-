@@ -392,7 +392,7 @@ function AppShell() {
     case 'home':
       page = (
         <div className="landing-type">
-          <HeroSection onExploreClick={() => goCourses()} onSearch={(q) => goCourses(q ? { q } : undefined)} onVerifyClick={() => navigate(paths.verify())} onInterviewClick={() => navigate(paths.interview())} onRegisterClick={() => navigate(studentUser ? paths.dashboard() : paths.register())} courses={courses} />
+          <HeroSection onExploreClick={() => goCourses()} onSearch={(q) => goCourses(q ? { q } : undefined)} onVerifyClick={() => navigate(paths.verify())} onRegisterClick={() => navigate(studentUser ? paths.dashboard() : paths.register())} courses={courses} />
           <PopularCourses
             courses={decoratedCourses}
             enrolledCourseId={enrolledCourseId}

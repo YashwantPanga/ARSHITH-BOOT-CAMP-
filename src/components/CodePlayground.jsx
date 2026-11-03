@@ -122,44 +122,59 @@ export function PlaygroundModal({ initial, onClose }) {
   const switchLang = (l) => { setLang(l); setCode(STARTERS[l]); setOut([]); setTables([]); setImages([]); setDoc(''); };
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-5">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-0 sm:p-5">
       <div className="absolute inset-0 bg-evergreen/70 backdrop-blur-sm animate-fade-in" onClick={onClose} />
-      <div className={`relative w-full ${full ? 'h-full max-w-none' : 'max-w-6xl h-[92vh]'} bg-ivory rounded-3xl shadow-2xl animate-scale-in flex flex-col overflow-hidden`}>
+      <div className={`relative w-full ${full ? 'h-full max-w-none' : 'max-w-6xl h-[100dvh] sm:h-[92vh]'} bg-ivory sm:rounded-3xl shadow-2xl animate-scale-in flex flex-col overflow-hidden`}>
         {/* Title bar */}
-        <div className="flex flex-wrap items-center gap-3 px-4 sm:px-5 py-3 border-b border-brand-900/10 bg-white">
-          <span className="w-9 h-9 rounded-xl bg-brand-900 text-ivory flex items-center justify-center"><Terminal className="w-4 h-4" /></span>
-          <div className="mr-auto">
+        <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-3 border-b border-brand-900/10 bg-white pt-[max(8px,env(safe-area-inset-top))] sm:pt-3">
+          <button onClick={onClose} className="sm:hidden w-9 h-9 -ml-1 rounded-lg flex items-center justify-center text-charcoal/70 active:bg-cream" aria-label="Close"><X className="w-5 h-5" /></button>
+          <span className="hidden sm:flex w-9 h-9 rounded-xl bg-brand-900 text-ivory items-center justify-center"><Terminal className="w-4 h-4" /></span>
+          <div className="hidden sm:block mr-auto">
             <p className="font-display text-lg font-semibold text-brand-900 leading-tight">Practice Lab</p>
             <p className="text-[11px] text-charcoal/55 hidden sm:block">{RUN_HINT[lang]}</p>
           </div>
-          <div className="flex bg-cream rounded-xl p-1 border border-brand-900/10 overflow-x-auto no-scrollbar">
+          <label className="sm:hidden flex-1 min-w-0">
+            <span className="sr-only">Language</span>
+            <select value={lang} onChange={(e) => switchLang(e.target.value)} className="w-full h-9 rounded-lg border border-brand-900/15 bg-cream px-3 text-[16px] font-semibold text-brand-900 outline-none">
+              {LANGS.map(l => <option key={l} value={l}>{LANG_LABEL[l]}</option>)}
+            </select>
+          </label>
+          <div className="hidden sm:flex bg-cream rounded-xl p-1 border border-brand-900/10 overflow-x-auto no-scrollbar">
             {LANGS.map(l => (
               <button key={l} onClick={() => switchLang(l)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${lang === l ? 'bg-brand-900 text-ivory' : 'text-charcoal/60 hover:text-brand-900'}`}>{LANG_LABEL[l]}</button>
             ))}
           </div>
           <button onClick={() => setFull(f => !f)} className="hidden sm:flex p-2 rounded-lg hover:bg-cream text-charcoal/60" aria-label="Toggle full screen">{full ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}</button>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-cream text-charcoal/60" aria-label="Close"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="hidden sm:block p-2 rounded-lg hover:bg-cream text-charcoal/60" aria-label="Close"><X className="w-5 h-5" /></button>
+          {/* phones: Run sits in the top bar, like a try-it editor */}
+          {running && lang === 'python' ? (
+            <button onClick={stop} className="sm:hidden flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-rose-500 text-white text-[14px] font-bold"><Square className="w-3 h-3 fill-current" /> Stop</button>
+          ) : (
+            <button onClick={run} disabled={running} className="sm:hidden flex items-center gap-1.5 h-9 px-4 rounded-lg bg-brand-900 text-ivory text-[14px] font-bold active:scale-[.98] disabled:opacity-60">
+              {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />} Run
+            </button>
+          )}
         </div>
 
-        <div className="flex-1 min-h-0 grid lg:grid-cols-2">
+        <div className="flex-1 min-h-0 grid grid-rows-[minmax(0,1.1fr)_minmax(0,1fr)] lg:grid-rows-1 lg:grid-cols-2">
           {/* Editor */}
           <div className="flex flex-col min-h-0 border-b lg:border-b-0 lg:border-r border-brand-900/10 bg-evergreen">
-            <div className="flex items-center gap-2 px-3 h-11 bg-black/20 border-b border-white/5">
+            <div className="flex items-center gap-2 px-3 h-10 sm:h-11 bg-black/20 border-b border-white/5">
               <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-300">editor · {LANG_LABEL[lang]}</span>
               <span className="ml-auto flex items-center gap-1">
                 {lang === 'python' && <button onClick={() => setShowStdin(s => !s)} className={`flex items-center gap-1 h-7 px-2 rounded-md text-[11px] ${showStdin ? 'bg-white/15 text-white' : 'text-brand-200 hover:bg-white/10'}`}><Keyboard className="w-3.5 h-3.5" /> Input</button>}
                 <button onClick={copy} className="flex items-center gap-1 h-7 px-2 rounded-md text-[11px] text-brand-200 hover:bg-white/10">{copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}</button>
                 <button onClick={() => setCode(initial.lang === lang ? initial.code : STARTERS[lang])} className="flex items-center gap-1 h-7 px-2 rounded-md text-[11px] text-brand-200 hover:bg-white/10" title="Reset code"><RotateCcw className="w-3.5 h-3.5" /></button>
                 {running && lang === 'python' ? (
-                  <button onClick={stop} className="flex items-center gap-1.5 h-7 px-3 rounded-md bg-rose-500 text-white text-xs font-bold"><Square className="w-3 h-3 fill-current" /> Stop</button>
+                  <button onClick={stop} className="hidden sm:flex items-center gap-1.5 h-7 px-3 rounded-md bg-rose-500 text-white text-xs font-bold"><Square className="w-3 h-3 fill-current" /> Stop</button>
                 ) : (
-                  <button onClick={run} disabled={running} className="flex items-center gap-1.5 h-7 px-3.5 rounded-md bg-ivory text-brand-900 text-xs font-bold hover:bg-white disabled:opacity-60">
+                  <button onClick={run} disabled={running} className="hidden sm:flex items-center gap-1.5 h-7 px-3.5 rounded-md bg-ivory text-brand-900 text-xs font-bold hover:bg-white disabled:opacity-60">
                     {running ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3 h-3 fill-current" />} Run
                   </button>
                 )}
               </span>
             </div>
-            <CodeEditor value={code} onChange={setCode} lang={lang} onRun={run} minHeight={240} className="flex-1 min-h-0" label="Code editor" />
+            <CodeEditor value={code} onChange={setCode} lang={lang} onRun={run} minHeight={160} className="flex-1 min-h-0" label="Code editor" />
             {showStdin && lang === 'python' && (
               <div className="border-t border-white/10 p-3 bg-black/20">
                 <p className="text-[10.5px] uppercase tracking-[0.16em] text-brand-300 mb-1.5">Program input (one value per line for each input())</p>
@@ -170,7 +185,7 @@ export function PlaygroundModal({ initial, onClose }) {
 
           {/* Output */}
           <div className="flex flex-col min-h-0 bg-white">
-            <div className="flex items-center gap-2 px-4 h-11 border-b border-brand-900/10">
+            <div className="flex items-center gap-2 px-3 sm:px-4 h-10 sm:h-11 border-b border-brand-900/10">
               {isWeb ? <Eye className="w-4 h-4 text-sage" /> : lang === 'sql' ? <Database className="w-4 h-4 text-sage" /> : <Terminal className="w-4 h-4 text-sage" />}
               <span className="text-xs font-semibold uppercase tracking-[0.16em] text-charcoal/60">{isWeb ? 'Preview & console' : 'Output'}</span>
               {status && <span className="ml-auto flex items-center gap-1.5 text-xs text-sage"><Loader2 className="w-3.5 h-3.5 animate-spin" />{status}</span>}
@@ -178,7 +193,7 @@ export function PlaygroundModal({ initial, onClose }) {
             </div>
             <div className="flex-1 min-h-0 overflow-auto thin-scroll">
               {isWeb && (
-                <div className="h-[55%] min-h-[220px] border-b border-brand-900/10 bg-white">
+                <div className="h-[60%] min-h-[160px] sm:min-h-[220px] border-b border-brand-900/10 bg-white">
                   {doc ? <iframe title="Preview" sandbox="allow-scripts allow-modals" srcDoc={doc} className="w-full h-full" /> : <Empty text="Press Run to render the preview." />}
                 </div>
               )}
@@ -209,7 +224,7 @@ export function PlaygroundModal({ initial, onClose }) {
                 </details>
               )}
             </div>
-            <div className="px-4 py-2 border-t border-brand-900/10 text-[11px] text-charcoal/50 flex justify-between">
+            <div className="hidden sm:flex px-4 py-2 border-t border-brand-900/10 text-[11px] text-charcoal/50 justify-between">
               <span>Ctrl + Enter to run · Tab inserts 4 spaces</span>
               <span className="hidden sm:inline">First Python run downloads the runtime (~10 MB)</span>
             </div>

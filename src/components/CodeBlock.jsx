@@ -7,6 +7,8 @@ import { usePlayground } from './CodePlayground';
  * Premium code block: editor-style window chrome with an optional file title and language pill,
  * a separated line-number gutter, syntax colours, copy button and a "Try it" button that opens
  * the code in the practice playground. tone="bad" / "good" tints the frame for wrong/fixed code.
+ * Phones get a compact try-it card: wrapped lines without numbers, an accent edge, a shorter box and
+ * the "Try it yourself" button under the code.
  */
 export default function CodeBlock({ code, label, language, courseId, compact = false, runnable = true, tone, title }) {
   const lang = useMemo(() => detectLanguage(code, language, courseId), [code, language, courseId]);
@@ -53,7 +55,7 @@ export default function CodeBlock({ code, label, language, courseId, compact = f
         <span className="ml-auto flex items-center gap-1 shrink-0">
           {title && <span className="hidden sm:inline-flex items-center h-5 px-2 mr-1 rounded-full bg-white/[0.07] border border-white/10 text-[9.5px] font-bold uppercase tracking-[0.14em] text-brand-200">{label || langLabel}</span>}
           {canRun && (
-            <button onClick={() => playground.open({ code: String(code), lang })} className="flex items-center gap-1.5 h-6 px-2.5 rounded-md bg-ivory text-brand-900 text-[11px] font-bold hover:bg-white hover:-translate-y-px transition" title="Open in the practice playground">
+            <button onClick={() => playground.open({ code: String(code), lang })} className="hidden sm:flex items-center gap-1.5 h-6 px-2.5 rounded-md bg-ivory text-brand-900 text-[11px] font-bold hover:bg-white hover:-translate-y-px transition" title="Open in the practice playground">
               <Play className="w-3 h-3 fill-current" /> Try it
             </button>
           )}
@@ -62,13 +64,13 @@ export default function CodeBlock({ code, label, language, courseId, compact = f
           </button>
         </span>
       </div>
-      <div className={`overflow-x-auto thin-scroll ${compact ? 'max-h-72' : 'max-h-[560px]'} overflow-y-auto`}>
-        <pre className="py-3 sm:py-3.5 text-[12px] sm:text-[13px] leading-[1.7] sm:leading-[1.75] text-[#E9F1EC] font-mono" style={{ tabSize: 4 }}>
+      <div className={`overflow-x-auto thin-scroll ${compact ? 'max-h-72' : 'max-h-[380px] sm:max-h-[560px]'} overflow-y-auto`}>
+        <pre className="m-2 sm:m-0 rounded-lg sm:rounded-none bg-black/20 sm:bg-transparent border-l-[3px] border-brand-300/70 sm:border-0 py-3 sm:py-3.5 text-[12px] sm:text-[13px] leading-[1.7] sm:leading-[1.75] text-[#E9F1EC] font-mono" style={{ tabSize: 4 }}>
           <code className="table min-w-full">
             {lines.map((toks, i) => (
               <span key={i} className="table-row hover:bg-white/[0.04] transition-colors">
-                <span className={`table-cell select-none text-right pr-2 pl-2 sm:pr-3 sm:pl-3 ${gutterW} text-[11px] sm:text-[12px] text-brand-400/60 border-r border-white/[0.06]`}>{i + 1}</span>
-                <span className="table-cell pl-3 sm:pl-4 pr-4 sm:pr-5 whitespace-pre">
+                <span className={`hidden sm:table-cell select-none text-right pr-2 pl-2 sm:pr-3 sm:pl-3 ${gutterW} text-[11px] sm:text-[12px] text-brand-400/60 border-r border-white/[0.06]`}>{i + 1}</span>
+                <span className="table-cell pl-3 sm:pl-4 pr-3 sm:pr-5 whitespace-pre-wrap break-words sm:whitespace-pre sm:break-normal">
                   {toks.length ? toks.map((t, k) => (t.t ? <span key={k} className={`tok-${t.t}`}>{t.v}</span> : <React.Fragment key={k}>{t.v}</React.Fragment>)) : ' '}
                 </span>
               </span>
@@ -76,7 +78,14 @@ export default function CodeBlock({ code, label, language, courseId, compact = f
           </code>
         </pre>
       </div>
-      <div className="flex items-center justify-between px-3.5 h-7 bg-black/15 border-t border-white/[0.05] text-[10.5px] text-brand-400/80 font-mono">
+      {canRun && (
+        <div className="sm:hidden px-2 pb-2.5">
+          <button onClick={() => playground.open({ code: String(code), lang })} className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-ivory text-brand-900 text-[13.5px] font-bold active:scale-[.98] transition">
+            <Play className="w-3 h-3 fill-current" /> Try it yourself
+          </button>
+        </div>
+      )}
+      <div className="hidden sm:flex items-center justify-between px-3.5 h-7 bg-black/15 border-t border-white/[0.05] text-[10.5px] text-brand-400/80 font-mono">
         <span>{lines.length} {lines.length === 1 ? 'line' : 'lines'}</span>
         <span>{langLabel}</span>
       </div>

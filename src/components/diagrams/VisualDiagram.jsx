@@ -3,7 +3,7 @@ import {
   ArrowDown, ArrowRight, BarChart3, Binary, Blocks, Boxes, Brain, BrainCircuit, Bug, ChevronDown, Cloud, Code2,
   Combine, Container, Cpu, Database, FileCode2, FileSearch, Filter, FlaskConical, GitBranch, GitCompare, Gauge,
   Layers, LayoutGrid, Lightbulb, LineChart, ListChecks, Maximize2, MessageSquare, Minimize2, Network, PieChart,
-  Puzzle, RefreshCw, Rocket, Scale, ScanSearch, Search, Server, Shapes, ShieldCheck, Sigma, Sparkles, SplitSquareHorizontal,
+  Puzzle, RefreshCw, Rocket, Scale, ScanSearch, Search, Server, Shapes, ShieldCheck, Sigma, SplitSquareHorizontal,
   Table2, Target, TerminalSquare, TrendingUp, Workflow, X, Zap
 } from 'lucide-react';
 import { cleanText } from '../../utils/textUtils';
@@ -15,7 +15,7 @@ import { cleanText } from '../../utils/textUtils';
  */
 
 export const ICONS = {
-  ai: Brain, brain: Brain, network: Network, neural: BrainCircuit, sparkles: Sparkles, data: Database, database: Database,
+  ai: Brain, brain: Brain, network: Network, neural: BrainCircuit, sparkles: Lightbulb, data: Database, database: Database,
   chart: BarChart3, line: LineChart, pie: PieChart, trend: TrendingUp, target: Target, search: Search, scan: ScanSearch,
   file: FileSearch, filter: Filter, flask: FlaskConical, branch: GitBranch, compare: GitCompare, gauge: Gauge,
   layers: Layers, grid: LayoutGrid, idea: Lightbulb, list: ListChecks, chat: MessageSquare, puzzle: Puzzle,

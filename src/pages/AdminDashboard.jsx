@@ -4,7 +4,7 @@ import {
   FolderCheck, Award, BarChart3, Settings, LogOut, Plus, Edit3, Trash2, 
   Copy, Eye, CheckCircle2, XCircle, AlertTriangle, Search, Filter, RefreshCw, 
   UserCheck, Shield, ChevronRight, ChevronLeft, Lock, Save, ExternalLink, Download, FileSpreadsheet, FileCheck,
-  Check, X, AlertCircle, Clock, Calendar, CheckSquare, Sparkles, User, ArrowUpRight, Menu,
+  Check, X, AlertCircle, Clock, Calendar, CheckSquare, User, ArrowUpRight, Menu,
   ArrowUpDown, TrendingUp, Users, Github, Mail, Phone, Hash, ArrowLeft, IndianRupee
 } from 'lucide-react';
 import * as XLSX from 'xlsx';

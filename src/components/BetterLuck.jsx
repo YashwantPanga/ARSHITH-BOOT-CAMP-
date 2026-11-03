@@ -17,14 +17,11 @@ export default function BetterLuck({ lockedOut = false }) {
         .better-luck .bl-stem { stroke-dasharray: 60; stroke-dashoffset: 60; animation: bl-grow .9s ease-out 1.5s forwards; }
         .better-luck .bl-leaf { transform-box: fill-box; transform-origin: bottom center; transform: scale(0); animation: bl-leaf .5s ease-out forwards; }
         .better-luck .bl-leaf.l1 { animation-delay: 2.0s; } .better-luck .bl-leaf.l2 { animation-delay: 2.2s; }
-        .better-luck .bl-spark { opacity: 0; animation: bl-spark 1.6s ease-in-out 2.3s infinite; }
-        .better-luck .bl-spark.s2 { animation-delay: 2.7s; } .better-luck .bl-spark.s3 { animation-delay: 3.1s; }
         @keyframes bl-pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes bl-fly { from { transform: translate(-150px, -40px) rotate(-8deg); opacity: 0; } 60% { opacity: 1; } to { transform: translate(0, 0) rotate(0); opacity: 1; } }
         @keyframes bl-wobble { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-7deg); } 70% { transform: rotate(5deg); } }
         @keyframes bl-grow { to { stroke-dashoffset: 0; } }
         @keyframes bl-leaf { to { transform: scale(1); } }
-        @keyframes bl-spark { 0%, 100% { opacity: 0; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-6px); } }
         @media (prefers-reduced-motion: reduce) { .better-luck * { animation: none !important; opacity: 1 !important; transform: none !important; stroke-dashoffset: 0 !important; } }
       `}</style>
       <svg viewBox="0 0 220 150" className="w-full h-full">
@@ -45,10 +42,6 @@ export default function BetterLuck({ lockedOut = false }) {
         <path className="bl-leaf l1" d="M45 112 C33 108 28 100 30 92 C40 94 46 102 45 112 Z" fill="#7DB59A" />
         <path className="bl-leaf l2" d="M46 103 C56 96 64 96 68 101 C62 109 52 109 46 103 Z" fill="#426557" />
         <rect x="26" y="138" width="34" height="6" rx="3" fill="#C8D8D0" />
-        {/* sparkles */}
-        <path className="bl-spark" d="M70 30 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3 z" fill="#D9B44A" />
-        <path className="bl-spark s2" d="M168 112 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 z" fill="#7DB59A" />
-        <path className="bl-spark s3" d="M24 60 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 z" fill="#FDA4AF" />
       </svg>
     </div>
   );

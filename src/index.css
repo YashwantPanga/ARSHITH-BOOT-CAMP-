@@ -475,7 +475,6 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 .quest-rays { position: absolute; inset: -40%; pointer-events: none; background: repeating-conic-gradient(from 0deg at 72% 40%, rgba(255,255,255,.07) 0deg 5deg, transparent 5deg 16deg); animation: questSpin 60s linear infinite; }
 .quest-dots { pointer-events: none; background-image: radial-gradient(rgba(255,255,255,.12) 1px, transparent 1.2px); background-size: 18px 18px; mask-image: linear-gradient(90deg, transparent, #000 35%, #000 70%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 35%, #000 70%, transparent); }
 @keyframes questSpin { to { transform: rotate(360deg); } }
-.quest-star { position: absolute; width: 10px; height: 10px; pointer-events: none; background: #fff; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); opacity: .8; animation: questTwinkle 3s ease-in-out infinite; }
 @keyframes questTwinkle { 0%, 100% { transform: scale(.5); opacity: .35; } 50% { transform: scale(1.1); opacity: 1; } }
 .quest-glyph { position: absolute; pointer-events: none; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 800; font-size: 18px; text-shadow: 0 0 12px currentColor; opacity: .85; animation: questFloat 5s ease-in-out infinite; }
 @keyframes questFloat { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-10px) rotate(4deg); } }
@@ -495,7 +494,7 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 .quest-card:hover { transform: translateY(-4px); box-shadow: 0 30px 50px -26px rgba(20,10,60,.95); }
 .quest-card:active { transform: scale(.985); }
 @media (prefers-reduced-motion: reduce) {
-  .quest-rays, .quest-star, .quest-glyph, .quest-bob, .quest-blink, .quest-glow, .quest-bubble { animation: none !important; }
+  .quest-rays, .quest-glyph, .quest-bob, .quest-blink, .quest-glow, .quest-bubble { animation: none !important; }
 }
 
 /* ---------- Daily mission (Interview Prep) ---------- */
@@ -521,20 +520,19 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 /* ---------- Phone welcome card (green palette) ---------- */
 .welcome-sheet { animation: welcomeUp .55s cubic-bezier(.2,.95,.3,1) both; }
 @keyframes welcomeUp { from { transform: translateY(105%); } to { transform: translateY(0); } }
-.welcome-pill { opacity: 0; animation: welcomePill .6s var(--d, 0ms) cubic-bezier(.2,1.25,.4,1) both, welcomeFloat 4.5s calc(var(--d, 0ms) + .7s) ease-in-out infinite; }
-@keyframes welcomePill { from { transform: translateY(70px) scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes welcomeFloat { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
+.welcome-card-fan { transform: translateY(var(--y)) rotate(var(--r)); transform-origin: 50% 100%; animation: welcomeFan .75s var(--d, 0ms) cubic-bezier(.2,1.25,.4,1) both; }
+@keyframes welcomeFan { from { transform: translateY(150px) rotate(0deg); opacity: 0; } 60% { opacity: 1; } to { transform: translateY(var(--y)) rotate(var(--r)); opacity: 1; } }
 .welcome-badge { animation: welcomeBadge .5s .75s cubic-bezier(.2,1.6,.4,1) both; }
 @keyframes welcomeBadge { from { transform: translateX(-50%) scale(0); } to { transform: translateX(-50%) scale(1); } }
 .welcome-up { animation: welcomeFade .5s var(--d, 0ms) cubic-bezier(.2,1,.3,1) both; }
 @keyframes welcomeFade { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
 .welcome-word { animation: welcomeWord .45s cubic-bezier(.2,1,.3,1) both; }
 @keyframes welcomeWord { from { transform: translateY(60%); opacity: 0; filter: blur(4px); } to { transform: none; opacity: 1; filter: none; } }
-.welcome-shine { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 38%, rgba(218,241,222,.10) 50%, transparent 62%); background-size: 260% 100%; animation: emeraldSheen 5.5s 1.4s ease-in-out infinite; }
+.welcome-shine { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 38%, rgba(227,239,38,.12) 50%, transparent 62%); background-size: 260% 100%; animation: emeraldSheen 5.5s 1.4s ease-in-out infinite; }
 .welcome-cta::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,.65) 50%, transparent 65%); transform: translateX(-120%); animation: welcomeCtaShine 3.2s 1.8s ease-in-out infinite; }
 @keyframes welcomeCtaShine { 0%, 55% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
 @media (prefers-reduced-motion: reduce) {
-  .welcome-sheet, .welcome-pill, .welcome-badge, .welcome-up, .welcome-word, .welcome-shine, .welcome-cta::after { animation: none !important; opacity: 1; }
+  .welcome-sheet, .welcome-card-fan, .welcome-badge, .welcome-up, .welcome-word, .welcome-shine, .welcome-cta::after { animation: none !important; opacity: 1; }
 }
 
 /* ---------- Phone hero (green palette) ---------- */
