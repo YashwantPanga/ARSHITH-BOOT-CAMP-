@@ -392,8 +392,7 @@ function AppShell() {
     case 'home':
       page = (
         <div className="landing-type">
-          <PromoStory navigate={navigate} />
-          <HeroSection onExploreClick={() => goCourses()} onSearch={(q) => goCourses(q ? { q } : undefined)} onVerifyClick={() => navigate(paths.verify())} onRegisterClick={() => navigate(studentUser ? paths.dashboard() : paths.register())} courses={courses} />
+          <HeroSection onExploreClick={() => goCourses()} onSearch={(q) => goCourses(q ? { q } : undefined)} onVerifyClick={() => navigate(paths.verify())} onInterviewClick={() => navigate(paths.interview())} onRegisterClick={() => navigate(studentUser ? paths.dashboard() : paths.register())} courses={courses} />
           <PopularCourses
             courses={decoratedCourses}
             enrolledCourseId={enrolledCourseId}
@@ -628,6 +627,8 @@ function AppShell() {
 
       {authModal && <AuthModalLayer onClose={closeAuthModal}>{authModal}</AuthModalLayer>}
       {!adminUser && <DesktopNotice />}
+      {/* phones: the green welcome card, once per visit, on browsing pages only */}
+      <PromoStory navigate={navigate} signedIn={!!studentUser} enabled={!adminUser && !isChromeless && !isAuthModal && !['learning', 'login', 'register', 'verify-email', 'forgot-password', 'reset-password', 'certificate'].includes(route.name)} />
 
       {!isAuthModal && route.name !== 'home' && !(adminUser && route.name === 'dashboard') && (
         <HomeButton onClick={() => navigate(paths.home())} aboveBottomNav={false} />

@@ -40,7 +40,7 @@ const RUN_HINT = {
   javascript: 'Runs in a sandboxed frame · console.log output shown below'
 };
 
-function PlaygroundModal({ initial, onClose }) {
+export function PlaygroundModal({ initial, onClose }) {
   const [lang, setLang] = useState(initial.lang);
   const [code, setCode] = useState(initial.code);
   const [stdin, setStdin] = useState('');

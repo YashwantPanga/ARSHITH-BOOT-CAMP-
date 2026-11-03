@@ -3,7 +3,7 @@ import { Laptop, X } from 'lucide-react';
 
 const KEY = 'desktopNoticeSeen';
 
-/** Phones and small tablets: suggest a laptop or desktop (once per visit), since the proctored exam needs one. */
+/** Touch tablets: suggest a laptop or desktop (once per visit), since the proctored exam needs one. */
 export default function DesktopNotice() {
   const [open, setOpen] = useState(false);
 
@@ -11,9 +11,9 @@ export default function DesktopNotice() {
     let seen = false;
     try { seen = sessionStorage.getItem(KEY) === '1'; } catch { /* storage blocked */ }
     if (seen) return undefined;
-    const small = window.matchMedia?.('(max-width: 767px)').matches;
-    const touchTablet = window.matchMedia?.('(pointer: coarse) and (max-width: 1024px)').matches;
-    if (!small && !touchTablet) return undefined;
+    // phones get the welcome card instead, which carries the same laptop tip
+    const touchTablet = window.matchMedia?.('(pointer: coarse) and (min-width: 768px) and (max-width: 1024px)').matches;
+    if (!touchTablet) return undefined;
     const t = setTimeout(() => setOpen(true), 700);
     return () => clearTimeout(t);
   }, []);

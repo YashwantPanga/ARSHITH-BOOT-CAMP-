@@ -1,112 +1,107 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { BookOpen, Check, Target, X } from 'lucide-react';
+import { Award, BookOpen, Laptop, Target, X } from 'lucide-react';
 import { paths } from '../../router';
 
-const SHEET_KEY = 'arb_promo_interview_v1';
-const seen = (k) => { try { return !!localStorage.getItem(k); } catch { return true; } };
-const mark = (k) => { try { localStorage.setItem(k, '1'); } catch { /* ignore */ } };
+const SHEET_KEY = 'arb_welcome_card_v2';
+// shown once per visit (browser tab session), the first time a phone opens the site
+const seen = () => { try { return sessionStorage.getItem(SHEET_KEY) === '1'; } catch { return true; } };
+const mark = () => { try { sessionStorage.setItem(SHEET_KEY, '1'); } catch { /* ignore */ } };
 const isPhone = () => typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)').matches;
 
-/* ------------------------------------------------------------------ */
-/* Bottom sheet with a looping animated story                          */
-/* ------------------------------------------------------------------ */
+/** The six greens of the welcome card, darkest first. */
+export const PALETTE = ['#051F20', '#0B2B26', '#163832', '#235347', '#8EB69B', '#DAF1DE'];
 
-const FRAMES = 4;
+const WORDS = ['Python', 'SQL', 'Web Development', 'AI & Data', 'DSA'];
 
-function StoryStage({ frame }) {
-  if (frame === 0) {
-    return (
-      <div className="story-in relative h-full flex flex-col justify-center gap-3 px-3">
-        <div className="flex items-center gap-3 rounded-2xl bg-white/[.07] border border-white/15 p-3 story-slide-l">
-          <span className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1E5141] to-[#013A2B] flex items-center justify-center shadow-lg"><BookOpen className="w-7 h-7 text-[#A8E6C1]" /></span>
-          <div><p className="font-display text-[18px] font-bold">Learn</p><p className="text-[13px] text-white/70">from <span className="text-[#FFC94D]">free courses</span></p></div>
-        </div>
-        <span className="mx-auto w-8 h-8 -my-1 rounded-full bg-[#F2B544] text-forest text-[20px] font-bold flex items-center justify-center shadow-lg story-pop z-10">+</span>
-        <div className="flex items-center gap-3 rounded-2xl bg-white/[.07] border border-white/15 p-3 story-slide-r">
-          <span className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#5B4BD1] to-[#26207A] flex items-center justify-center shadow-lg"><Target className="w-7 h-7 text-[#C9C2FF]" /></span>
-          <div><p className="font-display text-[18px] font-bold">Practise</p><p className="text-[13px] text-white/70">with <span className="text-[#FFC94D]">interview prep</span></p></div>
-        </div>
-      </div>
-    );
-  }
-  if (frame === 1) {
-    return (
-      <div className="story-in h-full flex items-end justify-center">
-        <div className="w-[176px] h-[188px] rounded-t-[22px] bg-[#F4F6F5] border-4 border-b-0 border-[#1B1B1B] p-2.5 story-rise">
-          <p className="text-[9px] font-bold text-evergreen">◂ My learning</p>
-          {[['SQL Interview 50', '#127A78', true], ['DSA Top 75', '#4B3BC4', true], ['Python course', '#1E5141', false]].map(([t, c, done], i) => (
-            <div key={t} className="mt-2 flex items-center gap-2 rounded-lg bg-white p-1.5 shadow-sm story-row" style={{ animationDelay: `${0.15 + i * 0.15}s` }}>
-              <span className="w-5 h-5 rounded" style={{ background: c }} />
-              <span className="flex-1 text-[9px] font-semibold text-charcoal">{t}</span>
-              {done ? <span className="w-4 h-4 rounded-full bg-forest flex items-center justify-center"><Check className="w-2.5 h-2.5 text-white" /></span> : <span className="text-[8px] text-charcoal/50">− 1 +</span>}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-  if (frame === 2) {
-    return (
-      <div className="story-in h-full flex items-center justify-center">
-        <span className="relative w-28 h-28 rounded-full bg-[#F2B544] flex items-center justify-center shadow-[0_0_40px_rgba(242,181,68,.55)] story-scallop">
-          <span className="w-4 h-4 rounded-full bg-forest story-orbit" />
-        </span>
-      </div>
-    );
-  }
-  return (
-    <div className="story-in h-full flex flex-col items-center justify-center">
-      <span className="relative w-32 h-32 rounded-full bg-[#F2B544]/15 flex items-center justify-center">
-        <span className="absolute inset-0 rounded-full border-2 border-[#F2B544]/50 story-ring" />
-        <span className="w-24 h-24 rounded-full bg-[#F2B544] flex items-center justify-center shadow-[0_0_40px_rgba(242,181,68,.55)] story-pop">
-          <Check className="w-12 h-12 text-forest story-check" strokeWidth={3.2} />
-        </span>
-        {[0, 1, 2, 3, 4, 5].map(i => <span key={i} className="story-spark" style={{ '--a': `${i * 60}deg` }} />)}
-      </span>
-      <p className="mt-3 font-display text-[16px] font-bold">Interview ready! 🎉</p>
-    </div>
-  );
+/** Cycles through the course names, one every 1.6s. */
+function RotatingWord() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI(n => (n + 1) % WORDS.length), 1600);
+    return () => clearInterval(t);
+  }, []);
+  return <span key={i} className="welcome-word inline-block text-[#8EB69B]">{WORDS[i]}</span>;
 }
 
-function PromoSheet({ onClose, navigate }) {
-  const [frame, setFrame] = useState(0);
+function WelcomeCard({ onClose, navigate, signedIn }) {
   useEffect(() => {
-    const t = setInterval(() => setFrame(f => (f + 1) % FRAMES), 2300);
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => { clearInterval(t); document.body.style.overflow = prev; };
-  }, []);
-  const go = () => { onClose(); navigate(paths.interview()); };
+    const esc = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', esc);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', esc); };
+  }, [onClose]);
+  const go = (to) => { onClose(); navigate(to); };
+  const perks = [
+    { icon: BookOpen, title: 'Free certificate courses', text: 'Python, SQL, Web Dev and AI' },
+    { icon: Target, title: 'Interview Prep', text: '350+ coding problems and interview questions' },
+    { icon: Award, title: 'QR-verified certificate', text: 'Share it with any recruiter' }
+  ];
+
   return (
-    <div className="fixed inset-0 z-[125] flex items-end" role="dialog" aria-modal="true" aria-label="New: interview prep">
-      <div className="absolute inset-0 bg-black/55 animate-fade-in" onClick={onClose} />
-      <div className="relative w-full rounded-t-[28px] overflow-hidden text-white sheet-up pb-[calc(16px+env(safe-area-inset-bottom))]" style={{ background: 'radial-gradient(120% 80% at 50% 0%, #1E5141 0%, #013A2B 55%, #0C2D26 100%)' }}>
-        <button onClick={onClose} className="absolute right-4 top-4 w-8 h-8 rounded-full bg-white/90 text-forest flex items-center justify-center z-10" aria-label="Close"><X className="w-4 h-4" /></button>
-        <p className="pt-6 text-center text-[11px] font-bold tracking-[0.22em] text-[#F2D27A]">LEARN · PRACTISE · GET HIRED</p>
-        <h2 className="mt-1 text-center font-display text-[26px] font-extrabold leading-tight px-10">Now crack interviews here</h2>
-        <div className="mt-3 mx-5 h-[220px] relative overflow-hidden">
-          <StoryStage key={frame} frame={frame} />
+    <div className="fixed inset-0 z-[125] flex items-end" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+      <div className="absolute inset-0 bg-[#051F20]/70 backdrop-blur-[3px] animate-fade-in" onClick={onClose} />
+      <div className="welcome-sheet relative w-full max-h-[94dvh] overflow-y-auto no-scrollbar rounded-t-[30px] text-[#DAF1DE] pb-[calc(18px+env(safe-area-inset-bottom))]"
+        style={{ background: 'radial-gradient(130% 70% at 50% 0%, #235347 0%, #163832 38%, #0B2B26 68%, #051F20 100%)' }}>
+        <span className="welcome-shine" aria-hidden="true" />
+        <span className="mx-auto mt-2.5 block w-10 h-1 rounded-full bg-[#DAF1DE]/30" aria-hidden="true" />
+        <button onClick={onClose} className="absolute right-4 top-4 z-10 w-9 h-9 rounded-full bg-[#DAF1DE]/15 border border-[#DAF1DE]/25 text-[#DAF1DE] flex items-center justify-center active:scale-95 transition" aria-label="Close"><X className="w-4 h-4" /></button>
+
+        {/* the palette: six stacked pills that slide up one after another, then fan out */}
+        <div className="relative mx-auto mt-4 h-[118px] w-[78%] max-w-[300px]" aria-hidden="true">
+          {PALETTE.map((c, i) => (
+            <span key={c} className="welcome-pill absolute inset-x-0 h-[52px] rounded-full border border-white/10"
+              style={{ background: `linear-gradient(180deg, ${c}, ${PALETTE[Math.max(0, i - 1)]})`, top: `${i * 13}px`, zIndex: i, '--d': `${120 + i * 90}ms`,
+                boxShadow: `0 -6px 18px -8px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,${i > 3 ? 0.5 : 0.12})` }} />
+          ))}
+          <span className="welcome-badge absolute left-1/2 -translate-x-1/2 bottom-[-6px] z-10 px-3 py-1 rounded-full bg-[#051F20] border border-[#8EB69B]/50 text-[10.5px] font-bold tracking-[0.2em] text-[#DAF1DE] whitespace-nowrap">100% FREE</span>
         </div>
-        <div className="mt-2 flex justify-center gap-1.5">
-          {Array.from({ length: FRAMES }).map((_, i) => <span key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === frame ? 'w-5 bg-[#F2D27A]' : 'w-1.5 bg-white/30'}`} />)}
+
+        <div className="px-6 text-center">
+          <p className="welcome-up mt-6 text-[11px] font-bold tracking-[0.24em] text-[#8EB69B]" style={{ '--d': '650ms' }}>ENROLL FREE · LEARN · GET HIRED</p>
+          <h2 id="welcome-title" className="welcome-up mt-2 font-display text-[28px] leading-[1.12] font-extrabold text-white" style={{ '--d': '730ms' }}>
+            Crack any job<span className="block h-[34px] overflow-hidden whitespace-nowrap text-[26px]">with <RotatingWord /></span>
+          </h2>
+          <p className="welcome-up mt-2 text-[14px] leading-snug text-[#DAF1DE]/75" style={{ '--d': '810ms' }}>Learn free, practise real interview questions and earn a certificate that proves it.</p>
         </div>
-        <div className="px-5 mt-4">
-          <button onClick={go} className="w-full h-[52px] rounded-2xl bg-gradient-to-b from-[#FFD95A] to-[#F2B544] text-[#2A1A05] font-display font-bold text-[17px] shadow-[0_4px_0_#B5781A,0_14px_28px_-12px_rgba(242,181,68,.8)] active:translate-y-[3px] active:shadow-[0_1px_0_#B5781A] transition">Start practising free</button>
+
+        <ul className="mt-4 mx-5 grid gap-2">
+          {perks.map(({ icon: Icon, title, text }, i) => (
+            <li key={title} className="welcome-up flex items-center gap-3 rounded-2xl bg-[#DAF1DE]/[.07] border border-[#DAF1DE]/[.12] px-3 py-2.5" style={{ '--d': `${900 + i * 90}ms` }}>
+              <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: PALETTE[3 - i] }}><Icon className="w-5 h-5 text-[#DAF1DE]" /></span>
+              <span className="min-w-0 text-left">
+                <span className="block text-[14.5px] font-semibold text-white leading-tight">{title}</span>
+                <span className="block text-[12.5px] text-[#DAF1DE]/65 leading-snug">{text}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="welcome-up px-5 mt-4 grid gap-2.5" style={{ '--d': '1200ms' }}>
+          <button onClick={() => go(signedIn ? paths.dashboard() : paths.register())}
+            className="welcome-cta relative overflow-hidden w-full h-[52px] rounded-2xl bg-gradient-to-b from-[#DAF1DE] to-[#8EB69B] text-[#051F20] font-display font-bold text-[17px] shadow-[0_4px_0_#235347,0_16px_30px_-12px_rgba(142,182,155,.7)] active:translate-y-[3px] active:shadow-[0_1px_0_#235347] transition">
+            {signedIn ? 'Continue learning' : 'Enroll for free'}
+          </button>
+          <button onClick={() => go(paths.interview())} className="w-full h-11 rounded-2xl border border-[#8EB69B]/45 text-[#DAF1DE] font-semibold text-[14.5px] active:bg-white/5 transition">See Interview Prep</button>
         </div>
+        <p className="welcome-up mt-3 px-6 flex items-center justify-center gap-1.5 text-[11.5px] text-[#DAF1DE]/55" style={{ '--d': '1300ms' }}>
+          <Laptop className="w-3.5 h-3.5 shrink-0" /> The proctored final needs a laptop and webcam.
+        </p>
       </div>
     </div>
   );
 }
 
-/** Phones, first visit to the home page: the animated promo sheet, shown once. */
-export default function PromoStory({ navigate }) {
+/** Phones, first page of a visit: the animated welcome card in the green palette. */
+export default function PromoStory({ navigate, signedIn = false, enabled = true }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    if (!isPhone() || seen(SHEET_KEY)) return undefined;
-    const t = setTimeout(() => setOpen(true), 1600);
+    if (!enabled || !isPhone() || seen()) return undefined;
+    const t = setTimeout(() => setOpen(true), 900);
     return () => clearTimeout(t);
-  }, []);
-  // rendered on <body>: the page wrapper animates (transform), which would trap the fixed sheet under the bottom bar
-  return open ? createPortal(<PromoSheet navigate={navigate} onClose={() => { mark(SHEET_KEY); setOpen(false); }} />, document.body) : null;
+  }, [enabled]);
+  const close = useCallback(() => { mark(); setOpen(false); }, []);
+  // rendered on <body>: the page wrapper animates (transform), which would trap a fixed overlay
+  return open ? createPortal(<WelcomeCard navigate={navigate} signedIn={signedIn} onClose={close} />, document.body) : null;
 }
