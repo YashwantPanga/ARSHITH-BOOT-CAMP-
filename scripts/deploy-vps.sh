@@ -33,7 +33,7 @@ cd "$APP_DIR"
 if [ ! -f .env ]; then
   cp .env.example .env
   echo
-  echo ">>> Created $APP_DIR/.env from the example. Fill it in (Supabase, email (scripts/use-domain-email.sh), JWT_SECRET,"
+  echo ">>> Created $APP_DIR/.env from the example. Fill it in (Supabase, Brevo SMTP, JWT_SECRET,"
   echo ">>> ADMIN_EMAIL, ADMIN_PASSWORD, PUBLIC_SITE_URL=https://$DOMAIN):"
   echo ">>>   nano $APP_DIR/.env"
   echo ">>> then run this script again."
