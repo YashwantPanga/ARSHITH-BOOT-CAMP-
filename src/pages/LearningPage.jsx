@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft, CheckCircle2, Circle, Award, Download, ChevronRight, ChevronLeft, BookOpen, ExternalLink,
   Code, Dumbbell, AlertTriangle, ListChecks, HelpCircle, Briefcase, Terminal, Layers, Lock, Menu, X,
-  ShieldCheck, Lightbulb, Target, ClipboardList, MessageSquare, Clock, Network, PlayCircle, FlaskConical, Timer
+  ShieldCheck, Lightbulb, Target, ClipboardList, MessageSquare, Clock, Network, PlayCircle, FlaskConical, Timer, Check, Star, Search
 } from 'lucide-react';
 import { generateCoursePDF } from '../utils/pdfGenerator';
 import { cleanText, moduleTitle, displayTitle } from '../utils/textUtils';
@@ -13,7 +13,7 @@ import PdfBuildOverlay from '../components/PdfBuildOverlay';
 import { ProgressRing, ProgressBar, useToast, SafeImg } from '../components/ui';
 import PremiumCodeBlock from '../components/CodeBlock';
 import { PlaygroundProvider, usePlayground } from '../components/CodePlayground';
-import { ConceptMap, LearningFlow, BlueprintDiagram } from '../components/Diagrams';
+import { ConceptMap, BlueprintDiagram } from '../components/Diagrams';
 import { conceptLabel, conceptSummary, markdownConcepts } from '../utils/conceptSummary';
 import VisualDiagram from '../components/diagrams/VisualDiagram';
 import { visualDiagramFor } from '../data/visualDiagrams';
@@ -73,6 +73,14 @@ function readingMinutes(rm) {
 }
 
 /** Examples the learner can run: the code examples plus the section examples. */
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
+const numberWord = (n) => NUMBER_WORDS[n] || String(n);
+/** "Loops — teaching your code to repeat itself" -> ['Loops', 'teaching your code to repeat itself'] (second line shown in italics). */
+function splitTitle(t) {
+  const m = String(t).match(/^(.{3,}?)\s+(?:—|–|-|:)\s+(.+)$/) || String(t).match(/^(.{3,}?):\s*(.+)$/);
+  return m ? [m[1], m[2]] : [t, ''];
+}
+
 const runnableCount = (rm) => (rm.codeExamples || []).length + (rm.sections || []).filter(s => s.code && s.run !== false).length;
 
 /** Starter code for the Practice Lab: the problem as comments, then room to write the answer. */
@@ -124,6 +132,9 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
     }
   };
   const [drawer, setDrawer] = useState(false);
+  const [activeSec, setActiveSec] = useState(null); // section in view, for the course path and 'On this page'
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQ, setSearchQ] = useState('');
   const [revealed, setRevealed] = useState({});
   const mainRef = useRef(null);
   const readBarRef = useRef(null);
@@ -316,7 +327,10 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                 </div>
               )}
               {sec.note && (
-                <p className="flex gap-2.5 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-[14px] text-amber-900"><span className="font-bold shrink-0">Tip:</span><span>{sec.note}</span></p>
+                <div className="flex gap-3.5 rounded-[18px] border border-brand-900/[.08] bg-brand-50/70 px-4 py-4">
+                  <span className="w-9 h-9 rounded-xl bg-forest text-[#E5C88E] flex items-center justify-center shrink-0"><Lightbulb className="w-4 h-4" /></span>
+                  <div className="min-w-0"><p className="font-lesson text-[18px] font-semibold text-evergreen leading-tight">Remember</p><p className="mt-1 text-[15px] leading-relaxed text-charcoal/80">{sec.note}</p></div>
+                </div>
               )}
             </div>
           ))}
@@ -474,15 +488,15 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
       id: 'exercise', title: 'Practice exercises', icon: Dumbbell, body: (
         <div className="space-y-6">
           {pe && (
-            <div className="rounded-2xl border border-brand-900/10 p-4 sm:p-5 space-y-3">
-              <p className="text-xs font-bold tracking-[0.14em] text-sage">MODULE EXERCISE</p>
-              <p className="font-semibold text-brand-900">{cleanText(pe.title)}</p>
-              {pe.problem && <p className="text-[15px] text-slate-600 whitespace-pre-line leading-7">{cleanLines(pe.problem)}</p>}
+            <div className="practice-card rounded-[22px] bg-[#0C3B2E] text-ivory p-4 sm:p-6 space-y-3.5 shadow-[0_24px_50px_-30px_rgba(12,45,38,.9)]">
+              <p className="flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.2em] text-[#D9B776]">Practice {current ? `${currentIndex + 1}.1` : ''} <span className="px-2 py-0.5 rounded-md bg-white/10 text-ivory/80 tracking-normal normal-case font-semibold">Module exercise</span></p>
+              <p className="font-lesson text-[24px] sm:text-[27px] font-semibold leading-tight">{cleanText(pe.title)}</p>
+              {pe.problem && <p className="text-[15px] text-ivory/80 whitespace-pre-line leading-7">{cleanLines(pe.problem)}</p>}
               {pe.starterCode && <CodeBlock courseId={course.id} code={pe.starterCode} label="starter code" />}
               {(pe.solutionCode || pe.starterCode) && (
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => playground?.open({ code: pe.starterCode || practiceStarter(pe, course.id), lang: detectLanguage(pe.solutionCode || pe.starterCode, '', course.id) })} className="btn-primary py-2"><FlaskConical className="w-4 h-4" /> Solve in Practice Lab</button>
-                  {pe.solutionCode && <button onClick={() => toggle('solution')} className="btn-outline py-2" aria-expanded={!!revealed.solution}>{revealed.solution ? 'Hide solution' : 'Show solution'}</button>}
+                  <button onClick={() => playground?.open({ code: pe.starterCode || practiceStarter(pe, course.id), lang: detectLanguage(pe.solutionCode || pe.starterCode, '', course.id) })} className="h-10 px-4 rounded-xl bg-gradient-to-b from-[#E5C88E] to-[#C49A52] text-[#2A1D08] text-[13.5px] font-bold inline-flex items-center gap-2"><Code className="w-4 h-4" /> Open in practice editor</button>
+                  {pe.solutionCode && <button onClick={() => toggle('solution')} className="h-10 px-4 rounded-xl border border-white/20 text-ivory text-[13.5px] font-semibold hover:bg-white/5" aria-expanded={!!revealed.solution}>{revealed.solution ? 'Hide solution' : 'Show solution'}</button>}
                 </div>
               )}
               {revealed.solution && pe.solutionCode && <div className="animate-fade-in"><CodeBlock courseId={course.id} code={pe.solutionCode} label="solution" /></div>}
@@ -569,6 +583,21 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   }, [current?.id, revealed, enr.status, enr.data, practiceDone]);
 
   const jumpTo = (id) => jumpToEl(`sec-${id}`);
+
+  // Highlight the section being read (the reading pane is the scroll container).
+  useEffect(() => {
+    const root = mainRef.current;
+    if (!root || !('IntersectionObserver' in window)) return undefined;
+    const els = [...root.querySelectorAll('[data-sec]')];
+    if (!els.length) return undefined;
+    setActiveSec(els[0].dataset.sec);
+    const io = new IntersectionObserver((entries) => {
+      const seen = entries.filter(e => e.isIntersecting).sort((x, y) => x.boundingClientRect.top - y.boundingClientRect.top);
+      if (seen[0]) setActiveSec(seen[0].target.dataset.sec);
+    }, { root, rootMargin: '0px 0px -65% 0px', threshold: 0 });
+    els.forEach(el => io.observe(el));
+    return () => io.disconnect();
+  }, [current?.id, sections.length]);
   // Learning-flow steps: scroll to the first section that exists for the step, then make it glow.
   const flowGo = (ids) => {
     const elId = ids.map(id => (id.startsWith('#') ? id.slice(1) : `sec-${id}`)).find(id => document.getElementById(id));
@@ -590,60 +619,74 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
     );
   }
 
-  /* ---------- sidebar ---------- */
+  /* ---------- course path (left column / phone drawer) ---------- */
+  const practiceTotal = (nm.practiceExercise ? 1 : 0) + (enr.data?.exercises?.length || 0) + nm.miniTasks.length;
+  const practiceDoneCount = Math.min((practiceDone[current?.id] || []).length, enr.data?.exercises?.length || 0);
+  const snippetCount = runnableCount(rm);
   const sidebar = (
-    <div className="p-4 space-y-4">
-      <div className="rounded-2xl bg-brand-900 text-white p-4">
-        <div className="flex items-center gap-3">
-          <ProgressRing value={(done / total) * 100} size={52} dark />
-          <div>
-            <p className="text-xs text-brand-200">Quizzes completed</p>
-            <p className="font-semibold">{done} of {modules.length} modules</p>
+    <div className="p-3 sm:p-4 space-y-4">
+      <div className="rounded-[20px] bg-white border border-brand-900/[.08] p-3 shadow-[0_10px_30px_-24px_rgba(12,45,38,.5)]">
+        <div className="flex items-center gap-3 px-1.5 pt-1.5 pb-3">
+          <ProgressRing value={(done / total) * 100} size={46} label={`${done}/${modules.length}`} />
+          <div className="min-w-0">
+            <p className="font-lesson text-[21px] font-semibold text-evergreen leading-none">Course path</p>
+            <p className="mt-1 text-[11.5px] text-charcoal/55">{modules.length} modules · {course.modules.reduce((n, m) => n + runnableCount(m.readingMaterial || {}), 0)} practice snippets</p>
           </div>
         </div>
+        <nav className="space-y-0.5" aria-label="Modules">
+          {modules.map((m, i) => {
+            const active = i === currentIndex;
+            return (
+              <div key={m.id} className={active ? 'rounded-2xl bg-brand-50/80 ring-1 ring-brand-900/[.06] pb-2' : ''}>
+                <button onClick={() => goTo(i)} className={`w-full flex items-center gap-3 px-2 py-2 rounded-xl text-left transition ${active ? '' : 'hover:bg-cream'}`} aria-current={active ? 'page' : undefined}>
+                  <span className={`w-8 h-8 rounded-full text-[11px] font-mono font-semibold flex items-center justify-center shrink-0 ${m.completed ? 'bg-forest text-ivory' : active ? 'bg-forest text-ivory ring-4 ring-[#C49A52]/25' : 'bg-cream text-charcoal/55 border border-brand-900/10'}`}>
+                    {m.completed && !active ? <Check className="w-3.5 h-3.5" strokeWidth={3} /> : String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className="flex-1 min-w-0">
+                    <span className={`block text-[13.5px] leading-snug truncate ${active ? 'font-semibold text-evergreen' : 'font-medium text-charcoal/85'}`}>{moduleTitle(m.title)}</span>
+                    <span className="block text-[11px] text-charcoal/45 mt-0.5">{active ? (m.completed ? 'Completed · reviewing' : 'In progress') : m.completed ? 'Completed' : `${runnableCount(m.readingMaterial || {})} snippets`}</span>
+                  </span>
+                </button>
+                {active && sections.length > 0 && (
+                  <ul className="mt-0.5 ml-[2.1rem] mr-2 space-y-0.5">
+                    {sections.map((s, k) => (
+                      <li key={s.id}>
+                        <button onClick={() => { setDrawer(false); jumpTo(s.id); }} className={`w-full text-left text-[12.5px] px-2.5 py-1.5 rounded-lg truncate transition ${activeSec === s.id ? 'bg-white text-evergreen font-semibold shadow-sm' : 'text-charcoal/60 hover:text-evergreen'}`}>
+                          {currentIndex + 1}.{k + 1} {s.title}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
+        </nav>
       </div>
 
-      <nav className="space-y-1" aria-label="Modules">
-        {modules.map((m, i) => {
-          const active = i === currentIndex;
-          return (
-            <button key={m.id} onClick={() => goTo(i)} className={`w-full flex items-start gap-3 p-3 rounded-xl text-left transition ${active ? 'bg-peach-50 ring-1 ring-peach-200' : 'hover:bg-slate-50'}`}>
-              <span className={`mt-0.5 w-7 h-7 rounded-lg text-[11px] font-bold flex items-center justify-center shrink-0 ${m.completed ? 'bg-mint-400 text-white' : active ? 'bg-peach-500 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                {m.completed ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
-              </span>
-              <span className="flex-1 min-w-0">
-                <span className={`block text-sm leading-snug ${active ? 'font-semibold text-brand-900' : 'text-slate-600'}`}>{moduleTitle(m.title)}</span>
-                <span className="block text-[11px] text-slate-400 mt-0.5">{m.completed ? `Quiz done${m.quizScore !== undefined ? ` · ${m.quizScore}%` : ''}` : 'Quiz pending'}</span>
-              </span>
-            </button>
-          );
-        })}
-      </nav>
-
       {course.projects?.length > 0 && (
-        <button onClick={() => setProjectsOpen(true)} className="w-full rounded-2xl border border-slate-200 p-4 text-left hover:border-brand-300 transition">
-          <span className="flex items-center gap-2 text-sm font-semibold text-brand-900"><Briefcase className="w-4 h-4 text-peach-500" />{course.projects.length} mini projects<span className={`ml-auto chip text-[10px] ${projectsDone ? 'bg-brand-900 text-ivory' : 'bg-cream text-charcoal/70 border border-brand-900/10'}`}>{projectReq.submitted}/{projectReq.total ?? course.projects.length} submitted</span></span>
-          <span className="block text-xs text-slate-500 mt-1">{projectsDone ? 'Project submitted. The final assessment can be unlocked.' : 'Required for the final assessment: submit a GitHub repository for any one project.'}</span>
+        <button onClick={() => setProjectsOpen(true)} className="w-full rounded-[18px] bg-white border border-brand-900/[.08] p-4 text-left hover:border-forest/30 transition">
+          <span className="flex items-center gap-2 text-[13.5px] font-semibold text-evergreen"><Briefcase className="w-4 h-4 text-[#C49A52]" />{course.projects.length} mini projects<span className={`ml-auto chip text-[10px] ${projectsDone ? 'bg-forest text-ivory' : 'bg-cream text-charcoal/70 border border-brand-900/10'}`}>{projectReq.submitted}/{projectReq.total ?? course.projects.length}</span></span>
+          <span className="block text-[11.5px] text-charcoal/55 mt-1">{projectsDone ? 'Project submitted. The final assessment can be unlocked.' : 'Submit a GitHub repository for any one project to unlock the final.'}</span>
         </button>
       )}
 
-      <div className={`rounded-2xl p-4 border ${passedFinal ? 'border-mint-300 bg-mint-50' : finalReady ? 'border-peach-300 bg-peach-50' : 'border-slate-200 bg-slate-50'}`}>
-        <p className="flex items-center gap-2 text-sm font-semibold text-brand-900">
-          {passedFinal ? <Award className="w-4 h-4 text-mint-500" /> : finalReady ? <ShieldCheck className="w-4 h-4 text-peach-500" /> : <Lock className="w-4 h-4 text-slate-400" />}
+      <div className={`rounded-[18px] p-4 border ${passedFinal ? 'border-leaf/40 bg-leaf-light' : finalReady ? 'border-[#C49A52]/50 bg-[#FBF3E3]' : 'border-brand-900/[.08] bg-white'}`}>
+        <p className="flex items-center gap-2 text-[13.5px] font-semibold text-evergreen">
+          {passedFinal ? <Award className="w-4 h-4 text-leaf" /> : finalReady ? <ShieldCheck className="w-4 h-4 text-[#C49A52]" /> : <Lock className="w-4 h-4 text-charcoal/40" />}
           Final assessment
         </p>
         {passedFinal ? (
-          <p className="text-xs text-slate-500 mt-1.5">Passed with {passedFinal.percentage}%. Your certificate is ready.</p>
+          <p className="text-[11.5px] text-charcoal/55 mt-1.5">Passed with {passedFinal.percentage}%. Your certificate is ready.</p>
         ) : finalReady ? (
-          <p className="text-xs text-slate-500 mt-1.5">25 questions · 45 minutes · proctored. Pass mark 70%.</p>
+          <p className="text-[11.5px] text-charcoal/55 mt-1.5">25 questions · 45 minutes · proctored. Pass mark 70%.</p>
         ) : (
-          <ul className="mt-2 space-y-1.5 text-xs">
-            <li className={`flex items-center gap-2 ${allQuizzesPassed ? 'text-brand-900' : 'text-slate-500'}`}>{allQuizzesPassed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}Complete all module quizzes ({done}/{modules.length})</li>
-            {projectReq.required > 0 && <li className={`flex items-center gap-2 ${projectsDone ? 'text-brand-900' : 'text-slate-500'}`}>{projectsDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}Submit a GitHub repo for any one project ({Math.min(projectReq.submitted, projectReq.required)}/{projectReq.required})</li>}
+          <ul className="mt-2 space-y-1.5 text-[11.5px]">
+            <li className={`flex items-center gap-2 ${allQuizzesPassed ? 'text-evergreen' : 'text-charcoal/55'}`}>{allQuizzesPassed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}All module quizzes ({done}/{modules.length})</li>
+            {projectReq.required > 0 && <li className={`flex items-center gap-2 ${projectsDone ? 'text-evergreen' : 'text-charcoal/55'}`}>{projectsDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}One project repository ({Math.min(projectReq.submitted, projectReq.required)}/{projectReq.required})</li>}
           </ul>
         )}
-        {!passedFinal && <ProgressBar value={((done + Math.min(projectReq.submitted || 0, projectReq.required || 0)) / (total + (projectReq.required || 0))) * 100} className="mt-3" tone={finalReady ? 'peach' : 'plum'} />}
-        <button onClick={passedFinal ? onViewCertificate : (allQuizzesPassed && !projectsDone ? () => setProjectsOpen(true) : openFinal)} disabled={!allQuizzesPassed && !passedFinal} className={`mt-3 w-full ${passedFinal ? 'btn-plum' : 'btn-primary'} py-2.5`}>
+        <button onClick={passedFinal ? onViewCertificate : (allQuizzesPassed && !projectsDone ? () => setProjectsOpen(true) : openFinal)} disabled={!allQuizzesPassed && !passedFinal} className="mt-3 w-full h-10 rounded-xl bg-forest text-ivory text-[13px] font-semibold inline-flex items-center justify-center gap-2 hover:bg-evergreen transition disabled:bg-cream disabled:text-charcoal/40 disabled:cursor-not-allowed">
           {passedFinal ? <><Award className="w-4 h-4" /> View certificate</> : finalReady ? 'Start final assessment' : allQuizzesPassed ? <><Briefcase className="w-4 h-4" /> Submit project repos</> : <><Lock className="w-4 h-4" /> Locked</>}
         </button>
       </div>
@@ -651,138 +694,215 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   );
 
   const myScore = current.quizScore;
+  const num = String(currentIndex + 1).padStart(2, '0');
+  const [titleMain, titleRest] = splitTitle(moduleTitle(current.title));
+  const searchHits = searchQ.trim()
+    ? [
+        ...sections.filter(s => s.title.toLowerCase().includes(searchQ.trim().toLowerCase())).map((s) => ({ kind: 'section', id: s.id, label: s.title, sub: `This module · ${currentIndex + 1}.${sections.indexOf(s) + 1}` })),
+        ...modules.map((m, i) => ({ m, i })).filter(({ m }) => moduleTitle(m.title).toLowerCase().includes(searchQ.trim().toLowerCase())).map(({ m, i }) => ({ kind: 'module', i, label: moduleTitle(m.title), sub: `Module ${String(i + 1).padStart(2, '0')}` }))
+      ].slice(0, 12)
+    : [];
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-cream overflow-hidden">
+    <div className="lesson-page h-[100dvh] flex flex-col bg-[#F6F4EE] overflow-hidden">
       {/* Top bar */}
-      <header className="h-16 shrink-0 bg-white border-b border-slate-200 flex items-center gap-3 px-3 sm:px-5 z-30">
-        <button onClick={() => setDrawer(true)} className="lg:hidden p-2 rounded-xl hover:bg-slate-100" aria-label="Open modules"><Menu className="w-5 h-5 text-brand-900" /></button>
-        <button onClick={onExit} className="btn-ghost px-3 py-2 hidden sm:inline-flex"><ArrowLeft className="w-4 h-4" /> Dashboard</button>
-        <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-peach-500 truncate">{displayTitle(course.title)}</p>
-          <p className="text-sm font-semibold text-brand-900 truncate">Module {currentIndex + 1}: {moduleTitle(current.title)}</p>
+      <header className="h-14 sm:h-16 shrink-0 bg-[#0C3B2E] text-ivory flex items-center gap-2 sm:gap-4 px-2.5 sm:px-5 z-30 shadow-[0_6px_20px_-12px_rgba(0,0,0,.6)]">
+        <button onClick={() => setDrawer(true)} className="lg:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/10" aria-label="Open course path"><Menu className="w-5 h-5" /></button>
+        <button onClick={onExit} className="hidden lg:flex items-center gap-2.5 shrink-0 pr-2 group" title="Back to dashboard">
+          <span className="w-9 h-9 rounded-full border border-[#C49A52]/60 flex items-center justify-center text-[#E5C88E] group-hover:bg-white/5"><ArrowLeft className="w-4 h-4" /></span>
+          <span className="text-left leading-tight">
+            <span className="block font-lesson text-[19px] font-semibold">CodeLekho</span>
+            <span className="block text-[9.5px] font-semibold uppercase tracking-[0.2em] text-[#D9B776] max-w-[160px] truncate">{displayTitle(course.title)}</span>
+          </span>
+        </button>
+        <div className="flex-1 min-w-0 flex items-center gap-3">
+          <span className="lg:hidden min-w-0">
+            <span className="block text-[9.5px] font-semibold uppercase tracking-[0.18em] text-[#D9B776] truncate">{displayTitle(course.title)}</span>
+            <span className="block text-[13px] font-semibold truncate">Module {currentIndex + 1} of {modules.length}</span>
+          </span>
+          <span className="hidden lg:block text-[12.5px] text-ivory/80 whitespace-nowrap">Module {currentIndex + 1} of {modules.length}</span>
+          <span className="hidden md:block flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden max-w-[640px]"><span className="block h-full rounded-full bg-gradient-to-r from-[#C49A52] to-[#E5C88E] transition-all duration-700" style={{ width: `${course.progress || 0}%` }} /></span>
+          <span className="hidden md:block text-[12.5px] font-semibold text-ivory/90">{course.progress || 0}%</span>
         </div>
-        <div className="hidden md:flex items-center gap-2 text-xs text-slate-500 mr-1">
-          <span>{course.progress}%</span>
-          <ProgressBar value={course.progress} className="w-24" />
-        </div>
-        <button onClick={() => playground?.open()} className="btn-ghost px-3 py-2 border border-brand-900/10" title="Open the Practice Lab"><FlaskConical className="w-4 h-4" /><span className="hidden xl:inline">Practice Lab</span></button>
-        <button
-          onClick={downloadPdf}
-          disabled={pdfBusy}
-          className="btn-outline px-3 py-2"
-          title="Download course PDF"
-        >
-          {pdfBusy ? <span className="w-4 h-4 border-2 border-brand-900/30 border-t-brand-900 rounded-full animate-spin" aria-hidden="true" /> : <Download className="w-4 h-4" />}
-          <span className="hidden xl:inline">{pdfBusy ? 'Preparing…' : 'Course PDF'}</span>
+        <button onClick={() => setSearchOpen(true)} className="h-9 w-9 sm:w-auto sm:px-3.5 rounded-xl border border-white/15 bg-white/[.06] hover:bg-white/10 flex items-center justify-center gap-2 text-[13px] font-medium" aria-label="Search lessons"><Search className="w-4 h-4" /><span className="hidden xl:inline">Search lessons</span></button>
+        <button onClick={() => playground?.open()} className="h-9 w-9 sm:w-auto sm:px-3 rounded-xl border border-white/15 bg-white/[.06] hover:bg-white/10 flex items-center justify-center gap-2 text-[13px] font-medium" title="Open the Practice Lab" aria-label="Open the Practice Lab"><FlaskConical className="w-4 h-4" /><span className="hidden 2xl:inline">Practice Lab</span></button>
+        <button onClick={downloadPdf} disabled={pdfBusy} className="hidden sm:flex h-9 px-3 rounded-xl border border-white/15 bg-white/[.06] hover:bg-white/10 items-center justify-center gap-2 text-[13px] font-medium" title="Download course PDF" aria-label="Download course PDF">
+          {pdfBusy ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true" /> : <Download className="w-4 h-4" />}
+          <span className="hidden 2xl:inline">{pdfBusy ? 'Preparing…' : 'Course PDF'}</span>
         </button>
         {passedFinal ? (
-          <button onClick={onViewCertificate} className="btn-plum px-3 sm:px-4 py-2"><Award className="w-4 h-4" /><span className="hidden sm:inline">Certificate</span></button>
+          <button onClick={onViewCertificate} className="h-9 px-3 rounded-xl bg-gradient-to-b from-[#E5C88E] to-[#C49A52] text-[#2A1D08] flex items-center gap-2 text-[13px] font-bold"><Award className="w-4 h-4" /><span className="hidden sm:inline">Certificate</span></button>
         ) : (
-          <button onClick={openFinal} className={`btn px-3 sm:px-4 py-2 ${finalReady ? 'bg-peach-500 text-white hover:bg-peach-600' : 'bg-slate-100 text-slate-500'}`} title={finalReady ? 'Start final assessment' : 'Complete all module quizzes and submit a GitHub repo for any one project to unlock'}>
-            {finalReady ? <Clock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}<span className="hidden sm:inline">Final assessment</span>
+          <button onClick={openFinal} className={`h-9 px-3 rounded-xl flex items-center gap-2 text-[13px] font-semibold ${finalReady ? 'bg-gradient-to-b from-[#E5C88E] to-[#C49A52] text-[#2A1D08]' : 'border border-white/15 text-ivory/60'}`} title={finalReady ? 'Start final assessment' : 'Complete all module quizzes and submit a GitHub repo for any one project to unlock'}>
+            {finalReady ? <Clock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}<span className="hidden md:inline">Final</span>
           </button>
         )}
       </header>
+      {/* phones: thin progress line under the bar */}
+      <div className="md:hidden h-[3px] bg-[#0C3B2E]"><div className="h-full bg-gradient-to-r from-[#C49A52] to-[#E5C88E]" style={{ width: `${course.progress || 0}%` }} /></div>
 
       <div className="flex-1 flex min-h-0">
-        {/* Desktop sidebar */}
-        <aside className="hidden lg:block w-80 xl:w-[22rem] shrink-0 bg-white border-r border-slate-200 overflow-y-auto thin-scroll overscroll-contain">{sidebar}</aside>
+        {/* Desktop course path */}
+        <aside className="hidden lg:block w-[300px] xl:w-[316px] shrink-0 overflow-y-auto thin-scroll overscroll-contain">{sidebar}</aside>
 
-        {/* Mobile drawer */}
+        {/* Phone / tablet drawer */}
         {drawer && (
           <div className="lg:hidden fixed inset-0 z-50">
-            <div className="absolute inset-0 bg-brand-950/40 animate-fade-in" onClick={() => setDrawer(false)} />
-            <aside className="absolute inset-y-0 left-0 w-[86%] max-w-sm bg-white overflow-y-auto overscroll-contain animate-slide-in-left shadow-2xl">
-              <div className="flex items-center justify-between p-4 border-b border-slate-100">
-                <button onClick={onExit} className="btn-ghost px-2 py-1.5"><ArrowLeft className="w-4 h-4" /> Dashboard</button>
-                <button onClick={() => setDrawer(false)} className="p-2 rounded-lg hover:bg-slate-100" aria-label="Close"><X className="w-5 h-5" /></button>
+            <div className="absolute inset-0 bg-evergreen/50 animate-fade-in" onClick={() => setDrawer(false)} />
+            <aside className="absolute inset-y-0 left-0 w-[88%] max-w-sm bg-[#F6F4EE] overflow-y-auto overscroll-contain animate-slide-in-left shadow-2xl">
+              <div className="flex items-center justify-between px-4 py-3 bg-[#0C3B2E] text-ivory">
+                <button onClick={onExit} className="flex items-center gap-2 text-[13px] font-semibold"><ArrowLeft className="w-4 h-4" /> Dashboard</button>
+                <button onClick={() => setDrawer(false)} className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/10" aria-label="Close"><X className="w-5 h-5" /></button>
               </div>
               {sidebar}
             </aside>
           </div>
         )}
 
-        {/* Reading pane — the only scroll container for module content */}
+        {/* Reading pane: the only scroll container for module content */}
         <main ref={mainRef} onScroll={onMainScroll} className="flex-1 min-w-0 overflow-y-auto overscroll-contain relative" style={{ scrollbarGutter: 'stable' }}>
-          <div className="sticky top-0 z-10 h-1 bg-transparent"><div ref={readBarRef} className="h-full bg-peach-500 transition-[width] duration-150" style={{ width: '0%' }} /></div>
+          <div className="sticky top-0 z-10 h-[3px] bg-transparent"><div ref={readBarRef} className="h-full bg-[#C49A52] transition-[width] duration-150" style={{ width: '0%' }} /></div>
 
-          <div key={current.id} className="max-w-4xl mx-auto px-4 sm:px-8 py-8 space-y-6 animate-fade-up">
-            {/* Module hero */}
-            <div className="relative overflow-hidden rounded-3xl bg-brand-900 text-ivory">
-              <SafeImg src={course.thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25 mix-blend-luminosity" />
-              <div className="absolute inset-0 bg-gradient-to-r from-evergreen via-brand-900/95 to-brand-900/60" />
-              <div className="absolute inset-0 texture-dots-light" />
-              <div className="relative p-6 sm:p-9">
-                <div className="flex items-center gap-3">
-                  <span className="font-display text-5xl sm:text-6xl font-semibold text-ivory/15 leading-none">{String(currentIndex + 1).padStart(2, '0')}</span>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-200">Module {currentIndex + 1} of {modules.length}</p>
+          <div className="max-w-[1180px] mx-auto px-4 sm:px-8 lg:px-6 xl:px-8 pt-5 sm:pt-7 pb-12 xl:grid xl:grid-cols-[minmax(0,1fr)_224px] xl:gap-8">
+            <article key={current.id} className="min-w-0 max-w-[700px] animate-fade-up">
+              {/* breadcrumb + module header */}
+              <nav className="text-[12.5px] text-charcoal/55" aria-label="Breadcrumb">
+                <button onClick={onExit} className="hover:text-evergreen">{displayTitle(course.title)}</button>
+                <span className="mx-2 text-charcoal/30">/</span>
+                <span className="font-semibold text-evergreen">Module {num}</span>
+              </nav>
+              <div className="mt-4 sm:mt-6 flex items-end gap-3 sm:gap-4">
+                <span className="font-lesson text-[64px] sm:text-[96px] leading-[.78] font-semibold text-[#C49A52] [font-variant-numeric:oldstyle-nums]">{num}</span>
+                <p className="pb-2 sm:pb-3 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#A8823F] leading-relaxed">Module {numberWord(currentIndex + 1)} · {displayTitle(course.title)}</p>
+              </div>
+              <h1 className="mt-3 sm:mt-4 font-lesson text-[32px] sm:text-[46px] font-semibold leading-[1.05] text-evergreen">
+                {titleMain}
+                {titleRest && <span className="block italic font-medium text-forest/90">{titleRest}</span>}
+              </h1>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="lesson-chip"><Clock className="w-3.5 h-3.5" />{readingMinutes(rm)} min read</span>
+                <span className="lesson-chip"><Code className="w-3.5 h-3.5" />{snippetCount} code snippets</span>
+                {practiceTotal > 0 && <span className="lesson-chip lesson-chip-gold"><Star className="w-3.5 h-3.5" />{practiceTotal} practice task{practiceTotal === 1 ? '' : 's'}</span>}
+                <span className={`lesson-chip ${current.completed ? 'lesson-chip-done' : ''}`}>{current.completed ? <><CheckCircle2 className="w-3.5 h-3.5" /> Quiz done{myScore !== undefined ? ` · ${myScore}%` : ''}</> : <><ListChecks className="w-3.5 h-3.5" /> Quiz pending</>}</span>
+              </div>
+              {current.description && <p className="mt-5 sm:mt-6 font-lesson text-[19px] sm:text-[22px] leading-[1.5] text-charcoal/85">{cleanText(current.description)}</p>}
+
+              {/* below xl: the "on this page" list as a scrollable row */}
+              {sections.length > 2 && (
+                <div className="xl:hidden mt-6 flex gap-2 overflow-x-auto no-scrollbar snap-x scroll-px-4 -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
+                  {sections.map((s, i) => (
+                    <button key={s.id} onClick={() => jumpTo(s.id)} className={`snap-start shrink-0 h-8 px-3 rounded-full border text-[12.5px] font-medium transition ${activeSec === s.id ? 'bg-forest text-ivory border-forest' : 'bg-white text-charcoal/70 border-brand-900/10'}`}>
+                      <span className={activeSec === s.id ? 'text-[#E5C88E]' : 'text-[#A8823F]'}>{currentIndex + 1}.{i + 1}</span> {s.title}
+                    </button>
+                  ))}
                 </div>
-                <h1 className="mt-3 text-[1.7rem] sm:text-[2.3rem] font-medium leading-tight max-w-3xl">{moduleTitle(current.title)}</h1>
-                {current.description && <p className="mt-3 text-brand-100/90 leading-relaxed max-w-3xl">{cleanText(current.description)}</p>}
-                <div className="mt-6 flex flex-wrap items-center gap-2 text-xs">
-                  <span className={`chip ${current.completed ? 'bg-ivory text-brand-900' : 'bg-white/10 text-brand-100'}`}>
-                    {current.completed ? <><CheckCircle2 className="w-3.5 h-3.5" /> Quiz done {myScore !== undefined ? `(${myScore}%)` : ''}</> : 'Quiz not taken yet'}
-                  </span>
-                  <span className="chip bg-white/10 text-brand-100"><BookOpen className="w-3.5 h-3.5" />{sections.length} sections</span>
-                  <span className="chip bg-white/10 text-brand-100"><Timer className="w-3.5 h-3.5" />~{readingMinutes(rm)} min read</span>
-                  <span className="chip bg-white/10 text-brand-100"><Code className="w-3.5 h-3.5" />{runnableCount(rm)} runnable examples</span>
-                </div>
-              </div>
-            </div>
-
-            <LearningFlow steps={[
-              { icon: BookOpen, title: 'Read & understand', text: 'Concepts and concept map', done: true, onClick: () => flowGo(['intro', 'objectives', 'theory', 'map']) },
-              { icon: Code, title: 'Run the examples', text: 'Press “Try it” on any code', done: false, onClick: () => flowGo(['code', 'tutorials', 'theory']) },
-              { icon: FlaskConical, title: 'Practice', text: 'Solve the exercise in the lab', done: false, onClick: () => flowGo(['exercise', 'practice-q', 'knowledge']) },
-              { icon: ListChecks, title: 'Take the quiz', text: 'Finishing it marks the module done', done: !!current.completed, onClick: () => flowGo(['#quiz-cta']) }
-            ]} />
-
-            {/* Section jump list */}
-            {sections.length > 2 && (
-              <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1">
-                {sections.map((s, i) => (
-                  <button key={s.id} onClick={() => jumpTo(s.id)} className="chip whitespace-nowrap bg-white border border-slate-200 text-slate-600 hover:border-peach-300 hover:text-brand-900">
-                    <span className="text-peach-500">{i + 1}.</span> {s.title}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {sections.map((s, i) => (
-              <section key={s.id} id={`sec-${s.id}`} className="card p-4 sm:p-8 scroll-mt-4">
-                <h2 className="flex items-center gap-3.5 text-xl sm:text-2xl font-medium text-brand-900 mb-5 pb-4 border-b border-brand-900/10">
-                  <span className="w-10 h-10 rounded-xl bg-brand-900 text-ivory flex items-center justify-center shrink-0"><s.icon className="w-[18px] h-[18px]" /></span>
-                  <span><span className="font-sans text-xs font-bold tracking-[0.2em] text-sage block mb-0.5">SECTION {String(i + 1).padStart(2, '0')}</span>{s.title}</span>
-                </h2>
-                <div className="space-y-3">{s.body}</div>
-              </section>
-            ))}
-
-            {/* Quiz call-to-action */}
-            <section id="quiz-cta" className="rounded-3xl border-2 border-dashed border-peach-300 bg-white p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-5">
-              <span className="w-14 h-14 rounded-2xl bg-peach-500 text-white flex items-center justify-center shrink-0"><ListChecks className="w-7 h-7" /></span>
-              <div className="flex-1">
-                <p className="font-bold text-brand-900 text-lg">Module {currentIndex + 1} quiz</p>
-                <p className="text-sm text-slate-500">5 questions · unlimited retakes. Finishing it marks this module complete.</p>
-              </div>
-              <button onClick={() => setQuizOpen(true)} className={current.completed ? 'btn-outline' : 'btn-primary'}>
-                {current.completed ? 'Retake quiz' : 'Take quiz'}
-              </button>
-            </section>
-
-            {/* Prev / next */}
-            <div className="flex items-center justify-between gap-3 pt-2 pb-10">
-              <button onClick={() => goTo(currentIndex - 1)} disabled={currentIndex === 0} className="btn-outline"><ChevronLeft className="w-4 h-4" /> Previous</button>
-              {currentIndex < modules.length - 1 ? (
-                <button onClick={() => goTo(currentIndex + 1)} className="btn-plum">Next module <ChevronRight className="w-4 h-4" /></button>
-              ) : (
-                <button onClick={passedFinal ? onViewCertificate : openFinal} className="btn-primary">{passedFinal ? 'View certificate' : 'Final assessment'} <ChevronRight className="w-4 h-4" /></button>
               )}
-            </div>
+
+              {sections.map((s, i) => (
+                <section key={s.id} id={`sec-${s.id}`} data-sec={s.id} className="scroll-mt-4 mt-10 sm:mt-14">
+                  <h2 className="flex items-baseline gap-2.5 font-lesson text-[26px] sm:text-[32px] font-semibold leading-tight text-evergreen">
+                    <span className="font-mono text-[12px] sm:text-[13px] font-semibold text-[#A8823F] translate-y-[-3px]">{currentIndex + 1}.{i + 1}</span>
+                    <span className="min-w-0">{s.title}</span>
+                  </h2>
+                  <div className="lesson-body mt-4 space-y-3">{s.body}</div>
+                </section>
+              ))}
+
+              {/* quiz */}
+              <section id="quiz-cta" className="mt-12 rounded-[22px] bg-white border border-brand-900/[.08] p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 shadow-[0_18px_40px_-30px_rgba(12,45,38,.5)]">
+                <span className="w-12 h-12 rounded-2xl bg-forest text-[#E5C88E] flex items-center justify-center shrink-0"><ListChecks className="w-6 h-6" /></span>
+                <div className="flex-1">
+                  <p className="font-lesson text-[22px] font-semibold text-evergreen leading-tight">Module {num} quiz</p>
+                  <p className="text-[13.5px] text-charcoal/60">5 questions · unlimited retakes. Finishing it marks this module complete.</p>
+                </div>
+                <button onClick={() => setQuizOpen(true)} className={`h-11 px-5 rounded-xl text-[14px] font-semibold ${current.completed ? 'border border-forest/30 text-forest hover:bg-cream' : 'bg-forest text-ivory hover:bg-evergreen'}`}>
+                  {current.completed ? 'Retake quiz' : 'Take quiz'}
+                </button>
+              </section>
+
+              {/* previous / next */}
+              <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
+                {currentIndex > 0 ? (
+                  <button onClick={() => goTo(currentIndex - 1)} className="min-w-0 rounded-[18px] bg-white border border-brand-900/[.08] p-3.5 sm:p-4 text-left hover:border-forest/30 transition">
+                    <span className="flex items-center gap-1 text-[11.5px] text-charcoal/55"><ArrowLeft className="w-3 h-3" /> Previous</span>
+                    <span className="mt-1 block font-lesson text-[17px] sm:text-[19px] font-semibold text-evergreen truncate">{String(currentIndex).padStart(2, '0')} · {moduleTitle(modules[currentIndex - 1].title)}</span>
+                  </button>
+                ) : <span />}
+                {currentIndex < modules.length - 1 ? (
+                  <button onClick={() => goTo(currentIndex + 1)} className="min-w-0 rounded-[18px] bg-forest text-ivory p-3.5 sm:p-4 text-right hover:bg-evergreen transition">
+                    <span className="flex items-center justify-end gap-1 text-[11.5px] text-ivory/70">Next <ChevronRight className="w-3 h-3" /></span>
+                    <span className="mt-1 block font-lesson text-[17px] sm:text-[19px] font-semibold truncate">{String(currentIndex + 2).padStart(2, '0')} · {moduleTitle(modules[currentIndex + 1].title)}</span>
+                  </button>
+                ) : (
+                  <button onClick={passedFinal ? onViewCertificate : openFinal} className="min-w-0 rounded-[18px] bg-forest text-ivory p-3.5 sm:p-4 text-right hover:bg-evergreen transition">
+                    <span className="flex items-center justify-end gap-1 text-[11.5px] text-ivory/70">Finish <ChevronRight className="w-3 h-3" /></span>
+                    <span className="mt-1 block font-lesson text-[17px] sm:text-[19px] font-semibold truncate">{passedFinal ? 'View certificate' : 'Final assessment'}</span>
+                  </button>
+                )}
+              </div>
+            </article>
+
+            {/* right rail (wide screens) */}
+            <aside className="hidden xl:block">
+              <div className="sticky top-6 space-y-4">
+                {sections.length > 0 && (
+                  <nav className="rounded-[20px] bg-white border border-brand-900/[.08] p-4" aria-label="On this page">
+                    <p className="text-[10.5px] font-bold uppercase tracking-[0.2em] text-charcoal/55 mb-2.5">On this page</p>
+                    <ul className="border-l border-brand-900/10">
+                      {sections.map(s => (
+                        <li key={s.id}>
+                          <button onClick={() => jumpTo(s.id)} className={`-ml-px w-full text-left pl-3 py-1.5 text-[12.5px] border-l-2 transition ${activeSec === s.id ? 'border-[#C49A52] text-evergreen font-semibold' : 'border-transparent text-charcoal/60 hover:text-evergreen'}`}>{s.title}</button>
+                        </li>
+                      ))}
+                    </ul>
+                  </nav>
+                )}
+                <div className="rounded-[20px] bg-brand-50/80 border border-brand-900/[.06] p-4">
+                  <p className="font-lesson text-[19px] font-semibold text-evergreen leading-tight">{practiceTotal ? 'Practice in this module' : 'Snippets in this module'}</p>
+                  {practiceTotal > 0 ? (
+                    <>
+                      <div className="mt-3 flex gap-1.5">
+                        {Array.from({ length: Math.min(practiceTotal, 8) }).map((_, k) => <span key={k} className={`h-1.5 flex-1 rounded-full ${k < practiceDoneCount ? 'bg-forest' : k === practiceDoneCount ? 'bg-[#C49A52]' : 'bg-white'}`} />)}
+                      </div>
+                      <p className="mt-2 text-[11.5px] text-charcoal/60">{practiceDoneCount} of {practiceTotal} done{practiceDoneCount ? ' · keep going!' : ''}</p>
+                    </>
+                  ) : <p className="mt-2 text-[11.5px] text-charcoal/60">{snippetCount} runnable snippets. Press Run on any of them.</p>}
+                </div>
+                <button onClick={() => (current.completed ? null : setQuizOpen(true))} className={`w-full h-11 rounded-xl text-[13.5px] font-semibold inline-flex items-center justify-center gap-2 transition ${current.completed ? 'bg-forest text-ivory cursor-default' : 'border border-forest/40 text-forest bg-white hover:bg-cream'}`}>
+                  <Check className="w-4 h-4" />{current.completed ? 'Module complete' : 'Mark module complete'}
+                </button>
+                {!current.completed && <p className="-mt-2 text-center text-[11px] text-charcoal/45">Pass the 5-question quiz to complete it</p>}
+              </div>
+            </aside>
           </div>
         </main>
       </div>
+
+      {/* lesson search */}
+      {searchOpen && (
+        <div className="fixed inset-0 z-[80] flex items-start justify-center p-3 sm:p-6 pt-16 sm:pt-24" role="dialog" aria-modal="true" aria-label="Search lessons">
+          <div className="absolute inset-0 bg-evergreen/50 backdrop-blur-sm animate-fade-in" onClick={() => setSearchOpen(false)} />
+          <div className="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden animate-scale-in">
+            <div className="flex items-center gap-2 px-4 border-b border-brand-900/10">
+              <Search className="w-4 h-4 text-charcoal/40" />
+              <input autoFocus value={searchQ} onChange={(e) => setSearchQ(e.target.value)} onKeyDown={(e) => e.key === 'Escape' && setSearchOpen(false)} placeholder="Search modules and sections" className="flex-1 h-12 text-[16px] outline-none bg-transparent" />
+              <button onClick={() => setSearchOpen(false)} className="p-1.5 rounded-lg text-charcoal/50 hover:bg-cream" aria-label="Close"><X className="w-4 h-4" /></button>
+            </div>
+            <ul className="max-h-[60vh] overflow-y-auto thin-scroll p-2">
+              {!searchQ.trim() && <li className="px-3 py-6 text-center text-[13px] text-charcoal/45">Type to find a module or a section.</li>}
+              {searchQ.trim() && !searchHits.length && <li className="px-3 py-6 text-center text-[13px] text-charcoal/45">Nothing matches “{searchQ}”.</li>}
+              {searchHits.map((h, k) => (
+                <li key={k}>
+                  <button onClick={() => { setSearchOpen(false); setSearchQ(''); if (h.kind === 'section') jumpTo(h.id); else goTo(h.i); }} className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-cream flex items-center gap-3">
+                    <span className="w-8 h-8 rounded-lg bg-brand-50 text-forest flex items-center justify-center shrink-0">{h.kind === 'section' ? <BookOpen className="w-4 h-4" /> : <Layers className="w-4 h-4" />}</span>
+                    <span className="min-w-0"><span className="block text-[14px] font-medium text-evergreen truncate">{h.label}</span><span className="block text-[11.5px] text-charcoal/50">{h.sub}</span></span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
 
       <ModuleQuizModal
         isOpen={quizOpen}

@@ -570,3 +570,9 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
   .welcome-sheet, .welcome-shine, .welcome-cta::after, .ws-scene, .ws-from-left, .ws-from-right, .ws-plus, .ws-pop, .ws-rise, .ws-row, .ws-ring, .stk-type, .stk-caret, .stk-bob, .stk-float, .stk-nod, .stk-bubble, .stk-stamp, .ws-orbit { animation: none !important; }
   .ws-check { stroke-dashoffset: 0; animation: none; }
 }
+
+/* ---------- Lesson page ---------- */
+.lesson-chip { display: inline-flex; align-items: center; gap: .375rem; height: 1.75rem; padding: 0 .75rem; border-radius: 9999px; background: #E6EEE9; color: #0C3B2E; font-size: 12px; font-weight: 600; }
+.lesson-chip-gold { background: #F5E9CF; color: #7E5F22; }
+.lesson-chip-done { background: #0C3B2E; color: #FBF8F1; }
+.lesson-body > * + * { margin-top: .75rem; }

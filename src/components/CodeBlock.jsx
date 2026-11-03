@@ -84,8 +84,8 @@ export default function CodeBlock({ code, label, language, courseId, compact = f
         <span className="ml-auto flex items-center gap-1 shrink-0">
           {title && <span className="hidden sm:inline-flex items-center h-5 px-2 mr-1 rounded-full bg-white/[0.07] border border-white/10 text-[9.5px] font-bold uppercase tracking-[0.14em] text-brand-200">{label || langLabel}</span>}
           {canRun && (
-            <button onClick={() => playground.open({ code: String(code), lang })} className="hidden sm:flex items-center gap-1.5 h-6 px-2.5 rounded-md bg-ivory text-brand-900 text-[11px] font-bold hover:bg-white hover:-translate-y-px transition" title="Open in the practice playground">
-              <Play className="w-3 h-3 fill-current" /> Try it
+            <button onClick={() => playground.open({ code: String(code), lang })} className="hidden sm:flex items-center gap-1.5 h-7 px-3 rounded-lg bg-gradient-to-b from-[#E5C88E] to-[#C49A52] text-[#2A1D08] text-[11.5px] font-bold hover:brightness-105 hover:-translate-y-px transition" title="Run it in the practice editor">
+              <Play className="w-3 h-3 fill-current" /> Run
             </button>
           )}
           <button onClick={copy} className="flex items-center gap-1 h-6 px-2 rounded-md text-[11px] text-brand-200 hover:text-white hover:bg-white/10 transition" aria-label="Copy code">

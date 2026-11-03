@@ -630,7 +630,7 @@ function AppShell() {
       {/* phones: the green welcome card, once per visit, on browsing pages only */}
       <PromoStory navigate={navigate} signedIn={!!studentUser} enabled={!adminUser && !isChromeless && !isAuthModal && !['learning', 'login', 'register', 'verify-email', 'forgot-password', 'reset-password', 'certificate'].includes(route.name)} />
 
-      {!isAuthModal && route.name !== 'home' && !(adminUser && route.name === 'dashboard') && (
+      {!isAuthModal && route.name !== 'home' && route.name !== 'learning' && !(adminUser && route.name === 'dashboard') && (
         <HomeButton onClick={() => navigate(paths.home())} aboveBottomNav={false} />
       )}
 
