@@ -517,26 +517,35 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
   .mission-pulse, .mission-twinkle, .mission-hover, .mission-flame, .mission-coin, .mission-coin-in, .mission-pin { animation: none !important; }
 }
 
-/* ---------- Phone welcome card (green palette) ---------- */
-.welcome-sheet { animation: welcomeUp .55s cubic-bezier(.2,.95,.3,1) both; }
+/* ---------- Phone welcome card (lime-forest palette, looping story) ---------- */
+.welcome-sheet { animation: welcomeUp .5s cubic-bezier(.2,.95,.3,1) both; }
 @keyframes welcomeUp { from { transform: translateY(105%); } to { transform: translateY(0); } }
-.welcome-card-fan { transform: translateY(var(--y)) rotate(var(--r)); transform-origin: 50% 100%; animation: welcomeFan .75s var(--d, 0ms) cubic-bezier(.2,1.25,.4,1) both; }
-@keyframes welcomeFan { from { transform: translateY(150px) rotate(0deg); opacity: 0; } 60% { opacity: 1; } to { transform: translateY(var(--y)) rotate(var(--r)); opacity: 1; } }
-.welcome-badge { animation: welcomeBadge .5s .75s cubic-bezier(.2,1.6,.4,1) both; }
-@keyframes welcomeBadge { from { transform: translateX(-50%) scale(0); } to { transform: translateX(-50%) scale(1); } }
-.welcome-up { animation: welcomeFade .5s var(--d, 0ms) cubic-bezier(.2,1,.3,1) both; }
-@keyframes welcomeFade { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
-.welcome-word { animation: welcomeWord .45s cubic-bezier(.2,1,.3,1) both; }
-@keyframes welcomeWord { from { transform: translateY(60%); opacity: 0; filter: blur(4px); } to { transform: none; opacity: 1; filter: none; } }
-.welcome-shine { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 38%, rgba(227,239,38,.12) 50%, transparent 62%); background-size: 260% 100%; animation: emeraldSheen 5.5s 1.4s ease-in-out infinite; }
-.welcome-cta::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,.65) 50%, transparent 65%); transform: translateX(-120%); animation: welcomeCtaShine 3.2s 1.8s ease-in-out infinite; }
+.welcome-shine { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 38%, rgba(227,239,38,.10) 50%, transparent 62%); background-size: 260% 100%; animation: emeraldSheen 6s 1.2s ease-in-out infinite; }
+.welcome-cta::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,.7) 50%, transparent 65%); transform: translateX(-120%); animation: welcomeCtaShine 3.2s 1.5s ease-in-out infinite; }
 @keyframes welcomeCtaShine { 0%, 55% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+.ws-scene { animation: wsIn .35s ease-out both; }
+@keyframes wsIn { from { opacity: 0; } to { opacity: 1; } }
+.ws-from-left { animation: wsLeft .55s cubic-bezier(.2,1,.3,1) both; }
+.ws-from-right { animation: wsRight .55s .12s cubic-bezier(.2,1,.3,1) both; }
+@keyframes wsLeft { from { transform: translateX(-48px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes wsRight { from { transform: translateX(48px); opacity: 0; } to { transform: none; opacity: 1; } }
+.ws-plus { animation: wsPop .5s .3s cubic-bezier(.2,1.6,.4,1) both; }
+.ws-pop { animation: wsPop .5s .1s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes wsPop { from { transform: scale(0); } to { transform: scale(1); } }
+.ws-rise { animation: wsRise .6s cubic-bezier(.2,1,.3,1) both; }
+@keyframes wsRise { from { transform: translateY(80px); } to { transform: none; } }
+.ws-row { animation: wsRow .4s ease both; }
+@keyframes wsRow { from { transform: translateY(12px) scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
+.ws-chip { animation: wsChip .55s .1s cubic-bezier(.2,1.5,.4,1) both; }
+.ws-chip-2 { animation-delay: .32s; }
+@keyframes wsChip { from { transform: translateY(70px) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+.ws-ring { animation: wsRing 1.4s .2s ease-out infinite; }
+@keyframes wsRing { from { transform: scale(.85); opacity: 1; } to { transform: scale(1.22); opacity: 0; } }
+.ws-orbit { animation: wsOrbit 2.4s linear infinite; }
+@keyframes wsOrbit { to { transform: rotate(360deg); } }
+.ws-check { stroke-dasharray: 40; stroke-dashoffset: 40; animation: wsDraw .45s .45s ease-out forwards; }
+@keyframes wsDraw { to { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .welcome-sheet, .welcome-card-fan, .welcome-badge, .welcome-up, .welcome-word, .welcome-shine, .welcome-cta::after { animation: none !important; opacity: 1; }
+  .welcome-sheet, .welcome-shine, .welcome-cta::after, .ws-scene, .ws-from-left, .ws-from-right, .ws-plus, .ws-pop, .ws-rise, .ws-row, .ws-chip, .ws-ring, .ws-orbit { animation: none !important; }
+  .ws-check { stroke-dashoffset: 0; animation: none; }
 }
-
-/* ---------- Phone hero (green palette) ---------- */
-.m-hero-in { animation: welcomeFade .6s cubic-bezier(.2,1,.3,1) both; }
-.m-code-swap { animation: mCodeSwap .45s cubic-bezier(.2,1,.3,1) both; }
-@keyframes mCodeSwap { from { opacity: 0; transform: translateY(8px); clip-path: inset(0 0 100% 0); } to { opacity: 1; transform: none; clip-path: inset(0 0 0 0); } }
-@media (prefers-reduced-motion: reduce) { .m-hero-in, .m-code-swap { animation: none !important; } }
