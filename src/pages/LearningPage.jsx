@@ -329,7 +329,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
               {sec.note && (
                 <div className="flex gap-3.5 rounded-[18px] border border-brand-900/[.08] bg-brand-50/70 px-4 py-4">
                   <span className="w-9 h-9 rounded-xl bg-forest text-[#E5C88E] flex items-center justify-center shrink-0"><Lightbulb className="w-4 h-4" /></span>
-                  <div className="min-w-0"><p className="font-lesson text-[18px] font-semibold text-evergreen leading-tight">Remember</p><p className="mt-1 text-[15px] leading-relaxed text-charcoal/80">{sec.note}</p></div>
+                  <div className="min-w-0"><p className="font-display text-[18px] font-semibold text-evergreen leading-tight">Remember</p><p className="mt-1 text-[15px] leading-relaxed text-charcoal/80">{sec.note}</p></div>
                 </div>
               )}
             </div>
@@ -490,7 +490,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
           {pe && (
             <div className="practice-card rounded-[22px] bg-[#0C3B2E] text-ivory p-4 sm:p-6 space-y-3.5 shadow-[0_24px_50px_-30px_rgba(12,45,38,.9)]">
               <p className="flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.2em] text-[#D9B776]">Practice {current ? `${currentIndex + 1}.1` : ''} <span className="px-2 py-0.5 rounded-md bg-white/10 text-ivory/80 tracking-normal normal-case font-semibold">Module exercise</span></p>
-              <p className="font-lesson text-[24px] sm:text-[27px] font-semibold leading-tight">{cleanText(pe.title)}</p>
+              <p className="font-display text-[24px] sm:text-[27px] font-semibold leading-tight">{cleanText(pe.title)}</p>
               {pe.problem && <p className="text-[15px] text-ivory/80 whitespace-pre-line leading-7">{cleanLines(pe.problem)}</p>}
               {pe.starterCode && <CodeBlock courseId={course.id} code={pe.starterCode} label="starter code" />}
               {(pe.solutionCode || pe.starterCode) && (
@@ -629,7 +629,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         <div className="flex items-center gap-3 px-1.5 pt-1.5 pb-3">
           <ProgressRing value={(done / total) * 100} size={46} label={`${done}/${modules.length}`} />
           <div className="min-w-0">
-            <p className="font-lesson text-[21px] font-semibold text-evergreen leading-none">Course path</p>
+            <p className="font-display text-[21px] font-semibold text-evergreen leading-none">Course path</p>
             <p className="mt-1 text-[11.5px] text-charcoal/55">{modules.length} modules · {course.modules.reduce((n, m) => n + runnableCount(m.readingMaterial || {}), 0)} practice snippets</p>
           </div>
         </div>
@@ -772,12 +772,12 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                 <span className="font-semibold text-evergreen">Module {num}</span>
               </nav>
               <div className="mt-4 sm:mt-6 flex items-end gap-3 sm:gap-4">
-                <span className="font-lesson text-[64px] sm:text-[96px] leading-[.78] font-semibold text-[#C49A52] [font-variant-numeric:oldstyle-nums]">{num}</span>
+                <span className="font-display text-[58px] sm:text-[84px] leading-[.8] font-semibold text-[#C49A52] tracking-tight">{num}</span>
                 <p className="pb-2 sm:pb-3 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#A8823F] leading-relaxed">Module {numberWord(currentIndex + 1)} · {displayTitle(course.title)}</p>
               </div>
-              <h1 className="mt-3 sm:mt-4 font-lesson text-[32px] sm:text-[46px] font-semibold leading-[1.05] text-evergreen">
+              <h1 className="mt-3 sm:mt-4 font-display text-[30px] sm:text-[42px] font-semibold leading-[1.1] tracking-[-0.02em] text-evergreen">
                 {titleMain}
-                {titleRest && <span className="block italic font-medium text-forest/90">{titleRest}</span>}
+                {titleRest && <span className="block font-medium text-sage">{titleRest}</span>}
               </h1>
               <div className="mt-4 flex flex-wrap gap-2">
                 <span className="lesson-chip"><Clock className="w-3.5 h-3.5" />{readingMinutes(rm)} min read</span>
@@ -785,7 +785,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                 {practiceTotal > 0 && <span className="lesson-chip lesson-chip-gold"><Star className="w-3.5 h-3.5" />{practiceTotal} practice task{practiceTotal === 1 ? '' : 's'}</span>}
                 <span className={`lesson-chip ${current.completed ? 'lesson-chip-done' : ''}`}>{current.completed ? <><CheckCircle2 className="w-3.5 h-3.5" /> Quiz done{myScore !== undefined ? ` · ${myScore}%` : ''}</> : <><ListChecks className="w-3.5 h-3.5" /> Quiz pending</>}</span>
               </div>
-              {current.description && <p className="mt-5 sm:mt-6 font-lesson text-[19px] sm:text-[22px] leading-[1.5] text-charcoal/85">{cleanText(current.description)}</p>}
+              {current.description && <p className="mt-5 sm:mt-6 text-[17px] sm:text-[19px] leading-[1.65] text-charcoal/75">{cleanText(current.description)}</p>}
 
               {/* below xl: the "on this page" list as a scrollable row */}
               {sections.length > 2 && (
@@ -800,7 +800,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
 
               {sections.map((s, i) => (
                 <section key={s.id} id={`sec-${s.id}`} data-sec={s.id} className="scroll-mt-4 mt-10 sm:mt-14">
-                  <h2 className="flex items-baseline gap-2.5 font-lesson text-[26px] sm:text-[32px] font-semibold leading-tight text-evergreen">
+                  <h2 className="flex items-baseline gap-2.5 font-display text-[22px] sm:text-[27px] font-semibold leading-tight tracking-[-0.01em] text-evergreen">
                     <span className="font-mono text-[12px] sm:text-[13px] font-semibold text-[#A8823F] translate-y-[-3px]">{currentIndex + 1}.{i + 1}</span>
                     <span className="min-w-0">{s.title}</span>
                   </h2>
@@ -812,7 +812,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
               <section id="quiz-cta" className="mt-12 rounded-[22px] bg-white border border-brand-900/[.08] p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 shadow-[0_18px_40px_-30px_rgba(12,45,38,.5)]">
                 <span className="w-12 h-12 rounded-2xl bg-forest text-[#E5C88E] flex items-center justify-center shrink-0"><ListChecks className="w-6 h-6" /></span>
                 <div className="flex-1">
-                  <p className="font-lesson text-[22px] font-semibold text-evergreen leading-tight">Module {num} quiz</p>
+                  <p className="font-display text-[22px] font-semibold text-evergreen leading-tight">Module {num} quiz</p>
                   <p className="text-[13.5px] text-charcoal/60">5 questions · unlimited retakes. Finishing it marks this module complete.</p>
                 </div>
                 <button onClick={() => setQuizOpen(true)} className={`h-11 px-5 rounded-xl text-[14px] font-semibold ${current.completed ? 'border border-forest/30 text-forest hover:bg-cream' : 'bg-forest text-ivory hover:bg-evergreen'}`}>
@@ -825,18 +825,18 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                 {currentIndex > 0 ? (
                   <button onClick={() => goTo(currentIndex - 1)} className="min-w-0 rounded-[18px] bg-white border border-brand-900/[.08] p-3.5 sm:p-4 text-left hover:border-forest/30 transition">
                     <span className="flex items-center gap-1 text-[11.5px] text-charcoal/55"><ArrowLeft className="w-3 h-3" /> Previous</span>
-                    <span className="mt-1 block font-lesson text-[17px] sm:text-[19px] font-semibold text-evergreen truncate">{String(currentIndex).padStart(2, '0')} · {moduleTitle(modules[currentIndex - 1].title)}</span>
+                    <span className="mt-1 block font-display text-[17px] sm:text-[19px] font-semibold text-evergreen truncate">{String(currentIndex).padStart(2, '0')} · {moduleTitle(modules[currentIndex - 1].title)}</span>
                   </button>
                 ) : <span />}
                 {currentIndex < modules.length - 1 ? (
                   <button onClick={() => goTo(currentIndex + 1)} className="min-w-0 rounded-[18px] bg-forest text-ivory p-3.5 sm:p-4 text-right hover:bg-evergreen transition">
                     <span className="flex items-center justify-end gap-1 text-[11.5px] text-ivory/70">Next <ChevronRight className="w-3 h-3" /></span>
-                    <span className="mt-1 block font-lesson text-[17px] sm:text-[19px] font-semibold truncate">{String(currentIndex + 2).padStart(2, '0')} · {moduleTitle(modules[currentIndex + 1].title)}</span>
+                    <span className="mt-1 block font-display text-[17px] sm:text-[19px] font-semibold truncate">{String(currentIndex + 2).padStart(2, '0')} · {moduleTitle(modules[currentIndex + 1].title)}</span>
                   </button>
                 ) : (
                   <button onClick={passedFinal ? onViewCertificate : openFinal} className="min-w-0 rounded-[18px] bg-forest text-ivory p-3.5 sm:p-4 text-right hover:bg-evergreen transition">
                     <span className="flex items-center justify-end gap-1 text-[11.5px] text-ivory/70">Finish <ChevronRight className="w-3 h-3" /></span>
-                    <span className="mt-1 block font-lesson text-[17px] sm:text-[19px] font-semibold truncate">{passedFinal ? 'View certificate' : 'Final assessment'}</span>
+                    <span className="mt-1 block font-display text-[17px] sm:text-[19px] font-semibold truncate">{passedFinal ? 'View certificate' : 'Final assessment'}</span>
                   </button>
                 )}
               </div>
@@ -858,7 +858,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                   </nav>
                 )}
                 <div className="rounded-[20px] bg-brand-50/80 border border-brand-900/[.06] p-4">
-                  <p className="font-lesson text-[19px] font-semibold text-evergreen leading-tight">{practiceTotal ? 'Practice in this module' : 'Snippets in this module'}</p>
+                  <p className="font-display text-[19px] font-semibold text-evergreen leading-tight">{practiceTotal ? 'Practice in this module' : 'Snippets in this module'}</p>
                   {practiceTotal > 0 ? (
                     <>
                       <div className="mt-3 flex gap-1.5">
