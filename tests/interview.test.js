@@ -130,6 +130,32 @@ describe('interview progress API', () => {
     expect(p.certificates.earned).toBe(4);
   });
 
+  it('is always open to an admin, even alongside a locked learner session', async () => {
+    await setCertificates([]);
+    const jwt = (await import('jsonwebtoken')).default;
+    const { JWT_SECRET } = await import('../server/middleware/auth.js');
+    const { getDb } = await import('../server/db.js');
+    const admin = `Bearer ${jwt.sign({ role: 'admin', adminId: getDb().admin.adminId }, JWT_SECRET)}`;
+    const p = (await request(app).get('/api/interview/progress').set('X-Learner-Token', tok).set('Authorization', admin)).body;
+    expect(p.unlocked).toBe(true);
+    expect((await request(app).post('/api/interview/solved').set('X-Learner-Token', tok).set('Authorization', admin).send({ setId: 'sql-50', itemId: 'sql-01' })).status).toBe(200);
+    // a forged admin token does not open it
+    const fake = `Bearer ${jwt.sign({ role: 'admin', adminId: getDb().admin.adminId }, 'wrong-secret')}`;
+    expect((await request(app).get('/api/interview/progress').set('X-Learner-Token', tok).set('Authorization', fake)).body.unlocked).toBe(false);
+  });
+
+  it('opens for everyone signed in when INTERVIEW_LOCK=off', async () => {
+    await setCertificates([]);
+    process.env.INTERVIEW_LOCK = 'off';
+    try {
+      expect((await request(app).get('/api/interview/progress').set('X-Learner-Token', tok)).body.unlocked).toBe(true);
+      expect((await request(app).post('/api/interview/solved').set('X-Learner-Token', tok).send({ setId: 'sql-50', itemId: 'sql-01' })).status).toBe(200);
+    } finally {
+      delete process.env.INTERVIEW_LOCK;
+    }
+    expect((await request(app).get('/api/interview/progress').set('X-Learner-Token', tok)).body.unlocked).toBe(false);
+  });
+
   it('records, lists and clears solved items', async () => {
     await allFour();
     const mark = (body) => request(app).post('/api/interview/solved').set('X-Learner-Token', tok).send(body);

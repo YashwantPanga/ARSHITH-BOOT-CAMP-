@@ -135,7 +135,7 @@ function useInterviewProgress(studentUser, isAdmin = false) {
       setPlans(r.plans || {});
       setUnlocked(r.unlocked !== false);
       setCertificates(r.certificates || null);
-    }).catch(() => { if (live) setUnlocked(false); });
+    }).catch(() => { if (live) setUnlocked(!!isAdmin); });
     return () => { live = false; };
   }, [email, isAdmin]);
   const mark = useCallback(async (setId, itemId, solved = true) => {

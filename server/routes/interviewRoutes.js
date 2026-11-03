@@ -1,5 +1,6 @@
 import express from 'express';
 import { getDb, saveDb } from '../db.js';
+import { readAdminSession } from '../middleware/auth.js';
 import { findInterviewItem, findInterviewSet } from '../../shared/interview/index.js';
 
 // Interview Prep progress: which problems a learner has solved (or questions marked as known).
@@ -8,6 +9,7 @@ import { findInterviewItem, findInterviewSet } from '../../shared/interview/inde
 // A learner may also commit to a daily plan per set: db.interviewPlans[email][setId] =
 // { perDay, days (0 = Sunday ... 6 = Saturday), startedAt }.
 // Interview Prep unlocks once the learner holds active (not revoked) certificates for 4 different courses.
+// Admins can always open it, even when the same browser also holds a learner session.
 const router = express.Router();
 
 export const INTERVIEW_CERTIFICATES_REQUIRED = 4;
@@ -23,18 +25,23 @@ export function certificateCount(db, email) {
   return new Set(courses).size;
 }
 
+/** INTERVIEW_LOCK=off opens Interview Prep for every signed-in learner (e.g. while working on it). */
+export const interviewLockOff = () => String(process.env.INTERVIEW_LOCK || '').trim().toLowerCase() === 'off';
+
 export function interviewUnlocked(db, email) {
+  if (interviewLockOff()) return true;
   return certificateCount(db, email) >= INTERVIEW_CERTIFICATES_REQUIRED;
 }
 
-/** Learners without a certificate may not record progress; admins (no learner session) pass. */
-function lockedFor(req, db) {
-  return req.learnerEmail && !interviewUnlocked(db, req.learnerEmail);
+/** Open for admins and for learners with 4 certificates; a request with no learner session is an admin's. */
+function openFor(req, db) {
+  return !req.learnerEmail || !!readAdminSession(req) || interviewUnlocked(db, req.learnerEmail);
 }
+const lockedFor = (req, db) => !openFor(req, db);
 
 router.get('/interview/progress', (req, res) => {
   const db = getDb();
-  const unlocked = !req.learnerEmail || interviewUnlocked(db, req.learnerEmail);
+  const unlocked = openFor(req, db);
   const certificates = { earned: certificateCount(db, req.learnerEmail), required: INTERVIEW_CERTIFICATES_REQUIRED };
   res.json({ success: true, unlocked, certificates, progress: db.interviewProgress?.[req.query.userId] || {}, plans: db.interviewPlans?.[req.query.userId] || {} });
 });
