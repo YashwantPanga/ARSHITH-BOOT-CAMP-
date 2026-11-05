@@ -254,7 +254,7 @@ function LockedPrep({ signedIn, certificates, purchase, onPaid, navigate }) {
           {/* phones: one row that scrolls sideways */}
           <div className="mt-3 sm:mt-4 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto no-scrollbar snap-x scroll-px-4 -mx-4 px-4 sm:mx-0 sm:px-0 pb-1" aria-hidden="true">
             {INTERVIEW_SETS.map(s => (
-              <div key={s.id} className="relative pointer-events-none select-none shrink-0 snap-start">
+              <div key={s.id} className="relative h-full pointer-events-none select-none shrink-0 snap-start">
                 <QuestCard set={s} solved={0} signedIn={false} onOpen={() => {}} />
                 <span className="absolute right-3 top-3 w-7 h-7 rounded-full bg-brand-50 text-forest flex items-center justify-center"><Lock className="w-3.5 h-3.5" /></span>
               </div>

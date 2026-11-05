@@ -101,8 +101,8 @@ export function QuestCard({ set, solved, signedIn, onOpen }) {
   const Icon = ICONS[set.icon] || Code2;
   const counts = DIFF.map(([d, c]) => [d, c, set.items.filter(i => i.difficulty === d).length]).filter(([, , n]) => n);
   return (
-    <button onClick={onOpen} className="group edu-card text-left shrink-0 snap-start w-[264px] sm:w-auto h-full p-4 sm:p-5 flex flex-col items-start transition duration-200 hover:-translate-y-0.5 hover:border-sage/50 hover:shadow-[0_20px_36px_-24px_rgba(1,58,43,.5)]">
-      <span className="flex items-center gap-3 min-w-0">
+    <button onClick={onOpen} className="group edu-card text-left shrink-0 snap-start w-[264px] sm:w-full h-full p-4 sm:p-5 flex flex-col items-start transition duration-200 hover:-translate-y-0.5 hover:border-sage/50 hover:shadow-[0_20px_36px_-24px_rgba(1,58,43,.5)]">
+      <span className="flex items-center gap-3 min-w-0 pr-7">
         <span className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-ivory" style={{ background: q.bg }}><Icon className="w-5 h-5" /></span>
         <span className="font-display text-[11.5px] font-semibold uppercase tracking-[0.12em] text-charcoal/55 line-clamp-2">{q.track}</span>
       </span>
