@@ -255,8 +255,8 @@ function LockedPrep({ signedIn, certificates, purchase, onPaid, navigate }) {
           <div className="mt-3 sm:mt-4 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto no-scrollbar snap-x scroll-px-4 -mx-4 px-4 sm:mx-0 sm:px-0 pb-1" aria-hidden="true">
             {INTERVIEW_SETS.map(s => (
               <div key={s.id} className="relative h-full pointer-events-none select-none shrink-0 snap-start">
-                <QuestCard set={s} solved={0} signedIn={false} onOpen={() => {}} />
-                <span className="absolute right-3 top-3 w-7 h-7 rounded-full bg-brand-50 text-forest flex items-center justify-center"><Lock className="w-3.5 h-3.5" /></span>
+                <div className="h-full grayscale-[.35] opacity-60"><QuestCard set={s} solved={0} signedIn={false} onOpen={() => {}} /></div>
+                <span className="absolute right-3 bottom-3 w-9 h-9 rounded-full bg-ivory/95 text-forest flex items-center justify-center shadow"><Lock className="w-4 h-4" /></span>
               </div>
             ))}
           </div>
@@ -308,7 +308,7 @@ function PrepHome({ progress, signedIn, navigate }) {
                 const theme = THEMES[s.theme];
                 return (
                   <button key={s.id} onClick={() => navigate(paths.interview(s.id))} className="edu-card p-3 flex items-center gap-4 text-left hover:border-sage/50 hover:-translate-y-0.5 transition">
-                    <span className="w-[72px] h-[72px] rounded-xl flex items-center justify-center shrink-0 shadow-[0_8px_18px_-10px_rgba(1,58,43,.8)]" style={{ background: QUEST[s.id]?.bg }}><SetIcon icon={s.icon} glow={theme.glow} className="w-12 h-12" /></span>
+                    <span className="w-[72px] h-[72px] rounded-xl flex items-center justify-center shrink-0 shadow-[0_8px_18px_-10px_rgba(20,10,60,.8)]" style={{ background: QUEST[s.id]?.bg }}><SetIcon icon={s.icon} glow={theme.glow} className="w-12 h-12" /></span>
                     <span className="flex-1 min-w-0 pr-2">
                       <span className="block font-display text-[16px] font-semibold text-evergreen truncate">{s.title}</span>
                       <span className="block mt-2.5"><ProgressBar value={solved} total={s.items.length} /></span>
@@ -322,7 +322,7 @@ function PrepHome({ progress, signedIn, navigate }) {
         )}
 
         <section className="mt-12">
-          <h2 className="font-display text-[22px] font-bold text-evergreen">All study plans</h2>
+          <h2 className="font-display text-[22px] font-bold text-evergreen">Featured</h2>
           <div className="mt-4 -mx-4 px-4 flex gap-3.5 overflow-x-auto no-scrollbar snap-x scroll-px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-4 sm:overflow-visible">
             {INTERVIEW_SETS.map(s => (
               <QuestCard key={s.id} set={s} solved={Object.keys(progress[s.id] || {}).length} signedIn={signedIn} onOpen={() => navigate(paths.interview(s.id))} />
@@ -338,7 +338,7 @@ function PrepHome({ progress, signedIn, navigate }) {
               const solved = Object.keys(progress[s.id] || {}).length;
               return (
                 <button key={s.id} onClick={() => navigate(paths.interview(s.id))} className="edu-card p-3 flex items-center gap-4 text-left hover:border-sage/50 hover:-translate-y-0.5 transition">
-                  <span className="w-[76px] h-[76px] rounded-xl flex items-center justify-center shrink-0 shadow-[0_8px_18px_-10px_rgba(1,58,43,.8)]" style={{ background: QUEST[s.id]?.bg }}><SetIcon icon={s.icon} glow={theme.glow} className="w-14 h-14" /></span>
+                  <span className="w-[76px] h-[76px] rounded-xl flex items-center justify-center shrink-0 shadow-[0_8px_18px_-10px_rgba(20,10,60,.8)]" style={{ background: QUEST[s.id]?.bg }}><SetIcon icon={s.icon} glow={theme.glow} className="w-14 h-14" /></span>
                   <span className="flex-1 min-w-0 pr-2">
                     <span className="block font-display text-[17px] font-semibold text-evergreen">{s.title}</span>
                     <span className="block text-[13px] text-charcoal/60 mt-0.5">{s.tagline}</span>
@@ -403,7 +403,7 @@ function SetPage({ set, progress, plans, savePlan, signedIn, navigate, studentUs
         </nav>
 
         <div className="mt-4">
-          <QuestHero set={set} solvedMap={solvedMap} signedIn={signedIn} next={next} topics={topics}
+          <QuestHero set={set} solvedMap={solvedMap} signedIn={signedIn} playerName={studentUser?.name} next={next} topics={topics}
             onStart={() => navigate(paths.interview(set.id, next.id))} onPlan={set.kind !== 'concept' ? openPlan : null} hasPlan={!!plan} />
         </div>
 
