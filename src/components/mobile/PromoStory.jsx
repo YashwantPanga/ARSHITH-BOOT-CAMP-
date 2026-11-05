@@ -30,7 +30,7 @@ function ScenePair() {
           <img src="/course-cards/python-programming.webp" alt="" className="w-full h-full object-cover" />
         </span>
         <span className="text-left">
-          <span className="block font-display text-[19px] font-bold leading-tight">Free courses</span>
+          <span className="block font-display text-[19px] font-bold leading-tight">Courses from ₹99</span>
           <span className="block text-[13px] text-white/65">Learn <span style={{ color: P.lime }}>here</span></span>
         </span>
       </div>
@@ -149,7 +149,7 @@ function WelcomeCard({ onClose, navigate, signedIn }) {
           <button onClick={() => go(signedIn ? paths.dashboard() : paths.register())}
             className="welcome-cta relative overflow-hidden w-full h-[52px] rounded-2xl font-display font-bold text-[17px] active:translate-y-[2px] transition"
             style={{ background: P.lime, color: P.night, boxShadow: `0 14px 30px -14px ${P.lime}` }}>
-            {signedIn ? 'Continue learning' : 'Enroll for free'}
+            {signedIn ? 'Continue learning' : 'Enroll now'}
           </button>
         </div>
         <p className="mt-3 px-6 flex items-center justify-center gap-1.5 text-[11.5px] text-white/50">

@@ -13,6 +13,7 @@ let token;
 beforeAll(async () => {
   fs.copyFileSync(path.join(__dirname, '..', 'server', 'data', 'db.json'), tmp);
   process.env.ARB_DB_FILE = tmp;
+  process.env.PAID_COURSES = 'off';
   process.env.NODE_ENV = 'test';
   process.env.ARB_OUTBOX_DIR = path.join(os.tmpdir(), `arb-outbox-${process.pid}`);
   app = (await import('../server/app.js')).default;

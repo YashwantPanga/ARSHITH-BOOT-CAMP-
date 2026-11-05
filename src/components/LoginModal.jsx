@@ -86,7 +86,7 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
         <h1 className={`${asModal ? 'text-[24px] sm:text-[26px]' : 'text-[28px] sm:text-[30px]'} font-bold leading-tight text-charcoal pr-8`}>{isSignup ? 'Create your account' : 'Log in to your account'}</h1>
         <p className={`mt-2 ${asModal ? 'text-[15px]' : 'text-[16px]'} leading-relaxed text-charcoal/65`}>
           {isSignup
-            ? 'Learn industry skills with free, mentor-written courses and earn a QR-verified certificate.'
+            ? 'Learn industry skills with mentor-written courses and earn a QR-verified certificate.'
             : 'Learn on your own time with mentor-written courses and quizzes after every module.'}
         </p>
 

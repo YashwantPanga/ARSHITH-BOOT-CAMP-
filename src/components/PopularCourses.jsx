@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Clock } from 'lucide-react';
-import CourseCard, { courseArt } from './CourseCard';
+import CourseCard, { courseArt, priceLabel, BestSellerBadge } from './CourseCard';
 import { SafeImg } from './ui';
 import { hoursOf } from '../data/meta';
 import { cleanText, displayTitle } from '../utils/textUtils';
@@ -19,8 +19,8 @@ export default function PopularCourses({ courses, enrolledCourseId, offer, onSel
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Free certificate courses</p>
-            <RevealText as="h2" className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight max-w-2xl">Access <b>free certificate courses</b>, built by industry mentors</RevealText>
+            <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Certificate courses</p>
+            <RevealText as="h2" className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight max-w-2xl">Job-ready <b>certificate courses</b>, built by industry mentors</RevealText>
           </div>
           <button onClick={onViewAllCourses} className="hidden sm:inline-flex font-display items-center gap-2 h-12 px-6 rounded-md bg-forest text-ivory text-[15px] font-semibold hover:bg-sage transition-colors self-start sm:self-auto group shrink-0">
             View all courses <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -66,13 +66,14 @@ export default function PopularCourses({ courses, enrolledCourseId, offer, onSel
 /** One course as a medium card (phones, two per row): picture, provider, title, key facts and price. */
 export function CourseRow({ course, enrolledCourseId, offer, onSelect }) {
   const isMine = offer?.enrolledIds ? offer.enrolledIds.includes(course.id) : enrolledCourseId === course.id;
-  const tag = isMine ? 'Enrolled' : offer?.price > 0 ? `₹${offer.price}` : 'Free';
+  const tag = isMine ? 'Enrolled' : priceLabel(course);
   return (
     <button onClick={() => onSelect(course.id)} className="group h-full flex flex-col rounded-2xl bg-white border border-brand-900/10 overflow-hidden text-left shadow-[0_10px_24px_-18px_rgba(1,58,43,.55)] active:scale-[.98] transition">
       {/* the course art is 16:10 - show all of it so the course name on the picture is never cut off */}
       <span className="relative block w-full aspect-[16/10] bg-forest overflow-hidden">
         <SafeImg src={courseArt(course)} alt="" className="w-full h-full object-cover" />
         <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10.5px] font-bold shadow-sm ${isMine ? 'bg-forest text-ivory' : 'bg-white/95 text-forest'}`}>{tag}</span>
+        {course.bestSeller && !isMine && <BestSellerBadge className="absolute right-1.5 top-1.5 !px-1.5 !py-0.5 !text-[9px]" />}
       </span>
       <span className="flex-1 flex flex-col p-2.5">
         <span className="flex items-center gap-1 min-w-0">

@@ -114,7 +114,7 @@ export function courseClosed(db, userId, courseId) {
   return isEnrolled(db, userId, courseId) && !getPassedFinalAttempt(db, userId, courseId)
     && finalAttemptsUsed(db, userId, courseId) >= MAX_FINAL_ATTEMPTS;
 }
-export const COURSE_CLOSED_MESSAGE = 'You used both final attempts for this course. Start it again to redo every module and get two fresh attempts.';
+export const COURSE_CLOSED_MESSAGE = 'You used both final attempts for this course. Unlock it again to redo every module and get two fresh attempts.';
 
 /** Returns an error message when the learner may not work on this course. */
 function enrollmentConflict(db, userId, courseId, { allowClosed = false } = {}) {

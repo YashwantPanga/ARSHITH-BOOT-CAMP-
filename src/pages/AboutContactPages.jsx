@@ -6,7 +6,7 @@ import { api } from '../services/api';
 
 export function AboutPage({ onExplore, onHome }) {
   const values = [
-    { icon: Target, title: 'Mission', text: 'Make rigorous, job-ready technical education free and accessible to every learner.' },
+    { icon: Target, title: 'Mission', text: 'Make rigorous, job-ready technical education affordable and accessible to every learner.' },
     { icon: Eye, title: 'Vision', text: 'Certificates that mean something — earned through real assessments, verifiable by anyone.' },
     { icon: HeartHandshake, title: 'Approach', text: 'Deep reading, frequent practice, honest scoring and one focused course at a time.' }
   ];

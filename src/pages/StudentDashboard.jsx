@@ -31,7 +31,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
   const history = enrollState?.history || [];
   const courseState = course ? enrollState?.courses?.[course.id] : null;
   const canStartNext = courseState === 'passed' || courseState === 'failed';
-  const nextPrice = enrollState?.nextPrice || 0;
+  const retakePrice = Number(course?.price) || 0; // what this course costs to buy again
 
   const stats = [
     { label: 'Course progress', value: course ? `${course.progress || 0}%` : '-', icon: BookOpen },
@@ -97,7 +97,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
             <div className="edu-card p-8 sm:p-12 text-center max-w-2xl mx-auto">
               <span className="mx-auto w-14 h-14 rounded-full bg-brand-100 text-forest flex items-center justify-center"><BookOpen className="w-7 h-7" /></span>
               <h2 className="mt-4 text-2xl font-semibold text-evergreen">You haven't enrolled in a course yet</h2>
-              <p className="mt-2 text-charcoal/65">Every course is <strong>free</strong>. Pick one, finish the modules, pass the final assessment and earn your certificate.</p>
+              <p className="mt-2 text-charcoal/65">Pick a course, finish the modules, pass the final assessment and earn your certificate.</p>
               <button onClick={onExploreCourses} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage mt-6 px-6 py-3">Browse courses <ArrowRight className="w-4 h-4" /></button>
             </div>
           ) : (
@@ -133,7 +133,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
                     </div>
                     <div className="mt-5 flex flex-wrap gap-2">
                       {courseState === 'failed'
-                        ? <button onClick={() => onUnlock?.(course.id)} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage px-5 py-2.5"><Lock className="w-4 h-4" />{nextPrice ? `Unlock again for ₹${nextPrice}` : 'Start the course again'}</button>
+                        ? <button onClick={() => onUnlock?.(course.id)} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage px-5 py-2.5"><Lock className="w-4 h-4" />{retakePrice ? `Buy again for ₹${retakePrice}` : 'Start the course again'}</button>
                         : <button onClick={() => onContinue(course.id, nextModule?.id)} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage px-5 py-2.5"><PlayCircle className="w-4 h-4" />{done ? 'Continue learning' : 'Start learning'}</button>}
                       <button onClick={() => onOpenCourse(course.id)} className="btn font-display !rounded-md bg-cream text-forest border border-forest/20 hover:border-forest px-5 py-2.5">Course details</button>
                     </div>
@@ -163,12 +163,12 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
               <div className="space-y-6 min-w-0 order-2 lg:order-none lg:col-start-3 lg:row-start-1 lg:row-span-2">
                 {canStartNext && (
                   <div className="edu-card p-4 sm:p-6 border-sage/40 bg-brand-50/60">
-                    <h3 className="font-display text-[18px] font-semibold text-evergreen">{courseState === 'passed' ? 'Ready for your next course' : nextPrice ? 'This course is closed' : 'Better luck next time!'}</h3>
+                    <h3 className="font-display text-[18px] font-semibold text-evergreen">{courseState === 'passed' ? 'Ready for your next course' : retakePrice ? 'This course is closed' : 'Better luck next time!'}</h3>
                     <p className="mt-1.5 text-sm text-charcoal/70">{courseState === 'passed'
-                      ? (nextPrice ? `Well done! Unlock your next course for ₹${nextPrice}.` : 'Well done! Pick your next course - every course is free.')
-                      : (nextPrice ? `You used both final attempts without passing, so this course is locked. Pay ₹${nextPrice} to study it again with two fresh attempts.` : 'You used both final attempts without passing. Start again: complete every module once more, then you get two fresh attempts at the final.')}</p>
+                      ? 'Well done! Pick your next course and keep going.'
+                      : (retakePrice ? `You used both final attempts without passing, so this course is locked. Buy it again for ₹${retakePrice} to study it once more with two fresh attempts.` : 'You used both final attempts without passing. Start again: complete every module once more, then you get two fresh attempts at the final.')}</p>
                     {courseState === 'failed'
-                      ? <button onClick={() => onUnlock?.(course.id)} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage w-full mt-4 py-3">{nextPrice ? `Unlock again for ₹${nextPrice}` : 'Start the course again'} <ArrowRight className="w-4 h-4" /></button>
+                      ? <button onClick={() => onUnlock?.(course.id)} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage w-full mt-4 py-3">{retakePrice ? `Buy again for ₹${retakePrice}` : 'Start the course again'} <ArrowRight className="w-4 h-4" /></button>
                       : <button onClick={onExploreCourses} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage w-full mt-4 py-3">Choose a course <ArrowRight className="w-4 h-4" /></button>}
                   </div>
                 )}

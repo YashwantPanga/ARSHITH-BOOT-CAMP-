@@ -107,14 +107,13 @@ function AppShell() {
   // a learner can hold several courses; enrolledCourseId is the most recent one
   const enrolledIds = useMemo(() => studentUser?.enrolledCourseIds || [], [studentUser]);
   const enrolledCourseId = enrolledCourseOf(studentUser);
-  // from the server: { courseIds, courses: { id: status }, nextPrice, history }
+  // from the server: { courseIds, courses: { id: status }, free, paymentsEnabled, history }
   const [enrollState, setEnrollState] = useState(null);
   // failed courses (both final attempts used) stay locked until the learner pays to take them again
   const closedIds = useMemo(() => enrolledIds.filter(id => enrollState?.courses?.[id] === 'failed'), [enrolledIds, enrollState]);
   const courseOffer = useMemo(() => ({
     canEnrollNew: true,
     enrolledIds: enrolledIds.filter(id => !closedIds.includes(id)),
-    price: studentUser && enrollState ? enrollState.nextPrice || 0 : 0,
     allFree: enrollState?.free === true // every course free (PAID_COURSES=off)
   }), [studentUser, enrollState, enrolledIds, closedIds]);
 
@@ -232,16 +231,17 @@ function AppShell() {
       navigate(paths.learn(courseId));
       return;
     }
-    if (retake && !courseOffer.price) {
+    const price = Number(course?.price) || 0;
+    if (retake && !price) {
       restartCourse(courseId);
       return;
     }
-    if (retake || courseOffer.price > 0) {
-      setPaymentFor({ course: course || { id: courseId, title: courseId }, price: courseOffer.price || 99, retake });
+    if (price > 0) {
+      setPaymentFor({ course, price, retake });
       return;
     }
     setEnrollTarget(course || { id: courseId, title: courseId });
-  }, [studentUser, enrolledIds, closedIds, courses, navigate, toast, courseOffer]);
+  }, [studentUser, enrolledIds, closedIds, courses, navigate, toast]);
 
   const confirmEnroll = async () => {
     if (!enrollTarget || !studentUser) return;
@@ -254,7 +254,7 @@ function AppShell() {
       setCelebrate(findCourse(enrollTarget.id) || enrollTarget);
       setEnrollTarget(null);
     } catch (err) {
-      if (err.status === 402) setPaymentFor({ course: enrollTarget, price: err.data?.price || 99 });
+      if (err.status === 402) setPaymentFor({ course: enrollTarget, price: err.data?.price || enrollTarget.price });
       else toast(err.message || 'Could not enroll right now. Please try again.', 'error', 5200);
       setEnrollTarget(null);
     } finally {
@@ -292,7 +292,7 @@ function AppShell() {
     const paidId = res.courseId || paymentFor?.course?.id;
     setEnrollState(res);
     saveUser({ ...studentUser, enrolledCourseIds: res.courseIds || [paidId, ...enrolledIds.filter(id => id !== paidId)] });
-    setCelebrate({ ...(findCourse(paidId) || paymentFor?.course), paid: paymentFor?.price || 99 });
+    setCelebrate({ ...(findCourse(paidId) || paymentFor?.course), paid: paymentFor?.price || 0 });
     setPaymentFor(null);
     toast('Payment received - a receipt is on its way to your email.', 'success', 5000);
     // open the course straight away; the celebration shows on top of it
@@ -300,7 +300,7 @@ function AppShell() {
   };
 
   // After a second failed final: reload the course states (the course shows as locked at once) and,
-  // when the learner chooses to, start it again (free) or open the ₹99 payment (paid mode).
+  // when the learner chooses to, buy it again (or start again at once when courses are free).
   const refreshEnrollment = useCallback(() => {
     if (!userId) return;
     api.getEnrollment(userId).then(setEnrollState).catch(() => {});
@@ -319,9 +319,9 @@ function AppShell() {
     }
   }
   const offerRetake = (courseId) => {
-    if (enrollState && !enrollState.nextPrice) { restartCourse(courseId); return; }
     const course = findCourse(courseId) || { id: courseId, title: courseId };
-    setPaymentFor({ course, price: enrollState?.nextPrice || 99, retake: true });
+    if (!(Number(course.price) > 0)) { restartCourse(courseId); return; }
+    setPaymentFor({ course, price: course.price, retake: true });
     refreshEnrollment();
   };
 
@@ -666,9 +666,7 @@ function AppShell() {
         title={`Enroll in ${enrollTarget?.title || 'this course'}?`}
         message={
           <>
-            {enrollState?.free !== false
-              ? <p>Every course is <strong>free</strong>. Finish all the modules, pass the final assessment and get your certificate. If you fail the final twice, you can start the course again.</p>
-              : <p>This will be your <strong>one free course</strong>. Every other course - and this one again if you fail its final assessment twice - costs ₹99 to unlock.</p>}
+            <p>Finish all the modules, pass the final assessment and get your certificate. If you fail the final twice, you can start the course again.</p>
           </>
         }
         confirmLabel="Yes, enroll me"

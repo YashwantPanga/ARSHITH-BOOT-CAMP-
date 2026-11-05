@@ -1,5 +1,6 @@
 import express from 'express';
 import { withLessons } from '../data/lessons/index.js';
+import { priceFor, BEST_SELLER_COURSE } from '../lib/enrollment.js';
 import { getDb, saveDb, logActivity } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
 
@@ -29,6 +30,9 @@ function toPublicCourse(stored) {
   const { finalTest, modules, ...rest } = course;
   return {
     ...stripAnswers(rest),
+    price: priceFor(course.id),
+    isFree: priceFor(course.id) === 0,
+    bestSeller: course.id === BEST_SELLER_COURSE,
     progress: 0,
     finalTest: finalTest ? {
       id: finalTest.id,

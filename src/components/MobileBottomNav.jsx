@@ -17,7 +17,7 @@ export default function MobileBottomNav({ route, navigate, studentUser }) {
         onClick={() => navigate(signedIn ? paths.dashboard() : paths.register())}
         className="w-full h-12 rounded-lg bg-brand-900 text-ivory text-[15.5px] font-semibold inline-flex items-center justify-center gap-2 active:scale-[.99] transition"
       >
-        {signedIn ? 'Continue learning' : 'Start learning for free'} <ArrowRight className="w-4 h-4" />
+        {signedIn ? 'Continue learning' : 'Start learning'} <ArrowRight className="w-4 h-4" />
       </button>
     </div>
   );

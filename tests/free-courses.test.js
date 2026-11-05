@@ -40,7 +40,7 @@ describe('free courses', () => {
   it('every course is free and several can be taken at once', async () => {
     for (const id of ['sql-mastery', 'python-programming', 'web-development']) expect((await enrol(id)).status).toBe(200);
     const s = await state();
-    expect(s).toMatchObject({ free: true, nextPrice: 0, paymentsEnabled: false });
+    expect(s).toMatchObject({ free: true, paymentsEnabled: false });
     expect(s.courseIds.sort()).toEqual(['python-programming', 'sql-mastery', 'web-development']);
   });
 

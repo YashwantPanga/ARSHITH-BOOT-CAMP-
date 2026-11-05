@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, Lock, PlayCircle, BadgeCheck, ArrowRight, BookOpen } from 'lucide-react';
+import { Clock, Lock, PlayCircle, BadgeCheck, ArrowRight, BookOpen, Flame } from 'lucide-react';
 import { SafeImg, ProgressBar } from './ui';
 import TrackBadge from './TrackBadge';
 import { cleanText, displayTitle } from '../utils/textUtils';
@@ -10,8 +10,22 @@ import { hoursOf, TRACKS } from '../data/meta';
 const CARD_ART = new Set(['python-programming', 'sql-mastery', 'web-development', 'data-science-ai']);
 /** The course's card image: certificate-style art when available, otherwise its thumbnail. */
 export const courseArt = (course) => (CARD_ART.has(course.id) ? `/course-cards/${course.id}.webp` : course.thumbnail);
-/** Price shown on enrol buttons: 'Free' or '₹99'. */
-export const priceLabel = (offer) => (offer?.price > 0 ? `₹${offer.price}` : 'Free');
+/** Rupees for this course (0 when courses are free); the server sets it. */
+export const priceOf = (course) => Number(course?.price) || 0;
+/** Price as shown on cards: '₹99', or 'Free' when courses are free. */
+export const priceLabel = (course) => (priceOf(course) > 0 ? `₹${priceOf(course)}` : 'Free');
+/** Text of the enrol button. */
+export const enrolLabel = (course) => (priceOf(course) > 0 ? `Enroll for ₹${priceOf(course)}` : 'Enroll for Free');
+
+/** The gold "Best Seller" ribbon on the highlighted course. */
+export function BestSellerBadge({ className = '' }) {
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#F6D27A] to-[#E0B54A] px-2.5 py-1 font-display text-[11.5px] font-bold uppercase tracking-[0.08em] text-[#3D2A05] shadow-[0_6px_14px_-6px_rgba(120,80,0,.8)] ${className}`}>
+      <Flame className="w-3 h-3 fill-current" /> Best Seller
+    </span>
+  );
+}
+const bestSellerRing = 'ring-2 ring-[#E0B54A] shadow-[0_24px_48px_-26px_rgba(160,110,10,.65)]';
 
 export default function CourseCard({ course, enrolledCourseId, onSelect, onEnroll, offer, index = 0 }) {
   const isMine = offer?.enrolledIds ? offer.enrolledIds.includes(course.id) : enrolledCourseId === course.id;
@@ -21,7 +35,7 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
 
   return (
     <article
-      className={`edu-card group relative flex flex-col h-full overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_40px_-24px_rgba(1,58,43,.4)] hover:border-sage/50 ${isLocked ? 'opacity-80' : ''}`}
+      className={`edu-card group relative flex flex-col h-full overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_40px_-24px_rgba(1,58,43,.4)] hover:border-sage/50 ${course.bestSeller && !isMine ? bestSellerRing : ''} ${isLocked ? 'opacity-80' : ''}`}
       style={{ animationDelay: `${index * 60}ms` }}
     >
       {/* Image with the overlapping track plate */}
@@ -29,6 +43,7 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
         <div className="relative aspect-[16/10] overflow-hidden bg-forest">
           <SafeImg src={art || course.thumbnail} alt="" className="w-full h-full object-cover object-[44%_50%] transition-transform duration-700 group-hover:scale-[1.04]" />
           {!art && <div className="absolute inset-0 bg-gradient-to-t from-evergreen/55 via-evergreen/5 to-transparent" />}
+          {course.bestSeller && <BestSellerBadge className="absolute top-2.5 left-2.5" />}
           {isMine && <span className="absolute top-2.5 right-2.5 chip bg-ivory text-brand-900">Enrolled</span>}
           {isLocked && <span className="absolute top-2.5 right-2.5 chip bg-white/90 text-charcoal/70"><Lock className="w-3 h-3" /> Locked</span>}
         </div>
@@ -63,7 +78,7 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
               </button>
             ) : (
               <button onClick={() => onEnroll(course.id)} className="btn font-display w-full py-3 !rounded-md bg-cream text-forest border border-forest/20 hover:bg-forest hover:text-ivory hover:border-forest group/btn">
-                {offer?.price > 0 ? `Unlock for ₹${offer.price}` : 'Enroll for Free'} <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                {enrolLabel(course)} <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
               </button>
             )}
           </div>
@@ -81,10 +96,11 @@ export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll, offer
   const modules = course.modules?.length || 0;
 
   return (
-    <article className={`edu-card group relative flex flex-col h-full overflow-hidden text-center transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_48px_-26px_rgba(1,58,43,.45)] ${isLocked ? 'opacity-80' : ''}`}>
+    <article className={`edu-card group relative flex flex-col h-full overflow-hidden text-center transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_48px_-26px_rgba(1,58,43,.45)] ${course.bestSeller && !isMine ? bestSellerRing : ''} ${isLocked ? 'opacity-80' : ''}`}>
       <button onClick={() => onSelect(course.id)} className="relative block" aria-label={`View ${course.title}`}>
         <div className="relative aspect-[16/10] overflow-hidden bg-forest">
           <SafeImg src={courseArt(course)} alt="" className="w-full h-full object-cover object-[44%_50%] transition-transform duration-700 group-hover:scale-[1.05]" />
+          {course.bestSeller && <BestSellerBadge className="absolute top-3 left-3" />}
           {isMine && <span className="absolute top-3 right-3 chip bg-ivory text-brand-900">Enrolled</span>}
           {isLocked && <span className="absolute top-3 right-3 chip bg-white/90 text-charcoal/70"><Lock className="w-3 h-3" /> Locked</span>}
         </div>
@@ -114,7 +130,9 @@ export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll, offer
         )}
 
         <div className="mt-auto pt-4 w-full">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-charcoal/50">{isMine ? 'Unlocked · yours to learn' : `Course fee · ${priceLabel(offer)}`}</p>
+          {isMine
+            ? <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-charcoal/50">Unlocked · yours to learn</p>
+            : <p className="font-display text-[26px] font-bold leading-none text-evergreen">{priceLabel(course)}</p>}
           <div className="mt-2">
             {isMine ? (
               <button onClick={() => onEnroll(course.id)} className="btn-primary font-display w-full py-2.5 text-[14px] !rounded-md"><PlayCircle className="w-4 h-4" /> Continue learning</button>
@@ -124,7 +142,7 @@ export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll, offer
               </button>
             ) : (
               <button onClick={() => onEnroll(course.id)} className="btn font-display w-full py-2.5 text-[14px] !rounded-md bg-forest text-ivory hover:bg-sage group/btn">
-                {offer?.price > 0 ? `Unlock for ₹${offer.price}` : 'Enroll for Free'} <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                {enrolLabel(course)} <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
               </button>
             )}
           </div>

@@ -1,8 +1,8 @@
 // Interview Prep access: free for learners who hold certificates for all 4 courses (see
-// interviewRoutes.js); anyone else can unlock it for interviewPrice() (₹499) through Cashfree.
+// interviewRoutes.js); anyone else can unlock it for interviewPrice() (₹599) through Cashfree.
 const norm = (v) => String(v || '').trim().toLowerCase();
 
-export const INTERVIEW_PRICE = 499;
+export const INTERVIEW_PRICE = 599;
 /** Rupees to unlock Interview Prep. INTERVIEW_PRICE in .env overrides it (e.g. 1 to try a real payment). */
 export function interviewPrice() {
   const v = Number(process.env.INTERVIEW_PRICE);

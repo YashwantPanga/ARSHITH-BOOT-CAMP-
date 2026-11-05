@@ -55,5 +55,5 @@ chmod 600 .env
 
 echo "==> Restarting the site"
 bash scripts/db-status.sh | tail -2
-echo "==> Online payment is ON. Courses after the first show 'Pay ₹99 and unlock'; Interview Prep shows 'Unlock for ₹499'."
+echo "==> Online payment is ON. Courses cost ₹99 (Data Science ₹199); Interview Prep costs ₹599."
 echo "   Optional: Cashfree Dashboard > Developers > Webhooks > add https://<your site>/api/payments/webhook"

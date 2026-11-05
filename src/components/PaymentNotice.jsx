@@ -5,8 +5,7 @@ import { api } from '../services/api';
 import { payWithCashfree, preloadCashfree } from '../utils/cashfree';
 
 /**
- * Shown when something needs payment: a course (every course after the free one, or a failed course
- * again) or Interview Prep (product="interview"). With online payment on (Cashfree keys set on the
+ * Shown when something needs payment: a course (or a failed course again) or Interview Prep (product="interview"). With online payment on (Cashfree keys set on the
  * server) the learner pays here and it unlocks straight away - onPaid(serverState) is called once the
  * server has confirmed the payment with Cashfree. Otherwise the learner contacts the team.
  */
@@ -61,11 +60,10 @@ export default function PaymentNotice({ course, price = 99, retake = false, prod
         <h2 id="pay-title" className="mt-4 text-[23px] font-bold text-evergreen leading-tight">{online ? `Unlock ${itemTitle}${retake ? ' again' : ''} for ₹${price}` : `${itemTitle} costs ₹${price}`}</h2>
         <p className="mt-2 text-[14.5px] text-charcoal/70 leading-relaxed">
           {interview
-            ? <>A one-time payment unlocks every Interview Prep set for good. It is free for students who earn certificates in all 4 courses.</>
+            ? <>A one-time payment unlocks every Interview Prep set for good. It is free for students who complete all 4 courses.</>
             : retake
-            ? <>You used both final assessment attempts without passing, so this course is locked. Pay ₹{price} to study it again with two fresh attempts.</>
-            : <>Every student gets one free course. Each further course costs ₹{price} to unlock - including the same course again after
-              failing its final assessment twice, which gives two fresh attempts.</>}
+            ? <>You used both final assessment attempts without passing, so this course is locked. Buy it again for ₹{price} to study it once more with two fresh attempts.</>
+            : <>One-time payment for the full course and certificate. You get two attempts at the final assessment; if you fail both, you can buy the course again.</>}
         </p>
         {online ? (
           <>

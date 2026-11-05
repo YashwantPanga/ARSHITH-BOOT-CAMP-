@@ -1,6 +1,6 @@
 import express from 'express';
 import { enrolledCourseIds } from '../lib/enrolledCourses.js';
-import { enrolmentState, enrol } from '../lib/enrollment.js';
+import { enrolmentState, enrol, priceFor } from '../lib/enrollment.js';
 import { getDb, saveDb, logActivity } from '../db.js';
 import { inCurrentRun } from './quizRoutes.js';
 import { verifyAdminToken } from '../middleware/auth.js';
@@ -379,14 +379,15 @@ router.post('/enrollment', (req, res) => {
   if (state.passedCourseIds.includes(courseId)) {
     return res.status(409).json({ success: false, message: 'You have already passed this course. Your certificate is in your dashboard.' });
   }
-  if (state.nextPrice > 0) {
+  const price = priceFor(courseId);
+  if (price > 0) {
     return res.status(402).json({
       success: false,
       code: 'PAYMENT_REQUIRED',
-      price: state.nextPrice,
+      price,
       message: state.paymentsEnabled
-        ? `This course costs ₹${state.nextPrice}. Pay online to unlock it.`
-        : `This course costs ₹${state.nextPrice}. To enrol now, contact us at codelekho@arshithgroup.com or +91 82177 29744.`
+        ? `This course costs ₹${price}. Pay online to unlock it.`
+        : `This course costs ₹${price}. To enrol now, contact us at codelekho@arshithgroup.com or +91 82177 29744.`
     });
   }
   enrol(db, userId, courseId, { paid: false, by: 'learner' });
@@ -406,12 +407,12 @@ router.post('/admin/enrollments', verifyAdminToken, (req, res) => {
     return res.status(404).json({ success: false, message: 'Student or Course not found.' });
   }
 
-  // The admin can enrol anyone in any course (e.g. after a ₹99 payment received directly); this
+  // The admin can enrol anyone in any course (e.g. after a payment received directly); this
   // sets the student's real enrolment, moving any current course to their history.
   const email = normId(student.email);
   const state = enrolmentState(db, email);
   if (state.courses[courseId] === 'active') return res.json({ success: true, message: `${student.name} is already studying ${course.title}` });
-  enrol(db, email, courseId, { paid: state.nextPrice > 0, by: 'admin' });
+  enrol(db, email, courseId, { paid: priceFor(courseId) > 0, by: 'admin' });
   saveDb(db);
 
   logActivity({

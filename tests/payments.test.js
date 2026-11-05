@@ -59,11 +59,11 @@ afterAll(() => {
 });
 
 describe('Cashfree course payments', () => {
-  it('the first course is free; the next one costs ₹99, and payments show as enabled', async () => {
-    expect((await order(A, 'python-programming')).body.code).toBe('FREE_COURSE');
-    await request(app).post('/api/enrollment').set(as(A)).send({ courseId: 'python-programming' });
-    expect(await state(A)).toMatchObject({ nextPrice: 99, paymentsEnabled: true });
-    expect((await order(A, 'python-programming')).body.code).toBe('ALREADY_ENROLLED');
+  it('every course needs payment, Data Science costs ₹199, and payments show as enabled', async () => {
+    const free = await request(app).post('/api/enrollment').set(as(A)).send({ courseId: 'python-programming' });
+    expect(free.status).toBe(402);
+    expect(await state(A)).toMatchObject({ free: false, paymentsEnabled: true });
+    expect((await order(A, 'data-science-ai')).body).toMatchObject({ amount: 199, kind: 'course' });
   });
 
   it('creates a ₹99 order priced by the server, and an unpaid order unlocks nothing', async () => {
@@ -112,15 +112,15 @@ describe('Cashfree course payments', () => {
 describe('Interview Prep payment', () => {
   const progress = (email) => request(app).get('/api/interview/progress').set(as(email));
 
-  it('is locked without certificates and offers a ₹499 unlock', async () => {
+  it('is locked without certificates and offers a ₹599 unlock', async () => {
     const p = (await progress(C)).body;
     expect(p.unlocked).toBe(false);
-    expect(p.purchase).toMatchObject({ price: 499, paid: false, paymentsEnabled: true });
+    expect(p.purchase).toMatchObject({ price: 599, paid: false, paymentsEnabled: true });
   });
 
-  it('a paid ₹499 order unlocks Interview Prep for that learner only', async () => {
+  it('a paid ₹599 order unlocks Interview Prep for that learner only', async () => {
     const r = await prepOrder(C);
-    expect(r.body).toMatchObject({ amount: 499, kind: 'interview' });
+    expect(r.body).toMatchObject({ amount: 599, kind: 'interview' });
     expect((await verify(C, r.body.orderId)).status).toBe(409);
     paid.add(r.body.orderId);
     const ok = await verify(C, r.body.orderId);
@@ -141,17 +141,19 @@ describe('Interview Prep payment', () => {
 });
 
 describe('prices', () => {
-  it('COURSE_PRICE and INTERVIEW_PRICE in .env override ₹99 and ₹499 (for a ₹1 test payment)', async () => {
+  it('COURSE_PRICE and INTERVIEW_PRICE in .env override the normal prices (for a ₹1 test payment)', async () => {
     const { coursePrice } = await import('../server/lib/enrollment.js');
     const { interviewPrice } = await import('../server/lib/interviewAccess.js');
     process.env.COURSE_PRICE = '1';
     process.env.INTERVIEW_PRICE = '1';
-    expect(coursePrice()).toBe(1);
+    expect(coursePrice('python-programming')).toBe(1);
+    expect(coursePrice('data-science-ai')).toBe(1);
     expect(interviewPrice()).toBe(1);
     expect((await order(A, 'web-development')).body.amount).toBe(1);
     process.env.COURSE_PRICE = 'abc';
     process.env.INTERVIEW_PRICE = '';
-    expect(coursePrice()).toBe(99);
-    expect(interviewPrice()).toBe(499);
+    expect(coursePrice('python-programming')).toBe(99);
+    expect(coursePrice('data-science-ai')).toBe(199);
+    expect(interviewPrice()).toBe(599);
   });
 });

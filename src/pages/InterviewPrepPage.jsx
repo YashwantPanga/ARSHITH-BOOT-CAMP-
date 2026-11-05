@@ -188,79 +188,75 @@ export default function InterviewPrepPage({ setId, itemId, tab, studentUser, isA
   return <PrepHome {...props} />;
 }
 
-/** Shown until the learner holds 4 certificates: what unlocks it, their progress, and a locked preview of the plans. */
+/** Shown until the learner has paid or holds every course certificate: what is inside, the price and the free route. */
 function LockedPrep({ signedIn, certificates, purchase, onPaid, navigate }) {
   const [paying, setPaying] = useState(false);
-  const price = purchase?.price || 499;
+  const price = purchase?.price || 599;
   const required = certificates?.required || 4;
   const earned = Math.min(certificates?.earned || 0, required);
-  const steps = ['Finish every module quiz of a course', 'Submit one project on GitHub', 'Pass the proctored final (70%+)', `Earn ${required} course certificates: Interview Prep unlocks`];
-  const short = ['Module quizzes', 'GitHub project', 'Final 70%+', `${required} certificates`]; // phone labels
+  const total = INTERVIEW_SETS.reduce((n, s) => n + s.items.length, 0);
+  const included = [
+    `${total} interview questions and coding problems`,
+    'SQL, Python, JavaScript and DSA practice in your browser',
+    'Worked solution and explanation for every problem',
+    'Your own study plan with a target finish date'
+  ];
   return (
     <div className="bg-ivory min-h-screen">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-5 sm:pt-14 pb-12 sm:pb-20">
-        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-forest via-[#0B3E30] to-evergreen text-ivory px-4 py-5 sm:px-10 sm:py-10">
-          <div className="relative grid gap-5 sm:gap-8 md:grid-cols-[1fr_auto] md:items-center">
-            <div>
-              <p className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#BCD1C6]"><Lock className="w-3.5 h-3.5" /> Locked</p>
-              <h1 className="mt-3 sm:mt-4 font-display text-[22px] sm:text-[38px] font-bold leading-tight">Interview Prep unlocks after {required} certificates</h1>
-              <p className="mt-2 sm:mt-3 text-[13.5px] sm:text-[15px] text-ivory/75 max-w-xl">{INTERVIEW_SETS.reduce((n, s) => n + s.items.length, 0)} real interview problems in SQL, Python and JavaScript are waiting for you.<span className="hidden sm:inline"> Complete {required} courses and earn their certificates to open them.</span></p>
-              {signedIn && (
-                <div className="mt-4 sm:mt-5 max-w-sm">
-                  <div className="flex items-center justify-between text-[13px]">
-                    <span className="text-ivory/70">Your certificates</span>
-                    <span className="font-semibold"><span className="text-[#9FD8A4]">{earned}</span> of {required}</span>
-                  </div>
-                  <div className="mt-2 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${required}, minmax(0, 1fr))` }}>
-                    {Array.from({ length: required }, (_, i) => (
-                      <span key={i} className={`h-1.5 rounded-full ${i < earned ? 'bg-leaf' : 'bg-white/15'}`} />
-                    ))}
-                  </div>
-                </div>
-              )}
-              <div className="mt-4 sm:mt-6 grid grid-cols-2 sm:flex sm:flex-wrap gap-2.5 sm:gap-3">
-                {signedIn
-                  ? <button onClick={() => navigate(paths.dashboard())} className="btn bg-ivory text-forest hover:bg-white !px-3 sm:!px-6 !py-2.5 sm:!py-3 text-[14px] sm:text-[15px] justify-center"><span>Continue<span className="hidden sm:inline"> my course</span></span> <ArrowRight className="w-4 h-4" /></button>
-                  : <button onClick={() => navigate(paths.login(paths.interview()))} className="btn bg-ivory text-forest hover:bg-white !px-3 sm:!px-6 !py-2.5 sm:!py-3 text-[14px] sm:text-[15px] justify-center">Sign in <ArrowRight className="w-4 h-4" /></button>}
-                <button onClick={() => navigate(paths.courses())} className="btn border border-white/30 text-ivory hover:bg-white/10 !px-3 sm:!px-6 !py-2.5 sm:!py-3 text-[14px] sm:text-[15px] justify-center">Browse courses</button>
-              </div>
-              {/* paid route: unlock now without waiting for 4 certificates */}
-              <div className="mt-4 sm:mt-5 rounded-2xl bg-white/[.07] border border-[#E5C88E]/40 p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3 max-w-xl">
-                <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-semibold text-ivory">Don't want to wait? Unlock it now for ₹{price}</p>
-                  <p className="text-[12.5px] text-ivory/65">One-time payment, lifetime access. Free when you complete all {certificates?.required || 4} courses.</p>
-                </div>
-                <button onClick={() => (signedIn ? setPaying(true) : navigate(paths.login(paths.interview())))} className="shrink-0 h-10 px-4 rounded-xl bg-gradient-to-b from-[#E5C88E] to-[#C49A52] text-[#2A1D08] text-[14px] font-bold">Unlock for ₹{price}</button>
-              </div>
-              {paying && <PaymentNotice product="interview" price={price} paymentsEnabled={purchase ? purchase.paymentsEnabled : undefined} onPaid={() => { setPaying(false); onPaid?.(); }} onClose={() => setPaying(false)} />}
+        <section className="rounded-2xl sm:rounded-[22px] bg-gradient-to-br from-forest via-[#0B3E30] to-evergreen text-ivory p-4 sm:p-10">
+          <div className="grid gap-6 lg:gap-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center">
+            <div className="min-w-0">
+              <p className="font-display text-[12px] sm:text-[13px] font-semibold uppercase tracking-[0.18em] text-[#BCD1C6]">Interview Prep</p>
+              <h1 className="mt-2 sm:mt-3 font-display text-[26px] sm:text-[42px] font-bold leading-[1.12] tracking-tight">Prepare for placements and job interviews</h1>
+              <p className="mt-2 sm:mt-4 text-[14px] sm:text-[16px] text-ivory/75 max-w-xl">Practise the questions companies really ask, write real code in your browser, and learn the pattern behind each answer.</p>
+              <ul className="mt-4 sm:mt-6 space-y-2 sm:space-y-2.5">
+                {included.map(t => (
+                  <li key={t} className="flex items-start gap-2.5 text-[13.5px] sm:text-[15px] text-ivory/90">
+                    <CheckCircle2 className="w-4 h-4 sm:w-[18px] sm:h-[18px] mt-0.5 shrink-0 text-[#9FD8A4]" />{t}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ol className="grid grid-cols-2 gap-2 sm:hidden">
-              {short.map((t, i) => (
-                <li key={t} className="flex items-center gap-2 rounded-xl bg-white/[.07] border border-white/10 px-2.5 py-2 text-[12.5px] font-medium">
-                  <span className={`w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[11px] font-bold ${i === short.length - 1 ? 'bg-leaf text-white' : 'bg-white/15 text-ivory'}`}>{i === short.length - 1 ? <Award className="w-3 h-3" /> : i + 1}</span>
-                  {t}
-                </li>
-              ))}
-            </ol>
-            <ol className="hidden sm:block space-y-2.5 md:w-[300px]">
-              {steps.map((t, i) => (
-                <li key={t} className="flex items-center gap-3 rounded-xl bg-white/[.07] border border-white/10 px-3.5 py-2.5 text-[13.5px]">
-                  <span className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-[12px] font-bold ${i === steps.length - 1 ? 'bg-leaf text-white' : 'bg-white/15 text-ivory'}`}>{i === steps.length - 1 ? <Award className="w-3.5 h-3.5" /> : i + 1}</span>
-                  {t}
-                </li>
-              ))}
-            </ol>
+
+            <div className="rounded-2xl bg-white text-charcoal p-5 sm:p-6 shadow-[0_30px_60px_-30px_rgba(0,0,0,.6)]">
+              <p className="font-display text-[14px] font-semibold text-charcoal/65">Full access</p>
+              <p className="mt-1 font-display text-[40px] sm:text-[46px] font-bold leading-none text-evergreen">₹{price}</p>
+              <p className="mt-1.5 text-[13.5px] text-charcoal/60">One-time payment. Lifetime access.</p>
+              <button onClick={() => (signedIn ? setPaying(true) : navigate(paths.login(paths.interview())))} className="mt-4 w-full h-12 rounded-lg bg-forest text-ivory font-display font-semibold text-[15.5px] hover:bg-sage active:scale-[.99] transition inline-flex items-center justify-center gap-2">
+                {signedIn ? `Unlock for ₹${price}` : 'Sign in to unlock'} <ArrowRight className="w-4 h-4" />
+              </button>
+              <p className="mt-2 text-center text-[12px] text-charcoal/50">Secure payment by Cashfree: UPI, cards and netbanking</p>
+
+              <div className="mt-4 pt-4 border-t border-brand-900/10">
+                <p className="flex items-center gap-2 font-display text-[14.5px] font-semibold text-evergreen"><Award className="w-4 h-4 text-sage" /> Free when you complete all {required} courses</p>
+                {signedIn ? (
+                  <>
+                    <div className="mt-2.5 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${required}, minmax(0, 1fr))` }}>
+                      {Array.from({ length: required }, (_, i) => <span key={i} className={`h-1.5 rounded-full ${i < earned ? 'bg-leaf' : 'bg-brand-100'}`} />)}
+                    </div>
+                    <div className="mt-2 flex items-center justify-between gap-3 text-[13px]">
+                      <span className="text-charcoal/60">{earned} of {required} certificates</span>
+                      <button onClick={() => navigate(paths.dashboard())} className="font-semibold text-forest underline underline-offset-2">Continue my course</button>
+                    </div>
+                  </>
+                ) : (
+                  <button onClick={() => navigate(paths.courses())} className="mt-1.5 text-[13px] font-semibold text-forest underline underline-offset-2">Browse courses</button>
+                )}
+              </div>
+            </div>
           </div>
+          {paying && <PaymentNotice product="interview" price={price} paymentsEnabled={purchase ? purchase.paymentsEnabled : undefined} onPaid={() => { setPaying(false); onPaid?.(); }} onClose={() => setPaying(false)} />}
         </section>
 
         <section className="mt-7 sm:mt-12">
-          <h2 className="font-display text-[19px] sm:text-[22px] font-bold text-evergreen">What you will unlock</h2>
+          <h2 className="font-display text-[19px] sm:text-[22px] font-bold text-evergreen">What is included</h2>
           {/* phones: one row that scrolls sideways */}
           <div className="mt-3 sm:mt-4 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto no-scrollbar snap-x scroll-px-4 -mx-4 px-4 sm:mx-0 sm:px-0 pb-1" aria-hidden="true">
             {INTERVIEW_SETS.map(s => (
               <div key={s.id} className="relative pointer-events-none select-none shrink-0 snap-start">
-                <div className="grayscale-[.35] opacity-60"><QuestCard set={s} solved={0} signedIn={false} onOpen={() => {}} /></div>
-                <span className="absolute right-3 bottom-3 w-9 h-9 rounded-full bg-ivory/95 text-forest flex items-center justify-center shadow"><Lock className="w-4 h-4" /></span>
+                <QuestCard set={s} solved={0} signedIn={false} onOpen={() => {}} />
+                <span className="absolute right-3 top-3 w-7 h-7 rounded-full bg-brand-50 text-forest flex items-center justify-center"><Lock className="w-3.5 h-3.5" /></span>
               </div>
             ))}
           </div>
@@ -312,7 +308,7 @@ function PrepHome({ progress, signedIn, navigate }) {
                 const theme = THEMES[s.theme];
                 return (
                   <button key={s.id} onClick={() => navigate(paths.interview(s.id))} className="edu-card p-3 flex items-center gap-4 text-left hover:border-sage/50 hover:-translate-y-0.5 transition">
-                    <span className="w-[72px] h-[72px] rounded-xl flex items-center justify-center shrink-0 shadow-[0_8px_18px_-10px_rgba(20,10,60,.8)]" style={{ background: QUEST[s.id]?.bg }}><SetIcon icon={s.icon} glow={theme.glow} className="w-12 h-12" /></span>
+                    <span className="w-[72px] h-[72px] rounded-xl flex items-center justify-center shrink-0 shadow-[0_8px_18px_-10px_rgba(1,58,43,.8)]" style={{ background: QUEST[s.id]?.bg }}><SetIcon icon={s.icon} glow={theme.glow} className="w-12 h-12" /></span>
                     <span className="flex-1 min-w-0 pr-2">
                       <span className="block font-display text-[16px] font-semibold text-evergreen truncate">{s.title}</span>
                       <span className="block mt-2.5"><ProgressBar value={solved} total={s.items.length} /></span>
@@ -326,7 +322,7 @@ function PrepHome({ progress, signedIn, navigate }) {
         )}
 
         <section className="mt-12">
-          <h2 className="font-display text-[22px] font-bold text-evergreen">Featured</h2>
+          <h2 className="font-display text-[22px] font-bold text-evergreen">All study plans</h2>
           <div className="mt-4 -mx-4 px-4 flex gap-3.5 overflow-x-auto no-scrollbar snap-x scroll-px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-4 sm:overflow-visible">
             {INTERVIEW_SETS.map(s => (
               <QuestCard key={s.id} set={s} solved={Object.keys(progress[s.id] || {}).length} signedIn={signedIn} onOpen={() => navigate(paths.interview(s.id))} />
@@ -342,7 +338,7 @@ function PrepHome({ progress, signedIn, navigate }) {
               const solved = Object.keys(progress[s.id] || {}).length;
               return (
                 <button key={s.id} onClick={() => navigate(paths.interview(s.id))} className="edu-card p-3 flex items-center gap-4 text-left hover:border-sage/50 hover:-translate-y-0.5 transition">
-                  <span className="w-[76px] h-[76px] rounded-xl flex items-center justify-center shrink-0 shadow-[0_8px_18px_-10px_rgba(20,10,60,.8)]" style={{ background: QUEST[s.id]?.bg }}><SetIcon icon={s.icon} glow={theme.glow} className="w-14 h-14" /></span>
+                  <span className="w-[76px] h-[76px] rounded-xl flex items-center justify-center shrink-0 shadow-[0_8px_18px_-10px_rgba(1,58,43,.8)]" style={{ background: QUEST[s.id]?.bg }}><SetIcon icon={s.icon} glow={theme.glow} className="w-14 h-14" /></span>
                   <span className="flex-1 min-w-0 pr-2">
                     <span className="block font-display text-[17px] font-semibold text-evergreen">{s.title}</span>
                     <span className="block text-[13px] text-charcoal/60 mt-0.5">{s.tagline}</span>
@@ -407,7 +403,7 @@ function SetPage({ set, progress, plans, savePlan, signedIn, navigate, studentUs
         </nav>
 
         <div className="mt-4">
-          <QuestHero set={set} solvedMap={solvedMap} signedIn={signedIn} playerName={studentUser?.name} next={next} topics={topics}
+          <QuestHero set={set} solvedMap={solvedMap} signedIn={signedIn} next={next} topics={topics}
             onStart={() => navigate(paths.interview(set.id, next.id))} onPlan={set.kind !== 'concept' ? openPlan : null} hasPlan={!!plan} />
         </div>
 

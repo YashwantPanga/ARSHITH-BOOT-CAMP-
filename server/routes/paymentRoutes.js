@@ -1,13 +1,13 @@
 import express from 'express';
 import { getDb, saveDb, logActivity } from '../db.js';
-import { enrolmentState, enrol } from '../lib/enrollment.js';
+import { enrolmentState, enrol, priceFor } from '../lib/enrollment.js';
 import { cashfreeConfigured, cashfreeMode, createOrder, getOrder, successfulPayment, newOrderId, webhookSignatureValid } from '../lib/cashfree.js';
 import { interviewPrice, interviewPaid, grantInterview } from '../lib/interviewAccess.js';
 import { interviewUnlockedByCertificates } from './interviewRoutes.js';
 import { sendMail } from '../lib/mailer.js';
 import { verifyAdminToken } from '../middleware/auth.js';
 
-// Paid unlocks through Cashfree - a course (every course after the free one) or Interview Prep:
+// Paid unlocks through Cashfree - a course or Interview Prep:
 //  1. POST /payments/order   - the server works out the price and creates a Cashfree order
 //  2. Cashfree Checkout runs in the browser (payment_session_id)
 //  3. POST /payments/verify  - the server asks Cashfree for the order; when it is PAID it unlocks
@@ -68,8 +68,9 @@ router.post('/payments/order', async (req, res) => {
     const state = enrolmentState(db, email);
     if (state.courses[course.id] === 'active') return res.status(409).json({ success: false, code: 'ALREADY_ENROLLED', message: 'This course is already unlocked for you.' });
     if (state.passedCourseIds.includes(course.id)) return res.status(409).json({ success: false, message: 'You have already passed this course. Your certificate is in your dashboard.' });
-    if (!(state.nextPrice > 0)) return res.status(409).json({ success: false, code: 'FREE_COURSE', message: 'This course is free for you - enrol without paying.' });
-    item = { kind: 'course', courseId: course.id, title: course.title, price: state.nextPrice, back: '/dashboard' };
+    const price = priceFor(course.id);
+    if (!(price > 0)) return res.status(409).json({ success: false, code: 'FREE_COURSE', message: 'This course is free - enrol without paying.' });
+    item = { kind: 'course', courseId: course.id, title: course.title, price, back: '/dashboard' };
   }
 
   const orderId = newOrderId(item.kind === 'interview' ? 'ip' : 'cl');

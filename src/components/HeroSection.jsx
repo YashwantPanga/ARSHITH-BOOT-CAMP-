@@ -16,7 +16,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
     { icon: Layers, value: trackCount, title: 'Career tracks', text: 'Python, SQL, Web Development and AI with Data Science.', tone: 'bg-brand-100 text-forest' },
     { icon: BookOpen, value: `${moduleCount}+`, title: 'Deep-dive modules', text: 'Mentor-written lessons, live code practice and a quiz after every module.', tone: 'bg-[#EFE9DC] text-charcoal' },
     { icon: Timer, value: '45 min', title: 'Proctored final', text: 'A proctored final assessment - 70% to pass.', tone: 'bg-[#E3ECE7] text-sage' },
-    { icon: Award, value: '100%', title: 'Free certificates', text: 'Every certificate is unique and QR-verified.', tone: 'bg-forest text-ivory' }
+    { icon: Award, value: '100%', title: 'Verified certificates', text: 'Every certificate is unique and QR-verified.', tone: 'bg-forest text-ivory' }
   ];
 
   const submit = (e) => {
@@ -41,7 +41,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
         <div className="relative z-10 pt-6 lg:pt-4 lg:pb-16 animate-fade-up">
           <p className="font-display text-[13px] font-semibold uppercase tracking-[0.24em] text-[#BCD1C6] lg:text-leaf-dark">CodeLekho</p>
           <RevealText as="h1" className="mt-3 lg:mt-4 text-[36px] sm:text-[52px] lg:text-[62px] leading-[1.1] text-ivory lg:text-evergreen">
-            Achieve your career goals with <span className="text-[#BCD1C6] lg:text-sage">free online courses</span>
+            Achieve your career goals with <span className="text-[#BCD1C6] lg:text-sage">job-ready online courses</span>
           </RevealText>
           <p className="mt-4 lg:mt-5 text-[15.5px] sm:text-[17px] text-ivory/80 lg:text-charcoal/70 leading-relaxed max-w-lg">
             Mentor-written programs in Python, SQL, Web Development and AI — with deep-dive modules, live code practice,
@@ -64,7 +64,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
 
           <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
             <button onClick={onRegisterClick} className="font-display w-full sm:w-auto justify-center inline-flex items-center gap-2 rounded-md bg-ivory text-forest lg:bg-forest lg:text-ivory px-7 py-3.5 text-[15.5px] font-semibold border border-ivory lg:border-forest hover:bg-white lg:hover:bg-sage lg:hover:border-sage transition group">
-              Start Learning for Free <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              Start Learning <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </button>
             <button onClick={onExploreClick} className="font-display w-full sm:w-auto justify-center inline-flex items-center rounded-md border border-ivory/40 text-ivory lg:border-forest/25 lg:bg-white lg:text-forest px-7 py-3.5 text-[15.5px] font-semibold hover:bg-white/10 lg:hover:bg-white lg:hover:border-forest transition">
               Explore Courses

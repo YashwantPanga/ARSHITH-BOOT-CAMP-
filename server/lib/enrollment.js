@@ -1,24 +1,30 @@
 // Course enrolment rules.
 //  - A learner can hold several courses at once.
-//  - Each learner gets exactly one free course - the first one. Every other course costs coursePrice()
-//    (₹99) to unlock, unlocked by a Cashfree payment (routes/paymentRoutes.js) or the admin.
+//  - Every course is paid: coursePrice(courseId) (₹99, Data Science ₹199), unlocked by a Cashfree payment
+//    (routes/paymentRoutes.js) or the admin.
 //  - PAID_COURSES=off in .env makes every course free.
-//  - Failing a course's final twice closes it. Starting it again (free, or ₹99 in paid mode) gives two
-//    fresh final attempts (attemptOffset) and restarts its module quizzes (progressFrom).
+//  - Failing a course's final twice closes it. Buying it again (or restarting, when courses are free) gives
+//    two fresh final attempts (attemptOffset) and restarts its module quizzes (progressFrom).
 import { finalAttemptsTotal, MAX_FINAL_ATTEMPTS, getPassedFinalAttempt } from '../routes/quizRoutes.js';
 import { enrolmentRecord, enrolledCourseIds } from './enrolledCourses.js';
 import { cashfreeConfigured } from './cashfree.js';
 
-export const PAID_COURSE_PRICE = 99;
-/** Rupees per paid course. COURSE_PRICE in .env overrides it (e.g. COURSE_PRICE=1 to try a real payment). */
-export function coursePrice() {
+export const DEFAULT_COURSE_PRICE = 99;
+export const COURSE_PRICES = { 'data-science-ai': 199 };
+/** The course highlighted as the best seller on the site. */
+export const BEST_SELLER_COURSE = 'data-science-ai';
+/** Rupees for a course. COURSE_PRICE in .env overrides every price (e.g. COURSE_PRICE=1 to try a real payment). */
+export function coursePrice(courseId) {
   const v = Number(process.env.COURSE_PRICE);
-  return Number.isInteger(v) && v >= 1 ? v : PAID_COURSE_PRICE;
+  if (Number.isInteger(v) && v >= 1) return v;
+  return COURSE_PRICES[courseId] ?? DEFAULT_COURSE_PRICE;
 }
 /** Courses cost money unless PAID_COURSES=off. */
 export function paidCourses() {
   return String(process.env.PAID_COURSES || '').trim().toLowerCase() !== 'off';
 }
+/** What this course costs right now: its price, or 0 when courses are free. */
+export const priceFor = (courseId) => (paidCourses() ? coursePrice(courseId) : 0);
 const norm = (v) => String(v || '').trim().toLowerCase();
 
 /** 'active' | 'passed' | 'failed' for one enrolled course. */
@@ -36,14 +42,12 @@ export function enrolmentState(db, email) {
   const ids = enrolledCourseIds(db, email);
   const courses = Object.fromEntries(ids.map(id => [id, courseStatus(db, email, id)]));
   const history = db.learnerEnrollments?.[email]?.history || [];
-  const usedFreeCourse = ids.length > 0 || history.length > 0;
   return {
     courseId: ids[0] || null,                 // most recent course
     courseIds: ids,
     courses,                                  // { courseId: 'active' | 'passed' | 'failed' }
     status: ids[0] ? courses[ids[0]] : null,
     canEnrollNew: true,
-    nextPrice: paidCourses() && usedFreeCourse ? coursePrice() : 0,
     paymentsEnabled: paidCourses() && cashfreeConfigured(),
     free: !paidCourses(),
     passedCourseIds: ids.filter(id => courses[id] === 'passed'),

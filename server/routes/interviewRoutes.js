@@ -11,7 +11,7 @@ import { findInterviewItem, findInterviewSet } from '../../shared/interview/inde
 // A learner may also commit to a daily plan per set: db.interviewPlans[email][setId] =
 // { perDay, days (0 = Sunday ... 6 = Saturday), startedAt }.
 // Interview Prep unlocks once the learner holds active (not revoked) certificates for 4 different courses,
-// or after a one-time payment of interviewPrice() (₹499, see paymentRoutes.js).
+// or after a one-time payment of interviewPrice() (₹599, see paymentRoutes.js).
 // Admins can always open it, even when the same browser also holds a learner session.
 const router = express.Router();
 

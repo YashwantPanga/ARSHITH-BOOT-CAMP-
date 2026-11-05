@@ -14,12 +14,12 @@ export function MobileHero({ onRegisterClick, onExploreClick, onVerifyClick }) {
           className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[250px] w-auto max-w-none object-contain [mask-image:linear-gradient(to_bottom,#000_88%,transparent)]" />
       </div>
       <p className="mt-6 font-display text-[12.5px] font-semibold uppercase tracking-[0.24em] text-[#BCD1C6]">CodeLekho</p>
-      <RevealText as="h1" className="mt-2 text-[31px] leading-[1.12] font-bold text-ivory">Achieve your career goals with <span className="text-[#BCD1C6]">free online courses</span></RevealText>
+      <RevealText as="h1" className="mt-2 text-[31px] leading-[1.12] font-bold text-ivory">Achieve your career goals with <span className="text-[#BCD1C6]">job-ready online courses</span></RevealText>
       <p className="mt-3 text-[15px] leading-relaxed text-ivory/85">
         Mentor-written programs in Python, SQL, Web Development and AI — with deep-dive modules, live code practice,
         quizzes after every module, a proctored final and a QR-verified certificate.
       </p>
-      <button onClick={onRegisterClick} className="font-display mt-6 w-full h-12 rounded-md bg-ivory text-forest text-[16px] font-semibold active:scale-[.99] transition">Start Learning for Free</button>
+      <button onClick={onRegisterClick} className="font-display mt-6 w-full h-12 rounded-md bg-ivory text-forest text-[16px] font-semibold active:scale-[.99] transition">Start Learning</button>
       <p className="mt-3 text-[13.5px] text-ivory/80">
         or <button onClick={onExploreClick} className="font-semibold text-ivory underline underline-offset-2">explore all courses</button>
         <span className="mx-1.5 text-ivory/40">·</span>

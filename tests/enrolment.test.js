@@ -5,9 +5,8 @@ import path from 'node:path';
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
 
-// Paid mode (PAID_COURSES=on). Several courses per learner. Exactly one free course (the first); every other course is
-// ₹99 to unlock (admin unlocks until online payment is connected). Unlocking a failed
-// course again gives two fresh final attempts.
+// Paid mode (PAID_COURSES=on). Several courses per learner. Every course is paid: Data Science is ₹199, the others ₹99
+// (an admin can also unlock one). Failing the final twice closes the course; buying it again gives two fresh attempts.
 const tmp = path.join(os.tmpdir(), `arb-enrol-db-${process.pid}-${Date.now()}.json`);
 const A = 'pass@example.test';
 const B = 'fail@example.test';
@@ -40,15 +39,28 @@ beforeAll(async () => {
 afterAll(() => { delete process.env.PAID_COURSES; delete process.env.ADMIN_EMAIL; delete process.env.ADMIN_PASSWORD; try { fs.unlinkSync(tmp); } catch { /* ignore */ } });
 
 describe('enrolment rules', () => {
-  it('first course is free; another course costs ₹99 to unlock straight away', async () => {
-    expect((await enrol(A, 'python-programming')).status).toBe(200);
-    expect(await state(A)).toMatchObject({ courseIds: ['python-programming'], courses: { 'python-programming': 'active' }, nextPrice: 99 });
-    const r = await enrol(A, 'sql-mastery');
-    expect(r.status).toBe(402);
-    expect(r.body).toMatchObject({ code: 'PAYMENT_REQUIRED', price: 99 });
+  it('no course is free: Data Science costs ₹199 and the others ₹99', async () => {
+    for (const id of ['python-programming', 'sql-mastery', 'web-development']) {
+      const r = await enrol(A, id);
+      expect(r.status).toBe(402);
+      expect(r.body).toMatchObject({ code: 'PAYMENT_REQUIRED', price: 99 });
+    }
+    const ds = await enrol(A, 'data-science-ai');
+    expect(ds.status).toBe(402);
+    expect(ds.body.price).toBe(199);
+    expect((await state(A)).courseIds).toEqual([]);
   });
 
-  it('the admin unlocks a paid course next to the free one (both stay open)', async () => {
+  it('the course list shows each price and marks Data Science as the best seller', async () => {
+    const { body } = await request(app).get('/api/courses');
+    const list = body.courses || body;
+    const byId = Object.fromEntries(list.map(c => [c.id, c]));
+    expect(byId['data-science-ai']).toMatchObject({ price: 199, isFree: false, bestSeller: true });
+    expect(byId['python-programming']).toMatchObject({ price: 99, isFree: false, bestSeller: false });
+  });
+
+  it('the admin unlocks paid courses (both stay open)', async () => {
+    expect((await unlock('ARB-STU-PASS01', 'python-programming')).status).toBe(200);
     expect((await unlock('ARB-STU-PASS01', 'sql-mastery')).status).toBe(200);
     const s = await state(A);
     expect(s.courseIds.sort()).toEqual(['python-programming', 'sql-mastery']);
@@ -61,21 +73,20 @@ describe('enrolment rules', () => {
     expect(login.body.learner.enrolledCourseIds.sort()).toEqual(['python-programming', 'sql-mastery']);
   });
 
-  it('only one course is ever free: passing does not make the next one free', async () => {
+  it('passing does not make the next course free', async () => {
     addAttempt(A, 'python-programming', true);
     addAttempt(A, 'sql-mastery', true);
-    expect((await state(A)).nextPrice).toBe(99);
     expect((await enrol(A, 'python-programming')).status).toBe(409); // already passed
     const r = await enrol(A, 'web-development');
     expect(r.status).toBe(402);
     expect(r.body.price).toBe(99);
   });
 
-  it('after failing twice, the same course costs ₹99 too; unlocking it again resets attempts', async () => {
-    expect((await enrol(B, 'web-development')).status).toBe(200); // B's one free course
+  it('after failing twice, the course must be bought again; unlocking it again resets attempts', async () => {
+    expect((await unlock('ARB-STU-FAIL01', 'web-development')).status).toBe(200);
     addAttempt(B, 'web-development', false);
     addAttempt(B, 'web-development', false);
-    expect(await state(B)).toMatchObject({ courses: { 'web-development': 'failed' }, nextPrice: 99 });
+    expect(await state(B)).toMatchObject({ courses: { 'web-development': 'failed' } });
     for (const course of ['sql-mastery', 'web-development']) expect((await enrol(B, course)).status).toBe(402);
     // the failed course is locked: no quizzes or projects until it is unlocked again
     const course = db$.getDb().courses.find(c => c.id === 'web-development');
