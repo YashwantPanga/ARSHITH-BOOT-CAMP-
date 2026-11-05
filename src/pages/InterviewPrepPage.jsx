@@ -255,8 +255,7 @@ function LockedPrep({ signedIn, certificates, purchase, onPaid, navigate }) {
           <div className="mt-3 sm:mt-4 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto no-scrollbar snap-x scroll-px-4 -mx-4 px-4 sm:mx-0 sm:px-0 pb-1" aria-hidden="true">
             {INTERVIEW_SETS.map(s => (
               <div key={s.id} className="relative h-full pointer-events-none select-none shrink-0 snap-start">
-                <div className="h-full grayscale-[.35] opacity-60"><QuestCard set={s} solved={0} signedIn={false} onOpen={() => {}} /></div>
-                <span className="absolute right-3 bottom-3 w-9 h-9 rounded-full bg-ivory/95 text-forest flex items-center justify-center shadow"><Lock className="w-4 h-4" /></span>
+                <div className="h-full grayscale-[.35] opacity-75"><QuestCard set={s} solved={0} signedIn={false} onOpen={() => {}} locked /></div>
               </div>
             ))}
           </div>

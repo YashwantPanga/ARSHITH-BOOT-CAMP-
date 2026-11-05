@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Flame, Play } from 'lucide-react';
+import { Flame, Lock, Play } from 'lucide-react';
 import { api } from '../../services/api';
 
 /* ------------------------------------------------------------------ */
@@ -223,7 +223,7 @@ export function QuestHero({ set, solvedMap, signedIn, playerName, next, onStart,
 /* Featured card on the Interview Prep home                            */
 /* ------------------------------------------------------------------ */
 
-export function QuestCard({ set, solved, signedIn, onOpen }) {
+export function QuestCard({ set, solved, signedIn, onOpen, locked = false }) {
   const q = QUEST[set.id] || QUEST['programming-essentials'];
   const diff = ['Easy', 'Medium', 'Hard'].map(d => [d, set.items.filter(i => i.difficulty === d).length]).filter(([, n]) => n);
   return (
@@ -247,9 +247,13 @@ export function QuestCard({ set, solved, signedIn, onOpen }) {
         {signedIn && solved > 0 && (
           <span className="block mb-2 h-1.5 rounded-full bg-white/20 overflow-hidden"><span className="block h-full rounded-full bg-gradient-to-r from-[#FFD95A] to-[#FFB52E]" style={{ width: `${(solved / set.items.length) * 100}%` }} /></span>
         )}
+        {locked ? (
+          <span className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-black/30 border border-white/30 text-white font-display font-bold text-[13px] sm:text-[13.5px] whitespace-nowrap"><Lock className="w-3.5 h-3.5" /> Locked</span>
+        ) : (
         <span className="quest-btn-sm inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-gradient-to-b from-[#FFD95A] to-[#FFB52E] text-[#2A1A05] font-display font-bold text-[13px] sm:text-[13.5px] whitespace-nowrap">
           <Play className="w-3.5 h-3.5 fill-current" /> {solved ? `Continue · ${solved}/${set.items.length}` : `Start · ${set.items.length}`}
         </span>
+        )}
       </span>
     </button>
   );
