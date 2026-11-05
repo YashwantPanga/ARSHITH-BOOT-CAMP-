@@ -567,7 +567,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     activeSection === 'progress' ? 'Module scores, final exams and proctoring' :
     activeSection === 'projects' ? 'Review GitHub project submissions' :
     activeSection === 'certificates' ? 'Certificate management & verification' :
-    activeSection === 'payments' ? 'Course payments received through Razorpay' :
+    activeSection === 'payments' ? 'Course and Interview Prep payments received through Cashfree' :
     activeSection === 'export' ? 'Download student data as Excel' :
     activeSection === 'courses' ? 'Manage the course catalog' : 'Admin account & security';
   const go = (id) => { setActiveSection(id); setBuilderCourse(null); setMobileSidebarOpen(false); };
@@ -1463,11 +1463,11 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
                 <div>
                   <h2 className="text-lg font-black text-slate-900">Payments ({paid.length} paid · ₹{total.toLocaleString('en-IN')})</h2>
                   <span className="text-xs font-semibold text-slate-500">
-                    {payments.enabled ? 'Online payment is on. Refunds are made from the Razorpay Dashboard.' : 'Online payment is off - add the Razorpay keys to the server .env to turn it on.'}
+                    {payments.enabled ? `Online payment is on (${payments.mode === 'production' ? 'live' : 'test mode'}). Refunds are made from the Cashfree Dashboard.` : 'Online payment is off - add the Cashfree keys to the server .env to turn it on.'}
                   </span>
                 </div>
-                <a href="https://dashboard.razorpay.com/app/payments" target="_blank" rel="noreferrer" className="px-4 py-2 text-xs font-black text-white bg-brand-900 hover:bg-brand-800 rounded-xl shadow-md inline-flex items-center gap-2 self-start sm:self-auto">
-                  Razorpay Dashboard <ExternalLink className="w-3.5 h-3.5" />
+                <a href="https://merchant.cashfree.com/" target="_blank" rel="noreferrer" className="px-4 py-2 text-xs font-black text-white bg-brand-900 hover:bg-brand-800 rounded-xl shadow-md inline-flex items-center gap-2 self-start sm:self-auto">
+                  Cashfree Dashboard <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>
               <div className="overflow-x-auto">

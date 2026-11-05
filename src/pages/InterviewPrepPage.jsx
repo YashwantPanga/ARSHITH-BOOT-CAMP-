@@ -17,6 +17,7 @@ import Approaches from '../components/interview/Approaches';
 import { api } from '../services/api';
 import { paths } from '../router';
 import { BrandLoader } from '../components/ui';
+import PaymentNotice from '../components/PaymentNotice';
 
 /* ------------------------------------------------------------------ */
 /* Shared bits                                                         */
@@ -124,17 +125,19 @@ function useInterviewProgress(studentUser, isAdmin = false) {
   // Interview Prep unlocks once the learner holds 4 certificates: null while checking.
   const [unlocked, setUnlocked] = useState(cached ? progressCache.unlocked ?? null : null);
   const [certificates, setCertificates] = useState(cached ? progressCache.certificates || null : null);
+  const [purchase, setPurchase] = useState(cached ? progressCache.purchase || null : null); // { price, paid, paymentsEnabled }
   useEffect(() => {
     // Admins (signed in to the staff portal, no learner session) can always open Interview Prep to review it.
     if (!email) { setProgress({}); setPlans({}); setUnlocked(!!isAdmin); setCertificates(null); return; }
     let live = true;
     api.getInterviewProgress().then(r => {
       if (!live) return;
-      progressCache = { user: email, data: r.progress || {}, plans: r.plans || {}, unlocked: r.unlocked !== false, certificates: r.certificates || null };
+      progressCache = { user: email, data: r.progress || {}, plans: r.plans || {}, unlocked: r.unlocked !== false, certificates: r.certificates || null, purchase: r.purchase || null };
       setProgress(r.progress || {});
       setPlans(r.plans || {});
       setUnlocked(r.unlocked !== false);
       setCertificates(r.certificates || null);
+      setPurchase(r.purchase || null);
     }).catch(() => { if (live) setUnlocked(!!isAdmin); });
     return () => { live = false; };
   }, [email, isAdmin]);
@@ -161,7 +164,9 @@ function useInterviewProgress(studentUser, isAdmin = false) {
       return false;
     }
   }, [email]);
-  return { progress, plans, mark, savePlan, unlocked, certificates, signedIn: !!email };
+  // after paying for Interview Prep: open it straight away
+  const unlockPaid = useCallback(() => { progressCache = { ...progressCache, unlocked: true }; setUnlocked(true); }, []);
+  return { progress, plans, mark, savePlan, unlocked, certificates, purchase, unlockPaid, signedIn: !!email };
 }
 
 /* ------------------------------------------------------------------ */
@@ -175,7 +180,7 @@ export default function InterviewPrepPage({ setId, itemId, tab, studentUser, isA
   const props = { ...state, navigate, toast, studentUser, startTab: tab };
 
   if (state.unlocked === null) return <div className="bg-ivory min-h-[60vh] flex items-center justify-center"><BrandLoader label="Checking access" /></div>;
-  if (!state.unlocked) return <LockedPrep signedIn={state.signedIn} certificates={state.certificates} navigate={navigate} />;
+  if (!state.unlocked) return <LockedPrep signedIn={state.signedIn} certificates={state.certificates} purchase={state.purchase} onPaid={() => { state.unlockPaid(); toast?.('Payment received - Interview Prep is unlocked.', 'success', 5000); }} navigate={navigate} />;
   if (setId && !set) return <NotFound navigate={navigate} what="This study plan" />;
   if (itemId && !item) return <NotFound navigate={navigate} what="This question" back={paths.interview(set.id)} />;
   if (item) return set.kind === 'concept' ? <ConceptCard key={item.id} set={set} item={item} {...props} /> : <Workspace key={item.id} set={set} item={item} {...props} />;
@@ -184,7 +189,9 @@ export default function InterviewPrepPage({ setId, itemId, tab, studentUser, isA
 }
 
 /** Shown until the learner holds 4 certificates: what unlocks it, their progress, and a locked preview of the plans. */
-function LockedPrep({ signedIn, certificates, navigate }) {
+function LockedPrep({ signedIn, certificates, purchase, onPaid, navigate }) {
+  const [paying, setPaying] = useState(false);
+  const price = purchase?.price || 499;
   const required = certificates?.required || 4;
   const earned = Math.min(certificates?.earned || 0, required);
   const steps = ['Finish every module quiz of a course', 'Submit one project on GitHub', 'Pass the proctored final (70%+)', `Earn ${required} course certificates: Interview Prep unlocks`];
@@ -213,10 +220,19 @@ function LockedPrep({ signedIn, certificates, navigate }) {
               )}
               <div className="mt-4 sm:mt-6 grid grid-cols-2 sm:flex sm:flex-wrap gap-2.5 sm:gap-3">
                 {signedIn
-                  ? <button onClick={() => navigate(paths.dashboard())} className="btn bg-ivory text-forest hover:bg-white !px-3 sm:!px-6 !py-2.5 sm:!py-3 text-[14px] sm:text-[15px] justify-center">Continue<span className="hidden sm:inline">&nbsp;my course</span> <ArrowRight className="w-4 h-4" /></button>
+                  ? <button onClick={() => navigate(paths.dashboard())} className="btn bg-ivory text-forest hover:bg-white !px-3 sm:!px-6 !py-2.5 sm:!py-3 text-[14px] sm:text-[15px] justify-center"><span>Continue<span className="hidden sm:inline"> my course</span></span> <ArrowRight className="w-4 h-4" /></button>
                   : <button onClick={() => navigate(paths.login(paths.interview()))} className="btn bg-ivory text-forest hover:bg-white !px-3 sm:!px-6 !py-2.5 sm:!py-3 text-[14px] sm:text-[15px] justify-center">Sign in <ArrowRight className="w-4 h-4" /></button>}
                 <button onClick={() => navigate(paths.courses())} className="btn border border-white/30 text-ivory hover:bg-white/10 !px-3 sm:!px-6 !py-2.5 sm:!py-3 text-[14px] sm:text-[15px] justify-center">Browse courses</button>
               </div>
+              {/* paid route: unlock now without waiting for 4 certificates */}
+              <div className="mt-4 sm:mt-5 rounded-2xl bg-white/[.07] border border-[#E5C88E]/40 p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3 max-w-xl">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] font-semibold text-ivory">Don't want to wait? Unlock it now for ₹{price}</p>
+                  <p className="text-[12.5px] text-ivory/65">One-time payment, lifetime access. Free when you complete all {certificates?.required || 4} courses.</p>
+                </div>
+                <button onClick={() => (signedIn ? setPaying(true) : navigate(paths.login(paths.interview())))} className="shrink-0 h-10 px-4 rounded-xl bg-gradient-to-b from-[#E5C88E] to-[#C49A52] text-[#2A1D08] text-[14px] font-bold">Unlock for ₹{price}</button>
+              </div>
+              {paying && <PaymentNotice product="interview" price={price} paymentsEnabled={purchase ? purchase.paymentsEnabled : undefined} onPaid={() => { setPaying(false); onPaid?.(); }} onClose={() => setPaying(false)} />}
             </div>
             <ol className="grid grid-cols-2 gap-2 sm:hidden">
               {short.map((t, i) => (

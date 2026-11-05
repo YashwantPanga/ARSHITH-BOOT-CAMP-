@@ -1,13 +1,13 @@
 // Course enrolment rules.
 //  - A learner can hold several courses at once.
-//  - Every course is free while PAID_COURSES is not 'on' in .env.
-//  - With PAID_COURSES=on, each learner gets exactly one free course - the first one. Every other course
-//    costs coursePrice() (₹99) to unlock, unlocked by a Razorpay payment (routes/paymentRoutes.js) or the admin.
+//  - Each learner gets exactly one free course - the first one. Every other course costs coursePrice()
+//    (₹99) to unlock, unlocked by a Cashfree payment (routes/paymentRoutes.js) or the admin.
+//  - PAID_COURSES=off in .env makes every course free.
 //  - Failing a course's final twice closes it. Starting it again (free, or ₹99 in paid mode) gives two
 //    fresh final attempts (attemptOffset) and restarts its module quizzes (progressFrom).
 import { finalAttemptsTotal, MAX_FINAL_ATTEMPTS, getPassedFinalAttempt } from '../routes/quizRoutes.js';
 import { enrolmentRecord, enrolledCourseIds } from './enrolledCourses.js';
-import { razorpayConfigured } from './razorpay.js';
+import { cashfreeConfigured } from './cashfree.js';
 
 export const PAID_COURSE_PRICE = 99;
 /** Rupees per paid course. COURSE_PRICE in .env overrides it (e.g. COURSE_PRICE=1 to try a real payment). */
@@ -15,9 +15,9 @@ export function coursePrice() {
   const v = Number(process.env.COURSE_PRICE);
   return Number.isInteger(v) && v >= 1 ? v : PAID_COURSE_PRICE;
 }
-/** Courses cost money only when PAID_COURSES=on (once a Razorpay account for the bootcamp is approved). */
+/** Courses cost money unless PAID_COURSES=off. */
 export function paidCourses() {
-  return String(process.env.PAID_COURSES || '').trim().toLowerCase() === 'on';
+  return String(process.env.PAID_COURSES || '').trim().toLowerCase() !== 'off';
 }
 const norm = (v) => String(v || '').trim().toLowerCase();
 
@@ -44,7 +44,7 @@ export function enrolmentState(db, email) {
     status: ids[0] ? courses[ids[0]] : null,
     canEnrollNew: true,
     nextPrice: paidCourses() && usedFreeCourse ? coursePrice() : 0,
-    paymentsEnabled: paidCourses() && razorpayConfigured(),
+    paymentsEnabled: paidCourses() && cashfreeConfigured(),
     free: !paidCourses(),
     passedCourseIds: ids.filter(id => courses[id] === 'passed'),
     history: history.map(h => ({ courseId: h.courseId, outcome: h.outcome, enrolledAt: h.enrolledAt, closedAt: h.closedAt, paid: !!h.paid }))

@@ -128,9 +128,9 @@ function WelcomeCard({ onClose, navigate, signedIn }) {
   const go = (to) => { onClose(); navigate(to); };
 
   return (
-    <div className="fixed inset-0 z-[125] flex items-end" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+    <div className="fixed inset-0 z-[125] flex items-end justify-center" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
-      <div className="welcome-sheet relative w-full max-h-[94dvh] overflow-y-auto no-scrollbar rounded-t-[28px] text-white pb-[calc(16px+env(safe-area-inset-bottom))]"
+      <div className="welcome-sheet relative w-full max-w-[480px] max-h-[94dvh] overflow-y-auto no-scrollbar rounded-t-[28px] text-white pb-[calc(16px+env(safe-area-inset-bottom))]"
         style={{ background: `radial-gradient(120% 70% at 50% 0%, ${P.green} 0%, ${P.forest} 48%, ${P.night} 100%)` }}>
         <span className="welcome-shine" aria-hidden="true" />
         <button onClick={onClose} className="absolute right-4 top-4 z-20 w-8 h-8 rounded-full flex items-center justify-center active:scale-95 transition" style={{ background: P.cream, color: P.night }} aria-label="Close"><X className="w-4 h-4" strokeWidth={2.6} /></button>

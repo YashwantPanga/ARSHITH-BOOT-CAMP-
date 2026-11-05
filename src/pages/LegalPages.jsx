@@ -53,9 +53,9 @@ export function TermsPage({ onHome }) {
           'Keep your password private. You are responsible for activity on your account. One person may hold one account.'
         ] },
         { title: 'Courses and certificates', body: [
-          'All courses are currently free, and you may take as many as you like. If paid courses are introduced, the price is shown before you enrol and payments follow the Refund and Cancellation Policy.',
+          'Your first course is free. Each further course costs ₹99, and Interview Prep costs ₹499 as a one-time payment (it is free for students who earn certificates in all 4 courses). The price is always shown before you pay, and payments follow the Refund and Cancellation Policy.',
           'Each course has two attempts at its final assessment. If you fail both, you can start the course again: every module quiz is reset and you get two fresh attempts. A certificate of completion is issued when you finish every module quiz, submit the required project and score at least 70% in the proctored final assessment.',
-          'Certificates confirm completion of an CodeLekho course. They are not a degree, diploma or university qualification, and are not issued under UGC or AICTE approval. Each certificate has a unique ID that anyone can verify on this site.',
+          'Certificates confirm completion of a CodeLekho course. They are not a degree, diploma or university qualification, and are not issued under UGC or AICTE approval. Each certificate has a unique ID that anyone can verify on this site.',
           'We may revoke a certificate obtained through cheating, impersonation or false information.'
         ] },
         { title: 'Proctored assessment', body: [
@@ -124,7 +124,7 @@ export function PrivacyPage({ onHome }) {
           'We do not sell your data or use it for advertising.'
         ] },
         { title: 'Who processes it', body: [
-          'Your data is stored with our database provider (Supabase) and emails are delivered through our email provider (Brevo). Payments are handled by Razorpay, which receives your name, email and payment details directly; we receive only the payment ID and status. They process data only on our instructions. We may disclose data if the law requires it.'
+          'Your data is stored with our database provider (Supabase) and emails are delivered through our email provider (Brevo). Payments are handled by Cashfree, which receives your name, email and payment details directly; we receive only the payment ID and status. They process data only on our instructions. We may disclose data if the law requires it.'
         ] },
         { title: 'How long we keep it', body: [
           'Account and learning records are kept while your account is open. Certificate records are kept so certificates stay verifiable. When you ask us to delete your account we remove your personal data, except what we must keep by law or to prevent fraud.'
@@ -151,7 +151,7 @@ export function RefundPage({ onHome }) {
     <LegalDoc
       title="Refund and Cancellation Policy"
       onHome={onHome}
-      intro="This policy covers payments made on CodeLekho, operated by Arshith Group, Bengaluru, India. Payments are processed securely by Razorpay; we never see or store your card, UPI or bank details."
+      intro="This policy covers payments made on CodeLekho, operated by Arshith Group, Bengaluru, India. Payments are processed securely by Cashfree; we never see or store your card, UPI or bank details."
       sections={[
         { title: 'What you pay for', body: [
           'All courses on CodeLekho are currently free, so no payment is taken. This policy applies if paid courses are introduced, when the price is shown before you enrol.',
@@ -166,11 +166,11 @@ export function RefundPage({ onHome }) {
           'Refunds are not given after a final assessment attempt, for a failed assessment, or when access was removed for breaking the Terms of Use.'
         ] },
         { title: 'How to ask', body: [
-          `Email ${CONTACT} or call +91 82177 29744 with your registered email and the Razorpay payment ID from your receipt. We reply within 2 working days.`,
+          `Email ${CONTACT} or call +91 82177 29744 with your registered email and the Cashfree payment ID from your receipt. We reply within 2 working days.`,
           'Approved refunds are sent back to the original payment method within 5-7 working days. When a refund is made, the course is locked again.'
         ] },
         { title: 'Failed payments', body: [
-          'If money leaves your account but the payment fails, your bank or Razorpay normally returns it automatically within 5-7 working days. If it does not, contact us with the payment ID.'
+          'If money leaves your account but the payment fails, your bank or Cashfree normally returns it automatically within 5-7 working days. If it does not, contact us with the payment ID.'
         ] }
       ]}
     />

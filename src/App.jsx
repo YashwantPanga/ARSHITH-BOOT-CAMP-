@@ -14,6 +14,7 @@ import EnrollCelebration from './components/EnrollCelebration';
 import { Lock } from 'lucide-react';
 import { displayTitle } from './utils/textUtils';
 import PaymentNotice from './components/PaymentNotice';
+import { confirmOrder } from './utils/cashfree';
 
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const InterviewPrepPage = lazy(() => import('./pages/InterviewPrepPage'));
@@ -113,7 +114,8 @@ function AppShell() {
   const courseOffer = useMemo(() => ({
     canEnrollNew: true,
     enrolledIds: enrolledIds.filter(id => !closedIds.includes(id)),
-    price: studentUser && enrollState ? enrollState.nextPrice || 0 : 0
+    price: studentUser && enrollState ? enrollState.nextPrice || 0 : 0,
+    allFree: enrollState?.free === true // every course free (PAID_COURSES=off)
   }), [studentUser, enrollState, enrolledIds, closedIds]);
 
   const saveUser = useCallback((u) => {
@@ -260,7 +262,32 @@ function AppShell() {
     }
   };
 
-  // Razorpay confirmed the payment and the server unlocked the course
+  // Paying in a UPI app or on a bank page brings the learner back with ?cf_order=<id>: confirm it here.
+  const cfOrder = route.query.cf_order;
+  useEffect(() => {
+    if (!cfOrder || !studentUser) return;
+    const clean = window.location.pathname;
+    confirmOrder(cfOrder)
+      .then((res) => {
+        if (res.kind === 'interview') {
+          toast('Payment received - Interview Prep is unlocked.', 'success', 5000);
+          navigate(clean, { replace: true });
+          window.location.reload(); // Interview Prep reads its access fresh
+          return;
+        }
+        setEnrollState(res);
+        saveUser({ ...studentUser, enrolledCourseIds: res.courseIds || enrolledIds });
+        toast('Payment received - a receipt is on its way to your email.', 'success', 5000);
+        navigate(res.courseId ? paths.learn(res.courseId) : clean, { replace: true });
+      })
+      .catch((err) => {
+        toast(err.data?.code === 'NOT_PAID' ? 'The payment was not completed. No money was taken.' : `${err.message || 'We could not confirm the payment.'} Order ID: ${cfOrder}`, 'error', 7000);
+        navigate(clean, { replace: true });
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cfOrder, studentUser?.email]);
+
+  // Cashfree confirmed the payment and the server unlocked the course
   const onCoursePaid = (res) => {
     const paidId = res.courseId || paymentFor?.course?.id;
     setEnrollState(res);

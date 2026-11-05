@@ -5,7 +5,7 @@ import path from 'node:path';
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
 
-// Free mode (PAID_COURSES not set): every course is free, and a course failed twice can be started
+// Free mode (PAID_COURSES=off): every course is free, and a course failed twice can be started
 // again at once - its module quizzes restart and the final gets two fresh attempts.
 const tmp = path.join(os.tmpdir(), `arb-free-db-${process.pid}-${Date.now()}.json`);
 const C = 'free@example.test';
@@ -24,7 +24,7 @@ const tick = () => new Promise(r => setTimeout(r, 5));
 
 beforeAll(async () => {
   fs.copyFileSync(path.join(__dirname, '..', 'server', 'data', 'db.json'), tmp);
-  delete process.env.PAID_COURSES;
+  process.env.PAID_COURSES = 'off';
   Object.assign(process.env, { ARB_DB_FILE: tmp, NODE_ENV: 'test' });
   app = (await import('../server/app.js')).default;
   db$ = await import('../server/db.js');

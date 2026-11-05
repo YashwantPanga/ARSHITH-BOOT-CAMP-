@@ -19,7 +19,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import { learnerGuard } from './middleware/learnerAuth.js';
 import { adminGate } from './middleware/auth.js';
 import { getDb, dbReady, storageMode } from './db.js';
-import { razorpayConfigured } from './lib/razorpay.js';
+import { cashfreeConfigured } from './lib/cashfree.js';
 import { mailMode } from './lib/mailer.js';
 import { certImagePath } from './routes/certificateRoutes.js';
 
@@ -35,7 +35,7 @@ app.use(cors({
 }));
 
 // Body parser
-// The Razorpay webhook is signed over the exact bytes it sends, so keep those for that route.
+// The Cashfree webhook is signed over the exact bytes it sends, so keep those for that route.
 app.use(express.json({ limit: '10mb', verify: (req, res, buf) => { if (req.originalUrl.startsWith('/api/payments/webhook')) req.rawBody = buf; } }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -55,7 +55,7 @@ app.get('/api/health', (req, res) => {
     service: 'CodeLekho Secure Backend API',
     database: dbReady() ? storageMode() : 'connecting',
     email: mailMode(),
-    payments: razorpayConfigured() ? 'on' : 'off',
+    payments: cashfreeConfigured() ? 'on' : 'off',
     timestamp: new Date().toISOString()
   });
 });

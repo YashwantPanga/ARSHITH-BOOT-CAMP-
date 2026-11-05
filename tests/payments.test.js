@@ -6,86 +6,101 @@ import crypto from 'node:crypto';
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
 
-// Razorpay payments for paid courses. Razorpay's order API is mocked; signatures are made with the
-// test secret exactly as Razorpay makes them.
+// Cashfree payments for paid courses and Interview Prep. Cashfree's API is mocked: an order stays
+// ACTIVE until the test marks it paid; webhooks are signed exactly as Cashfree signs them.
 const tmp = path.join(os.tmpdir(), `arb-pay-db-${process.pid}-${Date.now()}.json`);
 const A = 'payer@example.test';
 const B = 'other@example.test';
-const SECRET = 'test_secret_123';
-const HOOK = 'hook_secret_456';
+const C = 'prep-buyer@example.test';
+const SECRET = 'cf_test_secret_123';
 let app; let db$; const tok = {};
 const realFetch = global.fetch;
-let orderNo = 0;
+const paid = new Set();
+const created = {};
 
-const sign = (s) => crypto.createHmac('sha256', SECRET).update(s).digest('hex');
 const as = (email) => ({ 'X-Learner-Token': tok[email] });
 const order = (email, courseId) => request(app).post('/api/payments/order').set(as(email)).send({ courseId });
+const prepOrder = (email) => request(app).post('/api/payments/order').set(as(email)).send({ product: 'interview' });
+const verify = (email, orderId) => request(app).post('/api/payments/verify').set(as(email)).send({ orderId });
 const state = async (email) => (await request(app).get('/api/enrollment').set(as(email))).body;
+const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 beforeAll(async () => {
   fs.copyFileSync(path.join(__dirname, '..', 'server', 'data', 'db.json'), tmp);
-  Object.assign(process.env, { ARB_DB_FILE: tmp, NODE_ENV: 'test', PAID_COURSES: 'on', RAZORPAY_KEY_ID: 'rzp_test_abc', RAZORPAY_KEY_SECRET: SECRET, RAZORPAY_WEBHOOK_SECRET: HOOK });
-  global.fetch = vi.fn(async (url, opts) => {
-    if (!String(url).startsWith('https://api.razorpay.com/')) return realFetch(url, opts);
-    const body = JSON.parse(opts.body);
-    return new Response(JSON.stringify({ id: `order_T${++orderNo}`, amount: body.amount, currency: body.currency, status: 'created' }), { status: 200 });
+  Object.assign(process.env, { ARB_DB_FILE: tmp, NODE_ENV: 'test', PAID_COURSES: 'on', CASHFREE_APP_ID: 'cf_app_test', CASHFREE_SECRET_KEY: SECRET, CASHFREE_ENV: 'sandbox' });
+  global.fetch = vi.fn(async (url, opts = {}) => {
+    const u = String(url);
+    if (!u.startsWith('https://sandbox.cashfree.com/pg/')) return realFetch(url, opts);
+    if (opts.headers?.['x-client-secret'] !== SECRET) return json({ message: 'authentication failed' }, 401);
+    if (u.endsWith('/pg/orders') && opts.method === 'POST') {
+      const body = JSON.parse(opts.body);
+      created[body.order_id] = body;
+      return json({ order_id: body.order_id, order_amount: body.order_amount, payment_session_id: `session_${body.order_id}`, order_status: 'ACTIVE' });
+    }
+    const m = u.match(/\/pg\/orders\/([^/]+)(\/payments)?$/);
+    if (m && m[2]) return json(paid.has(m[1]) ? [{ cf_payment_id: 5551, payment_status: 'SUCCESS' }] : []);
+    if (m) return json({ order_id: m[1], order_status: paid.has(m[1]) ? 'PAID' : 'ACTIVE' });
+    return json({ message: 'not found' }, 404);
   });
   app = (await import('../server/app.js')).default;
   db$ = await import('../server/db.js');
   const db = db$.getDb();
-  for (const [email, id] of [[A, 'ARB-STU-PAY001'], [B, 'ARB-STU-OTH001']]) {
-    db.learners[email] = { name: 'Learner ' + id, email, regNo: id.slice(-6), phone: '9999999999', learnerId: id, passwordHash: bcrypt.hashSync('Pw#12345', 10), emailVerified: true };
+  for (const [email, id] of [[A, 'ARB-STU-PAY001'], [B, 'ARB-STU-OTH001'], [C, 'ARB-STU-PRP001']]) {
+    db.learners[email] = { name: 'Learner ' + id, email, regNo: id.slice(-6), phone: '9876543210', learnerId: id, passwordHash: bcrypt.hashSync('Pw#12345', 10), emailVerified: true };
     db.students = [{ id, name: 'Learner ' + id, email, status: 'active' }, ...(db.students || [])];
   }
   db$.saveDb(db);
-  for (const [email, reg] of [[A, 'PAY001'], [B, 'OTH001']]) tok[email] = (await request(app).post('/api/learners/login').send({ email, password: 'Pw#12345', regNo: reg })).body.token;
+  for (const [email, reg] of [[A, 'PAY001'], [B, 'OTH001'], [C, 'PRP001']]) tok[email] = (await request(app).post('/api/learners/login').send({ email, password: 'Pw#12345', regNo: reg })).body.token;
 });
 afterAll(() => {
   global.fetch = realFetch;
-  for (const k of ['PAID_COURSES', 'RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET']) delete process.env[k];
+  for (const k of ['PAID_COURSES', 'CASHFREE_APP_ID', 'CASHFREE_SECRET_KEY', 'CASHFREE_ENV', 'COURSE_PRICE', 'INTERVIEW_PRICE']) delete process.env[k];
   try { fs.unlinkSync(tmp); } catch { /* ignore */ }
 });
 
-describe('Razorpay payments', () => {
-  it('the free course needs no payment; the next one does, and payments show as enabled', async () => {
+describe('Cashfree course payments', () => {
+  it('the first course is free; the next one costs ₹99, and payments show as enabled', async () => {
     expect((await order(A, 'python-programming')).body.code).toBe('FREE_COURSE');
     await request(app).post('/api/enrollment').set(as(A)).send({ courseId: 'python-programming' });
     expect(await state(A)).toMatchObject({ nextPrice: 99, paymentsEnabled: true });
     expect((await order(A, 'python-programming')).body.code).toBe('ALREADY_ENROLLED');
   });
 
-  it('creates a ₹99 order priced by the server and rejects a forged signature', async () => {
+  it('creates a ₹99 order priced by the server, and an unpaid order unlocks nothing', async () => {
     const r = await order(A, 'sql-mastery');
     expect(r.status).toBe(200);
-    expect(r.body).toMatchObject({ keyId: 'rzp_test_abc', amount: 9900, currency: 'INR' });
-    const bad = await request(app).post('/api/payments/verify').set(as(A)).send({ razorpay_order_id: r.body.orderId, razorpay_payment_id: 'pay_X', razorpay_signature: 'forged' });
-    expect(bad.status).toBe(400);
+    expect(r.body).toMatchObject({ amount: 99, currency: 'INR', mode: 'sandbox', kind: 'course' });
+    expect(r.body.paymentSessionId).toBe(`session_${r.body.orderId}`);
+    expect(created[r.body.orderId]).toMatchObject({ order_amount: 99, order_currency: 'INR', customer_details: { customer_email: A, customer_phone: '9876543210' } });
+    const notYet = await verify(A, r.body.orderId);
+    expect(notYet.status).toBe(409);
+    expect(notYet.body.code).toBe('NOT_PAID');
     expect((await state(A)).courseIds).not.toContain('sql-mastery');
   });
 
-  it('a valid payment unlocks the course; another learner cannot claim the order', async () => {
+  it('a paid order unlocks the course once; another learner cannot claim it', async () => {
     const { orderId } = (await order(A, 'sql-mastery')).body;
-    const proof = { razorpay_order_id: orderId, razorpay_payment_id: 'pay_OK1', razorpay_signature: sign(`${orderId}|pay_OK1`) };
-    expect((await request(app).post('/api/payments/verify').set(as(B)).send(proof)).status).toBe(404);
-    const ok = await request(app).post('/api/payments/verify').set(as(A)).send(proof);
+    paid.add(orderId);
+    expect((await verify(B, orderId)).status).toBe(404);
+    const ok = await verify(A, orderId);
     expect(ok.status).toBe(200);
     expect(ok.body.courses['sql-mastery']).toBe('active');
-    // the same proof again changes nothing
-    expect((await request(app).post('/api/payments/verify').set(as(A)).send(proof)).status).toBe(200);
+    expect((await verify(A, orderId)).status).toBe(200); // again: nothing changes
     const rec = db$.getDb().payments.filter(p => p.orderId === orderId);
     expect(rec).toHaveLength(1);
-    expect(rec[0]).toMatchObject({ status: 'paid', paymentId: 'pay_OK1', amount: 9900 });
-    expect(db$.getDb().learnerEnrollments[A].courses['sql-mastery']).toMatchObject({ paid: true, by: 'razorpay' });
+    expect(rec[0]).toMatchObject({ status: 'paid', paymentId: '5551', amount: 9900, gateway: 'cashfree' });
+    expect(db$.getDb().learnerEnrollments[A].courses['sql-mastery']).toMatchObject({ paid: true, by: 'cashfree' });
   });
 
   it('the webhook unlocks a course when the browser never confirmed, and needs a valid signature', async () => {
     await request(app).post('/api/enrollment').set(as(B)).send({ courseId: 'python-programming' });
     const { orderId } = (await order(B, 'sql-mastery')).body;
-    const body = JSON.stringify({ event: 'payment.captured', payload: { payment: { entity: { id: 'pay_WH1', order_id: orderId } } } });
-    const send = (sig) => request(app).post('/api/payments/webhook').set('Content-Type', 'application/json').set('X-Razorpay-Signature', sig).send(body);
+    const body = JSON.stringify({ type: 'PAYMENT_SUCCESS_WEBHOOK', data: { order: { order_id: orderId, order_amount: 99 }, payment: { cf_payment_id: 7771, payment_status: 'SUCCESS' } } });
+    const ts = String(Date.now());
+    const send = (sig) => request(app).post('/api/payments/webhook').set('Content-Type', 'application/json').set('x-webhook-timestamp', ts).set('x-webhook-signature', sig).send(body);
     expect((await send('nope')).status).toBe(400);
     expect((await state(B)).courseIds).not.toContain('sql-mastery');
-    expect((await send(crypto.createHmac('sha256', HOOK).update(body).digest('hex'))).status).toBe(200);
+    expect((await send(crypto.createHmac('sha256', SECRET).update(ts + body).digest('base64'))).status).toBe(200);
     expect((await state(B)).courses['sql-mastery']).toBe('active');
   });
 
@@ -94,14 +109,49 @@ describe('Razorpay payments', () => {
   });
 });
 
-describe('course price', () => {
-  it('COURSE_PRICE in .env overrides ₹99 (for a ₹1 test payment)', async () => {
+describe('Interview Prep payment', () => {
+  const progress = (email) => request(app).get('/api/interview/progress').set(as(email));
+
+  it('is locked without certificates and offers a ₹499 unlock', async () => {
+    const p = (await progress(C)).body;
+    expect(p.unlocked).toBe(false);
+    expect(p.purchase).toMatchObject({ price: 499, paid: false, paymentsEnabled: true });
+  });
+
+  it('a paid ₹499 order unlocks Interview Prep for that learner only', async () => {
+    const r = await prepOrder(C);
+    expect(r.body).toMatchObject({ amount: 499, kind: 'interview' });
+    expect((await verify(C, r.body.orderId)).status).toBe(409);
+    paid.add(r.body.orderId);
+    const ok = await verify(C, r.body.orderId);
+    expect(ok.body).toMatchObject({ kind: 'interview', interviewUnlocked: true });
+    expect((await progress(C)).body).toMatchObject({ unlocked: true, purchase: { paid: true } });
+    expect((await progress(B)).body.unlocked).toBe(false);
+    expect((await request(app).post('/api/interview/solved').set(as(C)).send({ setId: 'sql-50', itemId: 'sql-01' })).status).toBe(200);
+    expect((await prepOrder(C)).body.code).toBe('ALREADY_UNLOCKED');
+  });
+
+  it('is free (no payment needed) with certificates for all 4 courses', async () => {
+    const db = db$.getDb();
+    ['python-programming', 'sql-mastery', 'web-development', 'data-science-ai'].forEach((courseId, i) => db.certificates.push({ certificateId: `ARB-T-2026-PAYC00${i}`, userId: B, courseId, status: 'active' }));
+    db$.saveDb(db);
+    expect((await progress(B)).body.unlocked).toBe(true);
+    expect((await prepOrder(B)).body.code).toBe('ALREADY_UNLOCKED');
+  });
+});
+
+describe('prices', () => {
+  it('COURSE_PRICE and INTERVIEW_PRICE in .env override ₹99 and ₹499 (for a ₹1 test payment)', async () => {
     const { coursePrice } = await import('../server/lib/enrollment.js');
+    const { interviewPrice } = await import('../server/lib/interviewAccess.js');
     process.env.COURSE_PRICE = '1';
+    process.env.INTERVIEW_PRICE = '1';
     expect(coursePrice()).toBe(1);
-    expect((await order(A, 'web-development')).body.amount).toBe(100);
+    expect(interviewPrice()).toBe(1);
+    expect((await order(A, 'web-development')).body.amount).toBe(1);
     process.env.COURSE_PRICE = 'abc';
+    process.env.INTERVIEW_PRICE = '';
     expect(coursePrice()).toBe(99);
-    delete process.env.COURSE_PRICE;
+    expect(interviewPrice()).toBe(499);
   });
 });

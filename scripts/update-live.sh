@@ -31,7 +31,7 @@ else ok "JWT_SECRET is set"; fi
 has() { grep -qE "^$1=.+" .env; }
 has SUPABASE_URL && has SUPABASE_SERVICE_KEY && ok "Supabase settings present" || warn "Supabase settings missing - the site would use the local file instead of Supabase"
 has SMTP_HOST && has SMTP_USER && has SMTP_PASS && ok "Email settings present" || warn "Email settings incomplete - verification codes will not be sent"
-has RAZORPAY_KEY_ID && has RAZORPAY_KEY_SECRET && ok "Razorpay keys present (online payment on)" || warn "No Razorpay keys - paid courses show 'contact us' instead of the Pay button"
+has CASHFREE_APP_ID && has CASHFREE_SECRET_KEY && ok "Cashfree keys present (online payment on, $(grep -E '^CASHFREE_ENV=' .env | cut -d= -f2 || echo sandbox))" || warn "No Cashfree keys - paid courses show 'contact us' instead of the Pay button (run: bash scripts/set-cashfree.sh)"
 if grep -qE '^COURSE_PRICE=' .env; then warn "COURSE_PRICE is set to $(grep -E '^COURSE_PRICE=' .env | cut -d= -f2) - remove that line unless you mean it"; fi
 
 echo "==> Installing packages"

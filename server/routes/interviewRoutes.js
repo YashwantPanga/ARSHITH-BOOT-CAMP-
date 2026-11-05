@@ -1,6 +1,8 @@
 import express from 'express';
 import { getDb, saveDb } from '../db.js';
 import { readAdminSession } from '../middleware/auth.js';
+import { interviewPaid, interviewPrice } from '../lib/interviewAccess.js';
+import { cashfreeConfigured } from '../lib/cashfree.js';
 import { findInterviewItem, findInterviewSet } from '../../shared/interview/index.js';
 
 // Interview Prep progress: which problems a learner has solved (or questions marked as known).
@@ -8,12 +10,13 @@ import { findInterviewItem, findInterviewSet } from '../../shared/interview/inde
 // a certificate. Stored as db.interviewProgress[email][setId][itemId] = ISO date.
 // A learner may also commit to a daily plan per set: db.interviewPlans[email][setId] =
 // { perDay, days (0 = Sunday ... 6 = Saturday), startedAt }.
-// Interview Prep unlocks once the learner holds active (not revoked) certificates for 4 different courses.
+// Interview Prep unlocks once the learner holds active (not revoked) certificates for 4 different courses,
+// or after a one-time payment of interviewPrice() (₹499, see paymentRoutes.js).
 // Admins can always open it, even when the same browser also holds a learner session.
 const router = express.Router();
 
 export const INTERVIEW_CERTIFICATES_REQUIRED = 4;
-export const INTERVIEW_LOCKED_MESSAGE = `Interview Prep unlocks after you earn ${INTERVIEW_CERTIFICATES_REQUIRED} CodeLekho certificates.`;
+export const INTERVIEW_LOCKED_MESSAGE = `Interview Prep unlocks after you earn ${INTERVIEW_CERTIFICATES_REQUIRED} CodeLekho certificates, or with a one-time payment.`;
 
 /** Number of different courses the learner holds an active certificate for. */
 export function certificateCount(db, email) {
@@ -28,9 +31,12 @@ export function certificateCount(db, email) {
 /** INTERVIEW_LOCK=off opens Interview Prep for every signed-in learner (e.g. while working on it). */
 export const interviewLockOff = () => String(process.env.INTERVIEW_LOCK || '').trim().toLowerCase() === 'off';
 
+/** Free route: certificates for all the required courses. */
+export const interviewUnlockedByCertificates = (db, email) => certificateCount(db, email) >= INTERVIEW_CERTIFICATES_REQUIRED;
+
 export function interviewUnlocked(db, email) {
   if (interviewLockOff()) return true;
-  return certificateCount(db, email) >= INTERVIEW_CERTIFICATES_REQUIRED;
+  return interviewUnlockedByCertificates(db, email) || interviewPaid(db, email);
 }
 
 /** Open for admins and for learners with 4 certificates; a request with no learner session is an admin's. */
@@ -43,7 +49,8 @@ router.get('/interview/progress', (req, res) => {
   const db = getDb();
   const unlocked = openFor(req, db);
   const certificates = { earned: certificateCount(db, req.learnerEmail), required: INTERVIEW_CERTIFICATES_REQUIRED };
-  res.json({ success: true, unlocked, certificates, progress: db.interviewProgress?.[req.query.userId] || {}, plans: db.interviewPlans?.[req.query.userId] || {} });
+  const purchase = { price: interviewPrice(), paid: interviewPaid(db, req.learnerEmail), paymentsEnabled: cashfreeConfigured() };
+  res.json({ success: true, unlocked, certificates, purchase, progress: db.interviewProgress?.[req.query.userId] || {}, plans: db.interviewPlans?.[req.query.userId] || {} });
 });
 
 router.post('/interview/solved', (req, res) => {
