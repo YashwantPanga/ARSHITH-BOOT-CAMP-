@@ -53,7 +53,7 @@ export function TermsPage({ onHome }) {
           'Keep your password private. You are responsible for activity on your account. One person may hold one account.'
         ] },
         { title: 'Courses and certificates', body: [
-          'Each course costs ₹99 (AI with Data Science costs ₹199), and Interview Prep costs ₹599 as a one-time payment (it is free for students who earn certificates in all 4 courses). The price is always shown before you pay, and payments follow the Refund and Cancellation Policy.',
+          'Each course costs ₹149 (AI with Data Science costs ₹199), and Interview Prep costs ₹599 as a one-time payment (it is free for students who earn certificates in all 4 courses). The price is always shown before you pay, and payments follow the Refund and Cancellation Policy.',
           'Each course has two attempts at its final assessment. If you fail both, you can start the course again: every module quiz is reset and you get two fresh attempts. A certificate of completion is issued when you finish every module quiz, submit the required project and score at least 70% in the proctored final assessment.',
           'Certificates confirm completion of a CodeLekho course. They are not a degree, diploma or university qualification, and are not issued under UGC or AICTE approval. Each certificate has a unique ID that anyone can verify on this site.',
           'We may revoke a certificate obtained through cheating, impersonation or false information.'
@@ -154,7 +154,7 @@ export function RefundPage({ onHome }) {
       intro="This policy covers payments made on CodeLekho, operated by Arshith Group, Bengaluru, India. Payments are processed securely by Cashfree; we never see or store your card, UPI or bank details."
       sections={[
         { title: 'What you pay for', body: [
-          'Prices are shown before you pay: each course costs ₹99 (AI with Data Science costs ₹199) and Interview Prep costs ₹599.',
+          'Prices are shown before you pay: each course costs ₹149 (AI with Data Science costs ₹199) and Interview Prep costs ₹599.',
           'A payment unlocks one course for the account that paid: all its modules, quizzes, the project and the proctored final assessment. The course is unlocked as soon as the payment is confirmed, and a receipt is emailed to you.'
         ] },
         { title: 'Cancellation', body: [

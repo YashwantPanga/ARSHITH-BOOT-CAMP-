@@ -1,7 +1,7 @@
 import express from 'express';
 import { withLessons } from '../data/lessons/index.js';
 import { priceFor, BEST_SELLER_COURSE } from '../lib/enrollment.js';
-import { getDb, saveDb, logActivity } from '../db.js';
+import { getDb, saveDb, logActivity, readDb, dbVersion } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -48,22 +48,34 @@ function toPublicCourse(stored) {
 }
 
 // Get all active/published courses for website
+// The public course list is large, so it is built once per data change (and per price setting) and
+// reused; browsers revalidate it with an ETag and get a 304 when nothing changed.
+let listCache = { key: '', body: '' };
 router.get('/courses', (req, res) => {
-  const db = getDb();
-  const publicCourses = (db.courses || [])
-    .filter(c => c.status !== 'archived' && c.status !== 'draft')
-    .map(toPublicCourse);
-  res.json({ success: true, courses: publicCourses });
+  const key = `${dbVersion()}|${process.env.PAID_COURSES || ''}|${process.env.COURSE_PRICE || ''}`;
+  if (listCache.key !== key) {
+    const publicCourses = (readDb().courses || [])
+      .filter(c => c.status !== 'archived' && c.status !== 'draft')
+      .map(toPublicCourse);
+    listCache = { key, body: JSON.stringify({ success: true, courses: publicCourses }) };
+  }
+  res.set('Cache-Control', 'no-cache');
+  res.type('json').send(listCache.body);
 });
 
 // Get single course by ID or Slug
+const oneCache = new Map(); // course id -> { key, body }
 router.get('/courses/:id', (req, res) => {
-  const db = getDb();
-  const course = (db.courses || []).find(c => c.id === req.params.id || c.slug === req.params.id);
-  if (!course) {
-    return res.status(404).json({ success: false, message: 'Course not found' });
+  const key = `${dbVersion()}|${process.env.PAID_COURSES || ''}|${process.env.COURSE_PRICE || ''}`;
+  const hit = oneCache.get(req.params.id);
+  if (!hit || hit.key !== key) {
+    const course = (readDb().courses || []).find(c => c.id === req.params.id || c.slug === req.params.id);
+    if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
+    if (oneCache.size > 50) oneCache.clear();
+    oneCache.set(req.params.id, { key, body: JSON.stringify({ success: true, course: toPublicCourse(course) }) });
   }
-  res.json({ success: true, course: toPublicCourse(course) });
+  res.set('Cache-Control', 'no-cache');
+  res.type('json').send(oneCache.get(req.params.id).body);
 });
 
 // ==========================================

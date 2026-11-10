@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import express from 'express';
 import { publicBase } from '../lib/publicUrl.js';
 import { learnerFromRequest } from '../middleware/learnerAuth.js';
-import { getDb, saveDb, logActivity } from '../db.js';
+import { getDb, saveDb, logActivity, readDb } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
 import { ensureCertificate, makeUniqueCertificateId, sendCompletionEmail } from '../lib/certificates.js';
 import { normalizeUserId, getPassedFinalAttempt, PASS_PERCENTAGE } from './quizRoutes.js';
@@ -49,7 +49,7 @@ router.post('/certificates/issue', (req, res) => {
 // PUBLIC CERTIFICATE VERIFICATION ENDPOINT
 // ==========================================
 router.get('/certificates/verify/:id', (req, res) => {
-  const db = getDb();
+  const db = readDb(); // read-only
   const certIdInput = req.params.id.trim().toUpperCase();
 
   const cert = (db.certificates || []).find(

@@ -30,7 +30,7 @@ function ScenePair() {
           <img src="/course-cards/python-programming.webp" alt="" className="w-full h-full object-cover" />
         </span>
         <span className="text-left">
-          <span className="block font-display text-[19px] font-bold leading-tight">Courses from ₹99</span>
+          <span className="block font-display text-[19px] font-bold leading-tight">Courses from ₹149</span>
           <span className="block text-[13px] text-white/65">Learn <span style={{ color: P.lime }}>here</span></span>
         </span>
       </div>

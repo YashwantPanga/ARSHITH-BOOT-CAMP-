@@ -12,7 +12,7 @@ const CARD_ART = new Set(['python-programming', 'sql-mastery', 'web-development'
 export const courseArt = (course) => (CARD_ART.has(course.id) ? `/course-cards/${course.id}.webp` : course.thumbnail);
 /** Rupees for this course (0 when courses are free); the server sets it. */
 export const priceOf = (course) => Number(course?.price) || 0;
-/** Price as shown on cards: '₹99', or 'Free' when courses are free. */
+/** Price as shown on cards: '₹149', or 'Free' when courses are free. */
 export const priceLabel = (course) => (priceOf(course) > 0 ? `₹${priceOf(course)}` : 'Free');
 /** Text of the enrol button. */
 export const enrolLabel = (course) => (priceOf(course) > 0 ? `Enroll for ₹${priceOf(course)}` : 'Enroll for Free');

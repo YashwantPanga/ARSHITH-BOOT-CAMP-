@@ -1,6 +1,6 @@
 // Course enrolment rules.
 //  - A learner can hold several courses at once.
-//  - Every course is paid: coursePrice(courseId) (₹99, Data Science ₹199), unlocked by a Cashfree payment
+//  - Every course is paid: coursePrice(courseId) (₹149, Data Science ₹199), unlocked by a Cashfree payment
 //    (routes/paymentRoutes.js) or the admin.
 //  - PAID_COURSES=off in .env makes every course free.
 //  - Failing a course's final twice closes it. Buying it again (or restarting, when courses are free) gives
@@ -9,7 +9,7 @@ import { finalAttemptsTotal, MAX_FINAL_ATTEMPTS, getPassedFinalAttempt } from '.
 import { enrolmentRecord, enrolledCourseIds } from './enrolledCourses.js';
 import { cashfreeConfigured } from './cashfree.js';
 
-export const DEFAULT_COURSE_PRICE = 99;
+export const DEFAULT_COURSE_PRICE = 149;
 export const COURSE_PRICES = { 'data-science-ai': 199 };
 /** The course highlighted as the best seller on the site. */
 export const BEST_SELLER_COURSE = 'data-science-ai';

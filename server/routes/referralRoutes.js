@@ -1,5 +1,5 @@
 import express from 'express';
-import { getDb, saveDb } from '../db.js';
+import { getDb, saveDb, readDb } from '../db.js';
 import { publicBase } from '../lib/publicUrl.js';
 import * as R from '../lib/referrals.js';
 
@@ -20,11 +20,11 @@ const needLearner = (req, res) => {
 /* ---------------------------------------------------------------- public */
 
 router.get('/referrals/promo', (req, res) => {
-  res.json({ success: true, promo: R.publicPromo(getDb()) });
+  res.json({ success: true, promo: R.publicPromo(readDb()) });
 });
 
 router.get('/referrals/code/:code', (req, res) => {
-  const db = getDb();
+  const db = readDb();
   const prof = R.profileByCode(db, req.params.code);
   const s = R.settings(db);
   if (!prof || prof.suspended || !s.enabled) return res.json({ success: true, valid: false });

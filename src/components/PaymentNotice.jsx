@@ -10,7 +10,7 @@ import { rupees } from '../utils/referral';
  * server) the learner pays here and it unlocks straight away - onPaid(serverState) is called once the
  * server has confirmed the payment with Cashfree. Otherwise the learner contacts the team.
  */
-export default function PaymentNotice({ course, price = 99, retake = false, product = 'course', paymentsEnabled, onPaid, onClose }) {
+export default function PaymentNotice({ course, price = 149, retake = false, product = 'course', paymentsEnabled, onPaid, onClose }) {
   const interview = product === 'interview';
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);

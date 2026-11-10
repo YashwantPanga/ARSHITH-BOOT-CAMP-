@@ -66,12 +66,12 @@ describe('Cashfree course payments', () => {
     expect((await order(A, 'data-science-ai')).body).toMatchObject({ amount: 199, kind: 'course' });
   });
 
-  it('creates a ₹99 order priced by the server, and an unpaid order unlocks nothing', async () => {
+  it('creates a ₹149 order priced by the server, and an unpaid order unlocks nothing', async () => {
     const r = await order(A, 'sql-mastery');
     expect(r.status).toBe(200);
-    expect(r.body).toMatchObject({ amount: 99, currency: 'INR', mode: 'sandbox', kind: 'course' });
+    expect(r.body).toMatchObject({ amount: 149, currency: 'INR', mode: 'sandbox', kind: 'course' });
     expect(r.body.paymentSessionId).toBe(`session_${r.body.orderId}`);
-    expect(created[r.body.orderId]).toMatchObject({ order_amount: 99, order_currency: 'INR', customer_details: { customer_email: A, customer_phone: '9876543210' } });
+    expect(created[r.body.orderId]).toMatchObject({ order_amount: 149, order_currency: 'INR', customer_details: { customer_email: A, customer_phone: '9876543210' } });
     const notYet = await verify(A, r.body.orderId);
     expect(notYet.status).toBe(409);
     expect(notYet.body.code).toBe('NOT_PAID');
@@ -88,14 +88,14 @@ describe('Cashfree course payments', () => {
     expect((await verify(A, orderId)).status).toBe(200); // again: nothing changes
     const rec = db$.getDb().payments.filter(p => p.orderId === orderId);
     expect(rec).toHaveLength(1);
-    expect(rec[0]).toMatchObject({ status: 'paid', paymentId: '5551', amount: 9900, gateway: 'cashfree' });
+    expect(rec[0]).toMatchObject({ status: 'paid', paymentId: '5551', amount: 14900, gateway: 'cashfree' });
     expect(db$.getDb().learnerEnrollments[A].courses['sql-mastery']).toMatchObject({ paid: true, by: 'cashfree' });
   });
 
   it('the webhook unlocks a course when the browser never confirmed, and needs a valid signature', async () => {
     await request(app).post('/api/enrollment').set(as(B)).send({ courseId: 'python-programming' });
     const { orderId } = (await order(B, 'sql-mastery')).body;
-    const body = JSON.stringify({ type: 'PAYMENT_SUCCESS_WEBHOOK', data: { order: { order_id: orderId, order_amount: 99 }, payment: { cf_payment_id: 7771, payment_status: 'SUCCESS' } } });
+    const body = JSON.stringify({ type: 'PAYMENT_SUCCESS_WEBHOOK', data: { order: { order_id: orderId, order_amount: 149 }, payment: { cf_payment_id: 7771, payment_status: 'SUCCESS' } } });
     const ts = String(Date.now());
     const send = (sig) => request(app).post('/api/payments/webhook').set('Content-Type', 'application/json').set('x-webhook-timestamp', ts).set('x-webhook-signature', sig).send(body);
     expect((await send('nope')).status).toBe(400);
@@ -152,7 +152,7 @@ describe('prices', () => {
     expect((await order(A, 'web-development')).body.amount).toBe(1);
     process.env.COURSE_PRICE = 'abc';
     process.env.INTERVIEW_PRICE = '';
-    expect(coursePrice('python-programming')).toBe(99);
+    expect(coursePrice('python-programming')).toBe(149);
     expect(coursePrice('data-science-ai')).toBe(199);
     expect(interviewPrice()).toBe(599);
   });

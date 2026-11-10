@@ -56,6 +56,25 @@ function AppShell() {
   const [route, setRoute] = useState(() => parseLocation());
   const lastPageRef = useRef(null);
 
+  // Jump to the top of the new page. The site uses smooth scrolling (html { scroll-behavior: smooth }),
+  // which turned this into a slow scroll that the new page interrupted, leaving it part-way down (often
+  // at the footer). Jump instantly, and again once the new page has rendered.
+  const toTop = useCallback(() => {
+    const root = document.documentElement;
+    const jump = () => {
+      if (window.scrollY === 0) return;
+      const prev = root.style.scrollBehavior;
+      root.style.scrollBehavior = 'auto';
+      void getComputedStyle(root).scrollBehavior; // apply the override before scrolling
+      try { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); } catch { window.scrollTo(0, 0); }
+      root.style.scrollBehavior = prev;
+    };
+    jump();
+    requestAnimationFrame(() => requestAnimationFrame(jump));
+    setTimeout(jump, 120); // lazy pages and loaders that settle a moment later
+  }, []);
+  useEffect(() => { try { window.history.scrollRestoration = 'manual'; } catch { /* old browsers */ } }, []);
+
   const navigate = useCallback((to, { replace = false, scroll = true } = {}) => {
     const current = window.location.pathname + window.location.search;
     if (to !== current) {
@@ -63,18 +82,18 @@ function AppShell() {
       else window.history.pushState(null, '', to);
     }
     setRoute(parseLocation());
-    if (scroll) window.scrollTo({ top: 0, behavior: 'auto' });
-  }, []);
+    if (scroll) toTop();
+  }, [toTop]);
 
   useEffect(() => {
     const onPop = () => {
       if (examGuard.active) return; // the proctored exam handles Back itself
       setRoute(parseLocation());
-      window.scrollTo({ top: 0, behavior: 'auto' });
+      toTop();
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
-  }, []);
+  }, [toTop]);
 
   /* ---------------- Data ---------------- */
   const [courses, setCourses] = useState([]);

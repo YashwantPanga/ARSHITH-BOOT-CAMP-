@@ -35,8 +35,28 @@ export async function initDb() {
     await supabase.upsert(data);
   }
   memory = JSON.stringify(data);
+  version += 1;
   synced = Object.fromEntries(Object.entries(data).map(([k, v]) => [k, JSON.stringify(v)]));
   return 'supabase';
+}
+
+// Read-only shared copy for busy public pages (course list, promo, certificate check). Parsing the
+// whole database (courses included) on every request was the main cost under load. Callers of
+// readDb() must never change the object; anything that writes uses getDb() + saveDb() as before.
+let readCache = null;
+let readKey = '';
+let version = 0;
+/** Changes whenever the data changes (used to cache responses built from it). */
+export function dbVersion() {
+  if (useSupabase()) return `s${version}`;
+  try { const st = fs.statSync(DB_FILE); return `f${st.mtimeMs}-${st.size}-${version}`; } catch { return `f${version}`; }
+}
+export function readDb() {
+  const key = dbVersion();
+  if (readCache && readKey === key) return readCache;
+  readCache = useSupabase() ? JSON.parse(memory) : JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+  readKey = key;
+  return readCache;
 }
 
 export function getDb() {
@@ -54,6 +74,7 @@ export function getDb() {
 }
 
 export function saveDb(data) {
+  version += 1;
   if (useSupabase()) {
     memory = JSON.stringify(data);
     scheduleSync();

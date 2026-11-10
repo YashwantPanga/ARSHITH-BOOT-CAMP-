@@ -36,7 +36,7 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 sm:pt-20 xl:pb-20 text-left sm:text-center">
           <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Our services</p>
           <RevealText as="h1" className="mt-2 text-[28px] sm:text-[48px] font-bold leading-tight text-evergreen">Online courses for focused learners</RevealText>
-          <p className="mt-3 text-[15px] sm:text-base text-charcoal/70 max-w-2xl sm:mx-auto">{offer?.allFree ? 'Every course is free. Learn, pass the final assessment and get your certificate.' : 'Courses from ₹99. Learn, pass the final assessment and get your certificate.'}</p>
+          <p className="mt-3 text-[15px] sm:text-base text-charcoal/70 max-w-2xl sm:mx-auto">{offer?.allFree ? 'Every course is free. Learn, pass the final assessment and get your certificate.' : 'Courses from ₹149. Learn, pass the final assessment and get your certificate.'}</p>
           <nav aria-label="Breadcrumb" className="mt-5 font-display text-[15.5px] text-evergreen">
             {onHome ? <button onClick={onHome} className="font-semibold text-sage hover:underline">Home</button> : <span className="font-semibold text-sage">Home</span>}
             <span className="mx-2 text-charcoal/40">/</span>Courses
@@ -76,7 +76,7 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
         {enrolledTitles.length > 0 && (
           <div className="mt-5 flex items-start gap-3 p-4 rounded-2xl bg-brand-50 border border-brand-200 text-sm text-brand-900">
             <BookOpen className="w-4 h-4 mt-0.5 text-sage shrink-0" />
-            <p>Your courses: <strong>{enrolledTitles.join(', ')}</strong>.{offer?.allFree ? ' Every course is free - pick as many as you like.' : ' Add another course any time, from ₹99.'}</p>
+            <p>Your courses: <strong>{enrolledTitles.join(', ')}</strong>.{offer?.allFree ? ' Every course is free - pick as many as you like.' : ' Add another course any time, from ₹149.'}</p>
           </div>
         )}
 
