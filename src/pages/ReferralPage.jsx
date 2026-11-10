@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 import { paths } from '../router';
+import ReferralTicket from '../components/ReferralTicket';
 import { rupees, visitorId, rememberReferral, forgetReferral } from '../utils/referral';
 
 /**
@@ -199,7 +200,7 @@ function Withdraw({ data, onDone, toast }) {
   );
 }
 
-function Dashboard({ data, setData, toast, navigate }) {
+function Dashboard({ data, setData, toast, navigate, firstName }) {
   const [qr, setQr] = useState('');
   const [tab, setTab] = useState('history');
   useEffect(() => { QRCode.toDataURL(data.link, { margin: 1, width: 360, color: { dark: '#0C2D26', light: '#FFFFFF' } }).then(setQr).catch(() => {}); }, [data.link]);
@@ -226,8 +227,11 @@ function Dashboard({ data, setData, toast, navigate }) {
         {data.suspended && <p className="mt-4 rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-[14px] text-rose-700">Your referral account is suspended, so your link does not give discounts right now. Please contact support.</p>}
         {!data.rules.enabled && <p className="mt-4 rounded-xl bg-cream border border-brand-900/10 px-4 py-3 text-[14px] text-charcoal/70">Refer &amp; Earn is paused right now. Your earnings are safe.</p>}
 
-        {/* ticket: code, link, share, QR */}
-        <section className="ref-ticket mt-6 grid lg:grid-cols-[1fr_auto] rounded-[26px] overflow-hidden text-ivory shadow-[0_30px_60px_-34px_rgba(12,45,38,.9)]">
+        {/* phones: the printed pass */}
+        <ReferralTicket code={data.code} link={data.link} firstName={firstName} discountPct={data.rules.discountPct} commissionPct={data.rules.commissionPct} qr={qr} onShare={share} art={<RewardArt className="w-full" />} />
+
+        {/* tablets and desktop: ticket with code, link, share, QR */}
+        <section className="ref-ticket mt-6 hidden md:grid lg:grid-cols-[1fr_auto] rounded-[26px] overflow-hidden text-ivory shadow-[0_30px_60px_-34px_rgba(12,45,38,.9)]">
           <div className="relative p-6 sm:p-8 bg-[#0C2D26]">
             <div className="absolute inset-0 bg-[radial-gradient(60%_80%_at_100%_0%,rgba(229,200,142,.16),transparent_70%)]" aria-hidden="true" />
             <div className="relative">
@@ -376,7 +380,7 @@ export default function ReferralPage({ studentUser, navigate, toast }) {
   if (!studentUser) return <HowItWorks rules={rules} navigate={navigate} signedIn={false} />;
   if (error) return <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3 p-8 text-center"><p className="text-charcoal/70">{error}</p><button onClick={load} className="h-10 px-4 rounded-xl bg-forest text-ivory font-semibold">Try again</button></div>;
   if (!data) return <div className="min-h-[50vh] flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-sage" /></div>;
-  return <Dashboard data={data} setData={setData} toast={toast} navigate={navigate} />;
+  return <Dashboard data={data} setData={setData} toast={toast} navigate={navigate} firstName={(studentUser.name || 'a friend').split(' ')[0]} />;
 }
 
 /** /ref/CODE: remembers the code, counts the click, links a signed-in learner, and invites a visitor to join. */

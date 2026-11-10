@@ -646,3 +646,39 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 .ref-gift { animation: ref-gift 2.6s ease-in-out infinite; }
 @keyframes ref-gift { 0%, 100% { transform: rotate(0deg); } 10% { transform: rotate(-8deg); } 20% { transform: rotate(6deg); } 30% { transform: rotate(0deg); } }
 @media (prefers-reduced-motion: reduce) { .ra-coin, .ra-lid, .ra-node, .ref-foil, .ref-promo-card, .ref-gift { animation: none; } }
+
+/* ---------- Refer & Earn: the printed pass (phones) ---------- */
+.pass-shape {
+  --n: 15px;
+  -webkit-mask: radial-gradient(var(--n) at 0 0, #0000 98%, #000) top left / 51% 51% no-repeat, radial-gradient(var(--n) at 100% 0, #0000 98%, #000) top right / 51% 51% no-repeat, radial-gradient(var(--n) at 0 100%, #0000 98%, #000) bottom left / 51% 51% no-repeat, radial-gradient(var(--n) at 100% 100%, #0000 98%, #000) bottom right / 51% 51% no-repeat;
+  mask: radial-gradient(var(--n) at 0 0, #0000 98%, #000) top left / 51% 51% no-repeat, radial-gradient(var(--n) at 100% 0, #0000 98%, #000) top right / 51% 51% no-repeat, radial-gradient(var(--n) at 0 100%, #0000 98%, #000) bottom left / 51% 51% no-repeat, radial-gradient(var(--n) at 100% 100%, #0000 98%, #000) bottom right / 51% 51% no-repeat;
+}
+.pass-card { filter: drop-shadow(0 26px 30px rgba(0, 0, 0, .55)) drop-shadow(0 0 40px rgba(43, 182, 115, .25)); }
+.pass-machine { transition: transform .7s cubic-bezier(.5, 0, .2, 1), opacity .55s ease; }
+.pass-machine.is-gone { transform: translate(-50%, 70px) scale(.84); opacity: 0; }
+.pass-button { animation: pass-invite 2.4s ease-out infinite; }
+.pass-button:disabled { animation: none; }
+@keyframes pass-invite { 0%, 60%, 100% { filter: none; } 30% { filter: drop-shadow(0 0 14px rgba(229, 200, 142, .9)); } }
+/* fed out of the slot in short jerks, the print sharpening as it comes */
+.pass-feed { will-change: transform, filter; }
+.pass-feed.is-printing { animation: pass-print 2.2s linear both; }
+@keyframes pass-print {
+  0% { transform: translateY(-100%); filter: blur(7px) saturate(.6); }
+  12% { transform: translateY(-86%); filter: blur(7px) saturate(.6); }
+  18% { transform: translateY(-86%); }
+  32% { transform: translateY(-64%); filter: blur(5px) saturate(.75); }
+  38% { transform: translateY(-64%); }
+  52% { transform: translateY(-40%); filter: blur(3.5px) saturate(.85); }
+  58% { transform: translateY(-40%); }
+  74% { transform: translateY(-16%); filter: blur(1.5px); }
+  80% { transform: translateY(-16%); }
+  100% { transform: translateY(0); filter: blur(0) saturate(1); }
+}
+.pass-feed.is-out { transform: translateY(-26px) rotate(-6deg) scale(1.04); transition: transform .9s cubic-bezier(.2, 1.35, .35, 1); }
+.pass-feed.is-ready { animation: pass-float 4.2s ease-in-out infinite; }
+@keyframes pass-float { 0%, 100% { transform: translateY(-26px) rotate(-6deg) scale(1.04); } 50% { transform: translateY(-36px) rotate(-4deg) scale(1.04); } }
+.pass-hand { animation: pass-hand-in .65s cubic-bezier(.2, 1.2, .4, 1) .2s both; }
+@keyframes pass-hand-in { from { transform: translate(70px, 40px) rotate(14deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.pass-share { animation: pass-glow 2.6s ease-in-out infinite; }
+@keyframes pass-glow { 0%, 100% { box-shadow: 0 0 0 4px rgba(43, 182, 115, .18), 0 14px 30px -10px rgba(43, 182, 115, .8); } 50% { box-shadow: 0 0 0 9px rgba(43, 182, 115, .1), 0 14px 34px -8px rgba(43, 182, 115, .95); } }
+@media (prefers-reduced-motion: reduce) { .pass-button, .pass-feed.is-printing, .pass-feed.is-ready, .pass-hand, .pass-share { animation: none; } .pass-machine, .pass-feed.is-out { transition: none; } }
