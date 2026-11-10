@@ -28,7 +28,7 @@ router.get('/referrals/code/:code', (req, res) => {
   const prof = R.profileByCode(db, req.params.code);
   const s = R.settings(db);
   if (!prof || prof.suspended || !s.enabled) return res.json({ success: true, valid: false });
-  res.json({ success: true, valid: true, code: prof.code, referrerName: (db.learners?.[prof.email]?.name || 'A friend').split(' ')[0], discountPct: s.discountPct });
+  res.json({ success: true, valid: true, code: prof.code, referrerName: R.firstName(db.learners?.[prof.email]?.name), discountPct: s.discountPct });
 });
 
 router.post('/referrals/click', (req, res) => {
@@ -46,7 +46,14 @@ router.get('/referrals/me', (req, res) => {
   const had = !!db.referralProfiles?.[req.learnerEmail];
   const view = R.learnerView(db, req.learnerEmail, siteUrl(req));
   if (!had) saveDb(db); // the code was just created
-  res.json({ success: true, ...view, attribution: R.activeAttribution(db, req.learnerEmail) ? { code: db.referralAttributions[req.learnerEmail].code, expiresAt: db.referralAttributions[req.learnerEmail].expiresAt } : null });
+  const a = R.activeAttribution(db, req.learnerEmail);
+  const attribution = a ? {
+    code: a.code, expiresAt: a.expiresAt, discountPct: R.settings(db).discountPct,
+    referrerName: R.firstName(db.learners?.[a.referrerEmail]?.name),
+    // the discount is for purchases made while the referral is active
+    used: (db.payments || []).some(p => p.email === req.learnerEmail && p.status === 'paid')
+  } : null;
+  res.json({ success: true, ...view, attribution });
 });
 
 // A signed-in learner opened someone's link: link the account if the policy allows it.

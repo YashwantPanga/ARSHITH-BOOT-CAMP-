@@ -18,6 +18,7 @@ import { api } from '../services/api';
 import { paths } from '../router';
 import { BrandLoader } from '../components/ui';
 import PaymentNotice from '../components/PaymentNotice';
+import InterviewHero from '../components/interview/InterviewHero';
 
 /* ------------------------------------------------------------------ */
 /* Shared bits                                                         */
@@ -195,64 +196,25 @@ function LockedPrep({ signedIn, certificates, purchase, onPaid, navigate }) {
   const required = certificates?.required || 4;
   const earned = Math.min(certificates?.earned || 0, required);
   const total = INTERVIEW_SETS.reduce((n, s) => n + s.items.length, 0);
-  const included = [
-    `${total} interview questions and coding problems`,
-    'SQL, Python, JavaScript and DSA practice in your browser',
-    'Worked solution and explanation for every problem',
-    'Your own study plan with a target finish date'
-  ];
   return (
     <div className="bg-ivory min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-5 sm:pt-14 pb-12 sm:pb-20">
-        <section className="rounded-2xl sm:rounded-[22px] bg-gradient-to-br from-forest via-[#0B3E30] to-evergreen text-ivory p-4 sm:p-10">
-          <div className="grid gap-6 lg:gap-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center">
-            <div className="min-w-0">
-              <p className="font-display text-[12px] sm:text-[13px] font-semibold uppercase tracking-[0.18em] text-[#BCD1C6]">Interview Prep</p>
-              <h1 className="mt-2 sm:mt-3 font-display text-[26px] sm:text-[42px] font-bold leading-[1.12] tracking-tight">Prepare for placements and job interviews</h1>
-              <p className="mt-2 sm:mt-4 text-[14px] sm:text-[16px] text-ivory/75 max-w-xl">Practise the questions companies really ask, write real code in your browser, and learn the pattern behind each answer.</p>
-              <ul className="mt-4 sm:mt-6 space-y-2 sm:space-y-2.5">
-                {included.map(t => (
-                  <li key={t} className="flex items-start gap-2.5 text-[13.5px] sm:text-[15px] text-ivory/90">
-                    <CheckCircle2 className="w-4 h-4 sm:w-[18px] sm:h-[18px] mt-0.5 shrink-0 text-[#9FD8A4]" />{t}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="rounded-2xl bg-white text-charcoal p-5 sm:p-6 shadow-[0_30px_60px_-30px_rgba(0,0,0,.6)]">
-              <p className="font-display text-[14px] font-semibold text-charcoal/65">Full access</p>
-              <p className="mt-1 font-display text-[40px] sm:text-[46px] font-bold leading-none text-evergreen">₹{price}</p>
-              <p className="mt-1.5 text-[13.5px] text-charcoal/60">One-time payment. Lifetime access.</p>
-              <button onClick={() => (signedIn ? setPaying(true) : navigate(paths.login(paths.interview())))} className="mt-4 w-full h-12 rounded-lg bg-forest text-ivory font-display font-semibold text-[15.5px] hover:bg-sage active:scale-[.99] transition inline-flex items-center justify-center gap-2">
-                {signedIn ? `Unlock for ₹${price}` : 'Sign in to unlock'} <ArrowRight className="w-4 h-4" />
-              </button>
-              <p className="mt-2 text-center text-[12px] text-charcoal/50">Secure payment by Cashfree: UPI, cards and netbanking</p>
-
-              <div className="mt-4 pt-4 border-t border-brand-900/10">
-                <p className="flex items-center gap-2 font-display text-[14.5px] font-semibold text-evergreen"><Award className="w-4 h-4 text-sage" /> Free when you complete all {required} courses</p>
-                {signedIn ? (
-                  <>
-                    <div className="mt-2.5 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${required}, minmax(0, 1fr))` }}>
-                      {Array.from({ length: required }, (_, i) => <span key={i} className={`h-1.5 rounded-full ${i < earned ? 'bg-leaf' : 'bg-brand-100'}`} />)}
-                    </div>
-                    <div className="mt-2 flex items-center justify-between gap-3 text-[13px]">
-                      <span className="text-charcoal/60">{earned} of {required} certificates</span>
-                      <button onClick={() => navigate(paths.dashboard())} className="font-semibold text-forest underline underline-offset-2">Continue my course</button>
-                    </div>
-                  </>
-                ) : (
-                  <button onClick={() => navigate(paths.courses())} className="mt-1.5 text-[13px] font-semibold text-forest underline underline-offset-2">Browse courses</button>
-                )}
-              </div>
-            </div>
-          </div>
-          {paying && <PaymentNotice product="interview" price={price} paymentsEnabled={purchase ? purchase.paymentsEnabled : undefined} onPaid={() => { setPaying(false); onPaid?.(); }} onClose={() => setPaying(false)} />}
-        </section>
+      <div className="max-w-6xl mx-auto px-5 sm:px-6 pt-5 sm:pt-14 pb-12 sm:pb-20">
+        <InterviewHero
+          price={price}
+          total={total}
+          signedIn={signedIn}
+          earned={earned}
+          required={required}
+          onUnlock={() => (signedIn ? setPaying(true) : navigate(paths.login(paths.interview())))}
+          onBrowse={() => navigate(paths.courses())}
+          onContinue={() => navigate(paths.dashboard())}
+        />
+        {paying && <PaymentNotice product="interview" price={price} paymentsEnabled={purchase ? purchase.paymentsEnabled : undefined} onPaid={() => { setPaying(false); onPaid?.(); }} onClose={() => setPaying(false)} />}
 
         <section className="mt-7 sm:mt-12">
           <h2 className="font-display text-[19px] sm:text-[22px] font-bold text-evergreen">What is included</h2>
           {/* phones: one row that scrolls sideways */}
-          <div className="mt-3 sm:mt-4 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto no-scrollbar snap-x scroll-px-4 -mx-4 px-4 sm:mx-0 sm:px-0 pb-1" aria-hidden="true">
+          <div className="mt-3 sm:mt-4 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto no-scrollbar snap-x scroll-px-5 -mx-5 px-5 sm:mx-0 sm:px-0 pb-1" aria-hidden="true">
             {INTERVIEW_SETS.map(s => (
               <div key={s.id} className="relative h-full pointer-events-none select-none shrink-0 snap-start">
                 <div className="h-full grayscale-[.35] opacity-75"><QuestCard set={s} solved={0} signedIn={false} onOpen={() => {}} locked /></div>

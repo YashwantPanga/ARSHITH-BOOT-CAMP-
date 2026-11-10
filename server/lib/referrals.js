@@ -129,6 +129,11 @@ export function notify(db, email, type, title, body, now = Date.now()) {
 /* ---------------------------------------------------------------- codes + profiles */
 
 const CODE_RE = /^[A-Z0-9]{4,16}$/;
+/** The name to greet someone by: the first word longer than an initial ("P Yashwant" -> "Yashwant"). */
+export const firstName = (name, fallback = 'A friend') => {
+  const words = String(name || '').trim().split(/\s+/).filter(Boolean);
+  return (words.find(w => w.replace(/\./g, '').length > 1) || words[0] || fallback);
+};
 export const cleanCode = (c) => String(c || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 
 export function profileByCode(db, code) {
@@ -180,7 +185,7 @@ export function recordClick(db, code, visitorId, now = Date.now()) {
     stored.clicks = (stored.clicks || 0) + 1;
     db.referralClickTotal += 1;
   }
-  const first = (db.learners?.[prof.email]?.name || '').split(' ')[0] || 'A friend';
+  const first = firstName(db.learners?.[prof.email]?.name);
   return { valid: true, code: prof.code, referrerName: first, counted: !recent };
 }
 
@@ -209,7 +214,7 @@ export function attribute(db, refereeEmail, code, { source = 'registration', now
     code: prof.code, referrerEmail: prof.email, attributedAt: nowIso(now),
     expiresAt: nowIso(now + s.attributionDays * DAY), source
   };
-  notify(db, prof.email, 'referral.joined', 'New referral', `${(me?.name || 'Someone').split(' ')[0]} joined CodeLekho with your link.`, now);
+  notify(db, prof.email, 'referral.joined', 'New referral', `${firstName(me?.name, 'Someone')} joined CodeLekho with your link.`, now);
   return { ok: true, attribution: db.referralAttributions[refereeEmail] };
 }
 

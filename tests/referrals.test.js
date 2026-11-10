@@ -316,3 +316,12 @@ describe('Refer & Earn ledger rules', () => {
     expect(R.toCsv([{ v: '=HYPERLINK("x")' }], [['V', r => r.v]])).toContain("'=HYPERLINK");
   });
 });
+
+describe('greeting names', () => {
+  it('uses the first real word of a name, not an initial', () => {
+    expect(R.firstName('P Yashwant')).toBe('Yashwant');
+    expect(R.firstName('P. Yashwant Kumar')).toBe('Yashwant');
+    expect(R.firstName('Riya Tester')).toBe('Riya');
+    expect(R.firstName('')).toBe('A friend');
+  });
+});

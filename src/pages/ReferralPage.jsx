@@ -100,7 +100,7 @@ function HowItWorks({ rules, navigate, signedIn }) {
             [BadgeIndianRupee, `They save ${r.discountPct}%`, `The discount is applied automatically at checkout on every eligible course and Interview Prep.`],
             [Wallet, `You earn ${r.commissionPct}%`, `Commission on what they actually pay. It is released after ${r.releaseDays} days and you can withdraw from ${rupees(r.minWithdrawalPaise, 0)}.`]
           ].map(([Icon, t, d], i) => (
-            <div key={t} className="relative rounded-[22px] bg-white border border-brand-900/[.08] p-6 shadow-[0_18px_40px_-32px_rgba(12,45,38,.6)]">
+            <div key={t} className="relative rounded-[20px] bg-white border border-[#E8E1CF] shadow-[0_1px_2px_rgba(12,45,38,.04)] p-6 shadow-[0_18px_40px_-32px_rgba(12,45,38,.6)]">
               <span className="absolute right-5 top-4 font-display text-[44px] font-bold text-brand-900/[.06]">0{i + 1}</span>
               <span className="w-11 h-11 rounded-2xl bg-forest text-[#E5C88E] flex items-center justify-center"><Icon className="w-5 h-5" /></span>
               <p className="mt-4 font-display text-[19px] font-semibold text-evergreen">{t}</p>
@@ -121,7 +121,7 @@ function HowItWorks({ rules, navigate, signedIn }) {
               ))}
             </div>
           </div>
-          <ul className="rounded-[22px] bg-white border border-brand-900/[.08] p-6 grid gap-2.5 text-[14px] text-charcoal/75">
+          <ul className="rounded-[20px] bg-white border border-[#E8E1CF] shadow-[0_1px_2px_rgba(12,45,38,.04)] p-6 grid gap-2.5 text-[14px] text-charcoal/75">
             {[
               `Commission is ${r.commissionPct}% of the amount your friend actually paid, after their discount.`,
               `It stays pending for ${r.releaseDays} days, then moves to your available balance.`,
@@ -168,7 +168,7 @@ function Withdraw({ data, onDone, toast }) {
     } catch (e2) { setErr(e2.message || 'Could not request the withdrawal.'); } finally { setBusy(false); }
   };
   return (
-    <form onSubmit={submit} className="rounded-[22px] bg-white border border-brand-900/[.08] p-5 sm:p-6">
+    <form onSubmit={submit} className="rounded-[20px] bg-white border border-[#E8E1CF] shadow-[0_1px_2px_rgba(12,45,38,.04)] p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <p className="font-display text-[19px] font-semibold text-evergreen flex items-center gap-2"><Wallet className="w-5 h-5 text-sage" /> Withdraw</p>
         <span className="text-[12.5px] text-charcoal/55">Available <b className="text-evergreen">{rupees(available)}</b></span>
@@ -216,7 +216,7 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
 
   return (
     <div className="bg-ivory min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+      <div className="max-w-6xl mx-auto px-5 sm:px-6 py-7 sm:py-10">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-[12.5px] font-bold uppercase tracking-[0.2em] text-sage">Refer &amp; Earn</p>
@@ -234,6 +234,7 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
         <section className="ref-ticket mt-6 hidden md:grid lg:grid-cols-[1fr_auto] rounded-[26px] overflow-hidden text-ivory shadow-[0_30px_60px_-34px_rgba(12,45,38,.9)]">
           <div className="relative p-6 sm:p-8 bg-[#0C2D26]">
             <div className="absolute inset-0 bg-[radial-gradient(60%_80%_at_100%_0%,rgba(229,200,142,.16),transparent_70%)]" aria-hidden="true" />
+            <div className="absolute inset-0 opacity-[.07] bg-[repeating-radial-gradient(circle_at_85%_120%,transparent_0,transparent_9px,#E5C88E_10px,transparent_11px)]" aria-hidden="true" />
             <div className="relative">
               <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#8EE3B5]">Your referral code</p>
               <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -252,6 +253,8 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
             </div>
           </div>
           <div className="relative flex items-center justify-center p-6 bg-[#123E31] lg:border-l-2 lg:border-dashed lg:border-white/20">
+            <span className="hidden lg:block absolute -left-[13px] -top-[13px] w-6 h-6 rounded-full bg-ivory" aria-hidden="true" />
+            <span className="hidden lg:block absolute -left-[13px] -bottom-[13px] w-6 h-6 rounded-full bg-ivory" aria-hidden="true" />
             <div className="text-center">
               {qr ? <img src={qr} alt={`QR code for ${data.link}`} className="w-36 h-36 rounded-xl bg-white p-1.5 mx-auto" /> : <span className="w-36 h-36 rounded-xl bg-white/10 flex items-center justify-center mx-auto"><QrCode className="w-8 h-8" /></span>}
               {qr && <a href={qr} download={`codelekho-${data.code}.png`} className="mt-3 inline-block text-[12.5px] font-semibold text-[#E5C88E] hover:underline">Download QR</a>}
@@ -268,7 +271,7 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
             ['Withdrawn', rupees(w.withdrawn), BadgeIndianRupee],
             ['Active referrals', data.stats.activeReferrals, Users]
           ].map(([l, v, Icon, gold]) => (
-            <div key={l} className={`rounded-[20px] p-4 sm:p-5 ${gold ? 'bg-gradient-to-br from-[#F7E3B5] to-[#E0BE7C] text-[#2A1D08] col-span-2 lg:col-span-1' : 'bg-white border border-brand-900/[.08]'}`}>
+            <div key={l} className={`rounded-[20px] p-4 sm:p-5 ${gold ? 'bg-gradient-to-br from-[#F7E3B5] to-[#E0BE7C] text-[#2A1D08] col-span-2 lg:col-span-1' : 'bg-white border border-[#E8E1CF] shadow-[0_1px_2px_rgba(12,45,38,.04)]'}`}>
               <Icon className={`w-5 h-5 ${gold ? 'text-[#7A5A1E]' : 'text-sage'}`} />
               <p className={`mt-3 font-display text-[24px] sm:text-[26px] font-bold leading-none ${gold ? '' : 'text-evergreen'}`}>{v}</p>
               <p className={`mt-1.5 text-[12.5px] ${gold ? 'text-[#2A1D08]/70' : 'text-charcoal/55'}`}>{l}</p>
@@ -278,7 +281,7 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
 
         {/* wallet bar + funnel */}
         <section className="mt-4 grid lg:grid-cols-2 gap-4">
-          <div className="rounded-[20px] bg-white border border-brand-900/[.08] p-5">
+          <div className="rounded-[20px] bg-white border border-[#E8E1CF] shadow-[0_1px_2px_rgba(12,45,38,.04)] p-5">
             <p className="font-display text-[16px] font-semibold text-evergreen">Wallet</p>
             <div className="mt-3 flex h-3 rounded-full overflow-hidden bg-cream">
               {[['#E5C88E', w.pending], ['#1E7A5A', w.available], ['#6FA8C9', w.reserved], ['#0C2D26', w.withdrawn]].map(([c, v], i) => v > 0 && <span key={i} style={{ width: `${(v / total) * 100}%`, background: c }} />)}
@@ -289,7 +292,7 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
               ))}
             </div>
           </div>
-          <div className="rounded-[20px] bg-white border border-brand-900/[.08] p-5">
+          <div className="rounded-[20px] bg-white border border-[#E8E1CF] shadow-[0_1px_2px_rgba(12,45,38,.04)] p-5">
             <p className="font-display text-[16px] font-semibold text-evergreen">Your funnel</p>
             <div className="mt-3 grid grid-cols-4 gap-2">
               {[['Clicks', data.stats.clicks, MousePointerClick], ['Sign-ups', data.stats.registrations, UserPlus], ['Purchases', data.stats.purchases, ShoppingBag], ['Conversion', `${data.stats.conversion}%`, ChevronRight]].map(([l, v, Icon]) => (
@@ -301,7 +304,7 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
 
         <section className="mt-4 grid lg:grid-cols-[1.45fr_1fr] gap-4 items-start">
           {/* history tabs */}
-          <div className="rounded-[22px] bg-white border border-brand-900/[.08] overflow-hidden">
+          <div className="rounded-[20px] bg-white border border-[#E8E1CF] shadow-[0_1px_2px_rgba(12,45,38,.04)] overflow-hidden">
             <div className="flex gap-1 p-1.5 m-3 rounded-xl bg-cream overflow-x-auto no-scrollbar">
               {[['history', 'Referrals'], ['rewards', 'Commissions'], ['wallet', 'Transactions'], ['withdrawals', 'Withdrawals'], ['notifications', `Notifications${unread ? ` (${unread})` : ''}`]].map(([k, l]) => (
                 <button key={k} onClick={() => (k === 'notifications' ? openNotes() : setTab(k))} className={`shrink-0 h-9 px-3.5 rounded-lg text-[13px] font-semibold transition ${tab === k ? 'bg-white text-evergreen shadow-sm' : 'text-charcoal/55'}`}>{l}</button>
@@ -344,7 +347,7 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
 
           <div className="grid gap-4">
             <Withdraw data={data} onDone={(res) => setData(d => ({ ...d, ...res }))} toast={toast} />
-            <div className="rounded-[22px] bg-white border border-brand-900/[.08] p-5">
+            <div className="rounded-[20px] bg-white border border-[#E8E1CF] shadow-[0_1px_2px_rgba(12,45,38,.04)] p-5">
               <p className="font-display text-[16px] font-semibold text-evergreen flex items-center gap-2"><Trophy className="w-4 h-4 text-[#B88A3E]" /> Top referrers</p>
               {data.leaderboard.length ? (
                 <ol className="mt-3 grid gap-1.5">
@@ -352,7 +355,7 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
                 </ol>
               ) : <p className="mt-2 text-[13px] text-charcoal/55">Only released (verified) earnings count. Be the first.</p>}
             </div>
-            <label className="flex items-center justify-between gap-3 rounded-[18px] bg-white border border-brand-900/[.08] px-4 py-3 text-[13.5px] text-charcoal/70">
+            <label className="flex items-center justify-between gap-3 rounded-[18px] bg-white border border-[#E8E1CF] shadow-[0_1px_2px_rgba(12,45,38,.04)] px-4 py-3 text-[13.5px] text-charcoal/70">
               Show Refer &amp; Earn pop-ups on the site
               <input type="checkbox" checked={!data.promoOptOut} onChange={toggleOptOut} className="w-4 h-4 accent-[#013A2B]" />
             </label>
@@ -380,7 +383,7 @@ export default function ReferralPage({ studentUser, navigate, toast }) {
   if (!studentUser) return <HowItWorks rules={rules} navigate={navigate} signedIn={false} />;
   if (error) return <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3 p-8 text-center"><p className="text-charcoal/70">{error}</p><button onClick={load} className="h-10 px-4 rounded-xl bg-forest text-ivory font-semibold">Try again</button></div>;
   if (!data) return <div className="min-h-[50vh] flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-sage" /></div>;
-  return <Dashboard data={data} setData={setData} toast={toast} navigate={navigate} firstName={(studentUser.name || 'a friend').split(' ')[0]} />;
+  return <Dashboard data={data} setData={setData} toast={toast} navigate={navigate} firstName={(() => { const w = String(studentUser.name || '').trim().split(/\s+/).filter(Boolean); return w.find(x => x.replace(/\./g, '').length > 1) || w[0] || 'a friend'; })()} />;
 }
 
 /** /ref/CODE: remembers the code, counts the click, links a signed-in learner, and invites a visitor to join. */

@@ -677,11 +677,9 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 .pass-feed.is-out { transform: translateY(-26px) rotate(-6deg) scale(1.04); transition: transform .9s cubic-bezier(.2, 1.35, .35, 1); }
 .pass-feed.is-ready { animation: pass-float 4.2s ease-in-out infinite; }
 @keyframes pass-float { 0%, 100% { transform: translateY(-26px) rotate(-6deg) scale(1.04); } 50% { transform: translateY(-36px) rotate(-4deg) scale(1.04); } }
-.pass-hand { animation: pass-hand-in .65s cubic-bezier(.2, 1.2, .4, 1) .2s both; }
-@keyframes pass-hand-in { from { transform: translate(70px, 40px) rotate(14deg); opacity: 0; } to { transform: none; opacity: 1; } }
 .pass-share { animation: pass-glow 2.6s ease-in-out infinite; }
 @keyframes pass-glow { 0%, 100% { box-shadow: 0 0 0 4px rgba(43, 182, 115, .18), 0 14px 30px -10px rgba(43, 182, 115, .8); } 50% { box-shadow: 0 0 0 9px rgba(43, 182, 115, .1), 0 14px 34px -8px rgba(43, 182, 115, .95); } }
-@media (prefers-reduced-motion: reduce) { .pass-button, .pass-feed.is-printing, .pass-feed.is-ready, .pass-hand, .pass-share { animation: none; } .pass-machine, .pass-feed.is-out { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .pass-button, .pass-feed.is-printing, .pass-feed.is-ready, .pass-share { animation: none; } .pass-machine, .pass-feed.is-out { transition: none; } }
 
 /* ---------- checkout: referral code applied ---------- */
 .offer-open { animation: offer-open .28s cubic-bezier(.2, .9, .3, 1) both; transform-origin: top; }
@@ -740,3 +738,53 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
   .reveal { filter: none !important; transition: opacity .6s ease, transform .6s cubic-bezier(.16,1,.3,1); }
   .blur-word { filter: none !important; }
 }
+
+/* ---------- Interview Prep / welcome gift: list items rise in ---------- */
+.iv-item { animation: iv-item .6s cubic-bezier(.2, .9, .3, 1) both; }
+@keyframes iv-item { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ---------- welcome gift after joining with a referral ---------- */
+.refwel { animation: refwel-in .55s cubic-bezier(.2, 1.2, .35, 1) both; }
+@keyframes refwel-in { from { transform: translateY(40px) scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
+.refwel-rays { background: repeating-conic-gradient(from 0deg, rgba(229, 200, 142, .16) 0deg 10deg, transparent 10deg 24deg); border-radius: 50%; -webkit-mask: radial-gradient(circle, #000 20%, transparent 68%); mask: radial-gradient(circle, #000 20%, transparent 68%); animation: refwel-spin 18s linear infinite; }
+@keyframes refwel-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+.refwel-lid { transform-box: fill-box; transform-origin: 0% 100%; animation: refwel-lid .7s cubic-bezier(.3, 1.4, .4, 1) .35s both; }
+@keyframes refwel-lid { 0% { transform: none; } 100% { transform: translate(-62px, -34px) rotate(-28deg); opacity: .95; } }
+.refwel-pass { animation: refwel-pass .8s cubic-bezier(.2, 1.3, .35, 1) .55s both, refwel-float 3.6s ease-in-out 1.4s infinite; }
+@keyframes refwel-pass { from { transform: translateY(70px); } to { transform: translateY(0); } }
+@keyframes refwel-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.refwel-bit { position: absolute; top: -12px; left: var(--x); width: 7px; height: 11px; border-radius: 2px; opacity: 0; animation: refwel-fall 2.4s cubic-bezier(.3, .6, .5, 1) var(--d) 2 both; }
+@keyframes refwel-fall { 0% { opacity: 1; transform: translateY(0) rotate(0deg); } 100% { opacity: 0; transform: translateY(230px) rotate(var(--r)); } }
+.refwel-row { animation: iv-item .5s cubic-bezier(.2, .9, .3, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .iv-item { animation: none; }
+  .refwel, .refwel-rays, .refwel-bit, .refwel-row { animation: none; }
+  .refwel-lid { animation: none; transform: translate(-62px, -34px) rotate(-28deg); }
+  .refwel-pass { animation: none; }
+}
+
+/* ---------- Interview Prep hero: pastel panel that changes with the word ---------- */
+.iv-tone { position: absolute; inset: 0; opacity: 0; transition: opacity .77s ease; animation: ivDrift 14s ease-in-out infinite alternate; transform: scale(1.08); }
+.iv-tone.is-on { opacity: 1; }
+.iv-t-sage { background: radial-gradient(60% 80% at 86% 76%, rgba(150,206,150,.75), transparent 70%), radial-gradient(45% 60% at 32% 105%, rgba(150,206,150,.45), transparent 70%), linear-gradient(180deg, #E9EBE0, #DFE9D4); }
+.iv-t-lemon { background: radial-gradient(60% 80% at 86% 76%, rgba(246,222,104,.75), transparent 70%), radial-gradient(45% 60% at 32% 105%, rgba(246,222,104,.45), transparent 70%), linear-gradient(180deg, #F2ECDF, #F4EBC6); }
+.iv-t-peach { background: radial-gradient(60% 80% at 86% 76%, rgba(249,150,84,.62), transparent 70%), radial-gradient(45% 60% at 32% 105%, rgba(249,150,84,.4), transparent 70%), linear-gradient(180deg, #F8DCC7, #F9CBA9); }
+.iv-t-rose { background: radial-gradient(60% 80% at 86% 76%, rgba(222,150,200,.7), transparent 70%), radial-gradient(45% 60% at 32% 105%, rgba(222,150,200,.42), transparent 70%), linear-gradient(180deg, #F0E4E6, #ECD6E2); }
+@keyframes ivDrift { from { transform: scale(1.08) translate(-2.2%, -1.6%); } to { transform: scale(1.08) translate(2.2%, 1.6%); } }
+.iv-headline { font-size: clamp(40px, 11.5vw, 84px); line-height: .9; letter-spacing: -0.032em; }
+.iv-headline .cw-slot { min-height: 1.06em; }
+.iv-free.is-lit { background: #0D0D0C; color: #fff; }
+@media (prefers-reduced-motion: reduce) { .iv-tone { animation: none; transition: none; } }
+
+/* ---------- phones: a little more breathing room at the screen edges ---------- */
+@media (max-width: 639px) {
+  .mx-auto.px-4 { padding-left: 20px; padding-right: 20px; }
+  .mx-auto.px-4 .-mx-4.px-4 { margin-left: -20px; margin-right: -20px; padding-left: 20px; padding-right: 20px; }
+}
+
+.iv-glass { animation: ivGlass .5s cubic-bezier(.2,1.1,.35,1) both; }
+@keyframes ivGlass { from { opacity: 0; transform: translateY(14px) scale(.97); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+.iv-bar { width: 92%; animation: ivBar 1.1s cubic-bezier(.2,.9,.3,1) .15s both; }
+@keyframes ivBar { from { width: 8%; } }
+@media (prefers-reduced-motion: reduce) { .iv-glass, .iv-bar { animation: none; } }

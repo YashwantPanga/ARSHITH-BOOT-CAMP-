@@ -31,24 +31,6 @@ function Pass({ code, firstName, discountPct, art }) {
   );
 }
 
-function Hand() {
-  return (
-    <svg viewBox="0 0 150 150" className="pass-hand absolute w-[118px] -right-[30px] bottom-[34px] pointer-events-none" aria-hidden="true">
-      <defs>
-        <linearGradient id="ph-skin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#E9B48A" /><stop offset="1" stopColor="#C98A5E" /></linearGradient>
-        <linearGradient id="ph-sleeve" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1E7A5A" /><stop offset="1" stopColor="#0C3B2E" /></linearGradient>
-      </defs>
-      {/* sleeve */}
-      <path d="M98 70 L150 52 L150 128 L104 132 Z" fill="url(#ph-sleeve)" />
-      <path d="M96 70 L106 68 L112 130 L101 132 Z" fill="#E5C88E" />
-      {/* palm and fingers behind the pass */}
-      <path d="M100 74 C 82 70 62 74 50 82 C 44 86 46 94 54 94 L 74 92 C 66 98 60 106 62 114 C 64 124 80 130 98 128 Z" fill="url(#ph-skin)" />
-      {/* thumb over the pass */}
-      <path d="M58 86 C 40 84 22 86 14 92 C 8 97 12 104 20 104 C 34 104 48 100 62 96 Z" fill="url(#ph-skin)" stroke="#B87A50" strokeWidth="1" />
-      <path d="M18 95 C 22 93 26 93 29 94" stroke="#B87A50" strokeWidth="1.4" fill="none" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 export default function ReferralTicket({ code, link, firstName = 'a friend', discountPct = 10, commissionPct = 10, art, qr, onShare }) {
   // idle -> printing -> handoff -> ready
@@ -70,7 +52,7 @@ export default function ReferralTicket({ code, link, firstName = 'a friend', dis
   const out = stage === 'handoff' || stage === 'ready';
 
   return (
-    <section className="md:hidden -mx-4 mt-5 relative overflow-hidden bg-[#06231D] text-ivory px-4 pt-7 pb-8">
+    <section className="md:hidden -mx-5 mt-5 relative overflow-hidden bg-[#06231D] text-ivory px-5 pt-7 pb-8">
       <div className="absolute inset-0 bg-[radial-gradient(60%_42%_at_50%_52%,rgba(36,148,108,.45),transparent_75%)]" aria-hidden="true" />
       <div className="relative text-center">
         <p className="font-display text-[21px] font-bold">Earn {commissionPct}% on every referral</p>
@@ -102,7 +84,6 @@ export default function ReferralTicket({ code, link, firstName = 'a friend', dis
             <div className={`pass-feed mx-auto w-[248px] ${stage === 'printing' ? 'is-printing' : 'is-out'} ${stage === 'ready' ? 'is-ready' : ''}`}>
               <div className="relative">
                 <Pass code={code} firstName={firstName} discountPct={discountPct} art={art} />
-                {out && <Hand />}
               </div>
             </div>
           </div>

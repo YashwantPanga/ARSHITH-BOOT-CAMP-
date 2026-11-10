@@ -16,7 +16,7 @@ export const WORDS = [
 
 /* ---------- glossy "inflated" icons, drawn in each word's tint ---------- */
 
-function Gloss({ id, tint }) {
+export function Gloss({ id, tint }) {
   return (
     <defs>
       <radialGradient id={`${id}-body`} cx="34%" cy="26%" r="80%">
@@ -36,7 +36,7 @@ function Gloss({ id, tint }) {
 }
 
 /** Body shape + body gradient + bottom shade + specular highlight, the same recipe for every icon. */
-function Puffy({ id, d, highlight }) {
+export function Puffy({ id, d, highlight }) {
   return (
     <g filter={`url(#${id}-drop)`}>
       <path d={d} fill={`url(#${id}-body)`} />
@@ -59,7 +59,7 @@ function IconLearn({ tint, uid }) {
   );
 }
 
-function IconCode({ tint, uid }) {
+export function IconCode({ tint, uid }) {
   const id = `gi-code-${uid}`; // unique per copy: the page has a phone and a desktop headline
   return (
     <svg viewBox="0 0 120 120" aria-hidden="true">
@@ -85,7 +85,7 @@ function IconPractise({ tint, uid }) {
   );
 }
 
-function IconHired({ tint, uid }) {
+export function IconHired({ tint, uid }) {
   const id = `gi-hire-${uid}`; // unique per copy: the page has a phone and a desktop headline
   return (
     <svg viewBox="0 0 120 120" aria-hidden="true">
@@ -116,16 +116,16 @@ export function useWordClock(count = WORDS.length, reduced = prefersReduced()) {
 export const prefersReduced = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 /** index: the word to show, from a parent's useWordClock() so the background can change with it. */
-export default function CyclingWord({ className = '', index }) {
+export default function CyclingWord({ className = '', index, words = WORDS, icons = ICONS }) {
   const reduced = prefersReduced();
-  const own = useWordClock(WORDS.length, reduced || index !== undefined);
+  const own = useWordClock(words.length, reduced || index !== undefined);
   const i = index ?? own;
-  const { word, tint } = WORDS[i];
-  const Icon = ICONS[i];
+  const { word, tint } = words[i];
+  const Icon = icons[i];
   const uid = useId().replace(/:/g, '');
   return (
     <span className={`cw-slot ${className}`}>
-      <span className="sr-only">{WORDS.map(w => w.word).join(', ')}</span>
+      <span className="sr-only">{words.map(w => w.word).join(', ')}</span>
       {/* keyed so each word plays its own enter and leave */}
       <span key={`i${i}`} className={`cw-icon ${reduced ? '' : 'is-anim'}`} aria-hidden="true"><span className="cw-icon-float"><Icon tint={tint} uid={uid} /></span></span>
       <span key={`w${i}`} className={`cw-word ${reduced ? '' : 'is-anim'}`} aria-hidden="true">{word}</span>

@@ -227,14 +227,14 @@ export function QuestCard({ set, solved, signedIn, onOpen, locked = false }) {
   const q = QUEST[set.id] || QUEST['programming-essentials'];
   const diff = ['Easy', 'Medium', 'Hard'].map(d => [d, set.items.filter(i => i.difficulty === d).length]).filter(([, n]) => n);
   return (
-    <button onClick={onOpen} className="quest-card group relative overflow-hidden rounded-[20px] sm:rounded-[22px] text-left text-white shrink-0 snap-start w-[264px] sm:w-full h-[196px] sm:h-[236px] p-4 sm:p-[18px] flex flex-col items-start shadow-[0_18px_36px_-24px_rgba(20,10,60,.9)]" style={{ background: q.bg }}>
+    <button onClick={onOpen} className="quest-card group relative overflow-hidden rounded-[20px] sm:rounded-[22px] text-left text-white shrink-0 snap-start w-[228px] sm:w-full h-[168px] sm:h-[212px] p-3.5 sm:p-[18px] flex flex-col items-start shadow-[0_18px_36px_-24px_rgba(20,10,60,.9)]" style={{ background: q.bg }}>
       <Sky q={q} glyphs={false} />
-      <Mascot q={q} className="absolute -right-5 -bottom-7 w-[112px] sm:-right-5 sm:-bottom-8 sm:w-[148px] transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:scale-[1.03]" />
+      <Mascot q={q} className="absolute -right-4 -bottom-6 w-[94px] sm:-right-5 sm:-bottom-8 sm:w-[134px] transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:scale-[1.03]" />
       <span className="quest-bubble-sm absolute right-4 top-4 hidden xl:block px-2 py-1 rounded-lg bg-white text-[#1B1440] text-[10.5px] font-extrabold shadow-[0_3px_0_rgba(0,0,0,.2)]">{q.bubble}</span>
 
       <span className="relative z-10 inline-block px-2 py-0.5 rounded-md bg-[#FFD34D] text-[#2A1A05] text-[9.5px] sm:text-[10px] font-extrabold tracking-[0.14em] shadow-[0_2px_0_#C99A1E]"><span className="hidden sm:inline">QUEST · </span>{q.track}</span>
-      <span className="relative z-10 mt-2 block font-display text-[18px] sm:text-[19px] font-extrabold leading-tight max-w-[70%] sm:max-w-[78%] line-clamp-2 drop-shadow-[0_2px_0_rgba(0,0,0,.2)]">{set.title}</span>
-      <span className="relative z-10 mt-1 block text-[12px] sm:text-[12.5px] text-white/75 max-w-[62%] leading-snug line-clamp-2">{set.tagline}</span>
+      <span className="relative z-10 mt-2 block font-display text-[16px] sm:text-[19px] font-extrabold leading-tight max-w-[70%] sm:max-w-[78%] line-clamp-2 drop-shadow-[0_2px_0_rgba(0,0,0,.2)]">{set.title}</span>
+      <span className="relative z-10 mt-1 block text-[11.5px] sm:text-[12.5px] text-white/75 max-w-[62%] leading-snug line-clamp-2">{set.tagline}</span>
       <span className="relative z-10 mt-2.5 hidden sm:flex flex-wrap gap-1.5 max-w-[62%]">
         {diff.map(([d, n], i) => (
           <span key={d} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-[10.5px] font-semibold">

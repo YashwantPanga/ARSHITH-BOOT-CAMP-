@@ -10,6 +10,7 @@ import Footer from './components/Footer';
 import MobileBottomNav, { showsBottomBar } from './components/MobileBottomNav';
 import PromoStory from './components/mobile/PromoStory';
 import ReferralPromo from './components/ReferralPromo';
+import ReferralWelcome from './components/ReferralWelcome';
 import ReferralPage, { RefLanding } from './pages/ReferralPage';
 import DesktopNotice from './components/DesktopNotice';
 import { WhatBringsYou } from './components/MobileWelcome';
@@ -705,6 +706,7 @@ function AppShell() {
       {authModal && <AuthModalLayer onClose={closeAuthModal}>{authModal}</AuthModalLayer>}
       {!adminUser && <DesktopNotice />}
       {/* phones: the green welcome card, once per visit, on browsing pages only */}
+      <ReferralWelcome studentUser={studentUser} courses={decoratedCourses} navigate={navigate} enabled={!adminUser && !isChromeless && !isAuthModal} />
       <ReferralPromo navigate={navigate} routeName={route.name} signedIn={!!studentUser} enabled={!adminUser && !isChromeless && !isAuthModal} />
       <PromoStory navigate={navigate} signedIn={!!studentUser} enabled={!adminUser && !isChromeless && !isAuthModal && !['learning', 'login', 'register', 'verify-email', 'forgot-password', 'reset-password', 'certificate', 'refer', 'ref-landing'].includes(route.name)} />
 
