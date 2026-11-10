@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, QrCode } from 'lucide-react';
+import BubbleBackground from './BubbleBackground';
 
 /**
  * Home hero: "<icon> Learn / Code / Practise / Get hired" + "with CodeLekho". The first word cycles every
- * 1.75 s with its own glossy icon, and the grainy pastel panel behind it shifts to that word's colour.
+ * 1.75 s with its own glossy icon, over a drifting bubble background whose pointer bubble takes that word's colour.
  * A cream stats strip with a curved notch sits underneath. Reduced motion shows a still "Code".
  */
 const SLOT_MS = 1750;
 
 const WORDS = [
-  { word: 'Learn', tint: '#3FB874', panel: 'p-mint' },
-  { word: 'Code', tint: '#E3B21F', panel: 'p-lemon' },
-  { word: 'Practise', tint: '#F2772F', panel: 'p-peach' },
-  { word: 'Get hired', tint: '#B45FC4', panel: 'p-lilac' }
+  { word: 'Learn', tint: '#3FB874' },
+  { word: 'Code', tint: '#E3B21F' },
+  { word: 'Practise', tint: '#F2772F' },
+  { word: 'Get hired', tint: '#B45FC4' }
 ];
 
 /* ---------- glossy "inflated" icons, drawn in each word's tint ---------- */
@@ -128,7 +129,8 @@ export default function CodingHero({ onRegisterClick, onExploreClick, onVerifyCl
     <section className="coding-hero relative overflow-hidden bg-[#FBF6EF] text-evergreen">
       {/* the panel: four colour layers, one per word, crossfading */}
       <div className="relative sm:min-h-[520px] lg:min-h-[calc(78vh-64px)]">
-        {WORDS.map((w, k) => <span key={w.word} className={`ch-layer ${w.panel} ${k === i ? 'is-on' : ''}`} aria-hidden="true" />)}
+        {/* drifting colour bubbles; the pointer bubble takes the current word's colour */}
+        <BubbleBackground className="absolute inset-0" accent={tint} />
         <span className="ch-grain" aria-hidden="true" />
 
         <div className="relative max-w-[1240px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 sm:pt-16 lg:pt-[9vh] pb-24 sm:pb-28">

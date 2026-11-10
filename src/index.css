@@ -578,13 +578,6 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 .lesson-body > * + * { margin-top: .75rem; }
 
 /* ---------- Home: cycling-word coding hero ---------- */
-.coding-hero .ch-layer { position: absolute; inset: -6%; opacity: 0; transition: opacity .77s ease-in-out; animation: chDrift 18s ease-in-out infinite alternate; }
-.coding-hero .ch-layer.is-on { opacity: 1; }
-@keyframes chDrift { from { transform: scale(1.08) translate(-2.2%, -1.6%); } to { transform: scale(1.08) translate(2.2%, 1.6%); } }
-.coding-hero .p-mint  { background: radial-gradient(42% 52% at 86% 76%, rgba(120,205,150,.75), transparent 70%), radial-gradient(40% 40% at 32% 105%, rgba(120,205,150,.45), transparent 70%), linear-gradient(180deg, #EAF1E6, #D9EBD8); }
-.coding-hero .p-lemon { background: radial-gradient(42% 52% at 86% 76%, rgba(246,214,90,.8), transparent 70%), radial-gradient(40% 40% at 32% 105%, rgba(246,214,90,.45), transparent 70%), linear-gradient(180deg, #F3EEE0, #F5EBC4); }
-.coding-hero .p-peach { background: radial-gradient(42% 52% at 86% 76%, rgba(249,150,84,.72), transparent 70%), radial-gradient(40% 40% at 32% 105%, rgba(249,150,84,.42), transparent 70%), linear-gradient(180deg, #F8E2D0, #F9CDAE); }
-.coding-hero .p-lilac { background: radial-gradient(42% 52% at 86% 76%, rgba(205,140,210,.7), transparent 70%), radial-gradient(40% 40% at 32% 105%, rgba(205,140,210,.42), transparent 70%), linear-gradient(180deg, #F1E6EA, #EAD7E6); }
 .coding-hero .ch-grain { position: absolute; inset: 0; pointer-events: none; opacity: .18; mix-blend-mode: multiply; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E"); }
 .coding-hero .ch-title { font-size: clamp(46px, 8.6vw, 140px); line-height: .9; letter-spacing: -0.035em; }
 .coding-hero .ch-slot { display: flex; align-items: center; gap: .14em; min-height: 1.08em; }
@@ -608,5 +601,20 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
   .coding-hero .ch-btn { height: 50px; font-size: 15px; padding: 0 1.1rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .coding-hero .ch-layer, .coding-hero .ch-icon-float, .coding-hero .ch-cursor { animation: none !important; }
+  .coding-hero .ch-icon-float, .coding-hero .ch-cursor { animation: none !important; }
 }
+
+/* ---------- Bubble background (BubbleBackground.jsx) ---------- */
+.bubble-bg { position: absolute; background: linear-gradient(140deg, #FBF8F1 0%, #EEF4EE 55%, #F6F0E2 100%); }
+.bubble-bg .bubble { position: absolute; width: 80%; height: 80%; top: 10%; left: 10%; mix-blend-mode: hard-light; border-radius: 9999px; }
+.bubble-bg .b1 { animation: bubbleVertical 30s ease infinite; }
+.bubble-bg .b2 { transform-origin: calc(50% - 400px); animation: bubbleCircle 20s reverse infinite; }
+.bubble-bg .b3 { top: calc(50% - 40% + 200px); left: calc(50% - 40% - 500px); transform-origin: calc(50% + 400px); animation: bubbleCircle 40s linear infinite; }
+.bubble-bg .b4 { transform-origin: calc(50% - 200px); animation: bubbleHorizontal 40s ease infinite; opacity: .7; }
+.bubble-bg .b5 { width: 160%; height: 160%; top: -30%; left: -30%; transform-origin: calc(50% - 800px) calc(50% + 200px); animation: bubbleCircle 20s ease infinite; opacity: .55; }
+.bubble-bg .b-pointer { width: 100%; height: 100%; top: 0; left: 0; opacity: .5; transition: background .77s ease; }
+@keyframes bubbleCircle { 0% { transform: rotate(0deg); } 50% { transform: rotate(180deg); } 100% { transform: rotate(360deg); } }
+@keyframes bubbleVertical { 0% { transform: translateY(-50%); } 50% { transform: translateY(50%); } 100% { transform: translateY(-50%); } }
+@keyframes bubbleHorizontal { 0% { transform: translateX(-50%) translateY(-10%); } 50% { transform: translateX(50%) translateY(10%); } 100% { transform: translateX(-50%) translateY(-10%); } }
+@media (max-width: 760px) { .bubble-bg .bubble-field { filter: blur(32px) !important; } }
+@media (prefers-reduced-motion: reduce) { .bubble-bg .bubble { animation: none !important; } }
