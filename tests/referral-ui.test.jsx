@@ -21,7 +21,10 @@ const view = {
 vi.mock('../src/services/api', () => ({
   api: {
     getMyReferrals: vi.fn(() => Promise.resolve(view)), getReferralPromo: vi.fn(() => Promise.resolve({ promo: settings.promo })),
-    requestWithdrawal: vi.fn(), markReferralNotificationsRead: vi.fn(() => Promise.resolve({})), setPromoOptOut: vi.fn(() => Promise.resolve({ promoOptOut: true }))
+    requestWithdrawal: vi.fn(),
+    getPaymentQuote: vi.fn(() => Promise.resolve({ originalPaise: 9900, discountPaise: 0, finalPaise: 9900, referral: null })),
+    checkReferralCode: vi.fn((c) => Promise.resolve(c === 'RIYAT497' ? { valid: true, referrerName: 'Riya' } : { valid: false })),
+    claimReferral: vi.fn(() => Promise.resolve({ success: true })), markReferralNotificationsRead: vi.fn(() => Promise.resolve({})), setPromoOptOut: vi.fn(() => Promise.resolve({ promoOptOut: true }))
   },
   getAdminToken: () => 'token'
 }));
@@ -35,9 +38,12 @@ vi.mock('../src/services/adminApi', () => ({
     getReferralAudit: vi.fn(() => Promise.resolve({ audit: [] })), updateReferralSettings: vi.fn((s) => Promise.resolve({ settings: s }))
   }
 }));
+vi.mock('../src/utils/cashfree', () => ({ payWithCashfree: vi.fn(), preloadCashfree: vi.fn() }));
 vi.mock('qrcode', () => ({ default: { toDataURL: () => Promise.resolve('data:image/png;base64,AAAA') } }));
 
 import { api as adminApi } from '../src/services/adminApi';
+import { api } from '../src/services/api';
+import PaymentNotice from '../src/components/PaymentNotice';
 import ReferralPage from '../src/pages/ReferralPage';
 import AdminReferrals from '../src/components/staff/AdminReferrals';
 
@@ -79,5 +85,26 @@ describe('Admin Refer & Earn', () => {
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Approve' }));
     await waitFor(() => expect(adminApi.actOnWithdrawal).toHaveBeenCalledWith('wd_1', 'approve', { reason: '' }));
+  });
+});
+
+describe('Checkout referral code', () => {
+  it('rejects a wrong code and applies a valid one, lowering the price', async () => {
+    render(<PaymentNotice course={{ id: 'python-programming', title: 'Python Programming' }} price={99} paymentsEnabled={false} onClose={() => {}} />);
+    fireEvent.click(await screen.findByText('Have a referral code?'));
+    const input = screen.getByLabelText('Referral code');
+    fireEvent.change(input, { target: { value: 'nope1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+    expect(await screen.findByText('This referral code is not valid.')).toBeTruthy();
+    expect(api.claimReferral).not.toHaveBeenCalled();
+
+    api.getPaymentQuote.mockResolvedValueOnce({ originalPaise: 9900, discountPaise: 990, finalPaise: 8910, referral: { code: 'RIYAT497', discountPct: 10 } });
+    fireEvent.change(input, { target: { value: 'riyat497' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+    expect(await screen.findByText('RIYAT497 applied')).toBeTruthy();
+    expect(api.claimReferral).toHaveBeenCalledWith('RIYAT497');
+    expect(await screen.findByText(/you save ₹9.90/)).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /costs ₹89.10/ })).toBeTruthy();
+    await waitFor(() => expect(screen.getAllByText(/^₹89.10$/).length).toBeGreaterThan(0), { timeout: 2500 });
   });
 });
