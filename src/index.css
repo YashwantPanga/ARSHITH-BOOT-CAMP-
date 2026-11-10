@@ -577,33 +577,6 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 .lesson-chip-done { background: #0C3B2E; color: #FBF8F1; }
 .lesson-body > * + * { margin-top: .75rem; }
 
-/* ---------- Home: cycling-word coding hero ---------- */
-.coding-hero .ch-grain { position: absolute; inset: 0; pointer-events: none; opacity: .18; mix-blend-mode: multiply; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E"); }
-.coding-hero .ch-title { font-size: clamp(46px, 8.6vw, 140px); line-height: .9; letter-spacing: -0.035em; }
-.coding-hero .ch-slot { display: flex; align-items: center; gap: .14em; min-height: 1.08em; }
-.coding-hero .ch-icon { display: inline-block; flex: none; width: 1.02em; height: 1.02em; isolation: isolate; }
-.coding-hero .ch-icon svg { width: 100%; height: 100%; overflow: visible; }
-.coding-hero .ch-icon-float { display: block; width: 100%; height: 100%; animation: chFloat 3.2s ease-in-out infinite; }
-@keyframes chFloat { 0%, 100% { transform: translateY(-.028em) rotate(-3deg); } 50% { transform: translateY(.028em) rotate(3deg); } }
-.coding-hero .ch-word { display: inline-block; white-space: nowrap; }
-.coding-hero .ch-word.is-anim { animation: chEnter .5s cubic-bezier(.215,.61,.355,1) both, chLeave .42s cubic-bezier(.55,.055,.675,.19) 1.33s forwards; }
-.coding-hero .ch-icon.is-anim { animation: chIconIn .5s .06s cubic-bezier(.2,1.3,.4,1) both, chLeave .42s cubic-bezier(.55,.055,.675,.19) 1.33s forwards; }
-@keyframes chEnter { from { opacity: 0; transform: translateY(.32em) scale(.96); filter: blur(10px); } to { opacity: 1; transform: none; filter: none; } }
-@keyframes chIconIn { from { opacity: 0; transform: scale(.7) rotate(-14deg); } to { opacity: 1; transform: none; } }
-@keyframes chLeave { to { opacity: 0; transform: translateY(-.16em); filter: blur(8px); } }
-.coding-hero .ch-cursor { animation: stkBlink .9s steps(1) infinite; }
-.coding-hero .ch-btn { display: inline-flex; align-items: center; gap: .5rem; height: 54px; padding: 0 1.4rem; border-radius: 10px; border: 1.4px solid #0C2D26; color: #0C2D26; font-family: var(--font-display); font-weight: 600; font-size: 16px; background: transparent; transition: background-color .25s, color .25s, transform .2s; }
-.coding-hero .ch-btn:hover, .coding-hero .ch-btn.is-flash { background: #0C2D26; color: #FBF6EF; }
-.coding-hero .ch-btn-solid { background: #0C2D26; color: #FBF6EF; }
-.coding-hero .ch-btn-solid:hover { background: #013A2B; transform: translateY(-1px); }
-@media (max-width: 760px) {
-  .coding-hero .ch-title { font-size: clamp(42px, 12.5vw, 80px); }
-  .coding-hero .ch-btn { height: 50px; font-size: 15px; padding: 0 1.1rem; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .coding-hero .ch-icon-float, .coding-hero .ch-cursor { animation: none !important; }
-}
-
 /* ---------- Bubble background (BubbleBackground.jsx) ---------- */
 .bubble-bg { position: absolute; background: linear-gradient(140deg, #FBF8F1 0%, #EEF4EE 55%, #F6F0E2 100%); }
 .bubble-bg .bubble { position: absolute; width: 80%; height: 80%; top: 10%; left: 10%; mix-blend-mode: hard-light; border-radius: 9999px; }
@@ -616,5 +589,11 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 @keyframes bubbleCircle { 0% { transform: rotate(0deg); } 50% { transform: rotate(180deg); } 100% { transform: rotate(360deg); } }
 @keyframes bubbleVertical { 0% { transform: translateY(-50%); } 50% { transform: translateY(50%); } 100% { transform: translateY(-50%); } }
 @keyframes bubbleHorizontal { 0% { transform: translateX(-50%) translateY(-10%); } 50% { transform: translateX(50%) translateY(10%); } 100% { transform: translateX(-50%) translateY(-10%); } }
-@media (max-width: 760px) { .bubble-bg .bubble-field { filter: blur(32px) !important; } }
+@media (max-width: 760px) { .bubble-bg:not(.is-lite) .bubble-field { filter: blur(32px) !important; } }
+.bubble-bg.no-base { background: none; }
+.bubble-bg.is-lite .bubble { will-change: transform; }
+/* Every page: the bubbles tint the page through a multiply blend, so light backgrounds take a soft
+   green-gold glow while dark text stays dark. Sits above page content, below the header and pop-ups. */
+.site-bubbles { position: fixed; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: multiply; opacity: .32; }
+@media (max-width: 760px) { .site-bubbles { opacity: .26; } }
 @media (prefers-reduced-motion: reduce) { .bubble-bg .bubble { animation: none !important; } }
