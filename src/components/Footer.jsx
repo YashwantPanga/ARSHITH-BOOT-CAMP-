@@ -17,11 +17,11 @@ export default function Footer({ navigate }) {
   return (
     <footer className="bg-cream text-charcoal relative overflow-hidden border-t border-brand-900/10">
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Navigation & Brand Grid */}
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        {/* Navigation & Brand Grid: on phones the two link lists sit side by side */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-9 sm:gap-10 lg:grid-cols-4">
           {/* Brand Info & Social Links */}
-          <div className="space-y-4">
+          <div className="space-y-4 col-span-2 sm:col-span-1">
             <div>
               <button onClick={() => navigate(paths.home())} aria-label="Home" className="block text-left">
                 <img src="/codelekho-logo.svg" alt="CodeLekho" className="h-8 w-auto object-contain" />
@@ -80,19 +80,20 @@ export default function Footer({ navigate }) {
 
           {/* Explore Links */}
           <div>
-            <h4 className="font-display text-[20px] font-bold text-evergreen mb-5">Explore</h4>
+            <h4 className="font-display text-[17px] sm:text-[20px] font-bold text-evergreen mb-3 sm:mb-5">Explore</h4>
             <ul className="space-y-2.5">
               {link('Home', paths.home())}
               {link('All courses', paths.courses())}
               {link('Interview Prep', paths.interview())}
               {link('Categories', paths.categories())}
               {link('Verify a certificate', paths.verify())}
+              {link('Refer & Earn', paths.refer())}
             </ul>
           </div>
 
           {/* Company Links */}
           <div>
-            <h4 className="font-display text-[20px] font-bold text-evergreen mb-5">Company</h4>
+            <h4 className="font-display text-[17px] sm:text-[20px] font-bold text-evergreen mb-3 sm:mb-5">Company</h4>
             <ul className="space-y-2.5">
               {link('About us', paths.about())}
               {link('Contact', paths.contact())}
@@ -104,8 +105,8 @@ export default function Footer({ navigate }) {
           </div>
 
           {/* Direct Contact Column */}
-          <div>
-            <h4 className="font-display text-[20px] font-bold text-evergreen mb-5">Contact</h4>
+          <div className="col-span-2 sm:col-span-1">
+            <h4 className="font-display text-[17px] sm:text-[20px] font-bold text-evergreen mb-3 sm:mb-5">Contact</h4>
             <ul className="space-y-4 text-[15px] text-charcoal/75">
               <li>
                 <a href="mailto:codelekho@arshithgroup.com" className="flex items-start gap-2.5 hover:text-sage transition-colors group">

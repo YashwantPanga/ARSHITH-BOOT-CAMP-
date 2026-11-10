@@ -60,11 +60,11 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
           </div>
           <div className="mt-7 grid grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map(({ label, value, icon: Icon }) => (
-              <div key={label} className="edu-card px-4 py-3.5 flex items-center gap-3">
-                <span className="w-10 h-10 rounded-full bg-brand-100 text-forest flex items-center justify-center shrink-0"><Icon className="w-[18px] h-[18px]" /></span>
+              <div key={label} className="edu-card px-3 sm:px-4 py-3 sm:py-3.5 flex items-center gap-2.5 sm:gap-3">
+                <span className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-brand-100 text-forest flex items-center justify-center shrink-0"><Icon className="w-4 h-4 sm:w-[18px] sm:h-[18px]" /></span>
                 <span className="min-w-0">
-                  <span className="block font-display text-[19px] font-semibold text-evergreen leading-tight">{value}</span>
-                  <span className="block text-[12.5px] text-charcoal/60">{label}</span>
+                  <span className="block font-display text-[17px] sm:text-[19px] font-semibold text-evergreen leading-tight">{value}</span>
+                  <span className="block text-[11.5px] sm:text-[12.5px] text-charcoal/60 leading-tight truncate">{label}</span>
                 </span>
               </div>
             ))}

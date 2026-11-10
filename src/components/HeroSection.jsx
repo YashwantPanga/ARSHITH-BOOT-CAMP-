@@ -111,11 +111,11 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
         <h2 className="sr-only">Our Features</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
           {features.map(({ icon: Icon, value, title, text, tone }) => (
-            <div key={title} className="edu-card p-3.5 sm:p-5 flex flex-col sm:flex-row gap-2.5 sm:gap-4 hover:-translate-y-1 transition-transform duration-300">
-              <span className={`shrink-0 w-[52px] h-[52px] rounded-full flex items-center justify-center ${tone}`}><Icon className="w-5 h-5" /></span>
+            <div key={title} className="edu-card p-3 sm:p-5 flex flex-row items-center sm:items-start gap-2.5 sm:gap-4 hover:-translate-y-1 transition-transform duration-300">
+              <span className={`shrink-0 w-9 h-9 sm:w-[52px] sm:h-[52px] rounded-full flex items-center justify-center ${tone}`}><Icon className="w-4 h-4 sm:w-5 sm:h-5" /></span>
               <div className="min-w-0">
-                <p className="font-display text-[28px] font-semibold leading-none text-evergreen">{value}</p>
-                <p className="mt-1.5 font-display text-[15.5px] font-medium text-charcoal">{title}</p>
+                <p className="font-display text-[20px] sm:text-[28px] font-semibold leading-none text-evergreen">{value}</p>
+                <p className="mt-1 sm:mt-1.5 font-display text-[12.5px] sm:text-[15.5px] font-medium text-charcoal leading-tight">{title}</p>
                 <p className="mt-1 hidden sm:block text-[12.5px] text-charcoal/60 leading-snug">{text}</p>
               </div>
             </div>
