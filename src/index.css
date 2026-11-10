@@ -641,10 +641,6 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 .course-reel .reel-in { animation: reelIn .7s var(--d, 0s) cubic-bezier(.2,1,.3,1) both; }
 @keyframes reelIn { from { opacity: 0; transform: translateY(18px); filter: blur(8px); } to { opacity: 1; transform: none; filter: none; } }
 /* live scenes loop every 6 s */
-.course-reel .reel-type { clip-path: inset(0 100% 0 0); animation: reelType 6s var(--d, 0s) steps(24, end) infinite; }
-@keyframes reelType { 0% { clip-path: inset(0 100% 0 0); } 12%, 88% { clip-path: inset(0 0 0 0); } 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
-.course-reel .reel-stamp { animation: reelStamp 6s .8s cubic-bezier(.2,1.4,.4,1) infinite; }
-@keyframes reelStamp { 0%, 20% { transform: scale(2.2) rotate(-12deg); opacity: 0; } 30%, 90% { transform: scale(1) rotate(-12deg); opacity: 1; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .course-reel .reel-in, .course-reel .reel-type, .course-reel .reel-stamp { animation: none !important; clip-path: none; opacity: 1; }
+  .course-reel .reel-in { animation: none !important; clip-path: none; opacity: 1; }
 }

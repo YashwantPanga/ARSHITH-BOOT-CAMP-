@@ -1,71 +1,26 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Play } from 'lucide-react';
 
 /**
  * Home: "Start today" section with an arched, endlessly drifting row of tall cards (like the inside of a
  * cylinder: centre cards upright, edge cards taller and leaning). The row scrolls right to left, can be
- * dragged or flung, and coasts back into its slow drift. Cards play free Pexels stock clips (coding,
- * students) plus two live scenes (code typing, a certificate being stamped).
+ * dragged or flung, and coasts back into its slow drift. Every card plays a free Pexels stock clip
+ * (coding, students), loaded only once the section comes near the screen.
  */
 
-/* ---------- live card scenes ---------- */
-
-function CodeScene() {
-  const lines = [
-    ['kw', 'def '], ['fn', 'grade'], ['op', '(score):'],
-    ['br'], ['sp', '    '], ['kw', 'if '], ['op', 'score >= '], ['num', '70'], ['op', ':'],
-    ['br'], ['sp', '        '], ['kw', 'return '], ['str', '"Certified"'],
-    ['br'], ['sp', '    '], ['kw', 'return '], ['str', '"Keep going"'],
-    ['br'], ['br'], ['fn', 'print'], ['op', '(grade('], ['num', '86'], ['op', '))']
-  ];
-  const rows = [[]];
-  lines.forEach(t => (t[0] === 'br' ? rows.push([]) : rows[rows.length - 1].push(t)));
-  return (
-    <div className="absolute inset-0 bg-[#0C2D26] p-[9%] font-mono text-[#E9F1EC]">
-      <div className="flex gap-1.5 mb-[10%]"><i className="w-2 h-2 rounded-full bg-[#5F8574]" /><i className="w-2 h-2 rounded-full bg-[#90B1A2]" /><i className="w-2 h-2 rounded-full bg-[#BCD1C6]" /></div>
-      <div className="reel-code text-[10.5px] leading-[1.75]">
-        {rows.map((r, k) => (
-          <div key={k} className="reel-type whitespace-pre overflow-hidden" style={{ '--d': `${k * 0.45}s` }}>
-            {r.length ? r.map(([t, v], j) => <span key={j} className={t === 'sp' ? '' : `tok-${t}`}>{v}</span>) : ' '}
-          </div>
-        ))}
-        <div className="reel-type mt-[12%] text-[#A8D8B9]" style={{ '--d': '2.9s' }}>Certified</div>
-      </div>
-    </div>
-  );
-}
-
-function CertScene() {
-  return (
-    <div className="absolute inset-0 bg-gradient-to-b from-[#0E5C45] to-[#013A2B] p-[10%] flex items-center justify-center">
-      <div className="relative w-full rounded-lg bg-[#FBF8F1] p-3 shadow-xl">
-        <p className="text-[7px] font-bold tracking-[0.2em] text-sage">CODELEKHO</p>
-        <p className="mt-1 font-display text-[12px] font-semibold text-evergreen leading-tight">Certificate of Completion</p>
-        <div className="mt-2 h-1 w-3/4 rounded bg-brand-100" /><div className="mt-1 h-1 w-1/2 rounded bg-brand-100" />
-        <div className="mt-3 flex items-end justify-between">
-          <span className="grid grid-cols-4 gap-[2px] w-8" aria-hidden="true">
-            {[1,0,1,1,0,1,0,1,1,1,0,0,1,0,1,1].map((b, k) => <i key={k} className={`aspect-square ${b ? 'bg-evergreen' : 'bg-transparent'}`} />)}
-          </span>
-          <span className="reel-stamp px-1.5 py-0.5 rounded border-2 border-[#2F7A5C] text-[#2F7A5C] text-[9px] font-bold tracking-[0.12em] -rotate-12">VERIFIED</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Free stock clips from Pexels (pexels.com/license: free to use, no attribution needed), 360x640 files.
-const V = (path) => `https://videos.pexels.com/video-files/${path}`;
+// Free stock clips from Pexels (pexels.com/license: free to use, no attribution needed), 540x960,
+// served from public/reel so the site does not depend on Pexels' servers.
 const CARDS = [
-  { video: V('34459460/14601221_360_640_25fps.mp4'), label: 'HTML code on a monitor' },
-  { video: V('6145960/6145960-sd_360_640_24fps.mp4'), label: 'Student on a laptop' },
-  { video: V('33315143/14188172_360_640_25fps.mp4'), label: 'Neon coding setup' },
-  { scene: CodeScene, label: 'Live code' },
-  { video: V('12893579/12893579-sd_360_640_24fps.mp4'), label: 'Hands typing' },
-  { video: V('8198819/8198819-sd_360_640_25fps.mp4'), label: 'Studying in a library' },
-  { video: V('33314914/14188112_360_640_25fps.mp4'), label: 'Code on screen' },
-  { scene: CertScene, label: 'Certificate' },
-  { video: V('38993329/16589274_360_640_25fps.mp4'), label: 'Mechanical keyboard' },
-  { video: V('32259631/13758054_360_640_25fps.mp4'), label: 'Desk setup' }
+  { video: '/reel/html-code.mp4', label: 'HTML code on a monitor' },
+  { video: '/reel/student-laptop.mp4', label: 'Student on a laptop' },
+  { video: '/reel/neon-setup.mp4', label: 'Neon coding setup' },
+  { video: '/reel/typing-top.mp4', label: 'Typing on a laptop' },
+  { video: '/reel/hands-typing.mp4', label: 'Hands typing' },
+  { video: '/reel/library-study.mp4', label: 'Studying in a library' },
+  { video: '/reel/code-screen.mp4', label: 'Code on screen' },
+  { video: '/reel/stairs-laptop.mp4', label: 'Learning on the go' },
+  { video: '/reel/keyboard.mp4', label: 'Mechanical keyboard' },
+  { video: '/reel/desk-setup.mp4', label: 'Desk setup' }
 ];
 
 /* ---------- the arched row ---------- */
@@ -85,6 +40,16 @@ function quadPath(w, yL0, yL1, yR0, yR1, r) {
 export default function CourseReel({ onExploreClick }) {
   const bandRef = useRef(null);
   const cardRefs = useRef([]);
+  const [near, setNear] = useState(false); // load the videos only when the section is close to the screen
+
+  useEffect(() => {
+    const band = bandRef.current;
+    if (!band || near) return undefined;
+    if (!('IntersectionObserver' in window)) { setNear(true); return undefined; }
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setNear(true); io.disconnect(); } }, { rootMargin: '600px 0px' });
+    io.observe(band);
+    return () => io.disconnect();
+  }, [near]);
 
   useEffect(() => {
     const band = bandRef.current;
@@ -193,11 +158,10 @@ export default function CourseReel({ onExploreClick }) {
       {/* the arched, draggable row */}
       <div ref={bandRef} className="reel-band relative mt-8 sm:mt-10 h-[250px] md:h-[420px] select-none touch-pan-y" aria-label="Course highlights">
         {CARDS.map((c, i) => {
-          const Scene = c.scene;
           return (
             <div key={c.label} ref={(el) => { cardRefs.current[i] = el; }} className="reel-card absolute left-0 top-0 overflow-hidden bg-[#E6EFE9]" style={{ visibility: 'hidden' }}>
-              {Scene ? <Scene /> : (
-                <video className="reel-video absolute inset-0 w-full h-full object-cover" src={c.video} muted loop playsInline autoPlay preload="metadata"
+              {near && (
+                <video className="reel-video absolute inset-0 w-full h-full object-cover" src={c.video} muted loop playsInline autoPlay preload="auto"
                   onLoadedData={(e) => e.currentTarget.classList.add('is-ready')} aria-label={c.label} />
               )}
               <span className="reel-play absolute left-3 bottom-3 w-8 h-8 rounded-full bg-white/30 backdrop-blur-md border border-white/40 flex items-center justify-center text-white"><Play className="w-3.5 h-3.5 fill-current" /></span>

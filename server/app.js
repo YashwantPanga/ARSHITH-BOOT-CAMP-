@@ -99,6 +99,7 @@ if (fs.existsSync(path.join(distDir, 'index.html'))) {
     setHeaders: (res, file) => {
       if (file.endsWith('.html')) noCache(res);
       else if (file.includes(`${path.sep}assets${path.sep}`)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      else if (file.includes(`${path.sep}reel${path.sep}`)) res.setHeader('Cache-Control', 'public, max-age=604800'); // home page video clips
     }
   }));
   // /verify/<id>: same page, plus preview tags (title, description, certificate picture) so a link
