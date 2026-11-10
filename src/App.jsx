@@ -9,6 +9,8 @@ import HomeButton from './components/HomeButton';
 import Footer from './components/Footer';
 import MobileBottomNav, { showsBottomBar } from './components/MobileBottomNav';
 import PromoStory from './components/mobile/PromoStory';
+import ReferralPromo from './components/ReferralPromo';
+import ReferralPage, { RefLanding } from './pages/ReferralPage';
 import DesktopNotice from './components/DesktopNotice';
 import { WhatBringsYou } from './components/MobileWelcome';
 import EnrollCelebration from './components/EnrollCelebration';
@@ -367,7 +369,7 @@ function AppShell() {
   useEffect(() => {
     // Ignore stale runs (e.g. StrictMode re-run after we already redirected).
     if (parseLocation().name !== route.name) return;
-    if (needsLogin && !studentUser && !(route.name === 'dashboard' && (adminUser || !adminChecked))) {
+    if (needsLogin && !studentUser && !(['dashboard', 'learning'].includes(route.name) && (adminUser || !adminChecked))) {
       const here = window.location.pathname + window.location.search;
       navigate(paths.login(here), { replace: true });
       return;
@@ -391,7 +393,7 @@ function AppShell() {
   // Login, register and the account screens open as a modal card over the page the visitor was on
   // (that page stays visible, faded, behind it). Opening one directly shows the home page behind.
   const AUTH_ROUTES = ['login', 'register', 'verify-email', 'forgot-password', 'reset-password'];
-  const BACKDROP_ROUTES = ['home', 'courses', 'course-details', 'categories', 'about', 'contact', 'verify', 'terms', 'privacy', 'refunds'];
+  const BACKDROP_ROUTES = ['home', 'courses', 'course-details', 'categories', 'about', 'contact', 'verify', 'terms', 'privacy', 'refunds', 'refer'];
   const isAuthModal = AUTH_ROUTES.includes(route.name);
   if (!isAuthModal && BACKDROP_ROUTES.includes(route.name)) {
     lastPageRef.current = { route, path: window.location.pathname + window.location.search };
@@ -456,8 +458,8 @@ function AppShell() {
         <CourseDetailsPage
           course={course}
           enrolledCourseId={enrolledCourseId}
-          offer={courseOffer}
-          isLoggedIn={!!studentUser}
+          offer={adminUser && !studentUser ? { ...courseOffer, enrolledIds: [course.id] } : courseOffer}
+          isLoggedIn={!!studentUser || !!adminUser}
           onBack={() => navigate(paths.courses())}
           onEnroll={() => requestEnroll(course.id)}
           onContinue={(moduleId) => navigate(paths.learn(course.id, moduleId))}
@@ -468,6 +470,25 @@ function AppShell() {
     }
     case 'learning': {
       const course = findCourse(route.params.courseId);
+      if (adminUser && !studentUser) {
+        // Admin: full access to every course and module, no enrolment or payment needed
+        page = !coursesLoaded ? loading : !course ? notFound('Course not found') : (
+          <LearningPage
+            course={course}
+            studentUser={{ name: adminUser.name || 'Admin', email: adminUser.email, admin: true }}
+            adminPreview
+            activeModuleId={route.params.moduleId}
+            onSelectModule={(moduleId) => navigate(paths.learn(course.id, moduleId), { replace: true, scroll: false })}
+            onExit={() => navigate(paths.course(course.id))}
+            onProgressChanged={() => {}}
+            onViewCertificate={() => {}}
+            onCourseLocked={() => {}}
+            onUnlockAgain={() => {}}
+            retakePrice={0}
+          />
+        );
+        break;
+      }
       page = !coursesLoaded || !studentUser ? loading : !course ? notFound('Course not found') : !enrolledIds.includes(course.id) ? loading : closedIds.includes(course.id) ? (
         <CourseClosed
           course={course}
@@ -510,6 +531,7 @@ function AppShell() {
           onContinue={(id, moduleId) => navigate(paths.learn(id, moduleId))}
           onViewCertificate={(id) => navigate(paths.certificate(id))}
           onExploreCourses={() => goCourses()}
+          onRefer={() => navigate(paths.refer())}
           onUnlock={requestEnroll}
           onRefresh={() => { enrolledIds.forEach(id => refreshProgress(id)); api.getEnrollment(userId).then(setEnrollState).catch(() => {}); }}
           enrolledIds={enrolledIds}
@@ -560,6 +582,12 @@ function AppShell() {
       break;
     case 'refunds':
       page = <RefundPage onHome={() => navigate(paths.home())} />;
+      break;
+    case 'refer':
+      page = <ReferralPage key={studentUser?.email || 'guest'} studentUser={studentUser} navigate={navigate} toast={toast} />;
+      break;
+    case 'ref-landing':
+      page = <RefLanding key={`${route.params.code}:${studentUser?.email || ''}`} code={route.params.code} studentUser={studentUser} navigate={navigate} toast={toast} />;
       break;
     case 'login':
     case 'register':
@@ -658,7 +686,8 @@ function AppShell() {
       {authModal && <AuthModalLayer onClose={closeAuthModal}>{authModal}</AuthModalLayer>}
       {!adminUser && <DesktopNotice />}
       {/* phones: the green welcome card, once per visit, on browsing pages only */}
-      <PromoStory navigate={navigate} signedIn={!!studentUser} enabled={!adminUser && !isChromeless && !isAuthModal && !['learning', 'login', 'register', 'verify-email', 'forgot-password', 'reset-password', 'certificate'].includes(route.name)} />
+      <ReferralPromo navigate={navigate} routeName={route.name} signedIn={!!studentUser} enabled={!adminUser && !isChromeless && !isAuthModal} />
+      <PromoStory navigate={navigate} signedIn={!!studentUser} enabled={!adminUser && !isChromeless && !isAuthModal && !['learning', 'login', 'register', 'verify-email', 'forgot-password', 'reset-password', 'certificate', 'refer', 'ref-landing'].includes(route.name)} />
 
       {!isAuthModal && route.name !== 'home' && route.name !== 'learning' && !(adminUser && route.name === 'dashboard') && (
         <HomeButton onClick={() => navigate(paths.home())} aboveBottomNav={false} />

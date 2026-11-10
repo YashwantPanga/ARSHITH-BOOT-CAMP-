@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Search, Menu, X, LogOut, ChevronDown, ShieldCheck, Info, Mail, Grid3X3, BookOpen, Target } from 'lucide-react';
+import { Search, Menu, X, LogOut, ChevronDown, ShieldCheck, Info, Mail, Grid3X3, BookOpen, Target, Gift } from 'lucide-react';
 import { Logo } from './ui';
 import { TrackMark } from './TrackBadge';
 import { paths } from '../router';
@@ -10,6 +10,7 @@ const NAV = [
   { name: 'Home', id: 'home', to: paths.home(), icon: BookOpen },
   { name: 'All courses', id: 'courses', to: paths.courses(), icon: BookOpen },
   { name: 'Interview Prep', id: 'interview', to: paths.interview(), icon: Target },
+  { name: 'Refer & Earn', id: 'refer', to: paths.refer(), icon: Gift },
   { name: 'Categories', id: 'categories', to: paths.categories(), icon: Grid3X3 },
   { name: 'Verify certificate', id: 'verify', to: paths.verify(), icon: ShieldCheck },
   { name: 'About', id: 'about', to: paths.about(), icon: Info },
@@ -108,10 +109,10 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
             )}
           </div>
 
-          <nav className="hidden xl:flex items-center gap-7" aria-label="Main">
-            {NAV.filter(l => ['home', 'courses', 'interview', 'about', 'contact'].includes(l.id)).map(l => (
-              <button key={l.id} onClick={() => go(l.to)} className={`edu-nav relative py-2 transition-colors ${isActive(l.id) ? 'text-sage after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-0.5 after:rounded after:bg-leaf' : 'text-evergreen hover:text-sage'}`}>
-                {l.id === 'courses' ? 'Courses' : l.name}
+          <nav className="hidden xl:flex items-center gap-6 whitespace-nowrap" aria-label="Main">
+            {NAV.filter(l => ['home', 'courses', 'interview', 'refer', 'about', 'contact'].includes(l.id)).map(l => (
+              <button key={l.id} onClick={() => go(l.to)} className={`edu-nav relative py-2 transition-colors ${['about', 'contact'].includes(l.id) ? 'hidden 2xl:block ' : ''}${l.id === 'refer' ? 'inline-flex items-center gap-1.5 ' : ''}${isActive(l.id) ? 'text-sage after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-0.5 after:rounded after:bg-leaf' : l.id === 'refer' ? 'text-[#9A7330] hover:text-[#7A5A1E]' : 'text-evergreen hover:text-sage'}`}>
+                {l.id === 'refer' && <Gift className="w-4 h-4" />}{l.id === 'courses' ? 'Courses' : l.name}
               </button>
             ))}
           </nav>
@@ -140,8 +141,8 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
               </div>
             ) : (
               <>
-                <button onClick={() => go(paths.login())} className="font-display text-[17px] font-semibold text-evergreen hover:text-sage transition-colors">Log in</button>
-                <button onClick={() => go(paths.register())} className="font-display h-12 px-7 rounded-md bg-forest text-ivory text-[15.5px] font-semibold border border-forest hover:bg-sage hover:border-sage transition-colors">Sign up</button>
+                <button onClick={() => go(paths.login())} className="whitespace-nowrap font-display text-[17px] font-semibold text-evergreen hover:text-sage transition-colors">Log in</button>
+                <button onClick={() => go(paths.register())} className="whitespace-nowrap font-display h-12 px-7 rounded-md bg-forest text-ivory text-[15.5px] font-semibold border border-forest hover:bg-sage hover:border-sage transition-colors">Sign up</button>
               </>
             )}
           </div>

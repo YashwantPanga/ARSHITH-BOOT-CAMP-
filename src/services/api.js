@@ -92,6 +92,17 @@ export const api = {
   createPaymentOrder: (courseId) => request('/payments/order', { method: 'POST', body: JSON.stringify({ courseId }) }),
   createInterviewOrder: () => request('/payments/order', { method: 'POST', body: JSON.stringify({ product: 'interview' }) }),
   verifyPayment: (orderId) => request('/payments/verify', { method: 'POST', body: JSON.stringify({ orderId }) }),
+  getPaymentQuote: ({ courseId, product } = {}) => request(`/payments/quote?${new URLSearchParams(product ? { product } : { courseId })}`),
+
+  // Refer & Earn
+  getReferralPromo: () => request('/referrals/promo'),
+  checkReferralCode: (code) => request(`/referrals/code/${encodeURIComponent(code)}`),
+  trackReferralClick: (code, visitorId) => request('/referrals/click', { method: 'POST', body: JSON.stringify({ code, visitorId }) }),
+  getMyReferrals: () => request('/referrals/me'),
+  claimReferral: (code) => request('/referrals/claim', { method: 'POST', body: JSON.stringify({ code }) }),
+  requestWithdrawal: (body) => request('/referrals/withdrawals', { method: 'POST', body: JSON.stringify(body) }),
+  markReferralNotificationsRead: () => request('/referrals/notifications/read', { method: 'POST' }),
+  setPromoOptOut: (promoOptOut) => request('/referrals/preferences', { method: 'POST', body: JSON.stringify({ promoOptOut }) }),
   uploadCertificateImage: (id, image) => request(`/certificates/${encodeURIComponent(id)}/image`, { method: 'POST', body: JSON.stringify({ image }) }),
   issueCertificate: (data) => request('/certificates/issue', { method: 'POST', body: JSON.stringify(data) }),
 

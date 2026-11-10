@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Award, BookOpen, ChevronDown, Flame, Grid3X3, Home, Info, LayoutDashboard, LogIn, LogOut, Mail, Search, ShieldCheck,
+  Award, BookOpen, ChevronDown, Flame, Gift, Grid3X3, Home, Info, LayoutDashboard, LogIn, LogOut, Mail, Search, ShieldCheck,
   Target, UserRound, X
 } from 'lucide-react';
 import { TrackMark } from './TrackBadge';
@@ -154,6 +154,7 @@ export default function MobileMenu({ open, onClose, route, navigate, studentUser
               ))}
               <button onClick={() => go(paths.interview())} className="w-full px-2 h-10 text-left text-[14px] font-semibold text-forest">All study plans</button>
             </MenuSub>
+            <MenuRow icon={Gift} label="Refer & Earn" isActive={active('refer')} onClick={() => go(paths.refer())} />
             <MenuRow icon={Grid3X3} label="Categories" isActive={active('categories')} onClick={() => go(paths.categories())} />
             <MenuRow icon={Award} label="Verify certificate" isActive={active('verify')} onClick={() => go(paths.verify())} />
 

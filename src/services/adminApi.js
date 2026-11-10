@@ -99,7 +99,21 @@ export const api = {
   createAdminQuestion: (questionData) => staffRequest('/admin/questions', { method: 'POST', body: JSON.stringify(questionData) }),
   updateAdminQuestion: (id, questionData) => staffRequest(`/admin/questions/${id}`, { method: 'PUT', body: JSON.stringify(questionData) }),
   deleteAdminQuestion: (id) => staffRequest(`/admin/questions/${id}`, { method: 'DELETE' }),
-  getQuizAnalytics: () => staffRequest('/admin/quiz-analytics')
+  getQuizAnalytics: () => staffRequest('/admin/quiz-analytics'),
+
+  // Refer & Earn
+  getReferralOverview: () => staffRequest('/admin/referrals/overview'),
+  getAdminReferrers: (q = '') => staffRequest(`/admin/referrals/referrers?${new URLSearchParams({ q })}`),
+  getAdminReferrer: (email) => staffRequest(`/admin/referrals/referrers/${encodeURIComponent(email)}`),
+  suspendReferrer: (email, suspended, reason = '') => staffRequest(`/admin/referrals/referrers/${encodeURIComponent(email)}/suspend`, { method: 'POST', body: JSON.stringify({ suspended, reason }) }),
+  getAdminReferralRewards: (filters = {}) => staffRequest(`/admin/referrals/rewards?${new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([, v]) => v)))}`),
+  reverseReferralReward: (id, reason) => staffRequest(`/admin/referrals/rewards/${encodeURIComponent(id)}/reverse`, { method: 'POST', body: JSON.stringify({ reason }) }),
+  refundReferralOrder: (orderId, amountPaise) => staffRequest(`/admin/referrals/orders/${encodeURIComponent(orderId)}/refund`, { method: 'POST', body: JSON.stringify({ amountPaise }) }),
+  getAdminWithdrawals: (filters = {}) => staffRequest(`/admin/referrals/withdrawals?${new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([, v]) => v)))}`),
+  actOnWithdrawal: (id, action, body = {}) => staffRequest(`/admin/referrals/withdrawals/${encodeURIComponent(id)}/${action}`, { method: 'POST', body: JSON.stringify(body) }),
+  updateReferralSettings: (settings) => staffRequest('/admin/referrals/settings', { method: 'PUT', body: JSON.stringify(settings) }),
+  getReferralAudit: () => staffRequest('/admin/referrals/audit'),
+  runReferralJobs: () => staffRequest('/admin/referrals/jobs/run', { method: 'POST' })
 };
 
 /** Ends the session on the server and forgets it here. */

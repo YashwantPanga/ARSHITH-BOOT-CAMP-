@@ -102,7 +102,7 @@ export default function LearningPage(props) {
 
 const normalizePractice = (bp) => (typeof bp === 'string' ? { rule: bp } : bp || {});
 
-function LearningInner({ course, studentUser, activeModuleId, onSelectModule, onExit, onProgressChanged, onViewCertificate, onCourseLocked, onUnlockAgain, retakePrice = 0 }) {
+function LearningInner({ course, studentUser, activeModuleId, onSelectModule, onExit, onProgressChanged, onViewCertificate, onCourseLocked, onUnlockAgain, retakePrice = 0, adminPreview = false }) {
   const toast = useToast();
   const playground = usePlayground();
   const modules = course.modules || [];
@@ -181,7 +181,12 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   const toggle = (key) => setRevealed(r => ({ ...r, [key]: !r[key] }));
   const goTo = (idx) => { if (modules[idx]) onSelectModule(modules[idx].id); };
 
+  const openQuiz = () => {
+    if (adminPreview) { toast('Admin preview: module quizzes are taken by students only.', 'info', 4000); return; }
+    setQuizOpen(true);
+  };
   const openFinal = () => {
+    if (adminPreview) { toast('Admin preview: the final assessment is taken by students only.', 'info', 4000); return; }
     if (passedFinal) { setFinalOpen(true); return; }
     if (!allQuizzesPassed) {
       toast(`Final assessment unlocks after you pass all ${modules.length} module quizzes (${done}/${modules.length} done) and submit all project repositories.`, 'error', 5000);
@@ -716,6 +721,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
           </span>
         </button>
         <div className="flex-1 min-w-0 flex items-center gap-3">
+          {adminPreview && <span className="shrink-0 rounded-md bg-[#E5C88E] text-[#2A1D08] text-[10.5px] font-bold uppercase tracking-[0.12em] px-2 py-1">Admin · full access</span>}
           <span className="lg:hidden min-w-0">
             <span className="block text-[9.5px] font-semibold uppercase tracking-[0.18em] text-[#D9B776] truncate">{displayTitle(course.title)}</span>
             <span className="block text-[13px] font-semibold truncate">Module {currentIndex + 1} of {modules.length}</span>
@@ -815,7 +821,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                   <p className="font-display text-[22px] font-semibold text-evergreen leading-tight">Module {num} quiz</p>
                   <p className="text-[13.5px] text-charcoal/60">5 questions · unlimited retakes. Finishing it marks this module complete.</p>
                 </div>
-                <button onClick={() => setQuizOpen(true)} className={`h-11 px-5 rounded-xl text-[14px] font-semibold ${current.completed ? 'border border-forest/30 text-forest hover:bg-cream' : 'bg-forest text-ivory hover:bg-evergreen'}`}>
+                <button onClick={() => openQuiz()} className={`h-11 px-5 rounded-xl text-[14px] font-semibold ${current.completed ? 'border border-forest/30 text-forest hover:bg-cream' : 'bg-forest text-ivory hover:bg-evergreen'}`}>
                   {current.completed ? 'Retake quiz' : 'Take quiz'}
                 </button>
               </section>
@@ -868,7 +874,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                     </>
                   ) : <p className="mt-2 text-[11.5px] text-charcoal/60">{snippetCount} runnable snippets. Press Run on any of them.</p>}
                 </div>
-                <button onClick={() => (current.completed ? null : setQuizOpen(true))} className={`w-full h-11 rounded-xl text-[13.5px] font-semibold inline-flex items-center justify-center gap-2 transition ${current.completed ? 'bg-forest text-ivory cursor-default' : 'border border-forest/40 text-forest bg-white hover:bg-cream'}`}>
+                <button onClick={() => (current.completed ? null : openQuiz())} className={`w-full h-11 rounded-xl text-[13.5px] font-semibold inline-flex items-center justify-center gap-2 transition ${current.completed ? 'bg-forest text-ivory cursor-default' : 'border border-forest/40 text-forest bg-white hover:bg-cream'}`}>
                   <Check className="w-4 h-4" />{current.completed ? 'Module complete' : 'Mark module complete'}
                 </button>
                 {!current.completed && <p className="-mt-2 text-center text-[11px] text-charcoal/45">Pass the 5-question quiz to complete it</p>}

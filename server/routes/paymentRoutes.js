@@ -6,6 +6,7 @@ import { interviewPrice, interviewPaid, grantInterview } from '../lib/interviewA
 import { interviewUnlockedByCertificates } from './interviewRoutes.js';
 import { sendMail } from '../lib/mailer.js';
 import { verifyAdminToken } from '../middleware/auth.js';
+import { quote as referralQuote, onOrderPaid as referralOnPaid } from '../lib/referrals.js';
 
 // Paid unlocks through Cashfree - a course or Interview Prep:
 //  1. POST /payments/order   - the server works out the price and creates a Cashfree order
@@ -27,6 +28,7 @@ function fulfil(db, order, paymentId, via) {
   order.confirmedBy = via;
   if (order.kind === 'interview') grantInterview(db, order.email, { orderId: order.orderId });
   else enrol(db, order.email, order.courseId, { paid: true, by: 'cashfree' });
+  referralOnPaid(db, order); // Refer & Earn: pending commission for the referrer, once per order
   logActivity({ action: order.kind === 'interview' ? 'Interview Prep payment' : 'Course payment', target: order.email, details: `Paid ₹${order.amount / 100} for ${order.courseTitle} (${order.paymentId || order.orderId})`, ipAddress: '-', device: 'Cashfree' });
   return true;
 }
@@ -52,42 +54,60 @@ function sendReceipt(db, order) {
 /** What the learner gets back after a payment: their course state plus Interview Prep access. */
 const afterPayment = (db, email, order) => ({ success: true, kind: order.kind, courseId: order.courseId, paymentId: order.paymentId, interviewUnlocked: interviewPaid(db, email), ...enrolmentState(db, email) });
 
+/** What the learner wants to buy, or an error response: { item } | { status, body }. */
+function itemFor(db, email, body) {
+  if (body.product === 'interview') {
+    if (interviewPaid(db, email) || interviewUnlockedByCertificates(db, email)) return { status: 409, body: { success: false, code: 'ALREADY_UNLOCKED', message: 'Interview Prep is already unlocked for you.' } };
+    return { item: { kind: 'interview', courseId: INTERVIEW, title: 'Interview Prep', price: interviewPrice(), back: '/interview' } };
+  }
+  const course = (db.courses || []).find(c => c.id === body.courseId);
+  if (!course) return { status: 404, body: { success: false, message: 'Course not found.' } };
+  const state = enrolmentState(db, email);
+  if (state.courses[course.id] === 'active') return { status: 409, body: { success: false, code: 'ALREADY_ENROLLED', message: 'This course is already unlocked for you.' } };
+  if (state.passedCourseIds.includes(course.id)) return { status: 409, body: { success: false, message: 'You have already passed this course. Your certificate is in your dashboard.' } };
+  const price = priceFor(course.id);
+  if (!(price > 0)) return { status: 409, body: { success: false, code: 'FREE_COURSE', message: 'This course is free - enrol without paying.' } };
+  return { item: { kind: 'course', courseId: course.id, title: course.title, price, back: '/dashboard' } };
+}
+
+// The price the learner will pay, with any referral discount (shown before paying).
+router.get('/payments/quote', (req, res) => {
+  const email = req.learnerEmail;
+  if (!email) return res.status(401).json({ success: false, code: 'LEARNER_AUTH_REQUIRED', message: 'Please sign in.' });
+  const db = getDb();
+  const found = itemFor(db, email, { product: req.query.product, courseId: req.query.courseId });
+  if (!found.item) return res.status(found.status).json(found.body);
+  const q = referralQuote(db, email, { kind: found.item.kind, courseId: found.item.courseId, pricePaise: found.item.price * 100 });
+  res.json({ success: true, title: found.item.title, originalPaise: q.originalPaise, discountPaise: q.discountPaise, finalPaise: q.finalPaise, referral: q.referral ? { code: q.referral.code, discountPct: q.referral.discountPct } : null });
+});
+
 router.post('/payments/order', async (req, res) => {
   const email = req.learnerEmail;
   if (!email) return res.status(401).json({ success: false, code: 'LEARNER_AUTH_REQUIRED', message: 'Please sign in to pay.' });
   if (!cashfreeConfigured()) return res.status(503).json({ success: false, code: 'PAYMENTS_OFF', message: 'Online payment is not available yet. Please contact us to enrol.' });
 
   const db = getDb();
-  let item;
-  if (req.body.product === 'interview') {
-    if (interviewPaid(db, email) || interviewUnlockedByCertificates(db, email)) return res.status(409).json({ success: false, code: 'ALREADY_UNLOCKED', message: 'Interview Prep is already unlocked for you.' });
-    item = { kind: 'interview', courseId: INTERVIEW, title: 'Interview Prep', price: interviewPrice(), back: '/interview' };
-  } else {
-    const course = (db.courses || []).find(c => c.id === req.body.courseId);
-    if (!course) return res.status(404).json({ success: false, message: 'Course not found.' });
-    const state = enrolmentState(db, email);
-    if (state.courses[course.id] === 'active') return res.status(409).json({ success: false, code: 'ALREADY_ENROLLED', message: 'This course is already unlocked for you.' });
-    if (state.passedCourseIds.includes(course.id)) return res.status(409).json({ success: false, message: 'You have already passed this course. Your certificate is in your dashboard.' });
-    const price = priceFor(course.id);
-    if (!(price > 0)) return res.status(409).json({ success: false, code: 'FREE_COURSE', message: 'This course is free - enrol without paying.' });
-    item = { kind: 'course', courseId: course.id, title: course.title, price, back: '/dashboard' };
-  }
+  const found = itemFor(db, email, req.body || {});
+  if (!found.item) return res.status(found.status).json(found.body);
+  const item = found.item;
+  // the server alone decides the price, including any referral discount
+  const q = referralQuote(db, email, { kind: item.kind, courseId: item.courseId, pricePaise: item.price * 100 });
 
   const orderId = newOrderId(item.kind === 'interview' ? 'ip' : 'cl');
   const learner = db.learners?.[email];
   try {
     const cf = await createOrder({
       orderId,
-      amount: item.price,
+      amount: q.finalPaise / 100,
       customer: { id: learner?.learnerId || email, email, phone: learner?.phone, name: learner?.name },
       // UPI apps and some banks come back to the site instead of the payment window
       returnUrl: `${siteUrl(req)}${item.back}?cf_order={order_id}`,
       note: item.title
     });
     if (!db.payments) db.payments = [];
-    db.payments.push({ orderId, kind: item.kind, email, courseId: item.courseId, courseTitle: item.title, amount: item.price * 100, currency: 'INR', status: 'created', gateway: 'cashfree', createdAt: new Date().toISOString() });
+    db.payments.push({ orderId, kind: item.kind, email, courseId: item.courseId, courseTitle: item.title, amount: q.finalPaise, originalAmount: q.originalPaise, discountAmount: q.discountPaise, ...(q.referral ? { referral: q.referral } : {}), currency: 'INR', status: 'created', gateway: 'cashfree', createdAt: new Date().toISOString() });
     saveDb(db);
-    res.json({ success: true, orderId, paymentSessionId: cf.payment_session_id, mode: cashfreeMode(), amount: item.price, currency: 'INR', title: item.title, kind: item.kind });
+    res.json({ success: true, orderId, paymentSessionId: cf.payment_session_id, mode: cashfreeMode(), amount: q.finalPaise / 100, originalAmount: q.originalPaise / 100, discountAmount: q.discountPaise / 100, referral: !!q.referral, currency: 'INR', title: item.title, kind: item.kind });
   } catch (err) {
     console.error('[payments] order failed:', err.message);
     res.status(502).json({ success: false, message: 'Could not start the payment. Please try again in a minute.' });
@@ -116,11 +136,15 @@ router.post('/payments/verify', async (req, res) => {
     return res.status(409).json({ success: false, code: 'NOT_PAID', status: cf.order_status, message: cf.order_status === 'ACTIVE' ? 'The payment has not gone through yet.' : 'This payment was not completed. No money was taken - please try again.' });
   }
   const payment = await successfulPayment(orderId);
-  if (fulfil(db, order, payment?.cf_payment_id, 'checkout')) {
-    saveDb(db);
-    sendReceipt(db, order);
+  // re-read after the network calls so changes made meanwhile are kept (and a webhook that already
+  // fulfilled this order is seen)
+  const fresh = getDb();
+  const live = (fresh.payments || []).find(p => p.orderId === orderId);
+  if (fulfil(fresh, live, payment?.cf_payment_id, 'checkout')) {
+    saveDb(fresh);
+    sendReceipt(fresh, live);
   }
-  res.json(afterPayment(db, email, order));
+  res.json(afterPayment(fresh, email, live));
 });
 
 // Cashfree -> server. Configure in Cashfree Dashboard > Developers > Webhooks with the URL
@@ -132,7 +156,7 @@ router.post('/payments/webhook', (req, res) => {
   if (String(req.body?.type || '').startsWith('PAYMENT_SUCCESS') && data.payment?.payment_status === 'SUCCESS' && orderId) {
     const db = getDb();
     const order = (db.payments || []).find(p => p.orderId === orderId);
-    if (order && Number(data.order?.order_amount) * 100 === order.amount && fulfil(db, order, data.payment?.cf_payment_id, 'webhook')) {
+    if (order && Math.round(Number(data.order?.order_amount) * 100) === order.amount && fulfil(db, order, data.payment?.cf_payment_id, 'webhook')) {
       saveDb(db);
       sendReceipt(db, order);
     }

@@ -1,4 +1,5 @@
 import express from 'express';
+import { attribute as attributeReferral } from '../lib/referrals.js';
 import { enrolledCourseIds } from '../lib/enrolledCourses.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
@@ -155,6 +156,12 @@ router.post('/learners/register', async (req, res) => {
       progressMap: {}
     });
   }
+  // Refer & Earn: the code from a referral link (or typed in) links this account to its referrer
+  let referral = null;
+  if (req.body.referralCode) {
+    const r = attributeReferral(db, email, req.body.referralCode, { source: req.body.referralSource === 'link' ? 'link' : 'code' });
+    referral = r.ok ? 'applied' : r.reason;
+  }
   saveDb(db);
 
   const emailStatus = await dispatchMail(mail);
@@ -163,6 +170,7 @@ router.post('/learners/register', async (req, res) => {
     verificationRequired: true,
     email,
     emailStatus,
+    referral,
     ...(devCode ? { devCode } : {}),
     message: emailStatus === 'outbox' || emailStatus === 'failed' ? 'Your account was created, but email is not configured on this server yet.' : `We sent a 6-digit code to ${email}.`
   });

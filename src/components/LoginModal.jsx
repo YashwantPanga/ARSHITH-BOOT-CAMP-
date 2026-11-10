@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AlertCircle, Eye, EyeOff, X } from 'lucide-react';
 import { readAccount } from '../utils/session';
 import { api, setAdminToken } from '../services/api';
+import { storedReferral } from '../utils/referral';
 
 /**
  * Full-page Login / Register screen (routes: /login and /register): one centred card with a large
@@ -10,14 +11,15 @@ import { api, setAdminToken } from '../services/api';
  */
 export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode, onBack, onHome, onSuccess, onNeedVerification, onForgotPassword }) {
   const isSignup = mode === 'signup';
-  const [form, setForm] = useState({ name: '', regNo: '', phone: '', email: '', password: '', confirm: '' });
+  const fromLink = storedReferral();
+  const [form, setForm] = useState({ name: '', regNo: '', phone: '', email: '', password: '', confirm: '', referral: fromLink?.code || '' });
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => { setError(''); }, [mode]);
 
   const set = (key) => (e) => {
-    const v = key === 'regNo' ? e.target.value.toUpperCase() : e.target.value;
+    const v = key === 'regNo' || key === 'referral' ? e.target.value.toUpperCase() : e.target.value;
     setForm(f => ({ ...f, [key]: v }));
     setError('');
   };
@@ -46,7 +48,8 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
     setBusy(true);
     try {
       if (isSignup) {
-        const res = await api.learnerRegister({ name, regNo, phone, email, password: form.password });
+        const referralCode = form.referral.trim();
+        const res = await api.learnerRegister({ name, regNo, phone, email, password: form.password, ...(referralCode ? { referralCode, referralSource: fromLink?.code === referralCode ? 'link' : 'code' } : {}) });
         // New accounts must verify their email before signing in.
         onNeedVerification(email, { code: res.devCode, status: res.emailStatus });
         return;
@@ -135,6 +138,13 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
             <Field label="Confirm password">
               <input className="auth-input" type={showPw ? 'text' : 'password'} autoComplete="new-password" value={form.confirm} onChange={set('confirm')} />
             </Field>
+          )}
+          {isSignup && (
+            <div className="sm:col-span-2">
+              <label className="block text-[13px] font-semibold text-charcoal/75 mb-1.5" htmlFor="ref-code">Referral code <span className="font-normal text-charcoal/50">(optional)</span></label>
+              <input id="ref-code" className="auth-input font-mono tracking-wider" value={form.referral} onChange={set('referral')} maxLength={16} placeholder="e.g. YASH123" autoComplete="off" />
+              {fromLink?.code && form.referral === fromLink.code && <p className="mt-1.5 text-[12.5px] font-semibold text-forest">Invited by {fromLink.referrerName || 'a friend'} · 10% off your first purchases</p>}
+            </div>
           )}
 
           <button type="submit" disabled={busy} className={`${isSignup ? 'sm:col-span-2' : ''} mt-1 h-12 rounded-lg bg-brand-900 text-ivory text-[16px] font-bold hover:bg-forest active:scale-[.99] disabled:opacity-70 transition shadow-[0_10px_24px_-12px_rgba(1,58,43,.7)]`}>

@@ -5,8 +5,9 @@ import { courseArt } from '../components/CourseCard';
 import { cleanText, displayTitle } from '../utils/textUtils';
 import { api } from '../services/api';
 import StreakCard from '../components/StreakCard';
+import { ReferCard } from '../components/ReferralPromo';
 
-export default function StudentDashboard({ studentUser, courses, coursesLoaded, enrolledCourseId, onOpenCourse, onContinue, onViewCertificate, onExploreCourses, onUnlock, onRefresh, onHome, onProfileSaved, initialTab = 'learning', enrollState, enrolledIds = [] }) {
+export default function StudentDashboard({ studentUser, courses, coursesLoaded, enrolledCourseId, onOpenCourse, onContinue, onViewCertificate, onExploreCourses, onRefer, onUnlock, onRefresh, onHome, onProfileSaved, initialTab = 'learning', enrollState, enrolledIds = [] }) {
   useEffect(() => { onRefresh?.(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
   const [tab, setTab] = useState(initialTab === 'profile' ? 'profile' : 'learning');
   const [allModules, setAllModules] = useState(false);   // phones show the first five modules until expanded
@@ -73,6 +74,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <StreakCard />
+        {onRefer && <ReferCard onClick={onRefer} />}
 
         {/* tabs */}
         <div className="h-8" />

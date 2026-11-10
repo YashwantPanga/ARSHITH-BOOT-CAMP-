@@ -5,7 +5,7 @@ import {
   Copy, Eye, CheckCircle2, XCircle, AlertTriangle, Search, Filter, RefreshCw, 
   UserCheck, Shield, ChevronRight, ChevronLeft, Lock, Save, ExternalLink, Download, FileSpreadsheet, FileCheck,
   Check, X, AlertCircle, Clock, Calendar, CheckSquare, User, ArrowUpRight, Menu,
-  ArrowUpDown, TrendingUp, Users, Github, Mail, Phone, Hash, ArrowLeft, IndianRupee
+  ArrowUpDown, TrendingUp, Users, Github, Mail, Phone, Hash, ArrowLeft, IndianRupee, Gift
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { api } from '../services/adminApi';
@@ -21,6 +21,7 @@ const violationLabel = (t) => VIOLATION_LABEL[t] || String(t || 'Event').replace
 const warnTone = (n) => (n >= 3 ? 'bg-rose-50 text-rose-700 border-rose-200' : n > 0 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200');
 import AdminQuizManager from '../components/AdminQuizManager';
 import AdminQuizAnalytics from '../components/AdminQuizAnalytics';
+import AdminReferrals from '../components/staff/AdminReferrals';
 
 // embedded: shown inside the normal site (under its header) on the profile page. initialSection opens a
 // sidebar section directly (e.g. from the tool bar on a course page).
@@ -538,6 +539,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     { id: 'projects', label: 'Project Submissions', icon: FolderCheck, badge: projectSubmissions.filter(p => p.status === 'Submitted' || p.status === 'Under Review').length },
     { id: 'certificates', label: 'Certificates', icon: Award, badge: certificates.length },
     { id: 'payments', label: 'Payments', icon: IndianRupee, badge: payments.payments.filter(p => p.status === 'paid').length },
+    { id: 'referrals', label: 'Refer & Earn', icon: Gift },
     { id: 'export', label: 'Export Reports', icon: FileSpreadsheet },
     { id: 'courses', label: 'Course Catalog', icon: BookOpen, badge: courses.length },
     { id: 'settings', label: 'Admin Settings', icon: Settings },
@@ -548,7 +550,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     { heading: 'Home', ids: ['dashboard'] },
     { heading: 'Learners', ids: ['students', 'progress', 'projects'] },
     { heading: 'Certificates', ids: ['certificates', 'export'] },
-    { heading: 'Money', ids: ['payments'] },
+    { heading: 'Money', ids: ['payments', 'referrals'] },
     { heading: 'Content', ids: ['courses'] },
     { heading: 'Account', ids: ['settings'] }
   ];
@@ -559,6 +561,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     activeSection === 'projects' ? 'Project Submissions' :
     activeSection === 'certificates' ? 'Certificates' :
     activeSection === 'payments' ? 'Payments' :
+    activeSection === 'referrals' ? 'Refer & Earn' :
     activeSection === 'export' ? 'Export Reports' :
     activeSection === 'courses' ? 'Course Catalog' : 'Admin Settings';
   const pageSubtitle = builderCourse ? 'Edit modules, lessons and quizzes for this course' :
@@ -568,6 +571,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     activeSection === 'projects' ? 'Review GitHub project submissions' :
     activeSection === 'certificates' ? 'Certificate management & verification' :
     activeSection === 'payments' ? 'Course and Interview Prep payments received through Cashfree' :
+    activeSection === 'referrals' ? 'Referrers, commissions, withdrawals and the promotion' :
     activeSection === 'export' ? 'Download student data as Excel' :
     activeSection === 'courses' ? 'Manage the course catalog' : 'Admin account & security';
   const go = (id) => { setActiveSection(id); setBuilderCourse(null); setMobileSidebarOpen(false); };
@@ -1453,6 +1457,8 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
             </div>
           </div>
         )}
+
+        {activeSection === 'referrals' && <AdminReferrals notify={showToast} />}
 
         {activeSection === 'payments' && (() => {
           const paid = payments.payments.filter(p => p.status === 'paid');

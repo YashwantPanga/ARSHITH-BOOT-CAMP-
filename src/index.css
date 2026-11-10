@@ -631,3 +631,18 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 .hm-sea  { background: radial-gradient(70% 45% at 80% 85%, rgba(95,165,150,.45), transparent 70%), radial-gradient(60% 40% at 15% 100%, rgba(95,165,150,.25), transparent 70%); }
 .hm-sage { background: radial-gradient(70% 45% at 80% 85%, rgba(188,209,198,.3), transparent 70%), radial-gradient(60% 40% at 15% 100%, rgba(188,209,198,.18), transparent 70%); }
 @media (prefers-reduced-motion: reduce) { .hero-tone { animation: none !important; transition: none; } }
+
+/* ---------- Refer & Earn ---------- */
+.ra-coin { animation: ra-coin 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes ra-coin { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-9px) rotate(-8deg); } }
+.ra-lid { animation: ra-lid 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center bottom; }
+@keyframes ra-lid { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-5px) rotate(-3deg); } }
+.ra-node { animation: ra-node 2.8s ease-in-out infinite; }
+@keyframes ra-node { 0%, 100% { opacity: .75; } 50% { opacity: 1; } }
+.ref-foil { background: linear-gradient(100deg, #F7E3B5 0%, #E5C88E 30%, #FFF4D6 48%, #C9A15A 66%, #F3D9A0 100%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: ref-foil 5s linear infinite; }
+@keyframes ref-foil { from { background-position: 0% 0; } to { background-position: -220% 0; } }
+.ref-promo-card { animation: ref-rise .45s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes ref-rise { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.ref-gift { animation: ref-gift 2.6s ease-in-out infinite; }
+@keyframes ref-gift { 0%, 100% { transform: rotate(0deg); } 10% { transform: rotate(-8deg); } 20% { transform: rotate(6deg); } 30% { transform: rotate(0deg); } }
+@media (prefers-reduced-motion: reduce) { .ra-coin, .ra-lid, .ra-node, .ref-foil, .ref-promo-card, .ref-gift { animation: none; } }

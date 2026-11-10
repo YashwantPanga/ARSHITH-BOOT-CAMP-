@@ -3,6 +3,8 @@ import app from './app.js';
 import { initDb, flushDb, storageMode } from './db.js';
 import { smtpConfigured, warmUpMailer } from './lib/mailer.js';
 import { applyAdminSettings } from './lib/adminSetup.js';
+import { getDb, saveDb } from './db.js';
+import { runJobs } from './lib/referrals.js';
 
 const PORT = process.env.PORT || 5000;
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -33,6 +35,17 @@ app.listen(PORT, async () => {
   console.log(` Email: ${smtpConfigured() ? `SMTP (${process.env.SMTP_USER})` : 'not configured - saved to server/data/outbox'}`);
   console.log(`=================================================`);
   warmUpMailer().then(ok => ok && console.log('[mail] Connected to SMTP server'));
+  // Refer & Earn: move commissions past their 7-day hold to the available balance and flag payouts
+  // past their deadline. Idempotent, so running it often (or after a restart) is safe.
+  const referralJob = () => {
+    try {
+      const db = getDb();
+      const { released, overdue } = runJobs(db);
+      if (released || overdue) { saveDb(db); console.log(`[referrals] released ${released}, overdue ${overdue}`); }
+    } catch (err) { console.error('[referrals] job failed:', err.message); }
+  };
+  referralJob();
+  setInterval(referralJob, 15 * 60 * 1000).unref();
 });
 
 // Make sure the last changes reach Supabase before the process exits.
