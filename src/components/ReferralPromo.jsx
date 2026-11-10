@@ -17,6 +17,10 @@ const dismissedWithin = (days) => { try { const t = Number(localStorage.getItem(
 const dismiss = () => { try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch { /* ignore */ } };
 // another dialog (payment, enrol, auth, the phone welcome card) is open
 const dialogOpen = () => !!document.querySelector('[role="dialog"][aria-modal="true"]');
+// the small Refer & Earn ring on phones can be hidden for the rest of the visit
+const RING_KEY = 'cl_refring_hidden';
+const ringHidden = () => { try { return sessionStorage.getItem(RING_KEY) === '1'; } catch { return false; } };
+const hideRing = () => { try { sessionStorage.setItem(RING_KEY, '1'); } catch { /* ignore */ } };
 
 let promoCache = null;
 const loadPromo = () => (promoCache ||= api.getReferralPromo().then(r => r.promo).catch(() => { promoCache = null; return null; }));
@@ -26,6 +30,7 @@ export default function ReferralPromo({ routeName, signedIn, enabled, navigate }
   const [optOut, setOptOut] = useState(false);
   const [show, setShow] = useState(false);
   const [phone, setPhone] = useState(isPhone);
+  const [ringOff, setRingOff] = useState(ringHidden);
 
   useEffect(() => { if (enabled) loadPromo().then(setPromo); }, [enabled]);
   useEffect(() => {
@@ -61,18 +66,29 @@ export default function ReferralPromo({ routeName, signedIn, enabled, navigate }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show, phone]);
 
-  if (!show || !promo) return null;
+  // phones: a small floating ring on browsing pages whenever the card is not showing
+  const ringOk = enabled && promo?.enabled && promo.mobileCard && !optOut && !!location && (signedIn ? promo.loggedIn : promo.guests) && !ringOff;
+  const ring = ringOk && !show ? (
+    <ReferRing
+      pct={promo.commissionPct}
+      onOpen={() => navigate(paths.refer())}
+      onHide={() => { hideRing(); setRingOff(true); }}
+    />
+  ) : null;
+  if (!show || !promo) return ring;
   const close = () => { dismiss(); setShow(false); };
   const go = () => { dismiss(); setShow(false); navigate(paths.refer()); };
 
   if (phone) {
     return createPortal(
       <div className="ref-promo-card fixed left-3 right-3 bottom-[84px] z-[60] rounded-[22px] overflow-hidden text-ivory shadow-[0_24px_50px_-18px_rgba(6,35,29,.85)]" role="complementary" aria-label="Refer and earn">
-        <div className="relative bg-[#0C2D26] p-4 pr-11">
-          <div className="absolute inset-0 bg-[radial-gradient(70%_100%_at_100%_0%,rgba(229,200,142,.22),transparent_70%)]" aria-hidden="true" />
+        <div className="relative bg-[linear-gradient(150deg,#145A43_0%,#0C2D26_55%,#081F19_100%)] p-4 pr-11">
+          <div className="absolute inset-0 bg-[radial-gradient(70%_100%_at_100%_0%,rgba(229,200,142,.24),transparent_70%)]" aria-hidden="true" />
+          <span className="promo-gloss" aria-hidden="true" />
+          <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/[.09] to-transparent pointer-events-none" aria-hidden="true" />
           <button onClick={close} className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center" aria-label="Dismiss"><X className="w-4 h-4" /></button>
           <div className="relative flex items-center gap-3">
-            <span className="ref-gift w-12 h-12 shrink-0 rounded-2xl bg-gradient-to-b from-[#F3D9A0] to-[#C9A15A] text-[#2A1D08] flex items-center justify-center"><Gift className="w-6 h-6" /></span>
+            <MiniPrinter />
             <span className="min-w-0">
               <span className="block font-display text-[16.5px] font-bold leading-tight">{promo.mobileHeadline}</span>
               <span className="block mt-0.5 text-[12.5px] leading-snug text-ivory/70">{promo.mobileDescription}</span>
@@ -153,5 +169,69 @@ export function ReferCard({ onClick }) {
       </span>
       <ArrowRight className="relative w-5 h-5 text-[#E5C88E] shrink-0" />
     </button>
+  );
+}
+
+/** A tiny pass machine: a green pass pops out of the slot and tilts, on a loop. */
+function MiniPrinter() {
+  return (
+    <span className="relative w-[54px] h-[58px] shrink-0" aria-hidden="true">
+      <span className="mini-pass absolute left-[11px] bottom-[22px] w-[32px] h-[38px] rounded-[6px] bg-[linear-gradient(165deg,#2BB673,#13684C)] border border-[#E5C88E]/60 flex flex-col items-center justify-center gap-[3px] shadow-[0_6px_12px_-4px_rgba(0,0,0,.6)]">
+        <span className="w-[12px] h-[12px] rounded-[3px] bg-[#E5C88E]" />
+        <span className="w-[18px] h-[2.5px] rounded bg-white/70" />
+        <span className="text-[6.5px] font-black text-[#FFF1C9] leading-none">10% OFF</span>
+      </span>
+      <span className="absolute left-0 right-0 bottom-0 h-[28px] rounded-[10px] bg-[linear-gradient(180deg,#FFFDF7,#E6DEC9)] shadow-[0_8px_14px_-6px_rgba(0,0,0,.7),inset_0_-3px_0_rgba(0,0,0,.08)]">
+        <span className="absolute left-[6px] right-[6px] top-[5px] h-[4px] rounded-full bg-[#0C2D26]" />
+        <span className="mini-led absolute left-[7px] bottom-[6px] w-[5px] h-[5px] rounded-full bg-[#2BB673]" />
+        <span className="absolute right-[7px] bottom-[5px] w-[12px] h-[12px] rounded-full bg-[radial-gradient(circle_at_35%_30%,#FFF1C9,#C9A15A)]" />
+      </span>
+    </span>
+  );
+}
+
+/** Phones: a scalloped ring on the right edge with rotating "Refer & Earn" text. */
+export function ReferRing({ pct = 10, onOpen, onHide }) {
+  // the ring alternates two messages
+  const [alt, setAlt] = useState(false);
+  useEffect(() => { const t = setInterval(() => setAlt(a => !a), 3200); return () => clearInterval(t); }, []);
+  const label = alt ? `EARN ${pct}% \u00B7 EARN ${pct}% \u00B7 ` : 'REFER & EARN \u00B7 REFER & EARN \u00B7 ';
+  const scallop = Array.from({ length: 16 }, (_, i) => {
+    const a = (i / 16) * Math.PI * 2;
+    return <circle key={i} cx={50 + Math.cos(a) * 43} cy={50 + Math.sin(a) * 43} r="7.6" />;
+  });
+  return createPortal(
+    <div className="ref-ring md:hidden fixed right-2 bottom-[150px] z-[55] w-[88px] h-[88px]">
+      <button onClick={onOpen} className="absolute inset-0 rounded-full" aria-label={`Refer and earn ${pct}%`}>
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_10px_14px_rgba(6,35,29,.55)]">
+          <defs>
+            <linearGradient id="rr-fill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#1E8A63" /><stop offset="1" stopColor="#0A3528" /></linearGradient>
+            <linearGradient id="rr-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#FFF1C9" /><stop offset=".5" stopColor="#E5C88E" /><stop offset="1" stopColor="#B88A3E" /></linearGradient>
+            <path id="rr-path" d="M50,50 m-33,0 a33,33 0 1,1 66,0 a33,33 0 1,1 -66,0" />
+            <clipPath id="rr-clip"><circle cx="50" cy="50" r="44" /></clipPath>
+          </defs>
+          <g fill="url(#rr-fill)">{scallop}<circle cx="50" cy="50" r="44" /></g>
+          <circle cx="50" cy="50" r="40.5" fill="none" stroke="#E5C88E" strokeOpacity=".55" strokeWidth=".8" strokeDasharray="1.5 2.2" />
+          <g className="rr-spin">
+            <text fontSize="9.2" fontWeight="800" letterSpacing="1.2" fill="url(#rr-gold)" fontFamily="system-ui, sans-serif">
+              <textPath href="#rr-path" key={label} className="rr-text">{label}</textPath>
+            </text>
+          </g>
+          {/* the pass in the middle */}
+          <g className="rr-pass">
+            <rect x="37" y="32" width="26" height="34" rx="4" fill="#FFFDF7" transform="rotate(-10 50 49)" />
+            <rect x="41" y="37" width="18" height="11" rx="2" fill="#1E8A63" transform="rotate(-10 50 49)" />
+            <rect x="41" y="51" width="13" height="2.4" rx="1.2" fill="#0C2D26" opacity=".35" transform="rotate(-10 50 49)" />
+            <circle cx="55" cy="59" r="3.6" fill="url(#rr-gold)" transform="rotate(-10 50 49)" />
+          </g>
+          {/* glossy shine */}
+          <g clipPath="url(#rr-clip)"><rect className="rr-shine" x="-40" y="-10" width="22" height="120" fill="#fff" opacity=".22" transform="rotate(25 50 50)" /></g>
+        </svg>
+      </button>
+      <button onClick={onHide} className="absolute -top-1 -left-1 w-6 h-6 rounded-full bg-white text-charcoal/60 shadow flex items-center justify-center" aria-label="Hide Refer and earn">
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </div>,
+    document.body
   );
 }

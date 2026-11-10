@@ -164,10 +164,21 @@ export function recordClick(db, code, visitorId, now = Date.now()) {
   if (!prof || prof.suspended || !s.enabled) return { valid: false };
   const vid = String(visitorId || '').slice(0, 64) || 'anon';
   if (!db.referralClicks) db.referralClicks = [];
-  const recent = db.referralClicks.some(c => c.code === prof.code && c.visitorId === vid && now - Date.parse(c.at) < 12 * 60 * 60 * 1000);
+  // Counts live on the profiles; the click list only keeps the last 12 hours (for de-duplication),
+  // so the stored data stays small. Older data without counters is counted once from the list.
+  if (db.referralClickTotal === undefined) {
+    db.referralClickTotal = db.referralClicks.length;
+    for (const p of Object.values(db.referralProfiles || {})) p.clicks = db.referralClicks.filter(c => c.code === p.code).length;
+  }
+  const WINDOW = 12 * 60 * 60 * 1000;
+  db.referralClicks = db.referralClicks.filter(c => now - Date.parse(c.at) < WINDOW);
+  const recent = db.referralClicks.some(c => c.code === prof.code && c.visitorId === vid);
   if (!recent) {
-    db.referralClicks.push({ id: `ck_${crypto.randomBytes(6).toString('hex')}`, code: prof.code, visitorId: vid, at: nowIso(now) });
-    if (db.referralClicks.length > 100000) db.referralClicks.splice(0, db.referralClicks.length - 100000);
+    db.referralClicks.push({ code: prof.code, visitorId: vid, at: nowIso(now) });
+    if (db.referralClicks.length > 50000) db.referralClicks.splice(0, db.referralClicks.length - 50000);
+    const stored = db.referralProfiles[prof.email];
+    stored.clicks = (stored.clicks || 0) + 1;
+    db.referralClickTotal += 1;
   }
   const first = (db.learners?.[prof.email]?.name || '').split(' ')[0] || 'A friend';
   return { valid: true, code: prof.code, referrerName: first, counted: !recent };
@@ -524,7 +535,7 @@ const maskName = (name, email) => {
 export function referrerStats(db, email) {
   email = norm(email);
   const prof = db.referralProfiles?.[email];
-  const clicks = prof ? (db.referralClicks || []).filter(c => c.code === prof.code).length : 0;
+  const clicks = !prof ? 0 : prof.clicks ?? (db.referralClicks || []).filter(c => c.code === prof.code).length;
   const referees = Object.entries(db.referralAttributions || {}).filter(([, a]) => a.referrerEmail === email);
   const rewards = (db.referralRewards || []).filter(r => r.referrerEmail === email);
   const buyers = new Set(rewards.map(r => r.refereeEmail));
@@ -586,7 +597,7 @@ export function adminOverview(db) {
   const wds = db.withdrawalRequests || [];
   return {
     referrers: Object.keys(db.referralProfiles || {}).length,
-    clicks: (db.referralClicks || []).length,
+    clicks: db.referralClickTotal ?? (db.referralClicks || []).length,
     registrations: Object.keys(db.referralAttributions || {}).length,
     purchases: rewards.length,
     totalCommissionPaise: sum(rewards.filter(r => ['pending', 'available'].includes(r.status))),

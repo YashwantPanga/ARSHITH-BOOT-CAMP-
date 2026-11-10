@@ -706,3 +706,28 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
   100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy) + 40px)) rotate(var(--r)) scale(1); }
 }
 @media (prefers-reduced-motion: reduce) { .offer-open, .offer-shake, .offer-pop, .offer-price, .offer-saved, .offer-strike::after { animation: none; } .offer-burst { display: none; } }
+
+/* ---------- Refer & Earn: phone card gloss, mini printer, side ring ---------- */
+.promo-gloss { position: absolute; top: -20%; bottom: -20%; left: -40%; width: 32%; pointer-events: none; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .16) 45%, rgba(255, 255, 255, .28) 50%, rgba(255, 255, 255, .16) 55%, transparent); transform: skewX(-18deg); animation: promo-gloss 3.6s ease-in-out .6s infinite; }
+@keyframes promo-gloss { 0% { left: -40%; } 45%, 100% { left: 130%; } }
+.mini-pass { transform-origin: bottom center; animation: mini-pass 3s cubic-bezier(.3, 1.3, .4, 1) infinite; }
+@keyframes mini-pass {
+  0%, 8% { transform: translateY(26px) scale(.9); opacity: 0; }
+  14% { opacity: 1; }
+  38% { transform: translateY(0) rotate(0deg); }
+  50%, 86% { transform: translateY(-4px) rotate(-9deg); opacity: 1; }
+  100% { transform: translateY(-4px) rotate(-9deg); opacity: 0; }
+}
+.mini-led { animation: mini-led 3s steps(1) infinite; }
+@keyframes mini-led { 0%, 40% { background: #E5C88E; box-shadow: 0 0 6px #E5C88E; } 41%, 100% { background: #2BB673; box-shadow: 0 0 6px #2BB673; } }
+.ref-ring { animation: ref-ring-in .7s cubic-bezier(.2, 1.5, .4, 1) .4s both; }
+@keyframes ref-ring-in { from { transform: translateX(120px) rotate(160deg) scale(.5); opacity: 0; } to { transform: none; opacity: 1; } }
+.rr-spin { transform-origin: 50px 50px; animation: rr-spin 12s linear infinite; }
+@keyframes rr-spin { to { transform: rotate(360deg); } }
+.rr-text { animation: rr-text .45s ease both; }
+@keyframes rr-text { from { opacity: 0; } to { opacity: 1; } }
+.rr-pass { transform-origin: 50px 50px; animation: rr-pass 3.2s ease-in-out infinite; }
+@keyframes rr-pass { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-2.5px) rotate(4deg); } }
+.rr-shine { animation: rr-shine 3.4s ease-in-out 1s infinite; }
+@keyframes rr-shine { 0% { transform: rotate(25deg) translateX(0); } 40%, 100% { transform: rotate(25deg) translateX(150px); } }
+@media (prefers-reduced-motion: reduce) { .promo-gloss, .mini-pass, .mini-led, .ref-ring, .rr-spin, .rr-text, .rr-pass, .rr-shine { animation: none; } }
