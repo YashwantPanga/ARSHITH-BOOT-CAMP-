@@ -632,19 +632,6 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 .hm-sage { background: radial-gradient(70% 45% at 80% 85%, rgba(188,209,198,.3), transparent 70%), radial-gradient(60% 40% at 15% 100%, rgba(188,209,198,.18), transparent 70%); }
 @media (prefers-reduced-motion: reduce) { .hero-tone { animation: none !important; transition: none; } }
 
-/* ---------- Home: arched course reel (CourseReel.jsx) ---------- */
-.course-reel .reel-band { cursor: grab; }
-.course-reel .reel-band.is-grabbing { cursor: grabbing; }
-.course-reel .reel-card { will-change: transform; backface-visibility: hidden; }
-.course-reel .reel-video { opacity: 0; transition: opacity .6s ease; pointer-events: none; }
-.course-reel .reel-video.is-ready { opacity: 1; }
-.course-reel .reel-in { animation: reelIn .7s var(--d, 0s) cubic-bezier(.2,1,.3,1) both; }
-@keyframes reelIn { from { opacity: 0; transform: translateY(18px); filter: blur(8px); } to { opacity: 1; transform: none; filter: none; } }
-/* live scenes loop every 6 s */
-@media (prefers-reduced-motion: reduce) {
-  .course-reel .reel-in { animation: none !important; clip-path: none; opacity: 1; }
-}
-
 /* ---------- Course details: dark scroll story (CourseDetailsPage.jsx) ---------- */
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }

@@ -4,7 +4,7 @@ import HeroSection from './components/HeroSection';
 import BubbleBackground from './components/BubbleBackground';
 import PopularCourses from './components/PopularCourses';
 import WhyLearnWithUs from './components/WhyLearnWithUs';
-import CourseReel from './components/CourseReel';
+import CtaSection from './components/CtaSection';
 import HomeButton from './components/HomeButton';
 import Footer from './components/Footer';
 import MobileBottomNav, { showsBottomBar } from './components/MobileBottomNav';
@@ -431,7 +431,7 @@ function AppShell() {
           />
           <WhatBringsYou onCourses={() => goCourses()} onCategories={() => navigate(paths.categories())} />
           <WhyLearnWithUs />
-          <CourseReel onExploreClick={() => goCourses()} />
+          <CtaSection onExploreClick={() => goCourses()} />
         </div>
       );
       break;
