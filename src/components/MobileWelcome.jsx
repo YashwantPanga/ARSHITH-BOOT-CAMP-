@@ -3,9 +3,11 @@ import { Rocket, Shuffle, TrendingUp, Binoculars, ChevronRight } from 'lucide-re
 import CyclingWord from './CyclingWord';
 
 /** Phones: hero band in the reference style - picture in a curved shape, centred heading, one wide button. */
-export function MobileHero({ onRegisterClick, onExploreClick, onVerifyClick }) {
+export function MobileHero({ word, onRegisterClick, onExploreClick, onVerifyClick }) {
   return (
-    <section className="lg:hidden relative overflow-hidden bg-forest text-ivory px-5 pt-7 pb-9 text-center">
+    <section className="lg:hidden relative isolate overflow-hidden bg-forest text-ivory px-5 pt-7 pb-9 text-center">
+      {/* the forest band glows in the headline word's colour */}
+      {['hm-leaf', 'hm-gold', 'hm-sea', 'hm-sage'].map((c, k) => <span key={c} className={`hero-tone ${c} ${k === word ? 'is-on' : ''}`} aria-hidden="true" />)}
       <div className="relative mx-auto h-[250px] w-full max-w-[330px]" aria-hidden="true">
         {/* two curved bands behind the student */}
         <span className="absolute left-[-6%] top-[26%] h-[150px] w-[112%] rounded-[90px] -rotate-[18deg] bg-gradient-to-r from-[#BCD1C6] to-[#5F8574] opacity-90" />
@@ -14,7 +16,7 @@ export function MobileHero({ onRegisterClick, onExploreClick, onVerifyClick }) {
           className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[250px] w-auto max-w-none object-contain [mask-image:linear-gradient(to_bottom,#000_88%,transparent)]" />
       </div>
       <p className="mt-6 font-display text-[12.5px] font-semibold uppercase tracking-[0.24em] text-[#BCD1C6]">CodeLekho</p>
-      <h1 className="mt-2 text-[31px] leading-[1.12] font-bold text-ivory"><CyclingWord className="justify-center" /><span className="block">with <span className="text-[#BCD1C6]">job-ready online courses</span></span></h1>
+      <h1 className="mt-2 text-[31px] leading-[1.12] font-bold text-ivory"><CyclingWord className="justify-center" index={word} /><span className="block">with <span className="text-[#BCD1C6]">job-ready online courses</span></span></h1>
       <p className="mt-3 text-[15px] leading-relaxed text-ivory/85">
         Mentor-written programs in Python, SQL, Web Development and AI — with deep-dive modules, live code practice,
         quizzes after every module, a proctored final and a QR-verified certificate.

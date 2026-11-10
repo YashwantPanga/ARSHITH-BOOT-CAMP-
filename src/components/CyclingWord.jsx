@@ -7,7 +7,7 @@ import React, { useEffect, useId, useState } from 'react';
  */
 const SLOT_MS = 1750;
 
-const WORDS = [
+export const WORDS = [
   { word: 'Learn', tint: '#3FB874' },
   { word: 'Code', tint: '#E3B21F' },
   { word: 'Practise', tint: '#F2772F' },
@@ -101,7 +101,7 @@ function IconHired({ tint, uid }) {
 
 const ICONS = [IconLearn, IconCode, IconPractise, IconHired];
 
-function useWordClock(count, reduced) {
+export function useWordClock(count = WORDS.length, reduced = prefersReduced()) {
   const [i, setI] = useState(reduced ? 1 : 0);
   useEffect(() => {
     if (reduced) return undefined;
@@ -113,11 +113,13 @@ function useWordClock(count, reduced) {
   return i;
 }
 
-const prefersReduced = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+export const prefersReduced = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-export default function CyclingWord({ className = '' }) {
+/** index: the word to show, from a parent's useWordClock() so the background can change with it. */
+export default function CyclingWord({ className = '', index }) {
   const reduced = prefersReduced();
-  const i = useWordClock(WORDS.length, reduced);
+  const own = useWordClock(WORDS.length, reduced || index !== undefined);
+  const i = index ?? own;
   const { word, tint } = WORDS[i];
   const Icon = ICONS[i];
   const uid = useId().replace(/:/g, '');

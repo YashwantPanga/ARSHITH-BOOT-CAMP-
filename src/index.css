@@ -613,3 +613,21 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 .cw-cursor { animation: stkBlink .9s steps(1) infinite; }
 .hero-strip svg path { filter: drop-shadow(0 -6px 10px rgba(1,58,43,.05)); }
 @media (prefers-reduced-motion: reduce) { .cw-icon-float, .cw-cursor { animation: none !important; } }
+
+/* ---------- Home hero: background colour follows the headline word ---------- */
+.hero-tone { position: absolute; inset: -6%; opacity: 0; transition: opacity .77s ease-in-out; animation: heroDrift 18s ease-in-out infinite alternate; pointer-events: none; }
+.hero-tone.is-on { opacity: 1; }
+@keyframes heroDrift { from { transform: scale(1.08) translate(-2.2%, -1.6%); } to { transform: scale(1.08) translate(2.2%, 1.6%); } }
+/* desktop: light panels in the site palette */
+.hb-leaf { background: radial-gradient(42% 52% at 86% 76%, rgba(76,161,83,.42), transparent 70%), radial-gradient(40% 40% at 32% 105%, rgba(76,161,83,.26), transparent 70%), linear-gradient(180deg, #F6F7F1, #E6F0E6); }
+.hb-gold { background: radial-gradient(42% 52% at 86% 76%, rgba(229,200,142,.75), transparent 70%), radial-gradient(40% 40% at 32% 105%, rgba(229,200,142,.45), transparent 70%), linear-gradient(180deg, #F9F6EE, #F4ECD8); }
+.hb-sea  { background: radial-gradient(42% 52% at 86% 76%, rgba(95,165,150,.44), transparent 70%), radial-gradient(40% 40% at 32% 105%, rgba(95,165,150,.28), transparent 70%), linear-gradient(180deg, #F3F6F3, #E1EEEA); }
+.hb-sage { background: radial-gradient(42% 52% at 86% 76%, rgba(66,101,87,.32), transparent 70%), radial-gradient(40% 40% at 32% 105%, rgba(188,209,198,.6), transparent 70%), linear-gradient(180deg, #F6F5EF, #E9EEE6); }
+.hero-grain { position: absolute; inset: 0; opacity: .12; mix-blend-mode: multiply; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E"); }
+/* phones: the forest band glows in the word's colour */
+.hm-leaf, .hm-gold, .hm-sea, .hm-sage { z-index: -1; } /* behind the text; the section is isolated */
+.hm-leaf { background: radial-gradient(70% 45% at 80% 85%, rgba(76,161,83,.45), transparent 70%), radial-gradient(60% 40% at 15% 100%, rgba(76,161,83,.25), transparent 70%); }
+.hm-gold { background: radial-gradient(70% 45% at 80% 85%, rgba(229,200,142,.32), transparent 70%), radial-gradient(60% 40% at 15% 100%, rgba(229,200,142,.18), transparent 70%); }
+.hm-sea  { background: radial-gradient(70% 45% at 80% 85%, rgba(95,165,150,.45), transparent 70%), radial-gradient(60% 40% at 15% 100%, rgba(95,165,150,.25), transparent 70%); }
+.hm-sage { background: radial-gradient(70% 45% at 80% 85%, rgba(188,209,198,.3), transparent 70%), radial-gradient(60% 40% at 15% 100%, rgba(188,209,198,.18), transparent 70%); }
+@media (prefers-reduced-motion: reduce) { .hero-tone { animation: none !important; transition: none; } }

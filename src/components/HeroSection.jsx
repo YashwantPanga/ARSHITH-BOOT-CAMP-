@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, QrCode, BookOpen, Award, Layers, Timer, Search } from 'lucide-react';
 import { MobileHero } from './MobileWelcome';
-import CyclingWord from './CyclingWord';
+import CyclingWord, { WORDS, useWordClock } from './CyclingWord';
 
 /**
  * Landing hero (eduleb layout): headline, course search and actions on the left; the student in
@@ -9,6 +9,8 @@ import CyclingWord from './CyclingWord';
  */
 export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyClick, onSearch, courses = [] }) {
   const [query, setQuery] = useState('');
+  // one clock for the headline word and the background colour behind it
+  const word = useWordClock(WORDS.length);
   const trackCount = courses.length || 4;
   const moduleCount = courses.reduce((n, c) => n + (c.modules?.length || 0), 0) || 60;
 
@@ -27,10 +29,15 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
 
   return (
     <section className="relative overflow-hidden bg-cream">
+      {/* background colour follows the headline word: leaf, gold, sea-green, sage - all from the site palette */}
+      <div className="absolute inset-0 hidden lg:block pointer-events-none" aria-hidden="true">
+        {['hb-leaf', 'hb-gold', 'hb-sea', 'hb-sage'].map((c, k) => <span key={c} className={`hero-tone ${c} ${k === word ? 'is-on' : ''}`} />)}
+        <span className="hero-grain" />
+      </div>
       <div className="absolute inset-0 edu-shape pointer-events-none hidden lg:block" aria-hidden="true" />
 
       {/* below lg the hero is a full-width forest band */}
-      <MobileHero onRegisterClick={onRegisterClick} onExploreClick={onExploreClick} onVerifyClick={onVerifyClick} />
+      <MobileHero word={word} onRegisterClick={onRegisterClick} onExploreClick={onExploreClick} onVerifyClick={onVerifyClick} />
       <div className="relative hidden lg:block">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8">
         <nav className="text-sm text-ivory/60 lg:text-charcoal/60" aria-label="Breadcrumb">Home <span className="mx-1.5 text-ivory/30 lg:text-charcoal/30">/</span> <a href="https://arshithgroup.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-ivory lg:text-sage hover:underline">arshithgroup.com</a></nav>
@@ -42,7 +49,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
           <p className="font-display text-[13px] font-semibold uppercase tracking-[0.24em] text-[#BCD1C6] lg:text-leaf-dark">CodeLekho</p>
           <h1 className="mt-3 lg:mt-4 text-[36px] sm:text-[52px] lg:text-[62px] leading-[1.1] text-ivory lg:text-evergreen">
             {/* first word cycles: Learn / Code / Practise / Get hired, each with its own glossy icon */}
-            <CyclingWord />
+            <CyclingWord index={word} />
             <span className="block">with <span className="text-[#BCD1C6] lg:text-sage">job-ready online courses</span></span>
           </h1>
           <p className="mt-4 lg:mt-5 text-[15.5px] sm:text-[17px] text-ivory/80 lg:text-charcoal/70 leading-relaxed max-w-lg">
