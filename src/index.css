@@ -597,3 +597,19 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 .site-bubbles { position: fixed; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: multiply; opacity: .32; }
 @media (max-width: 760px) { .site-bubbles { opacity: .26; } }
 @media (prefers-reduced-motion: reduce) { .bubble-bg .bubble { animation: none !important; } }
+
+/* ---------- Home headline: cycling first word (CyclingWord.jsx) ---------- */
+.cw-slot { display: flex; align-items: center; gap: .16em; min-height: 1.12em; }
+.cw-icon { display: inline-block; flex: none; width: 1.02em; height: 1.02em; isolation: isolate; }
+.cw-icon svg { width: 100%; height: 100%; overflow: visible; }
+.cw-icon-float { display: block; width: 100%; height: 100%; animation: cwFloat 3.2s ease-in-out infinite; }
+@keyframes cwFloat { 0%, 100% { transform: translateY(-.028em) rotate(-3deg); } 50% { transform: translateY(.028em) rotate(3deg); } }
+.cw-word { display: inline-block; white-space: nowrap; }
+.cw-word.is-anim { animation: cwEnter .5s cubic-bezier(.215,.61,.355,1) both, cwLeave .42s cubic-bezier(.55,.055,.675,.19) 1.33s forwards; }
+.cw-icon.is-anim { animation: cwIconIn .5s .06s cubic-bezier(.2,1.3,.4,1) both, cwLeave .42s cubic-bezier(.55,.055,.675,.19) 1.33s forwards; }
+@keyframes cwEnter { from { opacity: 0; transform: translateY(.32em) scale(.96); filter: blur(10px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes cwIconIn { from { opacity: 0; transform: scale(.7) rotate(-14deg); } to { opacity: 1; transform: none; } }
+@keyframes cwLeave { to { opacity: 0; transform: translateY(-.16em); filter: blur(8px); } }
+.cw-cursor { animation: stkBlink .9s steps(1) infinite; }
+.hero-strip svg path { filter: drop-shadow(0 -6px 10px rgba(1,58,43,.05)); }
+@media (prefers-reduced-motion: reduce) { .cw-icon-float, .cw-cursor { animation: none !important; } }

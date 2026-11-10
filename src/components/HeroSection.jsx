@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, QrCode, BookOpen, Award, Layers, Timer, Search } from 'lucide-react';
 import { MobileHero } from './MobileWelcome';
-import { RevealText } from './ui';
+import CyclingWord from './CyclingWord';
 
 /**
  * Landing hero (eduleb layout): headline, course search and actions on the left; the student in
@@ -40,9 +40,11 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
         {/* Copy */}
         <div className="relative z-10 pt-6 lg:pt-4 lg:pb-16 animate-fade-up">
           <p className="font-display text-[13px] font-semibold uppercase tracking-[0.24em] text-[#BCD1C6] lg:text-leaf-dark">CodeLekho</p>
-          <RevealText as="h1" className="mt-3 lg:mt-4 text-[36px] sm:text-[52px] lg:text-[62px] leading-[1.1] text-ivory lg:text-evergreen">
-            Achieve your career goals with <span className="text-[#BCD1C6] lg:text-sage">job-ready online courses</span>
-          </RevealText>
+          <h1 className="mt-3 lg:mt-4 text-[36px] sm:text-[52px] lg:text-[62px] leading-[1.1] text-ivory lg:text-evergreen">
+            {/* first word cycles: Learn / Code / Practise / Get hired, each with its own glossy icon */}
+            <CyclingWord />
+            <span className="block">with <span className="text-[#BCD1C6] lg:text-sage">job-ready online courses</span></span>
+          </h1>
           <p className="mt-4 lg:mt-5 text-[15.5px] sm:text-[17px] text-ivory/80 lg:text-charcoal/70 leading-relaxed max-w-lg">
             Mentor-written programs in Python, SQL, Web Development and AI — with deep-dive modules, live code practice,
             quizzes after every module, a proctored final and a QR-verified certificate.
@@ -91,8 +93,14 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
       </div>
       </div>
 
-      {/* Our features as eduleb counter cards */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 lg:-mt-6 pb-14">
+      {/* Our features as counter cards, on an ivory strip whose top edge rises in a curved notch */}
+      <div className="hero-strip relative mt-2 lg:-mt-10">
+        <svg className="block w-full h-[40px] sm:h-[62px]" viewBox="0 0 1440 62" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 62 H1062 C1092 62 1098 54 1116 34 C1138 9 1146 1 1178 1 H1440 V62 Z" fill="#FBF8F1" stroke="rgba(1,58,43,.08)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+        </svg>
+        <p className="hidden md:block absolute right-[5%] top-[16px] text-[13.5px] font-medium text-charcoal/45">↓ Scroll to explore courses</p>
+      <div className="relative bg-[#FBF8F1]">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-14">
         <h2 className="sr-only">Our Features</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
           {features.map(({ icon: Icon, value, title, text, tone }) => (
@@ -106,6 +114,8 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
             </div>
           ))}
         </div>
+      </div>
+      </div>
       </div>
     </section>
   );
