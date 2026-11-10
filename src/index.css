@@ -635,7 +635,7 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 /* ---------- Home: arched course reel (CourseReel.jsx) ---------- */
 .course-reel .reel-band { cursor: grab; }
 .course-reel .reel-band.is-grabbing { cursor: grabbing; }
-.course-reel .reel-card { will-change: transform, clip-path; }
+.course-reel .reel-card { will-change: transform; backface-visibility: hidden; }
 .course-reel .reel-video { opacity: 0; transition: opacity .6s ease; pointer-events: none; }
 .course-reel .reel-video.is-ready { opacity: 1; }
 .course-reel .reel-in { animation: reelIn .7s var(--d, 0s) cubic-bezier(.2,1,.3,1) both; }

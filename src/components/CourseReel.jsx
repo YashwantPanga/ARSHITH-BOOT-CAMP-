@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Play } from 'lucide-react';
 
 /**
- * Home: "Start today" section with an arched, endlessly drifting row of tall cards (like the inside of a
- * cylinder: centre cards upright, edge cards taller and leaning). The row scrolls right to left, can be
+ * Home: "Start today" section with an arched, endlessly drifting row of tall cards on the inside of a
+ * cylinder (CSS 3D: centre cards upright, side cards closer, taller and leaning). The row scrolls right to left, can be
  * dragged or flung, and coasts back into its slow drift. Every card plays a free Pexels stock clip
  * (coding, students), loaded only once the section comes near the screen.
  */
@@ -25,21 +25,22 @@ const CARDS = [
 
 /* ---------- the arched row ---------- */
 
-const PITCH = 196;           // units between card centres
+// The cards sit on the inside of a cylinder seen from a little behind its axis, so the centre cards
+// look upright and the side cards come closer (taller) and lean. Only CSS 3D transforms change per
+// frame, which the graphics card handles without repainting the videos.
+const PITCH = 196;           // units between card centres (along the cylinder)
 const SPEED = 50;            // units per second, right to left
+const RADIUS = 900;          // cylinder radius, units
+const PERSPECTIVE = 1200;    // units
+const CARD_W = 170;
+const CARD_H = 280;
 const N = CARDS.length;
 const TOTAL = N * PITCH;
-
-/** Rounded quad: left edge from yL0 to yL1, right edge from yR0 to yR1, in a box `w` wide. */
-function quadPath(w, yL0, yL1, yR0, yR1, r) {
-  const k = r / w;
-  return `path('M 0 ${yL0 + r} Q 0 ${yL0} ${r} ${yL0 + (yR0 - yL0) * k} L ${w - r} ${yR0 - (yR0 - yL0) * k} Q ${w} ${yR0} ${w} ${yR0 + r} `
-    + `L ${w} ${yR1 - r} Q ${w} ${yR1} ${w - r} ${yR1 - (yR1 - yL1) * k} L ${r} ${yL1 + (yR1 - yL1) * k} Q 0 ${yL1} 0 ${yL1 - r} Z')`;
-}
 
 export default function CourseReel({ onExploreClick }) {
   const bandRef = useRef(null);
   const cardRefs = useRef([]);
+  const videoRefs = useRef([]);
   const [near, setNear] = useState(false); // load the videos only when the section is close to the screen
 
   useEffect(() => {
@@ -57,40 +58,53 @@ export default function CourseReel({ onExploreClick }) {
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     let offset = 0;            // units; grows leftwards
     let vel = 0;               // units per second from a fling
-    let drag = null;           // { x, offset, t, lastX, lastT }
+    let drag = null;
     let last = performance.now();
     let raf = 0;
+    let u = 1;
+    let onScreen = false;      // is the band itself in the viewport?
+    const shown = new Array(N).fill(null);
+
+    // sizes change only on resize; per frame we touch transform alone
+    const size = () => {
+      const W = band.clientWidth;
+      u = W <= 820 ? W / 640 : W / 1440;
+      band.style.perspective = `${PERSPECTIVE * u}px`;
+      cardRefs.current.forEach(el => {
+        if (!el) return;
+        el.style.width = `${CARD_W * u}px`;
+        el.style.height = `${CARD_H * u}px`;
+        el.style.marginLeft = `${(-CARD_W / 2) * u}px`;
+        el.style.marginTop = `${(-CARD_H / 2) * u}px`;
+        el.style.borderRadius = `${15 * u}px`;
+      });
+    };
+
+    const play = (i, on) => {
+      const v = videoRefs.current[i];
+      if (!v) return;
+      if (on && onScreen) { if (v.paused) v.play().catch(() => {}); } else if (!v.paused) v.pause();
+    };
 
     const layout = () => {
-      const W = band.clientWidth;
-      const phone = W <= 820;
-      const u = phone ? W / 640 : W / 1440;
-      const H = band.clientHeight;
-      const centreY = H / 2;
+      const halfW = band.clientWidth / 2;
       for (let i = 0; i < N; i++) {
         const el = cardRefs.current[i];
         if (!el) continue;
         let t = ((i * PITCH - offset) % TOTAL + TOTAL) % TOTAL;
         if (t > TOTAL / 2) t -= TOTAL;
-        const x = t * (1 + 0.083 * (t / 706) ** 2);           // pushed outward towards the edges
-        const d = Math.abs(x) / 706;
-        const w = 170 + 48 * d * d;
-        const xl = x - w / 2; const xr = x + w / 2;
-        const hL = 280 + 92 * (Math.abs(xl) / 706) ** 2.6;
-        const hR = 280 + 92 * (Math.abs(xr) / 706) ** 2.6;
-        const cy = centreY / u - 12 * d * d;
-        const top = cy - Math.max(hL, hR) / 2;
-        const pxW = w * u;
-        const yL0 = (cy - hL / 2 - top) * u; const yL1 = (cy + hL / 2 - top) * u;
-        const yR0 = (cy - hR / 2 - top) * u; const yR1 = (cy + hR / 2 - top) * u;
-        const boxH = Math.max(hL, hR) * u;
-        const left = W / 2 + xl * u;
-        if (left > W + 40 || left + pxW < -40) { el.style.visibility = 'hidden'; continue; }
-        el.style.visibility = 'visible';
-        el.style.transform = `translate3d(${left}px, ${top * u}px, 0)`;
-        el.style.width = `${pxW}px`;
-        el.style.height = `${boxH}px`;
-        el.style.clipPath = quadPath(pxW, yL0, yL1, yR0, yR1, 15 * u);
+        const a = t / RADIUS;                                  // angle around the cylinder
+        const x = RADIUS * Math.sin(a);
+        const z = RADIUS * (1 - Math.cos(a));                  // side cards come towards the viewer
+        const scale = PERSPECTIVE / (PERSPECTIVE - z);
+        const visible = Math.abs(a) < 1.3 && Math.abs(x * scale * u) - CARD_W * scale * u < halfW + 20;
+        if (visible !== shown[i]) {
+          shown[i] = visible;
+          el.style.visibility = visible ? 'visible' : 'hidden';
+          play(i, visible);
+        }
+        if (!visible) continue;
+        el.style.transform = `translate3d(${(x * u).toFixed(2)}px, ${(-12 * (x / 706) ** 2 * u).toFixed(2)}px, ${(z * u).toFixed(2)}px) rotateY(${(-a).toFixed(4)}rad)`;
       }
     };
 
@@ -100,13 +114,22 @@ export default function CourseReel({ onExploreClick }) {
       if (!drag && document.visibilityState === 'visible') {
         if (Math.abs(vel) > 1) { offset += vel * dt; vel *= Math.pow(0.05, dt); }   // coast, losing ~95% per second
         else vel = 0;
-        if (!reduced) offset += SPEED * dt;
+        if (!reduced && onScreen) offset += SPEED * dt;
       }
-      layout();
+      if (onScreen || drag) layout();
       raf = requestAnimationFrame(frame);
     };
 
-    const unit = () => { const W = band.clientWidth; return W <= 820 ? W / 640 : W / 1440; };
+    // only animate and play while the row is on screen
+    const io = 'IntersectionObserver' in window
+      ? new IntersectionObserver(([e]) => {
+          onScreen = e.isIntersecting;
+          shown.fill(null);                                    // re-apply play/pause on the next layout
+          if (!onScreen) videoRefs.current.forEach(v => v && !v.paused && v.pause());
+        }, { rootMargin: '100px 0px' })
+      : null;
+    if (io) io.observe(band); else onScreen = true;
+
     const down = (e) => {
       drag = { x: e.clientX, offset, lastX: e.clientX, lastT: performance.now(), v: 0 };
       vel = 0;
@@ -115,7 +138,6 @@ export default function CourseReel({ onExploreClick }) {
     };
     const move = (e) => {
       if (!drag) return;
-      const u = unit();
       offset = drag.offset - (e.clientX - drag.x) / u;          // follows the pointer 1:1
       const now = performance.now();
       const dts = Math.max(0.001, (now - drag.lastT) / 1000);
@@ -128,6 +150,8 @@ export default function CourseReel({ onExploreClick }) {
       drag = null;
       band.classList.remove('is-grabbing');
     };
+    size();
+    window.addEventListener('resize', size);
     band.addEventListener('pointerdown', down);
     band.addEventListener('pointermove', move);
     band.addEventListener('pointerup', up);
@@ -135,15 +159,17 @@ export default function CourseReel({ onExploreClick }) {
     raf = requestAnimationFrame(frame);
     return () => {
       cancelAnimationFrame(raf);
+      io?.disconnect();
+      window.removeEventListener('resize', size);
       band.removeEventListener('pointerdown', down);
       band.removeEventListener('pointermove', move);
       band.removeEventListener('pointerup', up);
       band.removeEventListener('pointercancel', up);
     };
-  }, []);
+  }, [near]);
 
   return (
-    <section className="course-reel relative overflow-hidden py-14 sm:py-20">
+    <section className="course-reel relative z-[2] overflow-hidden bg-ivory py-14 sm:py-20">
       <div className="relative max-w-3xl mx-auto px-4 text-center">
         <span className="reel-in inline-flex items-center gap-2 h-9 px-4 rounded-full bg-[#DAE7C7] text-forest text-[14px] font-semibold" style={{ '--d': '0s' }}>Courses from ₹99 · learn at your own pace</span>
         <h2 className="mt-5 font-display text-[36px] sm:text-[54px] lg:text-[64px] font-bold leading-[1.04] tracking-[-0.035em] text-evergreen">
@@ -159,12 +185,12 @@ export default function CourseReel({ onExploreClick }) {
       <div ref={bandRef} className="reel-band relative mt-8 sm:mt-10 h-[250px] md:h-[420px] select-none touch-pan-y" aria-label="Course highlights">
         {CARDS.map((c, i) => {
           return (
-            <div key={c.label} ref={(el) => { cardRefs.current[i] = el; }} className="reel-card absolute left-0 top-0 overflow-hidden bg-[#E6EFE9]" style={{ visibility: 'hidden' }}>
+            <div key={c.label} ref={(el) => { cardRefs.current[i] = el; }} className="reel-card absolute left-1/2 top-1/2 overflow-hidden bg-[#E6EFE9]" style={{ visibility: 'hidden' }}>
               {near && (
-                <video className="reel-video absolute inset-0 w-full h-full object-cover" src={c.video} muted loop playsInline autoPlay preload="auto"
+                <video ref={(v) => { videoRefs.current[i] = v; }} className="reel-video absolute inset-0 w-full h-full object-cover" src={c.video} muted loop playsInline preload="auto"
                   onLoadedData={(e) => e.currentTarget.classList.add('is-ready')} aria-label={c.label} />
               )}
-              <span className="reel-play absolute left-3 bottom-3 w-8 h-8 rounded-full bg-white/30 backdrop-blur-md border border-white/40 flex items-center justify-center text-white"><Play className="w-3.5 h-3.5 fill-current" /></span>
+              <span className="reel-play absolute left-3 bottom-3 w-8 h-8 rounded-full bg-black/25 border border-white/40 flex items-center justify-center text-white"><Play className="w-3.5 h-3.5 fill-current" /></span>
             </div>
           );
         })}
