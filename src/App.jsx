@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import Header from './components/Header';
-import HeroSection from './components/HeroSection';
+import CodingHero from './components/CodingHero';
 import PopularCourses from './components/PopularCourses';
 import WhyLearnWithUs from './components/WhyLearnWithUs';
 import CtaSection from './components/CtaSection';
@@ -419,7 +419,7 @@ function AppShell() {
     case 'home':
       page = (
         <div className="landing-type">
-          <HeroSection onExploreClick={() => goCourses()} onSearch={(q) => goCourses(q ? { q } : undefined)} onVerifyClick={() => navigate(paths.verify())} onRegisterClick={() => navigate(studentUser ? paths.dashboard() : paths.register())} courses={courses} />
+          <CodingHero onExploreClick={() => goCourses()} onVerifyClick={() => navigate(paths.verify())} onRegisterClick={() => navigate(studentUser ? paths.dashboard() : paths.register())} signedIn={!!studentUser} courses={courses} />
           <PopularCourses
             courses={decoratedCourses}
             enrolledCourseId={enrolledCourseId}
