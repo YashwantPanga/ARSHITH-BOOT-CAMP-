@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft, CheckCircle2, Circle, Award, Download, ChevronRight, ChevronLeft, BookOpen, ExternalLink,
   Code, Dumbbell, AlertTriangle, ListChecks, HelpCircle, Briefcase, Terminal, Layers, Lock, Menu, X,
-  ShieldCheck, Lightbulb, Target, ClipboardList, MessageSquare, Clock, Network, PlayCircle, FlaskConical, Timer, Check, Star, Search
+  ShieldCheck, Lightbulb, Target, ClipboardList, MessageSquare, Clock, Network, PlayCircle, FlaskConical, Timer, Check, Star, Search,
+  ArrowRight, List, Play
 } from 'lucide-react';
 import { generateCoursePDF } from '../utils/pdfGenerator';
 import { cleanText, moduleTitle, displayTitle } from '../utils/textUtils';
@@ -37,6 +38,26 @@ const Paragraphs = ({ text, className = 'text-[15px] leading-7 text-slate-600' }
   return String(text).split(/\n{2,}/).filter(p => p.trim()).map((p, i) => (
     <p key={i} className={`${className} whitespace-pre-line`}>{cleanLines(p)}</p>
   ));
+};
+
+/** "14. Practice Exercises" → "Practice Exercises": the card already shows its own number. */
+const stripNum = (t) => cleanText(t).replace(/^\s*\d+(\.\d+)*[.)]\s+/, '');
+
+/** Text whose lines are "1. …", "2. …" becomes a tidy numbered list with a hanging indent. */
+const StepText = ({ text, className = '', numClass = '' }) => {
+  const lines = String(text).split('\n').map(l => l.trim()).filter(Boolean);
+  const numbered = lines.length > 1 && lines.every(l => /^\d+[.)]\s+/.test(l));
+  if (!numbered) return <p className={`${className} whitespace-pre-line`}>{cleanLines(text)}</p>;
+  return (
+    <ol className={`space-y-2.5 ${className}`}>
+      {lines.map((l, i) => (
+        <li key={i} className="grid grid-cols-[22px,1fr] gap-2.5 items-start">
+          <span className={`mt-[3px] w-[22px] h-[22px] rounded-full text-[11.5px] font-bold flex items-center justify-center ${numClass}`}>{i + 1}</span>
+          <span className="min-w-0">{cleanText(l.replace(/^\d+[.)]\s+/, ''))}</span>
+        </li>
+      ))}
+    </ol>
+  );
 };
 
 const CodeBlock = (props) => <PremiumCodeBlock {...props} />;
@@ -138,6 +159,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   const [revealed, setRevealed] = useState({});
   const mainRef = useRef(null);
   const readBarRef = useRef(null);
+  const phoneBarRef = useRef(null); // phones: reading progress in the light header
 
   const done = modules.filter(m => m.completed).length;
   const total = modules.length || 1;
@@ -155,6 +177,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
     setDrawer(false);
     mainRef.current?.scrollTo({ top: 0, behavior: 'auto' });
     if (readBarRef.current) readBarRef.current.style.width = '0%';
+    if (phoneBarRef.current) phoneBarRef.current.style.width = '0%';
   }, [current?.id]);
 
   // Practice completions saved on the server (signed-in learners only).
@@ -175,7 +198,9 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   const onMainScroll = (e) => {
     const el = e.currentTarget;
     const max = el.scrollHeight - el.clientHeight;
-    if (readBarRef.current) readBarRef.current.style.width = `${max > 0 ? (el.scrollTop / max) * 100 : 100}%`;
+    const pct = `${max > 0 ? (el.scrollTop / max) * 100 : 100}%`;
+    if (readBarRef.current) readBarRef.current.style.width = pct;
+    if (phoneBarRef.current) phoneBarRef.current.style.width = pct;
   };
 
   const toggle = (key) => setRevealed(r => ({ ...r, [key]: !r[key] }));
@@ -225,9 +250,9 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
       id: 'objectives', title: 'Learning objectives', icon: Target, body: (
         <div className="space-y-4">
           {nm.objectives.length > 0 && (
-            <ul className="grid sm:grid-cols-2 gap-3">
+            <ul className="rounded-2xl border border-brand-100 bg-white/80 divide-y divide-brand-100/80 sm:divide-y-0 sm:bg-transparent sm:border-0 sm:rounded-none sm:grid sm:grid-cols-2 sm:gap-3">
               {nm.objectives.map((o, i) => (
-                <li key={i} className="flex gap-3 p-3.5 rounded-xl bg-brand-50/60 border border-brand-100 text-sm text-slate-700">
+                <li key={i} className="flex gap-3 px-4 py-3 text-[15px] leading-snug sm:text-sm sm:p-3.5 sm:rounded-xl sm:bg-brand-50/60 sm:border sm:border-brand-100 text-slate-700">
                   <CheckCircle2 className="w-4 h-4 text-peach-500 mt-0.5 shrink-0" />{cleanText(o)}
                 </li>
               ))}
@@ -407,7 +432,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
             const key = `lbl-${i}`;
             return (
               <div key={i} className="space-y-2.5">
-                <CodeBlock courseId={course.id} language={ex.language} code={ex.code} title={cleanText(ex.title)} />
+                <CodeBlock courseId={course.id} language={ex.language} code={ex.code} title={stripNum(ex.title)} />
                 {ex.explanation && (
                   <div className="rounded-xl border border-brand-100 bg-brand-50/60 px-4 py-3">
                     <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-brand-600">How this code works</p>
@@ -444,9 +469,9 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
 
     if (mistakes.length) s.push({
       id: 'mistakes', title: 'Common mistakes & how to fix them', icon: AlertTriangle, body: (
-        <div className="space-y-3">
+        <div className={mistakes.every(m => m.type === 'str') ? 'rounded-2xl border border-rose-100 bg-white/80 divide-y divide-rose-100/80 overflow-hidden sm:space-y-3 sm:divide-y-0 sm:border-0 sm:bg-transparent sm:rounded-none' : 'space-y-3'}>
           {mistakes.map((m, i) => m.type === 'str' ? (
-            <div key={i} className="flex gap-3 p-4 rounded-xl bg-rose-50/60 border border-rose-100 text-sm text-slate-700">
+            <div key={i} className="flex gap-3 px-4 py-3 sm:p-4 sm:rounded-xl sm:bg-rose-50/60 sm:border sm:border-rose-100 text-[15px] leading-snug sm:text-sm text-slate-700">
               <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" /><span className="min-w-0">{cleanText(m.text)}</span>
             </div>
           ) : (
@@ -466,9 +491,9 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
 
     if (practices.length) s.push({
       id: 'best', title: 'Best practices & industry standards', icon: Lightbulb, body: (
-        <div className="grid sm:grid-cols-2 gap-3">
+        <div className="rounded-2xl border border-mint-200 bg-white/80 divide-y divide-mint-200/70 overflow-hidden sm:grid sm:grid-cols-2 sm:gap-3 sm:divide-y-0 sm:border-0 sm:bg-transparent sm:rounded-none sm:overflow-visible">
           {practices.map((p, i) => (
-            <div key={i} className="p-4 rounded-xl border border-mint-200 bg-mint-50/50 space-y-2 min-w-0">
+            <div key={i} className="px-4 py-3 sm:p-4 sm:rounded-xl sm:border sm:border-mint-200 sm:bg-mint-50/50 space-y-2 min-w-0">
               <div className="flex gap-3">
                 <span className="w-6 h-6 rounded-lg bg-mint-400 text-white text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
                 <div className="space-y-1 min-w-0">
@@ -495,8 +520,8 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
           {pe && (
             <div className="practice-card rounded-[22px] bg-[#0C3B2E] text-ivory p-4 sm:p-6 space-y-3.5 shadow-[0_24px_50px_-30px_rgba(12,45,38,.9)]">
               <p className="flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.2em] text-[#D9B776]">Practice {current ? `${currentIndex + 1}.1` : ''} <span className="px-2 py-0.5 rounded-md bg-white/10 text-ivory/80 tracking-normal normal-case font-semibold">Module exercise</span></p>
-              <p className="font-display text-[24px] sm:text-[27px] font-semibold leading-tight">{cleanText(pe.title)}</p>
-              {pe.problem && <p className="text-[15px] text-ivory/80 whitespace-pre-line leading-7">{cleanLines(pe.problem)}</p>}
+              <p className="font-display text-[24px] sm:text-[27px] font-semibold leading-tight">{stripNum(pe.title)}</p>
+              {pe.problem && <StepText text={pe.problem} className="text-[15px] text-ivory/85 leading-relaxed" numClass="bg-white/10 text-[#E5C88E]" />}
               {pe.starterCode && <CodeBlock courseId={course.id} code={pe.starterCode} label="starter code" />}
               {(pe.solutionCode || pe.starterCode) && (
                 <div className="flex flex-wrap gap-2">
@@ -628,6 +653,36 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   const practiceTotal = (nm.practiceExercise ? 1 : 0) + (enr.data?.exercises?.length || 0) + nm.miniTasks.length;
   const practiceDoneCount = Math.min((practiceDone[current?.id] || []).length, enr.data?.exercises?.length || 0);
   const snippetCount = runnableCount(rm);
+  const courseExtras = (
+    <>
+      {course.projects?.length > 0 && (
+        <button onClick={() => setProjectsOpen(true)} className="w-full rounded-[18px] bg-white border border-brand-900/[.08] p-4 text-left hover:border-forest/30 transition">
+          <span className="flex items-center gap-2 text-[13.5px] font-semibold text-evergreen"><Briefcase className="w-4 h-4 text-[#C49A52]" />{course.projects.length} mini projects<span className={`ml-auto chip text-[10px] ${projectsDone ? 'bg-forest text-ivory' : 'bg-cream text-charcoal/70 border border-brand-900/10'}`}>{projectReq.submitted}/{projectReq.total ?? course.projects.length}</span></span>
+          <span className="block text-[11.5px] text-charcoal/55 mt-1">{projectsDone ? 'Project submitted. The final assessment can be unlocked.' : 'Submit a GitHub repository for any one project to unlock the final.'}</span>
+        </button>
+      )}
+
+      <div className={`rounded-[18px] p-4 border ${passedFinal ? 'border-leaf/40 bg-leaf-light' : finalReady ? 'border-[#C49A52]/50 bg-[#FBF3E3]' : 'border-brand-900/[.08] bg-white'}`}>
+        <p className="flex items-center gap-2 text-[13.5px] font-semibold text-evergreen">
+          {passedFinal ? <Award className="w-4 h-4 text-leaf" /> : finalReady ? <ShieldCheck className="w-4 h-4 text-[#C49A52]" /> : <Lock className="w-4 h-4 text-charcoal/40" />}
+          Final assessment
+        </p>
+        {passedFinal ? (
+          <p className="text-[11.5px] text-charcoal/55 mt-1.5">Passed with {passedFinal.percentage}%. Your certificate is ready.</p>
+        ) : finalReady ? (
+          <p className="text-[11.5px] text-charcoal/55 mt-1.5">25 questions · 45 minutes · proctored. Pass mark 70%.</p>
+        ) : (
+          <ul className="mt-2 space-y-1.5 text-[11.5px]">
+            <li className={`flex items-center gap-2 ${allQuizzesPassed ? 'text-evergreen' : 'text-charcoal/55'}`}>{allQuizzesPassed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}All module quizzes ({done}/{modules.length})</li>
+            {projectReq.required > 0 && <li className={`flex items-center gap-2 ${projectsDone ? 'text-evergreen' : 'text-charcoal/55'}`}>{projectsDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}One project repository ({Math.min(projectReq.submitted, projectReq.required)}/{projectReq.required})</li>}
+          </ul>
+        )}
+        <button onClick={passedFinal ? onViewCertificate : (allQuizzesPassed && !projectsDone ? () => setProjectsOpen(true) : openFinal)} disabled={!allQuizzesPassed && !passedFinal} className="mt-3 w-full h-10 rounded-xl bg-forest text-ivory text-[13px] font-semibold inline-flex items-center justify-center gap-2 hover:bg-evergreen transition disabled:bg-cream disabled:text-charcoal/40 disabled:cursor-not-allowed">
+          {passedFinal ? <><Award className="w-4 h-4" /> View certificate</> : finalReady ? 'Start final assessment' : allQuizzesPassed ? <><Briefcase className="w-4 h-4" /> Submit project repos</> : <><Lock className="w-4 h-4" /> Locked</>}
+        </button>
+      </div>
+    </>
+  );
   const sidebar = (
     <div className="p-3 sm:p-4 space-y-4">
       <div className="rounded-[20px] bg-white border border-brand-900/[.08] p-3 shadow-[0_10px_30px_-24px_rgba(12,45,38,.5)]">
@@ -669,34 +724,72 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         </nav>
       </div>
 
-      {course.projects?.length > 0 && (
-        <button onClick={() => setProjectsOpen(true)} className="w-full rounded-[18px] bg-white border border-brand-900/[.08] p-4 text-left hover:border-forest/30 transition">
-          <span className="flex items-center gap-2 text-[13.5px] font-semibold text-evergreen"><Briefcase className="w-4 h-4 text-[#C49A52]" />{course.projects.length} mini projects<span className={`ml-auto chip text-[10px] ${projectsDone ? 'bg-forest text-ivory' : 'bg-cream text-charcoal/70 border border-brand-900/10'}`}>{projectReq.submitted}/{projectReq.total ?? course.projects.length}</span></span>
-          <span className="block text-[11.5px] text-charcoal/55 mt-1">{projectsDone ? 'Project submitted. The final assessment can be unlocked.' : 'Submit a GitHub repository for any one project to unlock the final.'}</span>
-        </button>
-      )}
-
-      <div className={`rounded-[18px] p-4 border ${passedFinal ? 'border-leaf/40 bg-leaf-light' : finalReady ? 'border-[#C49A52]/50 bg-[#FBF3E3]' : 'border-brand-900/[.08] bg-white'}`}>
-        <p className="flex items-center gap-2 text-[13.5px] font-semibold text-evergreen">
-          {passedFinal ? <Award className="w-4 h-4 text-leaf" /> : finalReady ? <ShieldCheck className="w-4 h-4 text-[#C49A52]" /> : <Lock className="w-4 h-4 text-charcoal/40" />}
-          Final assessment
-        </p>
-        {passedFinal ? (
-          <p className="text-[11.5px] text-charcoal/55 mt-1.5">Passed with {passedFinal.percentage}%. Your certificate is ready.</p>
-        ) : finalReady ? (
-          <p className="text-[11.5px] text-charcoal/55 mt-1.5">25 questions · 45 minutes · proctored. Pass mark 70%.</p>
-        ) : (
-          <ul className="mt-2 space-y-1.5 text-[11.5px]">
-            <li className={`flex items-center gap-2 ${allQuizzesPassed ? 'text-evergreen' : 'text-charcoal/55'}`}>{allQuizzesPassed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}All module quizzes ({done}/{modules.length})</li>
-            {projectReq.required > 0 && <li className={`flex items-center gap-2 ${projectsDone ? 'text-evergreen' : 'text-charcoal/55'}`}>{projectsDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}One project repository ({Math.min(projectReq.submitted, projectReq.required)}/{projectReq.required})</li>}
-          </ul>
-        )}
-        <button onClick={passedFinal ? onViewCertificate : (allQuizzesPassed && !projectsDone ? () => setProjectsOpen(true) : openFinal)} disabled={!allQuizzesPassed && !passedFinal} className="mt-3 w-full h-10 rounded-xl bg-forest text-ivory text-[13px] font-semibold inline-flex items-center justify-center gap-2 hover:bg-evergreen transition disabled:bg-cream disabled:text-charcoal/40 disabled:cursor-not-allowed">
-          {passedFinal ? <><Award className="w-4 h-4" /> View certificate</> : finalReady ? 'Start final assessment' : allQuizzesPassed ? <><Briefcase className="w-4 h-4" /> Submit project repos</> : <><Lock className="w-4 h-4" /> Locked</>}
-        </button>
-      </div>
+      {courseExtras}
     </div>
   );
+
+  const greeting = (() => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; })();
+  const phoneLessons = (
+    <div className="px-4 pb-8 space-y-4">
+      <div className="flex items-center justify-between pt-1">
+        <div className="min-w-0">
+          <p className="text-[13px] text-charcoal/55">{greeting}</p>
+          <p className="font-display text-[24px] font-bold text-[#14211C] truncate">{(studentName || 'Learner').split(' ')[0]}</p>
+        </div>
+        <span className="w-11 h-11 rounded-full bg-[linear-gradient(140deg,#5DB58A,#1E6A4E)] text-white font-display font-bold flex items-center justify-center shadow-[0_8px_16px_-8px_rgba(30,106,78,.8)]">{(studentName || 'L').trim()[0]?.toUpperCase()}</span>
+      </div>
+      <div className="relative overflow-hidden rounded-[24px] bg-[linear-gradient(150deg,#2F7E5C,#175F45_60%,#114A36)] text-ivory p-4 shadow-[0_20px_36px_-22px_rgba(17,74,54,.9)]">
+        <span className="absolute -right-10 -top-12 w-44 h-44 rounded-full border border-white/10" aria-hidden="true" />
+        <span className="absolute right-6 -bottom-16 w-36 h-36 rounded-full border border-white/10" aria-hidden="true" />
+        <div className="relative flex items-center justify-between gap-2">
+          <span className="rounded-md bg-white/15 px-2 py-1 text-[10.5px] font-bold uppercase tracking-[0.14em]">{modules.length} modules · course</span>
+          <span className="font-display text-[15px] font-bold text-[#F3E3C3]">{course.progress || 0}%</span>
+        </div>
+        <p className="relative mt-3 font-display text-[22px] font-bold leading-tight">{displayTitle(course.title)}</p>
+        {course.description && <p className="relative mt-1 text-[13px] text-ivory/75 leading-snug line-clamp-2">{cleanText(course.description)}</p>}
+        <div className="relative mt-3 h-1.5 rounded-full bg-white/15 overflow-hidden"><div className="h-full rounded-full bg-[#EED9A8]" style={{ width: `${course.progress || 0}%` }} /></div>
+        <div className="relative mt-3 flex items-center justify-between gap-2">
+          <span className="text-[12.5px] text-ivory/75">{done} of {modules.length} modules</span>
+          <button onClick={() => setDrawer(false)} className="h-10 px-4 rounded-xl bg-[#F3E3C3] text-[#14211C] font-display text-[14px] font-semibold inline-flex items-center gap-1.5">Continue <ArrowRight className="w-4 h-4" /></button>
+        </div>
+      </div>
+      <div className="flex items-end justify-between pt-1"><p className="font-display text-[18px] font-bold text-[#14211C]">Lessons</p><p className="text-[12.5px] text-charcoal/50">{modules.length} items</p></div>
+      <div className="space-y-2.5">
+        {modules.map((m, i) => {
+          const active = i === currentIndex;
+          const read = m.completed || active;
+          return (
+            <button key={m.id} onClick={() => goTo(i)} aria-current={active ? 'page' : undefined}
+              className={`w-full flex items-center gap-3 rounded-2xl border p-3 text-left transition active:scale-[.99] ${active ? 'border-[#4FA77A] bg-[#EDF6EC] ring-1 ring-[#4FA77A]/25' : 'border-[#ECE4D2] bg-[#FFFDF8]'}`}>
+              <span className={`w-11 h-11 shrink-0 rounded-xl flex items-center justify-center ${read ? 'bg-[#DCEFD8] text-[#1E6A4E]' : 'bg-[#F3E6C9] text-[#8A6420]'}`}>{read ? <BookOpen className="w-5 h-5" /> : <Code className="w-5 h-5" />}</span>
+              <span className="flex-1 min-w-0">
+                <span className="block text-[15px] font-semibold text-[#14211C] truncate">{moduleTitle(m.title)}</span>
+                <span className="block text-[12.5px] text-charcoal/50">Read · {readingMinutes(m.readingMaterial || {})} min{m.completed && m.quizScore !== undefined ? ` · quiz ${m.quizScore}%` : ''}</span>
+              </span>
+              {active
+                ? <span className="shrink-0 h-7 px-3 rounded-full bg-[#1E5A44] text-white text-[12px] font-bold inline-flex items-center">{m.completed ? 'Reading' : 'Resume'}</span>
+                : m.completed
+                  ? <span className="shrink-0 w-7 h-7 rounded-full bg-[#1E6A4E] text-white flex items-center justify-center"><Check className="w-4 h-4" strokeWidth={3} /></span>
+                  : <span className="shrink-0 w-8 h-8 rounded-full border border-[#D9D0BC] text-[#5B5446] flex items-center justify-center"><Play className="w-3.5 h-3.5 fill-current" /></span>}
+            </button>
+          );
+        })}
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <button onClick={() => { setDrawer(false); setSearchOpen(true); }} className="h-16 rounded-2xl border border-[#ECE4D2] bg-[#FFFDF8] flex flex-col items-center justify-center gap-1 text-[12px] font-semibold text-evergreen"><Search className="w-4 h-4 text-sage" />Search</button>
+        <button onClick={() => { setDrawer(false); playground?.open(); }} className="h-16 rounded-2xl border border-[#ECE4D2] bg-[#FFFDF8] flex flex-col items-center justify-center gap-1 text-[12px] font-semibold text-evergreen"><FlaskConical className="w-4 h-4 text-sage" />Practice Lab</button>
+        <button onClick={downloadPdf} disabled={pdfBusy} className="h-16 rounded-2xl border border-[#ECE4D2] bg-[#FFFDF8] flex flex-col items-center justify-center gap-1 text-[12px] font-semibold text-evergreen disabled:opacity-60"><Download className="w-4 h-4 text-sage" />{pdfBusy ? 'Preparing…' : 'Course PDF'}</button>
+      </div>
+      {courseExtras}
+    </div>
+  );
+
+  // phones: the bottom bar's main action
+  const nextAction = !current.completed
+    ? { label: 'Complete & Next', run: () => openQuiz() }
+    : currentIndex < modules.length - 1
+      ? { label: 'Next lesson', run: () => goTo(currentIndex + 1) }
+      : passedFinal ? { label: 'View certificate', run: onViewCertificate } : { label: 'Final assessment', run: openFinal };
 
   const myScore = current.quizScore;
   const num = String(currentIndex + 1).padStart(2, '0');
@@ -711,7 +804,19 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   return (
     <div className="lesson-page h-[100dvh] flex flex-col bg-[#F6F4EE] overflow-hidden">
       {/* Top bar */}
-      <header className="h-14 sm:h-16 shrink-0 bg-[#0C3B2E] text-ivory flex items-center gap-2 sm:gap-4 px-2.5 sm:px-5 z-30 shadow-[0_6px_20px_-12px_rgba(0,0,0,.6)]">
+      {/* phones: light reader header (back, module + lesson, all lessons, reading progress) */}
+      <header className="md:hidden shrink-0 z-30 px-4 pt-3 pb-2.5 bg-[linear-gradient(180deg,#E2EEDB,#F6F1E6)] border-b border-[#E7DFCC]/70">
+        <div className="flex items-center gap-3">
+          <button onClick={onExit} className="lr-iconbtn" aria-label="Back to dashboard"><ChevronLeft className="w-5 h-5" /></button>
+          <div className="flex-1 min-w-0 text-center">
+            <p className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-charcoal/50 truncate">Module {currentIndex + 1} · {displayTitle(course.title)}</p>
+            <p className="font-display text-[15.5px] font-bold text-[#14211C] truncate">Lesson {currentIndex + 1} of {modules.length}</p>
+          </div>
+          <button onClick={() => setDrawer(true)} className="lr-iconbtn" aria-label="All lessons"><List className="w-5 h-5" /></button>
+        </div>
+        <div className="mt-3 h-[5px] rounded-full bg-[#E3DCCB] overflow-hidden"><div ref={phoneBarRef} className="h-full rounded-full bg-[#1E6A4E] transition-[width] duration-150" style={{ width: '0%' }} /></div>
+      </header>
+      <header className="hidden md:flex h-16 shrink-0 bg-[#0C3B2E] text-ivory items-center gap-4 px-5 z-30 shadow-[0_6px_20px_-12px_rgba(0,0,0,.6)]">
         <button onClick={() => setDrawer(true)} className="lg:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/10" aria-label="Open course path"><Menu className="w-5 h-5" /></button>
         <button onClick={onExit} className="hidden lg:flex items-center gap-2.5 shrink-0 pr-2 group" title="Back to dashboard">
           <span className="w-9 h-9 rounded-full border border-[#C49A52]/60 flex items-center justify-center text-[#E5C88E] group-hover:bg-white/5"><ArrowLeft className="w-4 h-4" /></span>
@@ -744,8 +849,6 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
           </button>
         )}
       </header>
-      {/* phones: thin progress line under the bar */}
-      <div className="md:hidden h-[3px] bg-[#0C3B2E]"><div className="h-full bg-gradient-to-r from-[#C49A52] to-[#E5C88E]" style={{ width: `${course.progress || 0}%` }} /></div>
 
       <div className="flex-1 flex min-h-0">
         {/* Desktop course path */}
@@ -755,23 +858,42 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
         {drawer && (
           <div className="lg:hidden fixed inset-0 z-50">
             <div className="absolute inset-0 bg-evergreen/50 animate-fade-in" onClick={() => setDrawer(false)} />
-            <aside className="absolute inset-y-0 left-0 w-[88%] max-w-sm bg-[#F6F4EE] overflow-y-auto overscroll-contain animate-slide-in-left shadow-2xl">
-              <div className="flex items-center justify-between px-4 py-3 bg-[#0C3B2E] text-ivory">
-                <button onClick={onExit} className="flex items-center gap-2 text-[13px] font-semibold"><ArrowLeft className="w-4 h-4" /> Dashboard</button>
-                <button onClick={() => setDrawer(false)} className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/10" aria-label="Close"><X className="w-5 h-5" /></button>
+            <aside className="absolute inset-y-0 left-0 w-full md:w-[88%] md:max-w-sm bg-[#F6F1E6] md:bg-[#F6F4EE] overflow-y-auto overscroll-contain animate-slide-in-left shadow-2xl">
+              <div className="md:hidden sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-[linear-gradient(180deg,#E2EEDB,#F6F1E6)]">
+                <button onClick={onExit} className="lr-iconbtn" aria-label="Back to dashboard"><ChevronLeft className="w-5 h-5" /></button>
+                <p className="font-display text-[15.5px] font-bold text-[#14211C]">Course lessons</p>
+                <button onClick={() => setDrawer(false)} className="lr-iconbtn" aria-label="Close"><X className="w-5 h-5" /></button>
               </div>
-              {sidebar}
+              <div className="md:hidden">{phoneLessons}</div>
+              <div className="hidden md:block">
+                <div className="flex items-center justify-between px-4 py-3 bg-[#0C3B2E] text-ivory">
+                  <button onClick={onExit} className="flex items-center gap-2 text-[13px] font-semibold"><ArrowLeft className="w-4 h-4" /> Dashboard</button>
+                  <button onClick={() => setDrawer(false)} className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/10" aria-label="Close"><X className="w-5 h-5" /></button>
+                </div>
+                {sidebar}
+              </div>
             </aside>
           </div>
         )}
 
         {/* Reading pane: the only scroll container for module content */}
         <main ref={mainRef} onScroll={onMainScroll} className="flex-1 min-w-0 overflow-y-auto overscroll-contain relative" style={{ scrollbarGutter: 'stable' }}>
-          <div className="sticky top-0 z-10 h-[3px] bg-transparent"><div ref={readBarRef} className="h-full bg-[#C49A52] transition-[width] duration-150" style={{ width: '0%' }} /></div>
+          <div className="hidden md:block sticky top-0 z-10 h-[3px] bg-transparent"><div ref={readBarRef} className="h-full bg-[#C49A52] transition-[width] duration-150" style={{ width: '0%' }} /></div>
 
           <div className="max-w-[1180px] mx-auto px-4 sm:px-8 lg:px-6 xl:px-8 pt-5 sm:pt-7 pb-12 xl:grid xl:grid-cols-[minmax(0,1fr)_224px] xl:gap-8">
             <article key={current.id} className="min-w-0 max-w-[700px] animate-fade-up">
+              {/* phones: lesson chip, read time, title */}
+              <div className="md:hidden">
+                <div className="flex items-center gap-2.5">
+                  <span className="lr-chip">Lesson {currentIndex + 1}</span>
+                  <span className="inline-flex items-center gap-1 text-[13px] text-charcoal/55"><Clock className="w-3.5 h-3.5" />{readingMinutes(rm)} min read</span>
+                  {current.completed && <span className="ml-auto inline-flex items-center gap-1 text-[12.5px] font-semibold text-[#1E6A4E]"><CheckCircle2 className="w-4 h-4" />Done{myScore !== undefined ? ` · ${myScore}%` : ''}</span>}
+                  {adminPreview && <span className="ml-auto rounded-md bg-[#E5C88E] text-[#2A1D08] text-[10px] font-bold uppercase tracking-[0.12em] px-1.5 py-0.5">Admin</span>}
+                </div>
+                <h1 className="mt-3 font-display text-[27px] font-bold leading-[1.16] tracking-[-0.015em] text-[#14211C]">{moduleTitle(current.title)}</h1>
+              </div>
               {/* breadcrumb + module header */}
+              <div className="hidden md:block">
               <nav className="text-[12.5px] text-charcoal/55" aria-label="Breadcrumb">
                 <button onClick={onExit} className="hover:text-evergreen">{displayTitle(course.title)}</button>
                 <span className="mx-2 text-charcoal/30">/</span>
@@ -791,7 +913,8 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                 {practiceTotal > 0 && <span className="lesson-chip lesson-chip-gold"><Star className="w-3.5 h-3.5" />{practiceTotal} practice task{practiceTotal === 1 ? '' : 's'}</span>}
                 <span className={`lesson-chip ${current.completed ? 'lesson-chip-done' : ''}`}>{current.completed ? <><CheckCircle2 className="w-3.5 h-3.5" /> Quiz done{myScore !== undefined ? ` · ${myScore}%` : ''}</> : <><ListChecks className="w-3.5 h-3.5" /> Quiz pending</>}</span>
               </div>
-              {current.description && <p className="mt-5 sm:mt-6 text-[17px] sm:text-[19px] leading-[1.65] text-charcoal/75">{cleanText(current.description)}</p>}
+              </div>
+              {current.description && <p className="mt-3 md:mt-6 text-[16px] md:text-[19px] leading-[1.7] md:leading-[1.65] text-[#3F3A33] md:text-charcoal/75">{cleanText(current.description)}</p>}
 
               {/* below xl: the "on this page" list as a scrollable row */}
               {sections.length > 2 && (
@@ -827,7 +950,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
               </section>
 
               {/* previous / next */}
-              <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="mt-6 hidden md:grid grid-cols-2 gap-3 sm:gap-4">
                 {currentIndex > 0 ? (
                   <button onClick={() => goTo(currentIndex - 1)} className="min-w-0 rounded-[18px] bg-white border border-brand-900/[.08] p-3.5 sm:p-4 text-left hover:border-forest/30 transition">
                     <span className="flex items-center gap-1 text-[11.5px] text-charcoal/55"><ArrowLeft className="w-3 h-3" /> Previous</span>
@@ -882,6 +1005,12 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
             </aside>
           </div>
         </main>
+      </div>
+
+      {/* phones: Previous / Complete & Next */}
+      <div className="md:hidden shrink-0 z-30 flex gap-3 px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] bg-[#F6F1E6]/95 backdrop-blur border-t border-[#E7DFCC]">
+        <button onClick={() => goTo(currentIndex - 1)} disabled={currentIndex === 0} className="h-12 px-5 rounded-2xl border border-[#E1D8C4] bg-[#FFFDF7] font-display text-[15px] font-semibold text-[#14211C] disabled:opacity-40 active:scale-[.98] transition">Previous</button>
+        <button onClick={nextAction.run} className="flex-1 h-12 rounded-2xl bg-[linear-gradient(135deg,#1C5E45,#2E8A63)] text-white font-display text-[15px] font-semibold inline-flex items-center justify-center gap-2 shadow-[0_12px_22px_-12px_rgba(28,94,69,.9)] active:scale-[.98] transition">{nextAction.label} <ArrowRight className="w-4 h-4" /></button>
       </div>
 
       {/* lesson search */}

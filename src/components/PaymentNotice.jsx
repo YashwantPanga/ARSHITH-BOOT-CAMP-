@@ -29,23 +29,41 @@ export default function PaymentNotice({ course, price = 149, retake = false, pro
   // the server's price for this learner (a referral discount is applied there, never trusted from here)
   const [quote, setQuote] = useState(null);
   const [celebrate, setCelebrate] = useState(false);   // the offer was just applied here
-  const fetchQuote = () => api.getPaymentQuote(interview ? { product: 'interview' } : { courseId: course?.id });
+  const fetchQuote = (voucher) => api.getPaymentQuote({ ...(interview ? { product: 'interview' } : { courseId: course?.id }), ...(voucher ? { voucher } : {}) });
+  // Campus Rewards: a college voucher code applied here is sent with the order; the server prices it again
+  const [voucherCode, setVoucherCode] = useState('');
   useEffect(() => {
     let live = true;
     fetchQuote().then(q => { if (live) setQuote(q); }).catch(() => {});
     return () => { live = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interview, course?.id]);
+  const applyVoucher = async (code) => {
+    const q = await fetchQuote(code);
+    setVoucherCode(code);
+    setQuote(q);
+    setCelebrate(true);
+  };
+  const removeVoucher = async () => {
+    setVoucherCode('');
+    setCelebrate(false);
+    try { setQuote(await fetchQuote()); } catch { /* keep the last price */ }
+  };
   const discounted = quote && quote.discountPaise > 0;
   const money = (paise) => rupees(paise, paise % 100 ? 2 : 0);
   const priceLabel = discounted ? money(quote.finalPaise) : `₹${price}`;
+  // with a discount: the original price struck through, then the new price
+  const was = discounted ? money(quote.originalPaise) : null;
+  const priceShown = discounted
+    ? <span className="whitespace-nowrap"><s className="price-was text-charcoal/40 font-semibold decoration-2 decoration-rose-500/70">{was}</s> <span className="price-now text-forest">{priceLabel}</span></span>
+    : priceLabel;
 
   const pay = async () => {
     setBusy(true);
     setError('');
     try {
       const state = await payWithCashfree(
-        () => (interview ? api.createInterviewOrder() : api.createPaymentOrder(course.id)),
+        () => (interview ? api.createInterviewOrder(voucherCode) : api.createPaymentOrder(course.id, voucherCode)),
         { onConfirming: () => setConfirming(true) }
       );
       if (state) { onPaid?.(state); return; }
@@ -71,7 +89,7 @@ export default function PaymentNotice({ course, price = 149, retake = false, pro
       <div className="relative w-full max-w-md rounded-[22px] bg-ivory p-6 sm:p-7 shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} disabled={busy} className="absolute top-3 right-3 p-2 rounded-full text-charcoal/50 hover:bg-cream disabled:opacity-40" aria-label="Close"><X className="w-4 h-4" /></button>
         <span className="w-14 h-14 rounded-full bg-brand-100 text-forest flex items-center justify-center"><IndianRupee className="w-7 h-7" /></span>
-        <h2 id="pay-title" className="mt-4 text-[23px] font-bold text-evergreen leading-tight">{online ? `Unlock ${itemTitle}${retake ? ' again' : ''} for ${priceLabel}` : `${itemTitle} costs ${priceLabel}`}</h2>
+        <h2 id="pay-title" className="mt-4 text-[23px] font-bold text-evergreen leading-tight">{online ? <>Unlock {itemTitle}{retake ? ' again' : ''} for {priceShown}</> : <>{itemTitle} costs {priceShown}</>}</h2>
         <p className="mt-2 text-[14.5px] text-charcoal/70 leading-relaxed">
           {interview
             ? <>A one-time payment unlocks every Interview Prep set for good. It is free for students who complete all 4 courses.</>
@@ -80,7 +98,7 @@ export default function PaymentNotice({ course, price = 149, retake = false, pro
             : <>One-time payment for the full course and certificate. You get two attempts at the final assessment; if you fail both, you can buy the course again.</>}
         </p>
         {quote && (
-          <PriceBox quote={quote} celebrate={celebrate} money={money} fetchQuote={fetchQuote} disabled={busy} onApplied={(q) => { setQuote(q); setCelebrate(true); }} />
+          <PriceBox quote={quote} celebrate={celebrate} money={money} fetchQuote={fetchQuote} disabled={busy} onApplied={(q) => { setQuote(q); setCelebrate(true); }} onVoucher={applyVoucher} onRemoveVoucher={removeVoucher} />
         )}
         {online ? (
           <>
@@ -101,7 +119,7 @@ export default function PaymentNotice({ course, price = 149, retake = false, pro
             </ul>
             {error && <p className="mt-3 text-[13.5px] text-rose-600" role="alert">{error}</p>}
             <button onClick={pay} disabled={busy} className="font-display mt-5 w-full h-12 rounded-md bg-forest text-ivory text-[15.5px] font-semibold hover:bg-sage transition-colors disabled:opacity-70 inline-flex items-center justify-center gap-2">
-              {busy ? <><Loader2 className="w-4 h-4 animate-spin" /> {confirming ? 'Confirming your payment…' : 'Opening secure payment…'}</> : `Pay ${priceLabel} and unlock`}
+              {busy ? <><Loader2 className="w-4 h-4 animate-spin" /> {confirming ? 'Confirming your payment…' : 'Opening secure payment…'}</> : discounted ? <>Pay {priceLabel} <s className="text-ivory/55 font-medium text-[14px]">{was}</s> and unlock</> : `Pay ${priceLabel} and unlock`}
             </button>
             <p className="mt-3 flex items-center justify-center gap-1.5 text-[12px] text-charcoal/55"><ShieldCheck className="w-3.5 h-3.5" /> UPI, cards and net banking, secured by Cashfree</p>
           </>
@@ -121,7 +139,7 @@ export default function PaymentNotice({ course, price = 149, retake = false, pro
 }
 
 /** Price summary with the "Have a referral code?" field. The server decides the price; this only asks it. */
-function PriceBox({ quote, celebrate, money, onApplied, fetchQuote, disabled }) {
+function PriceBox({ quote, celebrate, money, onApplied, fetchQuote, disabled, onVoucher, onRemoveVoucher }) {
   const discounted = quote.discountPaise > 0;
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState('');
@@ -132,8 +150,13 @@ function PriceBox({ quote, celebrate, money, onApplied, fetchQuote, disabled }) 
   const apply = async (e) => {
     e.preventDefault();
     const c = code.trim().toUpperCase();
-    if (!c) { setState(s => ({ ...s, error: 'Enter a referral code.' })); return; }
+    if (!c) { setState(s => ({ ...s, error: 'Enter a referral code or college voucher.' })); return; }
     setState({ busy: true, error: '', from: '' });
+    // a college voucher looks like ABC-K8P92X
+    if (/^[A-Z0-9]{3}-[A-Z0-9]{6}$/.test(c)) {
+      try { await onVoucher(c); setState({ busy: false, error: '', from: '' }); } catch (err) { setState({ busy: false, error: err.message || 'This voucher cannot be used here.', from: '' }); }
+      return;
+    }
     try {
       const check = await api.checkReferralCode(c);
       if (!check.valid) throw new Error('This referral code is not valid.');
@@ -166,25 +189,44 @@ function PriceBox({ quote, celebrate, money, onApplied, fetchQuote, disabled }) 
     return () => { cancelAnimationFrame(raf); clearTimeout(stop); };
   }, [celebrate, quote.originalPaise, quote.finalPaise]);
 
+  const voucher = quote.voucher;
   if (discounted) {
     return (
+      <>
       <div className={`relative mt-4 rounded-2xl border border-[#E5C88E] bg-gradient-to-b from-[#FFF8E8] to-[#FFFDF6] p-4 text-[14px] ${celebrate ? 'offer-pop' : ''}`}>
         {celebrate && <Burst />}
         <div className="flex items-center justify-between gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-forest text-ivory pl-1.5 pr-2.5 py-1 text-[12px] font-bold">
             <span className="w-4 h-4 rounded-full bg-[#E5C88E] text-forest flex items-center justify-center"><Check className="w-3 h-3" strokeWidth={3} /></span>
-            {quote.referral?.code} applied
+            {voucher?.code || quote.referral?.code} applied
           </span>
-          {state.from && <span className="text-[12px] text-charcoal/55">from {state.from}</span>}
+          {voucher
+            ? <button type="button" onClick={onRemoveVoucher} disabled={disabled} className="text-[12px] font-semibold text-charcoal/55 hover:text-rose-600">Remove</button>
+            : state.from && <span className="text-[12px] text-charcoal/55">from {state.from}</span>}
         </div>
         <p className="mt-3 flex justify-between text-charcoal/65"><span>Price</span><span className={celebrate ? 'offer-strike' : 'line-through'}>{money(quote.originalPaise)}</span></p>
-        <p className="mt-1 flex justify-between font-semibold text-[#8A6420]"><span>Referral discount ({quote.referral?.discountPct}%)</span><span>− {money(quote.discountPaise)}</span></p>
+        <p className="mt-1 flex justify-between font-semibold text-[#8A6420]"><span>{voucher ? `College voucher (${voucher.discountPct}%)` : `Referral discount (${quote.referral?.discountPct}%)`}</span><span>− {money(quote.discountPaise)}</span></p>
         <p className="mt-2.5 pt-2.5 border-t border-dashed border-[#E5C88E] flex items-end justify-between">
           <span className="font-display text-[15px] font-semibold text-evergreen">You pay</span>
           <span className={`font-display text-[24px] font-bold text-evergreen tabular-nums leading-none ${celebrate ? 'offer-price' : ''}`}>{money(shown)}</span>
         </p>
         {celebrate && <p className="offer-saved mt-3 flex items-center justify-center gap-1.5 rounded-xl bg-[#E5C88E]/30 py-2 text-[13.5px] font-bold text-[#7A5A1E]"><PartyPopper className="w-4 h-4" /> Offer unlocked · you save {money(quote.discountPaise)}</p>}
+        {voucher && <p className="mt-2 text-center text-[11.5px] text-charcoal/50">{voucher.college} · used up only when your payment succeeds</p>}
       </div>
+      {/* a referred learner can still use a college voucher instead (it replaces the referral discount) */}
+      {!voucher && (!open
+        ? <button type="button" onClick={() => setOpen(true)} disabled={disabled} className="mt-2 w-full text-center text-[13px] font-semibold text-[#8A6420] hover:underline underline-offset-2">Have a college voucher? Apply it instead</button>
+        : (
+          <form onSubmit={apply} className="offer-open mt-2.5 rounded-2xl border border-[#C9A15A] bg-[#FFF8E8]/60 p-3">
+            <label htmlFor="pay-ref" className="block text-[12.5px] font-semibold text-charcoal/70 mb-1.5">College voucher</label>
+            <div className="flex gap-2">
+              <input id="pay-ref" ref={inputRef} value={code} onChange={(e) => { setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '')); setState(s => ({ ...s, error: '' })); }} maxLength={16} placeholder="ABC-K8P92X" autoComplete="off" className={`auth-input flex-1 min-w-0 font-mono tracking-[0.12em] ${state.error ? 'offer-shake !border-rose-400' : ''}`} />
+              <button disabled={state.busy || disabled} className="h-12 px-5 rounded-xl bg-forest text-ivory font-display font-semibold inline-flex items-center gap-1.5 disabled:opacity-60">{state.busy ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}</button>
+            </div>
+            {state.error ? <p className="mt-2 text-[12.5px] text-rose-600" role="alert">{state.error}</p> : <p className="mt-2 text-[12px] text-charcoal/50">A college voucher replaces your referral discount.</p>}
+          </form>
+        ))}
+      </>
     );
   }
 
@@ -198,16 +240,16 @@ function PriceBox({ quote, celebrate, money, onApplied, fetchQuote, disabled }) 
         <button type="button" onClick={() => setOpen(true)} disabled={disabled} className="mt-2.5 w-full rounded-2xl border border-dashed border-[#C9A15A] bg-[#FFF8E8]/60 px-4 py-3 flex items-center gap-3 text-left hover:bg-[#FFF8E8] transition-colors">
           <span className="w-9 h-9 rounded-xl bg-[#E5C88E]/40 text-[#8A6420] flex items-center justify-center shrink-0"><TicketPercent className="w-5 h-5" /></span>
           <span className="flex-1 min-w-0">
-            <span className="block text-[14px] font-semibold text-evergreen">Have a referral code?</span>
+            <span className="block text-[14px] font-semibold text-evergreen">Have a referral code or college voucher?</span>
             <span className="block text-[12.5px] text-charcoal/55">Enter it to get an extra discount</span>
           </span>
           <span className="text-[13px] font-bold text-[#8A6420]">Apply</span>
         </button>
       ) : (
         <form onSubmit={apply} className="offer-open mt-2.5 rounded-2xl border border-[#C9A15A] bg-[#FFF8E8]/60 p-3">
-          <label htmlFor="pay-ref" className="block text-[12.5px] font-semibold text-charcoal/70 mb-1.5">Referral code</label>
+          <label htmlFor="pay-ref" className="block text-[12.5px] font-semibold text-charcoal/70 mb-1.5">Referral code or college voucher</label>
           <div className="flex gap-2">
-            <input id="pay-ref" ref={inputRef} value={code} onChange={(e) => { setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')); setState(s => ({ ...s, error: '' })); }} maxLength={16} placeholder="e.g. RIYAT497" autoComplete="off" className={`auth-input flex-1 min-w-0 font-mono tracking-[0.12em] ${state.error ? 'offer-shake !border-rose-400' : ''}`} />
+            <input id="pay-ref" ref={inputRef} value={code} onChange={(e) => { setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '')); setState(s => ({ ...s, error: '' })); }} maxLength={16} placeholder="RIYAT497 or ABC-K8P92X" autoComplete="off" className={`auth-input flex-1 min-w-0 font-mono tracking-[0.12em] ${state.error ? 'offer-shake !border-rose-400' : ''}`} />
             <button disabled={state.busy || disabled} className="h-12 px-5 rounded-xl bg-forest text-ivory font-display font-semibold inline-flex items-center gap-1.5 disabled:opacity-60">{state.busy ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}</button>
           </div>
           {state.error

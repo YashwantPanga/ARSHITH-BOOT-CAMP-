@@ -5,6 +5,7 @@ import { smtpConfigured, warmUpMailer } from './lib/mailer.js';
 import { applyAdminSettings } from './lib/adminSetup.js';
 import { getDb, saveDb } from './db.js';
 import { runJobs } from './lib/referrals.js';
+import { sweep as campusSweep } from './lib/campus.js';
 
 const PORT = process.env.PORT || 5000;
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -41,7 +42,9 @@ app.listen(PORT, async () => {
     try {
       const db = getDb();
       const { released, overdue } = runJobs(db);
-      if (released || overdue) { saveDb(db); console.log(`[referrals] released ${released}, overdue ${overdue}`); }
+      // Campus Rewards: give back voucher uses held by payments that never finished
+      const campus = campusSweep(db);
+      if (released || overdue || campus) { saveDb(db); if (released || overdue) console.log(`[referrals] released ${released}, overdue ${overdue}`); }
     } catch (err) { console.error('[referrals] job failed:', err.message); }
   };
   referralJob();

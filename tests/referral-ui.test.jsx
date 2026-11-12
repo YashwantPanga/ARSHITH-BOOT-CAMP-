@@ -24,7 +24,8 @@ vi.mock('../src/services/api', () => ({
     requestWithdrawal: vi.fn(),
     getPaymentQuote: vi.fn(() => Promise.resolve({ originalPaise: 9900, discountPaise: 0, finalPaise: 9900, referral: null })),
     checkReferralCode: vi.fn((c) => Promise.resolve(c === 'RIYAT497' ? { valid: true, referrerName: 'Riya' } : { valid: false })),
-    claimReferral: vi.fn(() => Promise.resolve({ success: true })), markReferralNotificationsRead: vi.fn(() => Promise.resolve({})), setPromoOptOut: vi.fn(() => Promise.resolve({ promoOptOut: true }))
+    claimReferral: vi.fn(() => Promise.resolve({ success: true })),
+    markReferralNotificationsRead: vi.fn(() => Promise.resolve({})), setPromoOptOut: vi.fn(() => Promise.resolve({ promoOptOut: true }))
   },
   getAdminToken: () => 'token'
 }));
@@ -58,7 +59,7 @@ describe('Refer & Earn page', () => {
 
   it('shows a learner their code, wallet, history and withdraw form', async () => {
     render(<ReferralPage studentUser={{ email: 'riya@example.test' }} navigate={() => {}} />);
-    expect(await screen.findByText('RIYAT497')).toBeTruthy();
+    expect((await screen.findAllByText('RIYAT497')).length).toBeGreaterThan(0);
     expect(screen.getByText('₹80.73')).toBeTruthy();
     expect(screen.getByText('A****')).toBeTruthy();
     // below the minimum: the withdraw button stays disabled
@@ -73,7 +74,7 @@ describe('Admin Refer & Earn', () => {
     render(<AdminReferrals notify={() => {}} />);
     expect(await screen.findByText('Link clicks')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Referrers' }));
-    expect(await screen.findByText('RIYAT497')).toBeTruthy();
+    expect((await screen.findAllByText('RIYAT497')).length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole('button', { name: 'Commissions' }));
     expect(await screen.findByText('o1')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Settings & promo' }));
@@ -91,8 +92,8 @@ describe('Admin Refer & Earn', () => {
 describe('Checkout referral code', () => {
   it('rejects a wrong code and applies a valid one, lowering the price', async () => {
     render(<PaymentNotice course={{ id: 'python-programming', title: 'Python Programming' }} price={99} paymentsEnabled={false} onClose={() => {}} />);
-    fireEvent.click(await screen.findByText('Have a referral code?'));
-    const input = screen.getByLabelText('Referral code');
+    fireEvent.click(await screen.findByText('Have a referral code or college voucher?'));
+    const input = screen.getByLabelText('Referral code or college voucher');
     fireEvent.change(input, { target: { value: 'nope1' } });
     fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
     expect(await screen.findByText('This referral code is not valid.')).toBeTruthy();
@@ -104,7 +105,7 @@ describe('Checkout referral code', () => {
     expect(await screen.findByText('RIYAT497 applied')).toBeTruthy();
     expect(api.claimReferral).toHaveBeenCalledWith('RIYAT497');
     expect(await screen.findByText(/you save ₹9.90/)).toBeTruthy();
-    expect(screen.getByRole('heading', { name: /costs ₹89.10/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /costs ₹99 ₹89.10/ })).toBeTruthy();
     await waitFor(() => expect(screen.getAllByText(/^₹89.10$/).length).toBeGreaterThan(0), { timeout: 2500 });
   });
 });

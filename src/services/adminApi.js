@@ -113,7 +113,19 @@ export const api = {
   actOnWithdrawal: (id, action, body = {}) => staffRequest(`/admin/referrals/withdrawals/${encodeURIComponent(id)}/${action}`, { method: 'POST', body: JSON.stringify(body) }),
   updateReferralSettings: (settings) => staffRequest('/admin/referrals/settings', { method: 'PUT', body: JSON.stringify(settings) }),
   getReferralAudit: () => staffRequest('/admin/referrals/audit'),
-  runReferralJobs: () => staffRequest('/admin/referrals/jobs/run', { method: 'POST' })
+  runReferralJobs: () => staffRequest('/admin/referrals/jobs/run', { method: 'POST' }),
+
+  // Campus Rewards
+  getCampusOverview: () => staffRequest('/admin/campus/overview'),
+  getCampusColleges: () => staffRequest('/admin/campus/colleges'),
+  addCampusCollege: (body) => staffRequest('/admin/campus/colleges', { method: 'POST', body: JSON.stringify(body) }),
+  updateCampusCollege: (id, body) => staffRequest(`/admin/campus/colleges/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(body) }),
+  getCampusCampaigns: () => staffRequest('/admin/campus/campaigns'),
+  addCampusCampaign: (body) => staffRequest('/admin/campus/campaigns', { method: 'POST', body: JSON.stringify(body) }),
+  updateCampusCampaign: (id, body) => staffRequest(`/admin/campus/campaigns/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(body) }),
+  newCampusCode: (id) => staffRequest(`/admin/campus/campaigns/${encodeURIComponent(id)}/new-code`, { method: 'POST' }),
+  getCampusRedemptions: () => staffRequest('/admin/campus/redemptions'),
+  getCampusAudit: () => staffRequest('/admin/campus/audit')
 };
 
 /** Ends the session on the server and forgets it here. */

@@ -235,3 +235,29 @@ export function ReferRing({ pct = 10, onOpen, onHide }) {
     document.body
   );
 }
+
+/**
+ * Shown under "Congratulations, you passed!": a small card that slides in once the celebration has
+ * played, inviting the learner to bring friends (they save, you earn). Hidden when the program is off.
+ */
+export function PassReferNudge({ delay = 2600 }) {
+  const [promo, setPromo] = useState(null);
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    let live = true;
+    loadPromo().then(p => { if (live) setPromo(p); });
+    const t = setTimeout(() => setShow(true), delay);
+    return () => { live = false; clearTimeout(t); };
+  }, [delay]);
+  if (!show || !promo?.enabled) return null;
+  return (
+    <a href={paths.refer()} className="pass-nudge group mt-6 mx-auto max-w-md flex items-center gap-3 rounded-2xl bg-[linear-gradient(135deg,#145A43,#0A2F24)] text-ivory px-4 py-3 text-left shadow-[0_18px_36px_-20px_rgba(6,35,29,.85)] ring-1 ring-[#E5C88E]/30">
+      <span className="ref-gift w-11 h-11 shrink-0 rounded-xl bg-gradient-to-b from-[#F3D9A0] to-[#C9A15A] text-[#2A1D08] flex items-center justify-center"><Gift className="w-5 h-5" /></span>
+      <span className="flex-1 min-w-0">
+        <span className="block font-display text-[15px] font-bold leading-tight">Celebrate with your friends</span>
+        <span className="block text-[12.5px] text-ivory/70 leading-snug">They get {promo.discountPct}% off. You earn {promo.commissionPct}% of what they pay.</span>
+      </span>
+      <span className="shrink-0 inline-flex items-center gap-1 text-[13px] font-bold text-[#E5C88E]">Refer <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" /></span>
+    </a>
+  );
+}

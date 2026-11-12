@@ -12,7 +12,21 @@ const DIFF_TONE = {
   Advanced: 'bg-brand-900 text-ivory border-brand-900'
 };
 
-const Para = ({ text }) => String(text || '').split('\n').map((l, i) => (l.trim() ? <p key={i} className="whitespace-pre-wrap">{l}</p> : <div key={i} className="h-2" />));
+// A line of code inside an exercise prompt (shown in a code box, keeping its indentation).
+const CODE_LINE = /^(\s{2,}\S|>>>|(def|for|if|elif|while|import|from|class|return|try|except|with|SELECT|INSERT|UPDATE|DELETE|CREATE|let|const|var|function)\b|else:|print\(|console\.)|^[\w.[\]'"]+\s*[+\-*/]?=\s*\S|^\w[\w.]*\(.*\)$/;
+
+const Para = ({ text }) => {
+  const blocks = [];
+  String(text || '').split('\n').forEach((l) => {
+    const code = l.trim() && CODE_LINE.test(l);
+    const last = blocks[blocks.length - 1];
+    if (code && last?.code) last.lines.push(l);
+    else blocks.push({ code, lines: [l] });
+  });
+  return blocks.map((b, i) => b.code
+    ? <pre key={i} className="m-0 rounded-lg bg-brand-50 border border-brand-900/10 px-3 py-2 font-mono text-[13px] leading-6 text-brand-900 whitespace-pre-wrap break-words">{b.lines.join('\n')}</pre>
+    : (b.lines[0].trim() ? <p key={i} className="whitespace-pre-wrap">{b.lines[0]}</p> : <div key={i} className="h-1" />));
+};
 
 /** One graded practice exercise. All grading happens on the server via /api/practice/check. */
 export function ExerciseCard({ ex, index, courseId, moduleId, completed, onCompleted }) {
@@ -156,7 +170,7 @@ export function ExerciseCard({ ex, index, courseId, moduleId, completed, onCompl
             </div>
             <CodeEditor value={code} onChange={setCode} lang={lang} onRun={runCode} minHeight={Math.min(420, Math.max(180, (code.split('\n').length + 2) * 22))} label={`Code for ${ex.title}`} />
             <div className="bg-white border-t border-brand-900/10 px-4 py-3 text-[13px] font-mono" aria-live="polite">
-              {run.status === 'idle' && <p className="text-charcoal/45 font-sans text-sm">Run your code to see its output here (Ctrl + Enter).</p>}
+              {run.status === 'idle' && <p className="text-charcoal/60 font-sans text-sm">Run your code to see its output here (Ctrl + Enter).</p>}
               {run.status === 'running' && <p className="text-sage font-sans text-sm flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />{run.statusText || 'Running…'}</p>}
               {run.output && <pre className="whitespace-pre-wrap text-charcoal m-0">{run.output}</pre>}
               {run.error && <pre className="whitespace-pre-wrap text-rose-700 bg-rose-50 rounded-md px-2 py-1 m-0 mt-1">{run.error}</pre>}
@@ -240,9 +254,9 @@ export default function PracticeExercises({ exercises, courseId, moduleId, compl
   }
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-3 text-sm text-charcoal/70">
-        <Target className="w-4 h-4 text-sage" />
-        <span><strong className="text-brand-900">{[...done].filter(id => exercises.some(e => e.id === id)).length}</strong> of {exercises.length} exercises completed · answers are checked on the server; solutions appear after your first attempt.</span>
+      <div className="flex items-start gap-3 text-sm text-charcoal/70">
+        <Target className="w-4 h-4 mt-0.5 text-sage shrink-0" />
+        <p className="min-w-0"><span className="block"><strong className="text-brand-900">{[...done].filter(id => exercises.some(e => e.id === id)).length}</strong> of {exercises.length} exercises completed</span><span className="block text-[12.5px] text-charcoal/60">Solutions appear after your first attempt.</span></p>
       </div>
       {exercises.map((ex, i) => (
         <ExerciseCard key={ex.id} ex={ex} index={i} courseId={courseId} moduleId={moduleId} completed={done.has(ex.id)} onCompleted={(id) => setDone(s => new Set([...s, id]))} />

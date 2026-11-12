@@ -168,7 +168,7 @@ export default function ConceptMap({ title, concepts = [], onPick }) {
   return (
     <div className="space-y-4">
       {/* how to read it */}
-      <div className="grid gap-2 grid-cols-[repeat(auto-fit,minmax(190px,1fr))]">
+      <div className="hidden md:grid gap-2 grid-cols-[repeat(auto-fit,minmax(190px,1fr))]">
         {[
           { icon: Compass, t: 'The green hub is this module', d: 'Every idea on the map belongs to this topic.' },
           { icon: Hash, t: 'Each card is one key idea', d: 'Numbered in the order you will learn them.' },

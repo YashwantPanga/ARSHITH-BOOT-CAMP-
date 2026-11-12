@@ -89,10 +89,10 @@ export const api = {
     request(`/progress/${encodeURIComponent(courseId)}?userId=${encodeURIComponent(userId || '')}`),
   getEnrollment: (userId) => request(`/enrollment?userId=${encodeURIComponent(userId || '')}`),
   enroll: (userId, courseId) => request('/enrollment', { method: 'POST', body: JSON.stringify({ userId, courseId }) }),
-  createPaymentOrder: (courseId) => request('/payments/order', { method: 'POST', body: JSON.stringify({ courseId }) }),
-  createInterviewOrder: () => request('/payments/order', { method: 'POST', body: JSON.stringify({ product: 'interview' }) }),
+  createPaymentOrder: (courseId, voucherCode) => request('/payments/order', { method: 'POST', body: JSON.stringify({ courseId, ...(voucherCode ? { voucherCode } : {}) }) }),
+  createInterviewOrder: (voucherCode) => request('/payments/order', { method: 'POST', body: JSON.stringify({ product: 'interview', ...(voucherCode ? { voucherCode } : {}) }) }),
   verifyPayment: (orderId) => request('/payments/verify', { method: 'POST', body: JSON.stringify({ orderId }) }),
-  getPaymentQuote: ({ courseId, product } = {}) => request(`/payments/quote?${new URLSearchParams(product ? { product } : { courseId })}`),
+  getPaymentQuote: ({ courseId, product, voucher } = {}) => request(`/payments/quote?${new URLSearchParams({ ...(product ? { product } : { courseId }), ...(voucher ? { voucher } : {}) })}`),
 
   // Refer & Earn
   getReferralPromo: () => request('/referrals/promo'),

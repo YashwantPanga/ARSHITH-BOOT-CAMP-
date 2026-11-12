@@ -22,6 +22,7 @@ const warnTone = (n) => (n >= 3 ? 'bg-rose-50 text-rose-700 border-rose-200' : n
 import AdminQuizManager from '../components/AdminQuizManager';
 import AdminQuizAnalytics from '../components/AdminQuizAnalytics';
 import AdminReferrals from '../components/staff/AdminReferrals';
+import AdminCampus from '../components/staff/AdminCampus';
 
 // embedded: shown inside the normal site (under its header) on the profile page. initialSection opens a
 // sidebar section directly (e.g. from the tool bar on a course page).
@@ -540,6 +541,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     { id: 'certificates', label: 'Certificates', icon: Award, badge: certificates.length },
     { id: 'payments', label: 'Payments', icon: IndianRupee, badge: payments.payments.filter(p => p.status === 'paid').length },
     { id: 'referrals', label: 'Refer & Earn', icon: Gift },
+    { id: 'campus', label: 'Campus Rewards', icon: GraduationCap },
     { id: 'export', label: 'Export Reports', icon: FileSpreadsheet },
     { id: 'courses', label: 'Course Catalog', icon: BookOpen, badge: courses.length },
     { id: 'settings', label: 'Admin Settings', icon: Settings },
@@ -550,7 +552,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     { heading: 'Home', ids: ['dashboard'] },
     { heading: 'Learners', ids: ['students', 'progress', 'projects'] },
     { heading: 'Certificates', ids: ['certificates', 'export'] },
-    { heading: 'Money', ids: ['payments', 'referrals'] },
+    { heading: 'Money', ids: ['payments', 'referrals', 'campus'] },
     { heading: 'Content', ids: ['courses'] },
     { heading: 'Account', ids: ['settings'] }
   ];
@@ -562,6 +564,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     activeSection === 'certificates' ? 'Certificates' :
     activeSection === 'payments' ? 'Payments' :
     activeSection === 'referrals' ? 'Refer & Earn' :
+    activeSection === 'campus' ? 'Campus Rewards' :
     activeSection === 'export' ? 'Export Reports' :
     activeSection === 'courses' ? 'Course Catalog' : 'Admin Settings';
   const pageSubtitle = builderCourse ? 'Edit modules, lessons and quizzes for this course' :
@@ -572,6 +575,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     activeSection === 'certificates' ? 'Certificate management & verification' :
     activeSection === 'payments' ? 'Course and Interview Prep payments received through Cashfree' :
     activeSection === 'referrals' ? 'Referrers, commissions, withdrawals and the promotion' :
+    activeSection === 'campus' ? 'Partner colleges, student verification, campaigns and vouchers' :
     activeSection === 'export' ? 'Download student data as Excel' :
     activeSection === 'courses' ? 'Manage the course catalog' : 'Admin account & security';
   const go = (id) => { setActiveSection(id); setBuilderCourse(null); setMobileSidebarOpen(false); };
@@ -1459,6 +1463,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
         )}
 
         {activeSection === 'referrals' && <AdminReferrals notify={showToast} />}
+        {activeSection === 'campus' && <AdminCampus notify={showToast} />}
 
         {activeSection === 'payments' && (() => {
           const paid = payments.payments.filter(p => p.status === 'paid');

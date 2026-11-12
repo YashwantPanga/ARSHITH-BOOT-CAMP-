@@ -788,3 +788,53 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 .iv-bar { width: 92%; animation: ivBar 1.1s cubic-bezier(.2,.9,.3,1) .15s both; }
 @keyframes ivBar { from { width: 8%; } }
 @media (prefers-reduced-motion: reduce) { .iv-glass, .iv-bar { animation: none; } }
+
+
+/* ---------- sign-up card: medium size ---------- */
+.auth-compact .auth-input { height: 44px; font-size: 15px; }
+.auth-compact label > span:first-child > span:first-child { font-size: 13.5px; }
+.auth-compact label > span:first-child { margin-bottom: 4px; }
+.auth-compact label > .block.mt-1\.5 { margin-top: 4px; font-size: 11.5px; }
+
+.price-now { display: inline-block; animation: priceNow .55s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes priceNow { from { opacity: 0; transform: translateY(6px) scale(.9); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .price-now { animation: none; } }
+
+/* ---------- Campus Rewards: coupon printer ---------- */
+.cv-printer { position: relative; filter: drop-shadow(0 22px 34px rgba(6,35,29,.35)); }
+.cv-head { position: relative; z-index: 2; height: 30px; margin: 0 -10px; border-radius: 14px 14px 8px 8px; background: linear-gradient(180deg, #1C5A45, #0A2F24); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 6px 12px -6px rgba(0,0,0,.6); display: flex; align-items: center; padding: 0 14px; gap: 10px; }
+.cv-led { width: 7px; height: 7px; border-radius: 50%; background: #2BB673; box-shadow: 0 0 8px #2BB673; animation: cvLed 2.2s steps(1) 1 both; }
+@keyframes cvLed { 0%, 85% { background: #E5C88E; box-shadow: 0 0 8px #E5C88E; } 100% { background: #2BB673; box-shadow: 0 0 8px #2BB673; } }
+.cv-slot { flex: 1; height: 5px; border-radius: 5px; background: #03110C; box-shadow: inset 0 2px 3px rgba(0,0,0,.8), 0 1px 0 rgba(229,200,142,.35); }
+.cv-brand { font-size: 9px; font-weight: 800; letter-spacing: .24em; color: rgba(229,200,142,.7); }
+.cv-feed { overflow: hidden; margin-top: -4px; border-radius: 0 0 18px 18px; }
+.cv-paper { position: relative; animation: cvPrint 2.2s linear both; }
+@keyframes cvPrint {
+  0% { transform: translateY(-100%); filter: blur(5px) saturate(.4); }
+  14% { transform: translateY(-82%); } 20% { transform: translateY(-82%); filter: blur(4px) saturate(.55); }
+  36% { transform: translateY(-58%); } 42% { transform: translateY(-58%); filter: blur(2.5px) saturate(.7); }
+  58% { transform: translateY(-34%); } 64% { transform: translateY(-34%); filter: blur(1.2px); }
+  80% { transform: translateY(-10%); } 86% { transform: translateY(-10%); }
+  100% { transform: translateY(0); filter: none; }
+}
+.cv-scan { position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, transparent, #F3D9A0, transparent); box-shadow: 0 0 18px 4px rgba(243,217,160,.55); opacity: 0; animation: cvScan 2.2s linear both; pointer-events: none; }
+@keyframes cvScan { 0% { top: 100%; opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } 100% { top: 0; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .cv-paper, .cv-scan, .cv-led { animation: none; } }
+
+.pass-nudge { animation: passNudge .6s cubic-bezier(.2,1.3,.35,1) both; }
+@keyframes passNudge { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .pass-nudge { animation: none; } }
+
+/* ---------- phones: lesson reader (Figma "Mobile Practice UI") ---------- */
+.lr-iconbtn { width: 42px; height: 42px; flex: none; border-radius: 14px; background: #FFFDF7; border: 1px solid #E5DCC8; color: #14211C; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px -6px rgba(60,45,20,.35); }
+.lr-iconbtn:active { transform: scale(.96); }
+.lr-chip { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; background: #DCEFD8; color: #1E6A4E; font-size: 11.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+@media (max-width: 767px) {
+  .lesson-page, .lesson-page main { background: #F6F1E6; }
+  /* zero-specificity defaults: any card that sets its own colours or sizes (dark practice cards,
+     code, callouts) keeps them */
+  :where(.lesson-page article section) > h2 { font-size: 20px; letter-spacing: -0.01em; color: #14211C; }
+  :where(.lesson-page .lesson-body) { font-size: 16px; line-height: 1.7; }
+  :where(.lesson-page .lesson-body) :where(p) { line-height: 1.7; }
+  :where(.lesson-page .lesson-body) :where(p, li) :where(code) { background: transparent; padding: 0; color: #1E7A52; }
+}

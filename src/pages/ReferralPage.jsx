@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import {
   Copy, Check, Share2, QrCode, Gift, Wallet, Clock, ArrowRight, Users, MousePointerClick, UserPlus, ShoppingBag,
@@ -7,6 +7,8 @@ import {
 import { api } from '../services/api';
 import { paths } from '../router';
 import ReferralTicket from '../components/ReferralTicket';
+import ReferralShareCard from '../components/ReferralShareCard';
+import { shareCard } from '../utils/shareCard';
 import { rupees, visitorId, rememberReferral, forgetReferral } from '../utils/referral';
 
 /**
@@ -207,9 +209,19 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
   const unread = data.notifications.filter(n => !n.read).length;
   const w = data.wallet;
   const total = Math.max(1, w.pending + w.available + w.reserved + w.withdrawn);
+  // shares the invite as a card image (with the link as the caption)
+  const cardRef = useRef(null);
+  const [sharing, setSharing] = useState(false);
   const share = async () => {
-    const text = `Learn coding with me on CodeLekho - you get ${data.rules.discountPct}% off with my link:`;
-    if (navigator.share) { try { await navigator.share({ title: 'CodeLekho', text, url: data.link }); } catch { /* cancelled */ } } else { window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${data.link}`)}`, '_blank', 'noopener'); }
+    if (sharing) return;
+    const text = `Learn coding with me on CodeLekho - you get ${data.rules.discountPct}% off with my code ${data.code}: ${data.link}`;
+    setSharing(true);
+    try {
+      const r = await shareCard({ svg: cardRef.current, width: 1080, height: 1350, fileName: `CodeLekho-invite-${data.code}.png`, text });
+      if (r === 'fallback') toast?.('Your invite card was saved - attach it in the WhatsApp chat that opened.', 'success', 5000);
+    } catch {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+    } finally { setSharing(false); }
   };
   const openNotes = async () => { setTab('notifications'); if (unread) { try { await api.markReferralNotificationsRead(); setData(d => ({ ...d, notifications: d.notifications.map(n => ({ ...n, read: true })) })); } catch { /* ignore */ } } };
   const toggleOptOut = async () => { try { const r = await api.setPromoOptOut(!data.promoOptOut); setData(d => ({ ...d, promoOptOut: r.promoOptOut })); } catch { /* ignore */ } };
@@ -228,6 +240,8 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
         {!data.rules.enabled && <p className="mt-4 rounded-xl bg-cream border border-brand-900/10 px-4 py-3 text-[14px] text-charcoal/70">Refer &amp; Earn is paused right now. Your earnings are safe.</p>}
 
         {/* phones: the printed pass */}
+        {/* the image that goes out with every share */}
+        <div className="hidden" aria-hidden="true"><ReferralShareCard ref={cardRef} code={data.code} link={data.link} firstName={firstName} discountPct={data.rules.discountPct} /></div>
         <ReferralTicket code={data.code} link={data.link} firstName={firstName} discountPct={data.rules.discountPct} commissionPct={data.rules.commissionPct} qr={qr} onShare={share} art={<RewardArt className="w-full" />} />
 
         {/* tablets and desktop: ticket with code, link, share, QR */}
@@ -246,7 +260,7 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
                 <CopyButton text={data.link} label="Copy link" className="shrink-0 h-9 px-3 rounded-lg bg-[#E5C88E] text-[#2A1D08] text-[13px] font-bold" />
               </div>
               <div className="mt-4 flex flex-wrap gap-2.5">
-                <a href={`https://wa.me/?text=${encodeURIComponent(`Learn coding with me on CodeLekho - ${data.rules.discountPct}% off with my link: ${data.link}`)}`} target="_blank" rel="noopener noreferrer" className="h-10 px-4 rounded-xl bg-[#25D366] text-[#073B1E] text-[14px] font-bold inline-flex items-center gap-2">WhatsApp</a>
+                <button onClick={share} disabled={sharing} className="h-10 px-4 rounded-xl bg-[#25D366] text-[#073B1E] text-[14px] font-bold inline-flex items-center gap-2 disabled:opacity-70">{sharing ? <Loader2 className="w-4 h-4 animate-spin" /> : null} WhatsApp</button>
                 <button onClick={share} className="h-10 px-4 rounded-xl border border-white/20 text-[14px] font-semibold inline-flex items-center gap-2"><Share2 className="w-4 h-4" /> Share</button>
               </div>
               <p className="mt-4 text-[12.5px] text-ivory/55">Friends get {data.rules.discountPct}% off for {data.rules.attributionDays} days · you earn {data.rules.commissionPct}% of what they pay</p>

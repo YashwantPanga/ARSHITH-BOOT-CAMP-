@@ -243,7 +243,7 @@ export function FurtherLearning({ references = [], originalReferences = [], next
           ))}
         </ul>
       )}
-      <p className="text-xs text-charcoal/50">Explanations in this lesson are original teaching material; the links above are free official documentation and open course resources for further reading.</p>
+      <p className="text-xs text-charcoal/65">Explanations in this lesson are original teaching material; the links above are free official documentation and open course resources for further reading.</p>
       {next && <p className="flex gap-2 text-sm rounded-xl bg-brand-50 border border-brand-200 px-4 py-3 text-brand-900"><ArrowRight className="w-4 h-4 mt-0.5 shrink-0" /><span><strong>Next:</strong> {next}</span></p>}
     </div>
   );

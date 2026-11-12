@@ -48,6 +48,7 @@ const PROTECTED = [
   ['GET', /^\/payments\/quote$/],
   ['GET', /^\/referrals\/me$/],
   ['POST', /^\/referrals\/(claim|withdrawals|preferences|notifications\/read)$/],
+  ['POST', /^\/campus\/vouchers\/validate$/],
   ['POST', /^\/certificates\/issue$/],
   ['GET', /^\/practice\/progress$/],
   ['POST', /^\/projects\/submit$/],

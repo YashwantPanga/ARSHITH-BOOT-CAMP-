@@ -81,15 +81,15 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
   };
 
   const card = (
-      <div className={`${asModal ? 'auth-modal landing-type' : ''} relative w-full ${isSignup ? (asModal ? 'max-w-[500px]' : 'max-w-[540px]') : (asModal ? 'max-w-[430px]' : 'max-w-[460px]')} bg-white rounded-2xl ${asModal ? 'shadow-[0_40px_100px_-30px_rgba(0,0,0,.55)] px-6 sm:px-8 pt-8 pb-7' : 'shadow-[0_30px_80px_-30px_rgba(1,58,43,.35)] px-6 sm:px-10 pt-9 pb-8'} ring-1 ring-black/5 animate-fade-up`}>
+      <div className={`${asModal ? 'auth-modal landing-type' : ''} relative w-full ${isSignup ? 'auth-compact max-w-[440px]' : (asModal ? 'max-w-[430px]' : 'max-w-[460px]')} bg-white rounded-2xl ${asModal ? 'shadow-[0_40px_100px_-30px_rgba(0,0,0,.55)]' : 'shadow-[0_30px_80px_-30px_rgba(1,58,43,.35)]'} ${isSignup ? 'px-5 sm:px-7 pt-6 pb-6' : asModal ? 'px-6 sm:px-8 pt-8 pb-7' : 'px-6 sm:px-10 pt-9 pb-8'} ring-1 ring-black/5 animate-fade-up`}>
         <button onClick={onBack} className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center text-charcoal/70 hover:bg-slate-100 hover:text-charcoal transition" aria-label="Close">
           <X className="w-5 h-5" />
         </button>
 
-        <h1 className={`${asModal ? 'text-[24px] sm:text-[26px]' : 'text-[28px] sm:text-[30px]'} font-bold leading-tight text-charcoal pr-8`}>{isSignup ? 'Create your account' : 'Log in to your account'}</h1>
-        <p className={`mt-2 ${asModal ? 'text-[15px]' : 'text-[16px]'} leading-relaxed text-charcoal/65`}>
+        <h1 className={`${isSignup ? 'text-[22px] sm:text-[24px]' : asModal ? 'text-[24px] sm:text-[26px]' : 'text-[28px] sm:text-[30px]'} font-bold leading-tight text-charcoal pr-8`}>{isSignup ? 'Create your account' : 'Log in to your account'}</h1>
+        <p className={`${isSignup ? 'mt-1.5 text-[14px]' : asModal ? 'mt-2 text-[15px]' : 'mt-2 text-[16px]'} leading-relaxed text-charcoal/65`}>
           {isSignup
-            ? 'Learn industry skills with mentor-written courses and earn a QR-verified certificate.'
+            ? 'Mentor-written courses and a QR-verified certificate.'
             : 'Learn on your own time with mentor-written courses and quizzes after every module.'}
         </p>
 
@@ -99,19 +99,19 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className={`mt-6 grid gap-4 ${isSignup ? 'sm:grid-cols-2' : ''}`} noValidate>
+        <form onSubmit={handleSubmit} className={`${isSignup ? 'mt-4 grid gap-x-3 gap-y-3 grid-cols-2' : 'mt-6 grid gap-4'}`} noValidate>
           {isSignup && (
-            <Field className="sm:col-span-2" label="Full name" hint="Your real full name - it is printed on your certificate exactly as you type it here.">
+            <Field className="col-span-2" label="Full name" hint="Printed on your certificate exactly as typed.">
               <input className="auth-input" autoComplete="name" value={form.name} onChange={set('name')} />
             </Field>
           )}
-          <Field label="Email" className={isSignup ? 'sm:col-span-2' : ''}>
+          <Field label="Email" className={isSignup ? 'col-span-2' : ''}>
             <input className="auth-input" type="email" autoComplete="email" value={form.email} onChange={set('email')} />
           </Field>
           <Field
-            label="Registration / ID number"
+            label={isSignup ? 'Reg. / ID number' : 'Registration / ID number'}
             hint={isSignup
-              ? 'Any ID you have: college roll number, employee ID, or any number you choose (4-20 letters or digits, for example 21CS045 or EMP1024). You will need it every time you log in, so write it down.'
+              ? 'Roll no. or any ID · needed to log in'
               : 'The registration / ID number you entered when you signed up.'}
           >
             <input className="auth-input uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal" value={form.regNo} onChange={set('regNo')} />
@@ -140,36 +140,37 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
             </Field>
           )}
           {isSignup && (
-            <div className="sm:col-span-2">
-              <label className="block text-[13px] font-semibold text-charcoal/75 mb-1.5" htmlFor="ref-code">Referral code <span className="font-normal text-charcoal/50">(optional)</span></label>
+            <div className="col-span-2">
+              <label className="block text-[13.5px] font-bold text-charcoal mb-1" htmlFor="ref-code">Referral code <span className="font-normal text-charcoal/50">(optional)</span></label>
               <input id="ref-code" className="auth-input font-mono tracking-wider" value={form.referral} onChange={set('referral')} maxLength={16} placeholder="e.g. YASH123" autoComplete="off" />
               {fromLink?.code && form.referral === fromLink.code && <p className="mt-1.5 text-[12.5px] font-semibold text-forest">Invited by {fromLink.referrerName || 'a friend'} · 10% off your first purchases</p>}
             </div>
           )}
 
-          <button type="submit" disabled={busy} className={`${isSignup ? 'sm:col-span-2' : ''} mt-1 h-12 rounded-lg bg-brand-900 text-ivory text-[16px] font-bold hover:bg-forest active:scale-[.99] disabled:opacity-70 transition shadow-[0_10px_24px_-12px_rgba(1,58,43,.7)]`}>
+          <button type="submit" disabled={busy} className={`${isSignup ? 'col-span-2 h-11' : 'h-12'} mt-1 rounded-lg bg-brand-900 text-ivory text-[16px] font-bold hover:bg-forest active:scale-[.99] disabled:opacity-70 transition shadow-[0_10px_24px_-12px_rgba(1,58,43,.7)]`}>
             {busy ? 'Please wait…' : isSignup ? 'Create account' : 'Continue'}
           </button>
           {isSignup && (
-            <p className="sm:col-span-2 text-center text-[12.5px] text-charcoal/60">
+            <p className="col-span-2 text-center text-[12px] text-charcoal/60">
               By creating an account you agree to our <a href="/terms" target="_blank" rel="noopener" className="font-semibold text-forest underline">Terms of Use</a> and <a href="/privacy" target="_blank" rel="noopener" className="font-semibold text-forest underline">Privacy Policy</a>.
             </p>
           )}
         </form>
 
-        <div className="my-5 flex items-center gap-3 text-[13px] text-charcoal/50" aria-hidden="true">
+        <div className={`${isSignup ? 'my-3.5' : 'my-5'} flex items-center gap-3 text-[13px] text-charcoal/50`} aria-hidden="true">
           <span className="h-px flex-1 bg-slate-200" />or<span className="h-px flex-1 bg-slate-200" />
         </div>
 
-        <button type="button" onClick={() => onSwitchMode(isSignup ? 'login' : 'signup')} className="w-full h-12 rounded-lg border border-charcoal/80 bg-white text-[16px] font-bold text-charcoal hover:bg-slate-50 transition">
+        <button type="button" onClick={() => onSwitchMode(isSignup ? 'login' : 'signup')} className={`w-full ${isSignup ? 'h-11 text-[15px]' : 'h-12 text-[16px]'} rounded-lg border border-charcoal/80 bg-white font-bold text-charcoal hover:bg-slate-50 transition`}>
           {isSignup ? 'Log in to an existing account' : 'Create a new account'}
         </button>
 
-        <p className={`${asModal ? 'mt-5 text-[12.5px]' : 'mt-6 text-[13px]'} leading-relaxed text-charcoal/60`}>
-          {isSignup
-            ? 'Your registration / ID number becomes your learner ID and is printed with a QR code on your certificate. We will email you a code to verify your address.'
-            : 'Use the email, registration / ID number and password you signed up with. Having trouble? Use Forgot password to reset it.'}
-        </p>
+        {!isSignup && (
+          <p className={`${asModal ? 'mt-5 text-[12.5px]' : 'mt-6 text-[13px]'} leading-relaxed text-charcoal/60`}>
+            Use the email, registration / ID number and password you signed up with. Having trouble? Use Forgot password to reset it.
+          </p>
+        )}
+        {isSignup && <p className="mt-3 text-center text-[12px] text-charcoal/50">We email you a code to verify your address.</p>}
       </div>
   );
 

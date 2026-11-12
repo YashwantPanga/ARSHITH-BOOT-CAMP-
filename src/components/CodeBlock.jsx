@@ -39,28 +39,37 @@ export default function CodeBlock({ code, label, language, courseId, compact = f
   const gutterW = String(lines.length).length > 2 ? 'w-10 sm:w-12' : 'w-8 sm:w-10';
 
   if (phone) {
-    const edge = tone === 'bad' ? 'border-rose-500' : tone === 'good' ? 'border-leaf' : 'border-forest';
+    // phones: light reading card - language badge, file name, copy, Try it, line numbers
+    const short = { javascript: 'JS', python: 'PY', sql: 'SQL', html: 'HTML', css: 'CSS', text: 'SH' }[lang] || 'CODE';
+    const ext = { javascript: 'js', python: 'py', sql: 'sql', html: 'html', css: 'css', text: 'sh' }[lang] || 'txt';
+    const name = title || (label && label !== langLabel && label !== 'diagram' ? label : `example.${ext}`);
+    const edge = tone === 'bad' ? 'border-rose-300' : tone === 'good' ? 'border-[#9BD3B0]' : 'border-[#E7DFCC]';
     return (
-      <div className="code-card relative max-w-full min-w-0 rounded-xl bg-[#E9EEEB] border border-brand-900/10 p-2.5">
-        <div className="flex items-center gap-2 px-1 pb-2">
-          <span className="flex gap-1.5 shrink-0" aria-hidden="true"><i className="w-2.5 h-2.5 rounded-full bg-[#E5534B]" /><i className="w-2.5 h-2.5 rounded-full bg-[#E9B53F]" /><i className="w-2.5 h-2.5 rounded-full bg-[#3FB66B]" /></span>
-          <span className="min-w-0 truncate text-[12.5px] font-semibold text-charcoal/80">{title || `${label && label !== langLabel ? label : langLabel} example`}</span>
-          <button onClick={copy} className="ml-auto flex items-center gap-1 h-7 px-2 rounded-md text-[11.5px] font-medium text-charcoal/60 active:bg-white/70" aria-label="Copy code">
-            {copied ? <Check className="w-3.5 h-3.5 text-leaf" /> : <Copy className="w-3.5 h-3.5" />}{copied ? 'Copied' : 'Copy'}
+      <div className={`code-card lr-code relative max-w-full min-w-0 rounded-2xl bg-[#FBF8F1] border ${edge} shadow-[0_10px_24px_-18px_rgba(60,45,20,.45)] overflow-hidden`}>
+        <div className="flex items-center gap-2 pl-3 pr-2 h-12 border-b border-[#EFE7D5] bg-[#FFFDF8]">
+          <span className="shrink-0 h-6 px-2 rounded-md bg-[#F3E6C9] text-[#8A6420] text-[11px] font-bold font-mono inline-flex items-center">{short}</span>
+          <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-[#3A3428]">{name}</span>
+          <button onClick={copy} className="shrink-0 w-8 h-8 rounded-lg border border-[#E7DFCC] bg-white flex items-center justify-center text-[#5B5446] active:scale-95 transition" aria-label={copied ? 'Copied' : 'Copy code'}>
+            {copied ? <Check className="w-4 h-4 text-[#1E6A4E]" /> : <Copy className="w-4 h-4" />}
           </button>
+          {canRun && (
+            <button onClick={() => playground.open({ code: String(code), lang })} className="shrink-0 h-8 px-3 rounded-lg bg-[#1E5A44] text-white text-[13px] font-semibold inline-flex items-center gap-1.5 active:scale-95 transition">
+              <Play className="w-3 h-3 fill-current" /> Try it
+            </button>
+          )}
         </div>
-        <div className={`rounded-lg bg-white border-l-4 ${edge} overflow-y-auto ${compact ? 'max-h-64' : 'max-h-[360px]'} thin-scroll`}>
-          <pre className="code-light m-0 px-3 py-2.5 text-[12.5px] leading-[1.7] text-[#1F2D28] font-mono whitespace-pre-wrap break-words" style={{ tabSize: 4 }}>
-            {lines.map((toks, i) => (
-              <span key={i} className="block">{toks.length ? toks.map((t, k) => (t.t ? <span key={k} className={`tok-${t.t}`}>{t.v}</span> : <React.Fragment key={k}>{t.v}</React.Fragment>)) : ' '}</span>
-            ))}
+        <div className={`overflow-y-auto ${compact ? 'max-h-64' : 'max-h-[380px]'} thin-scroll`}>
+          <pre className="code-light m-0 py-3 text-[12.5px] leading-[1.75] text-[#26302B] font-mono" style={{ tabSize: 4 }}>
+            <code className="table w-full">
+              {lines.map((toks, i) => (
+                <span key={i} className="table-row">
+                  <span className="table-cell select-none text-right pl-3 pr-3 w-8 text-[11.5px] text-[#B5AC99]">{i + 1}</span>
+                  <span className="table-cell pr-3 whitespace-pre-wrap break-words">{toks.length ? toks.map((t, k) => (t.t ? <span key={k} className={`tok-${t.t}`}>{t.v}</span> : <React.Fragment key={k}>{t.v}</React.Fragment>)) : ' '}</span>
+                </span>
+              ))}
+            </code>
           </pre>
         </div>
-        {canRun && (
-          <button onClick={() => playground.open({ code: String(code), lang })} className="mt-2.5 inline-flex items-center gap-1 h-9 px-4 rounded-md bg-forest text-ivory text-[13.5px] font-semibold active:scale-[.98] transition">
-            Try it yourself <ChevronRight className="w-4 h-4" />
-          </button>
-        )}
       </div>
     );
   }

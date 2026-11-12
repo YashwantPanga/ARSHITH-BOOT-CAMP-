@@ -12,6 +12,7 @@ import { BrandLoader } from './ui';
 import IdentityCheck from './proctor/IdentityCheck';
 import { analyzeFrame, handNearFace, matchPercent, gazeState } from '../utils/aiProctor';
 import CertificateCelebration from './CertificateCelebration';
+import { PassReferNudge } from './ReferralPromo';
 import BetterLuck from './BetterLuck';
 
 const MAX_VIOLATIONS = 3;
@@ -676,6 +677,7 @@ export default function FinalTestModal({ isOpen, onClose: closeModal, course, st
                     </>
                   : <button onClick={() => { setPhase('intro'); setAgree(false); setCamState('idle'); }} className="btn-primary"><RefreshCw className="w-4 h-4" /> Retake assessment</button>}
             </div>
+            {result.passed && <PassReferNudge />}
           </Centered>
         )}
 

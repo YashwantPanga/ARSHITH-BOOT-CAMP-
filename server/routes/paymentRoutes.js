@@ -7,6 +7,7 @@ import { interviewUnlockedByCertificates } from './interviewRoutes.js';
 import { sendMail } from '../lib/mailer.js';
 import { verifyAdminToken } from '../middleware/auth.js';
 import { quote as referralQuote, onOrderPaid as referralOnPaid } from '../lib/referrals.js';
+import * as Campus from '../lib/campus.js';
 
 // Paid unlocks through Cashfree - a course or Interview Prep:
 //  1. POST /payments/order   - the server works out the price and creates a Cashfree order
@@ -29,6 +30,7 @@ function fulfil(db, order, paymentId, via) {
   if (order.kind === 'interview') grantInterview(db, order.email, { orderId: order.orderId });
   else enrol(db, order.email, order.courseId, { paid: true, by: 'cashfree' });
   referralOnPaid(db, order); // Refer & Earn: pending commission for the referrer, once per order
+  Campus.onOrderPaid(db, order); // Campus Rewards: the voucher is used up only now, after payment
   logActivity({ action: order.kind === 'interview' ? 'Interview Prep payment' : 'Course payment', target: order.email, details: `Paid ₹${order.amount / 100} for ${order.courseTitle} (${order.paymentId || order.orderId})`, ipAddress: '-', device: 'Cashfree' });
   return true;
 }
@@ -77,6 +79,13 @@ router.get('/payments/quote', (req, res) => {
   const db = getDb();
   const found = itemFor(db, email, { product: req.query.product, courseId: req.query.courseId });
   if (!found.item) return res.status(found.status).json(found.body);
+  if (req.query.voucher) {
+    // a college voucher replaces the referral discount (they do not stack)
+    const v = Campus.validate(db, email, req.query.voucher, { kind: found.item.kind, courseId: found.item.courseId }, found.item.price * 100);
+    saveDb(db);
+    if (!v.ok) return res.status(v.status).json({ success: false, code: v.code, message: v.message });
+    return res.json({ success: true, title: found.item.title, ...v.quote, referral: null });
+  }
   const q = referralQuote(db, email, { kind: found.item.kind, courseId: found.item.courseId, pricePaise: found.item.price * 100 });
   res.json({ success: true, title: found.item.title, originalPaise: q.originalPaise, discountPaise: q.discountPaise, finalPaise: q.finalPaise, referral: q.referral ? { code: q.referral.code, discountPct: q.referral.discountPct } : null });
 });
@@ -90,10 +99,21 @@ router.post('/payments/order', async (req, res) => {
   const found = itemFor(db, email, req.body || {});
   if (!found.item) return res.status(found.status).json(found.body);
   const item = found.item;
-  // the server alone decides the price, including any referral discount
-  const q = referralQuote(db, email, { kind: item.kind, courseId: item.courseId, pricePaise: item.price * 100 });
-
   const orderId = newOrderId(item.kind === 'interview' ? 'ip' : 'cl');
+  // the server alone decides the price: a campus voucher if one is given, otherwise any referral discount
+  let q;
+  let voucher = null;
+  if (req.body?.voucherCode) {
+    const v = Campus.validate(db, email, req.body.voucherCode, { kind: item.kind, courseId: item.courseId }, item.price * 100);
+    if (!v.ok) { saveDb(db); return res.status(v.status).json({ success: false, code: v.code, message: v.message }); }
+    q = { ...v.quote, referral: null };
+    voucher = { ...v.quote.voucher, campaignId: v.campaign.id };
+    // hold one use of the code before talking to Cashfree, so limits hold even with checkouts at the same moment
+    Campus.reserve(db, v.campaign, email, orderId);
+    saveDb(db);
+  } else {
+    q = referralQuote(db, email, { kind: item.kind, courseId: item.courseId, pricePaise: item.price * 100 });
+  }
   const learner = db.learners?.[email];
   try {
     const cf = await createOrder({
@@ -104,12 +124,15 @@ router.post('/payments/order', async (req, res) => {
       returnUrl: `${siteUrl(req)}${item.back}?cf_order={order_id}`,
       note: item.title
     });
-    if (!db.payments) db.payments = [];
-    db.payments.push({ orderId, kind: item.kind, email, courseId: item.courseId, courseTitle: item.title, amount: q.finalPaise, originalAmount: q.originalPaise, discountAmount: q.discountPaise, ...(q.referral ? { referral: q.referral } : {}), currency: 'INR', status: 'created', gateway: 'cashfree', createdAt: new Date().toISOString() });
-    saveDb(db);
-    res.json({ success: true, orderId, paymentSessionId: cf.payment_session_id, mode: cashfreeMode(), amount: q.finalPaise / 100, originalAmount: q.originalPaise / 100, discountAmount: q.discountPaise / 100, referral: !!q.referral, currency: 'INR', title: item.title, kind: item.kind });
+    // re-read after the network call so changes made meanwhile are kept
+    const fresh = getDb();
+    if (!fresh.payments) fresh.payments = [];
+    fresh.payments.push({ orderId, kind: item.kind, email, courseId: item.courseId, courseTitle: item.title, amount: q.finalPaise, originalAmount: q.originalPaise, discountAmount: q.discountPaise, ...(q.referral ? { referral: q.referral } : {}), ...(voucher ? { voucher } : {}), currency: 'INR', status: 'created', gateway: 'cashfree', createdAt: new Date().toISOString() });
+    saveDb(fresh);
+    res.json({ success: true, orderId, paymentSessionId: cf.payment_session_id, mode: cashfreeMode(), amount: q.finalPaise / 100, originalAmount: q.originalPaise / 100, discountAmount: q.discountPaise / 100, referral: !!q.referral, voucher, currency: 'INR', title: item.title, kind: item.kind });
   } catch (err) {
     console.error('[payments] order failed:', err.message);
+    if (voucher) { const fresh = getDb(); if (Campus.releaseForOrder(fresh, orderId, 'payment could not start')) saveDb(fresh); }
     res.status(502).json({ success: false, message: 'Could not start the payment. Please try again in a minute.' });
   }
 });
@@ -133,6 +156,7 @@ router.post('/payments/verify', async (req, res) => {
     return res.status(502).json({ success: false, message: 'Could not reach the payment service. Please try again in a minute.' });
   }
   if (cf.order_status !== 'PAID') {
+    if (cf.order_status !== 'ACTIVE' && order.voucher) { const fresh = getDb(); if (Campus.releaseForOrder(fresh, orderId)) saveDb(fresh); }
     return res.status(409).json({ success: false, code: 'NOT_PAID', status: cf.order_status, message: cf.order_status === 'ACTIVE' ? 'The payment has not gone through yet.' : 'This payment was not completed. No money was taken - please try again.' });
   }
   const payment = await successfulPayment(orderId);
