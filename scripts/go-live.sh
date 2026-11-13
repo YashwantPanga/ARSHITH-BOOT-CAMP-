@@ -3,7 +3,7 @@
 # Run on the VPS as root:
 #   cd /var/www/arshithcamp && git checkout -q main && git checkout -- package-lock.json && git pull && bash scripts/go-live.sh
 #
-#  1. finds the port Nginx forwards arshithbootcamp.com to, and sets PORT in .env to match
+#  1. finds the port Nginx forwards codelekho.com to, and sets PORT in .env to match
 #  2. stops pm2 apps that run an old copy of the site from another folder
 #  3. frees that port if some other old process still holds it
 #  4. runs scripts/update-live.sh (install, build, restart, health check, rollback on failure)
@@ -13,7 +13,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 DIR="$(pwd)"
-SITE="https://arshithbootcamp.com"
+SITE="https://codelekho.com"
 ok()   { echo "  [ok]   $*"; }
 warn() { echo "  [warn] $*"; }
 fail() { echo "  [FAIL] $*"; }

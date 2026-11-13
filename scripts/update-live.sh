@@ -66,7 +66,7 @@ pm2 save >/dev/null 2>&1 || true
 if healthy; then
   ok "site is up on port $PORT"
   pm2 logs "$APP" --lines 40 --nostream 2>/dev/null | grep -E "Database:|Connected to SMTP|SMTP login failed|JWT_SECRET is not set" | tail -4 | sed 's/^/         /'
-  echo "==> Done. Open https://arshithbootcamp.com and press Ctrl+F5."
+  echo "==> Done. Open https://codelekho.com and press Ctrl+F5."
   exit 0
 fi
 

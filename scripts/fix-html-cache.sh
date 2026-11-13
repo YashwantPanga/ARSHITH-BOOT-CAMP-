@@ -4,7 +4,7 @@
 # Adds one small Nginx file and changes no site config; it is removed again if Nginx rejects it.
 # Run on the VPS as root:  cd /var/www/arshithcamp && bash scripts/fix-html-cache.sh
 set -uo pipefail
-SITE="https://arshithbootcamp.com"
+SITE="https://codelekho.com"
 FILE="/etc/nginx/conf.d/codelekho-html-cache.conf"
 
 cat > "$FILE" <<'CONF'
