@@ -122,6 +122,29 @@ function Colleges({ flash, reload }) {
 }
 
 /* ---------------------------------------------------------------- campaigns */
+const PCTS = [10, 15, 20, 25, 30, 50];
+
+/** Discount on an existing voucher: tap a preset or type any whole percent, then save. */
+function DiscountEditor({ c, onSave }) {
+  const [pct, setPct] = useState(String(c.discountPct));
+  const [busy, setBusy] = useState(false);
+  useEffect(() => setPct(String(c.discountPct)), [c.discountPct]);
+  const n = Number(pct);
+  const ok = Number.isInteger(n) && n >= 1 && n <= 90;
+  const save = async () => { if (!ok || n === c.discountPct) return; setBusy(true); try { await onSave(c, n); } finally { setBusy(false); } };
+  return (
+    <div className="rounded-xl border border-slate-200 p-3">
+      <p className="text-[12px] font-bold text-slate-500">Discount for this college</p>
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        {PCTS.map(p => <button type="button" key={p} onClick={() => setPct(String(p))} className={`h-8 px-2.5 rounded-lg border text-[12.5px] font-bold ${Number(pct) === p ? 'bg-emerald-700 text-white border-emerald-700' : 'border-slate-200 text-slate-600'}`}>{p}%</button>)}
+        <label className="inline-flex items-center h-8 rounded-lg border border-slate-200 pl-2 pr-1.5 text-[12.5px] text-slate-500"><input type="number" min={1} max={90} value={pct} onChange={e => setPct(e.target.value)} aria-label="Discount percent" className="w-10 bg-transparent font-bold text-slate-800 outline-none text-right" />%</label>
+        <button type="button" onClick={save} disabled={!ok || n === c.discountPct || busy} className="h-8 px-3 rounded-lg bg-emerald-700 text-white text-[12.5px] font-bold disabled:opacity-40 inline-flex items-center gap-1">{busy && <Loader2 className="w-3 h-3 animate-spin" />}Save</button>
+      </div>
+      {!ok && <p className="mt-1.5 text-[12px] text-rose-600">Use a whole number from 1 to 90.</p>}
+    </div>
+  );
+}
+
 function CampaignForm({ colleges, courses, onClose, onSaved, flash }) {
   const today = new Date().toISOString().slice(0, 10);
   const later = new Date(Date.now() + 90 * 864e5).toISOString().slice(0, 10);
@@ -144,7 +167,7 @@ function CampaignForm({ colleges, courses, onClose, onSaved, flash }) {
         <Field label="College" error={errors.collegeId}><select value={f.collegeId} onChange={set('collegeId')} className={input}>{colleges.map(c => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}</select></Field>
         <Field label="Campaign name" error={errors.name}><input value={f.name} onChange={set('name')} className={input} placeholder="Semester launch 2026" /></Field>
         <Field label="Discount" error={errors.discountPct} wide>
-          <span className="flex flex-wrap gap-2">{[25, 30, 50].map(p => <button type="button" key={p} onClick={() => setF(x => ({ ...x, discountPct: p }))} className={`h-10 px-4 rounded-xl border text-sm font-bold ${f.discountPct === p ? 'bg-emerald-700 text-white border-emerald-700' : 'border-slate-200 text-slate-600'}`}>{p}% OFF</button>)}
+          <span className="flex flex-wrap gap-2">{PCTS.map(p => <button type="button" key={p} onClick={() => setF(x => ({ ...x, discountPct: p }))} className={`h-10 px-4 rounded-xl border text-sm font-bold ${f.discountPct === p ? 'bg-emerald-700 text-white border-emerald-700' : 'border-slate-200 text-slate-600'}`}>{p}% OFF</button>)}
             <button type="button" onClick={() => setF(x => ({ ...x, discountPct: 'custom' }))} className={`h-10 px-4 rounded-xl border text-sm font-bold ${f.discountPct === 'custom' ? 'bg-emerald-700 text-white border-emerald-700' : 'border-slate-200 text-slate-600'}`}>Custom</button>
             {f.discountPct === 'custom' && <input type="number" min={1} max={90} value={f.custom} onChange={set('custom')} className={`${input} !w-24`} placeholder="%" />}</span>
         </Field>
@@ -184,7 +207,7 @@ const coversText = (c, courses) => {
 };
 
 /** One college voucher: the shareable design, a theme choice and the actions. */
-function VoucherRow({ c, courses, onStatus, onNewCode, share, flash }) {
+function VoucherRow({ c, courses, onStatus, onNewCode, onDiscount, share, flash }) {
   const [theme, setTheme] = useState(c.discountPct >= 50 ? 'gold' : 'emerald');
   const [saving, setSaving] = useState(false);
   const [print, setPrint] = useState(0); // bump to print the coupon again
@@ -239,6 +262,7 @@ function VoucherRow({ c, courses, onStatus, onNewCode, share, flash }) {
             {[['Redeemed', c.maxRedemptions ? `${c.redeemed}/${c.maxRedemptions}` : c.redeemed], ['Students', c.students], ['Discount given', rs(c.discountPaise)]].map(([l, v]) => <div key={l} className="rounded-xl bg-slate-50 py-2"><b className="block text-slate-800 text-[15px]">{v}</b>{l}</div>)}
           </div>
           <p className="text-[12px] text-slate-500">{c.perStudentLimit} use{c.perStudentLimit > 1 ? 's' : ''} per student{c.minPurchasePaise ? ` · min ${rs(c.minPurchasePaise)}` : ''}{c.maxDiscountPaise ? ` · up to ${rs(c.maxDiscountPaise)} off` : ''}{c.inProgress ? ` · ${c.inProgress} payment(s) in progress` : ''}</p>
+          <DiscountEditor c={c} onSave={onDiscount} />
           <div className="flex flex-wrap gap-2">
             <button onClick={shareWa} disabled={saving} className={`${btn} bg-[#25D366] text-[#073B1E]`}>{saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageCircle className="w-3.5 h-3.5" />} Share on WhatsApp</button>
             <button onClick={download} disabled={saving} className={`${btn} bg-emerald-700 text-white`}><Download className="w-3.5 h-3.5" /> Download PNG</button>
@@ -263,6 +287,7 @@ function Campaigns({ flash, reload }) {
   const load = useCallback(() => api.getCampusCampaigns().then(r => setRows(r.campaigns)).catch(e => flash(e.message, 'error')), [flash]);
   useEffect(() => { load(); api.getCampusColleges().then(r => setColleges(r.colleges.filter(c => c.status === 'active'))).catch(() => {}); api.getPublicCourses().then(r => setCourses(r.courses || [])).catch(() => {}); }, [load]);
   const setStatus = async (c, status) => { try { await api.updateCampusCampaign(c.id, { status }); flash(status === 'paused' ? 'Voucher paused' : 'Voucher active again'); load(); reload(); } catch (e) { flash(e.message, 'error'); } };
+  const setDiscount = async (c, discountPct) => { try { await api.updateCampusCampaign(c.id, { discountPct }); flash(`${c.college?.name}: now ${discountPct}% off`); load(); reload(); } catch (e) { flash(e.message, 'error'); } };
   const newCode = async (c) => {
     if (!window.confirm(`Make a new code for ${c.college?.name}? The old code ${c.voucherCode} stops working at once.`)) return;
     try { await api.newCampusCode(c.id); flash('New code created'); load(); } catch (e) { flash(e.message, 'error'); }
@@ -278,7 +303,7 @@ function Campaigns({ flash, reload }) {
         {!colleges.length && <p className="mt-2 text-[13px] text-slate-500">Add an active college first.</p>}
       </Card>
       {rows === null ? <Card><p className="py-8 text-center text-slate-400 text-sm">Loading…</p></Card> : rows.length === 0 ? <Card><p className="py-8 text-center text-slate-400 text-sm">No vouchers yet.</p></Card> : rows.map(c => (
-        <VoucherRow key={c.id} c={c} courses={courses} onStatus={setStatus} onNewCode={newCode} share={share} flash={flash} />
+        <VoucherRow key={c.id} c={c} courses={courses} onStatus={setStatus} onNewCode={newCode} onDiscount={setDiscount} share={share} flash={flash} />
       ))}
       {adding && <CampaignForm colleges={colleges} courses={courses} flash={flash} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); load(); reload(); }} />}
     </div>

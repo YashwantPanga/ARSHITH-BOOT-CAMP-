@@ -7,7 +7,7 @@ import { storedReferral } from '../utils/referral';
 /**
  * Full-page Login / Register screen (routes: /login and /register): one centred card with a large
  * title, labelled fields, a full-width primary button and a button to switch between the two modes.
- * Accounts live on the server; new accounts verify their email before signing in.
+ * Accounts live on the server; a new account is signed in as soon as it is created.
  */
 export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode, onBack, onHome, onSuccess, onNeedVerification, onForgotPassword }) {
   const isSignup = mode === 'signup';
@@ -50,8 +50,8 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
       if (isSignup) {
         const referralCode = form.referral.trim();
         const res = await api.learnerRegister({ name, regNo, phone, email, password: form.password, ...(referralCode ? { referralCode, referralSource: fromLink?.code === referralCode ? 'link' : 'code' } : {}) });
-        // New accounts must verify their email before signing in.
-        onNeedVerification(email, { code: res.devCode, status: res.emailStatus });
+        // The new account is signed in straight away (no email code at sign-up).
+        onSuccess({ ...res.learner, token: res.token });
         return;
       }
       try {
@@ -67,7 +67,7 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
         const saved = readAccount(email);
         if (err.data?.code === 'NOT_FOUND' && saved && saved.password === form.password && (!saved.regNo || saved.regNo.toUpperCase() === regNo)) {
           const res = await api.learnerRegister({ name: saved.name || email.split('@')[0], regNo, phone: saved.phone || '0000000000', email, password: form.password });
-          onNeedVerification(email, { code: res.devCode, status: res.emailStatus });
+          onSuccess({ ...res.learner, token: res.token });
           return;
         }
         if (err.data?.code === 'EMAIL_NOT_VERIFIED') { onNeedVerification(email, null); return; }
@@ -170,7 +170,6 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
             Use the email, registration / ID number and password you signed up with. Having trouble? Use Forgot password to reset it.
           </p>
         )}
-        {isSignup && <p className="mt-3 text-center text-[12px] text-charcoal/50">We email you a code to verify your address.</p>}
       </div>
   );
 

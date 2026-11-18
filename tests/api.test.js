@@ -25,14 +25,14 @@ describe('learner accounts', () => {
   it('registers, requires email verification, then returns a signed token (never the password)', async () => {
     const res = await request(app).post('/api/learners/register').send(learner);
     expect(res.status).toBe(201);
-    expect(res.body.verificationRequired).toBe(true);
-    expect(res.body.token).toBeUndefined();
-    expect(JSON.stringify(res.body)).not.toMatch(/secret123|passwordHash/);
-    const v = await request(app).post('/api/learners/verify-email').send({ email: learner.email, code: res.body.devCode });
-    expect(v.status).toBe(200);
-    expect(v.body.token).toBeTruthy();
-    expect(JSON.stringify(v.body)).not.toMatch(/secret123|passwordHash|codeHash/);
-    token = v.body.token;
+    // no email code at sign-up: the new account is signed in at once
+    expect(res.body.token).toBeTruthy();
+    expect(res.body.devCode).toBeUndefined();
+    expect(JSON.stringify(res.body)).not.toMatch(/secret123|passwordHash|codeHash/);
+    // verify-email never hands out a token without a code
+    const v = await request(app).post('/api/learners/verify-email').send({ email: learner.email });
+    expect(v.body.token).toBeUndefined();
+    token = res.body.token;
   });
   it('rejects a duplicate registration number', async () => {
     const res = await request(app).post('/api/learners/register').send({ ...learner, email: 'other@example.test' });

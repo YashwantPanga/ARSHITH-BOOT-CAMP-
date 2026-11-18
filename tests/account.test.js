@@ -28,38 +28,27 @@ afterAll(() => {
   try { fs.rmSync(outbox, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 
-describe('email verification', () => {
-  it('creates the account unverified and emails a 6-digit code', async () => {
+describe('sign-up without an email code', () => {
+  it('creates the account and signs the learner in straight away, with no email sent', async () => {
     const res = await request(app).post('/api/learners/register').send(learner);
     expect(res.status).toBe(201);
-    expect(res.body.verificationRequired).toBe(true);
-    expect(res.body.emailStatus).toBe('outbox');
-    expect(res.body.devCode).toMatch(/^\d{6}$/);
-    devCode = res.body.devCode;
-    expect(outboxText()).toContain(devCode);
-    // no public HTTPS address in tests: links to localhost/IP addresses are left out (spam filters)
-    expect(outboxText()).not.toContain('/verify-email?email=');
-    const db = JSON.parse(fs.readFileSync(tmp, 'utf8'));
-    expect(JSON.stringify(db.learners[email])).not.toContain(devCode); // only a hash is stored
-  });
-
-  it('blocks sign-in until the email is verified', async () => {
-    const res = await request(app).post('/api/learners/login').send({ email, regNo: learner.regNo, password: learner.password });
-    expect(res.status).toBe(403);
-    expect(res.body.code).toBe('EMAIL_NOT_VERIFIED');
-  });
-
-  it('rejects a wrong code and rate-limits resends', async () => {
-    const wrong = await request(app).post('/api/learners/verify-email').send({ email, code: devCode === '000000' ? '111111' : '000000' });
-    expect(wrong.status).toBe(400);
-    const resend = await request(app).post('/api/learners/resend-verification').send({ email });
-    expect(resend.status).toBe(429);
-  });
-
-  it('verifies with the right code and signs the learner in', async () => {
-    const res = await request(app).post('/api/learners/verify-email').send({ email, code: devCode });
-    expect(res.status).toBe(200);
     expect(res.body.token).toBeTruthy();
+    expect(res.body.devCode).toBeUndefined();
+    expect(outboxText()).toBe('');
+    const login = await request(app).post('/api/learners/login').send({ email, regNo: learner.regNo, password: learner.password });
+    expect(login.status).toBe(200);
+  });
+
+  it('never gives a token from verify-email without a code', async () => {
+    const res = await request(app).post('/api/learners/verify-email').send({ email });
+    expect(res.body.token).toBeUndefined();
+  });
+
+  it('lets older accounts that never entered their sign-up code sign in', async () => {
+    const { getDb, saveDb } = await import('../server/db.js');
+    const db = getDb();
+    db.learners[email].emailVerified = false;
+    saveDb(db);
     const login = await request(app).post('/api/learners/login').send({ email, regNo: learner.regNo, password: learner.password });
     expect(login.status).toBe(200);
   });

@@ -99,7 +99,7 @@ export default function MobileMenu({ open, onClose, route, navigate, studentUser
               <span className="min-w-0">
                 <span className="block font-display text-[19px] font-bold text-evergreen truncate">{name}</span>
                 <span className="block text-[13px] text-[#B5651D] font-semibold">
-                  {streak ? (streak.current ? `🔥 ${streak.current}-day coding streak` : 'Run code today to start a streak') : 'View your dashboard'}
+                  {streak ? (streak.current ? `${streak.current}-day coding streak` : 'Run code today to start a streak') : 'View your dashboard'}
                 </span>
               </span>
             </button>

@@ -128,9 +128,9 @@ function WelcomeCard({ onClose, navigate, signedIn }) {
   const go = (to) => { onClose(); navigate(to); };
 
   return (
-    <div className="fixed inset-0 z-[125] flex items-end justify-center" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+    <div className="fixed inset-0 z-[125] flex items-center justify-center p-5" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
-      <div className="welcome-sheet relative w-full max-w-[480px] max-h-[94dvh] overflow-y-auto no-scrollbar rounded-t-[28px] text-white pb-[calc(16px+env(safe-area-inset-bottom))]"
+      <div className="welcome-sheet relative w-full max-w-[340px] max-h-[82dvh] overflow-y-auto no-scrollbar rounded-[26px] text-white pb-4"
         style={{ background: `radial-gradient(120% 70% at 50% 0%, ${P.green} 0%, ${P.forest} 48%, ${P.night} 100%)` }}>
         <span className="welcome-shine" aria-hidden="true" />
         <button onClick={onClose} className="absolute right-4 top-4 z-20 w-8 h-8 rounded-full flex items-center justify-center active:scale-95 transition" style={{ background: P.cream, color: P.night }} aria-label="Close"><X className="w-4 h-4" strokeWidth={2.6} /></button>
@@ -138,7 +138,7 @@ function WelcomeCard({ onClose, navigate, signedIn }) {
         <p className="pt-6 text-center text-[11px] font-bold tracking-[0.22em]" style={{ color: P.lime }}>LEARN · PRACTISE · GET HIRED</p>
         <h2 id="welcome-title" className="mt-1.5 text-center font-display text-[26px] font-extrabold leading-tight px-12">Now crack interviews here</h2>
 
-        <div className="relative mt-4 mx-6 h-[232px] overflow-hidden">
+        <div className="relative mt-3 mx-5 h-[190px] overflow-hidden">
           <Stage key={scene} scene={scene} />
         </div>
         <div className="mt-2 flex justify-center gap-1.5" aria-hidden="true">
@@ -147,7 +147,7 @@ function WelcomeCard({ onClose, navigate, signedIn }) {
 
         <div className="px-5 mt-4">
           <button onClick={() => go(signedIn ? paths.dashboard() : paths.register())}
-            className="welcome-cta relative overflow-hidden w-full h-[52px] rounded-2xl font-display font-bold text-[17px] active:translate-y-[2px] transition"
+            className="welcome-cta relative overflow-hidden w-full h-[48px] rounded-2xl font-display font-bold text-[16px] active:translate-y-[2px] transition"
             style={{ background: P.lime, color: P.night, boxShadow: `0 14px 30px -14px ${P.lime}` }}>
             {signedIn ? 'Continue learning' : 'Enroll now'}
           </button>

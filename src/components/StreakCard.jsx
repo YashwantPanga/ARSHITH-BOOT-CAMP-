@@ -206,7 +206,7 @@ export function StreakCelebration({ streak, onClose }) {
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Streak celebration">
       <div className="absolute inset-0 bg-[#0C2D26]/80 backdrop-blur-sm animate-fade-in" onClick={onClose} />
-      <div className="relative w-full max-w-sm max-h-[92vh] overflow-y-auto rounded-[28px] bg-gradient-to-b from-[#123E30] to-[#0C2D26] text-ivory text-center px-6 pt-10 pb-7 shadow-2xl streak-pop-in">
+      <div className="relative w-full max-w-[330px] sm:max-w-sm max-h-[82dvh] overflow-y-auto no-scrollbar rounded-[26px] bg-gradient-to-b from-[#123E30] to-[#0C2D26] text-ivory text-center px-5 pt-8 pb-6 sm:px-6 sm:pt-10 sm:pb-7 shadow-2xl streak-pop-in">
         <button onClick={onClose} className="absolute right-4 top-4 text-ivory/60 hover:text-ivory" aria-label="Close"><X className="w-5 h-5" /></button>
         <div className="relative mx-auto w-44 h-44 flex items-center justify-center">
           <span className="absolute inset-8 rounded-full bg-[#FF8A1F] opacity-20 blur-2xl" />

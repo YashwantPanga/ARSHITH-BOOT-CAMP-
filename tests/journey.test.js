@@ -70,9 +70,7 @@ describe('a learner\'s whole journey', () => {
     const r = await request(app).post('/api/learners/register').send({ ...student, referralCode: code, referralSource: 'link' });
     expect(r.status).toBe(201);
     expect(r.body.referral).toBe('applied');
-    const v = await request(app).post('/api/learners/verify-email').send({ email: student.email, code: r.body.devCode });
-    expect(v.status).toBe(200);
-    token = v.body.token;
+    token = r.body.token;
     expect(token).toBeTruthy();
   });
 

@@ -47,12 +47,12 @@ export default function ReferralWelcome({ studentUser, courses = [], navigate, e
   const until = new Date(gift.expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long' });
 
   return createPortal(
-    <div className="fixed inset-0 z-[115] flex items-end sm:items-center justify-center bg-[#06231D]/60 backdrop-blur-[3px] animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="refwel-title" onClick={close}>
-      <div className="refwel relative w-full sm:max-w-[420px] rounded-t-[28px] sm:rounded-[28px] overflow-hidden bg-ivory shadow-[0_40px_80px_-30px_rgba(0,0,0,.8)]" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[115] flex items-center justify-center p-5 bg-[#06231D]/60 backdrop-blur-[3px] animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="refwel-title" onClick={close}>
+      <div className="refwel relative w-full max-w-[340px] sm:max-w-[420px] max-h-[84dvh] overflow-y-auto no-scrollbar rounded-[26px] sm:rounded-[28px] overflow-hidden bg-ivory shadow-[0_40px_80px_-30px_rgba(0,0,0,.8)]" onClick={(e) => e.stopPropagation()}>
         <button onClick={close} className="absolute top-3.5 right-3.5 z-10 w-9 h-9 rounded-full bg-white/15 text-white flex items-center justify-center" aria-label="Close"><X className="w-4 h-4" /></button>
 
         {/* the gift */}
-        <div className="relative h-[210px] bg-[linear-gradient(160deg,#145A43,#0A2F24_70%)] overflow-hidden">
+        <div className="relative h-[170px] sm:h-[210px] bg-[linear-gradient(160deg,#145A43,#0A2F24_70%)] overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(55%_65%_at_50%_70%,rgba(229,200,142,.35),transparent_70%)]" aria-hidden="true" />
           <span className="refwel-rays absolute left-1/2 top-[62%] w-[420px] h-[420px] -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
           {Array.from({ length: 22 }, (_, i) => (

@@ -131,12 +131,10 @@ router.post('/learners/register', async (req, res) => {
     regNo,
     phone,
     passwordHash: bcrypt.hashSync(password, 10),
-    createdAt: new Date().toISOString(),
-    emailVerified: false
+    createdAt: new Date().toISOString()
   };
   db.learners[email] = learner;
-  // The account stays inactive until the email address is verified with the emailed code.
-  const { mail, devCode } = issueVerification(req, learner);
+  // No email code at sign-up: the account is ready at once (codes are only used for password resets).
 
   // Mirror into the admin "students" list so registrations show up in the admin portal.
   if (!db.students) db.students = [];
@@ -164,15 +162,13 @@ router.post('/learners/register', async (req, res) => {
   }
   saveDb(db);
 
-  const emailStatus = await dispatchMail(mail);
   res.status(201).json({
     success: true,
-    verificationRequired: true,
     email,
-    emailStatus,
     referral,
-    ...(devCode ? { devCode } : {}),
-    message: emailStatus === 'outbox' || emailStatus === 'failed' ? 'Your account was created, but email is not configured on this server yet.' : `We sent a 6-digit code to ${email}.`
+    learner: publicLearner(db, learner),
+    token: signLearnerToken(email),
+    message: 'Your account is ready.'
   });
 });
 
@@ -181,9 +177,8 @@ router.post('/learners/verify-email', (req, res) => {
   const db = getDb();
   const learner = db.learners?.[email];
   if (!learner) return res.status(400).json({ success: false, message: CODE_MESSAGES.invalid });
-  if (learner.emailVerified !== false) {
-    return res.json({ success: true, alreadyVerified: true, learner: publicLearner(db, learner), token: signLearnerToken(email) });
-  }
+  // Never hand out a sign-in token without a valid code.
+  if (learner.emailVerified !== false) return res.json({ success: true, alreadyVerified: true });
   const verdict = checkOneTimeCode(learner, 'emailVerification', { code: req.body.code, token: req.body.token });
   if (verdict !== 'ok') { saveDb(db); return res.status(400).json({ success: false, code: verdict.toUpperCase(), message: CODE_MESSAGES[verdict] }); }
   learner.emailVerified = true;
@@ -303,9 +298,7 @@ router.post('/learners/login', (req, res) => {
 
   attempts.delete(email);
   ipFails.delete(ip);
-  if (learner.emailVerified === false) {
-    return res.status(403).json({ success: false, code: 'EMAIL_NOT_VERIFIED', email, message: 'Please verify your email address first. Enter the 6-digit code we emailed you.' });
-  }
+  // Older accounts that never entered their sign-up code can sign in too (sign-up codes were removed).
   const student = (db.students || []).find(s => normEmail(s.email) === email);
   if (student) {
     if (String(student.status || '').toLowerCase() === 'deactivated') return res.status(403).json({ success: false, message: 'This account has been deactivated. Please contact support.' });

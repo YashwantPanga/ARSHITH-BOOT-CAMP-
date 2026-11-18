@@ -528,7 +528,7 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 
 /* ---------- Phone welcome card (lime-forest palette, looping story) ---------- */
 .welcome-sheet { animation: welcomeUp .5s cubic-bezier(.2,.95,.3,1) both; }
-@keyframes welcomeUp { from { transform: translateY(105%); } to { transform: translateY(0); } }
+@keyframes welcomeUp { from { opacity: 0; transform: translateY(26px) scale(.95); } to { opacity: 1; transform: none; } }
 .welcome-shine { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 38%, rgba(227,239,38,.10) 50%, transparent 62%); background-size: 260% 100%; animation: emeraldSheen 6s 1.2s ease-in-out infinite; }
 .welcome-cta::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,.7) 50%, transparent 65%); transform: translateX(-120%); animation: welcomeCtaShine 3.2s 1.5s ease-in-out infinite; }
 @keyframes welcomeCtaShine { 0%, 55% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
@@ -837,4 +837,66 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
   :where(.lesson-page .lesson-body) { font-size: 16px; line-height: 1.7; }
   :where(.lesson-page .lesson-body) :where(p) { line-height: 1.7; }
   :where(.lesson-page .lesson-body) :where(p, li) :where(code) { background: transparent; padding: 0; color: #1E7A52; }
+}
+
+/* ---------- admin dashboard on phones: 3D icon badges ---------- */
+.adm-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 6px; padding: 14px 8px 12px; border-radius: 18px; background: #fff; border: 1px solid #E6E1D6; box-shadow: 0 10px 24px -18px rgba(1,58,43,.35); }
+.adm-strip { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-top: 2px; padding-bottom: 4px; scroll-snap-type: x proximity; }
+.adm-strip::-webkit-scrollbar { display: none; }
+.adm-strip .adm-tile { flex: 0 0 64px; scroll-snap-align: start; }
+.adm-tile { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; -webkit-tap-highlight-color: transparent; }
+.adm-tile:active .adm-badge { transform: translateY(1px) scale(.96); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1px 0 rgba(0,0,0,.18), 0 3px 8px -4px var(--s); }
+.adm-badge { --a: #1E7A52; --b: #0C3B2E; --s: rgba(1,58,43,.55); position: relative; width: 48px; height: 48px; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: #fff; overflow: visible;
+  background: linear-gradient(150deg, var(--a), var(--b));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -3px 0 rgba(0,0,0,.2), 0 10px 18px -8px var(--s), 0 2px 3px rgba(0,0,0,.08);
+  transition: transform .15s ease, box-shadow .15s ease; }
+.adm-badge::before { content: ''; position: absolute; inset: 2px 2px 50% 2px; border-radius: 13px 13px 8px 8px; background: linear-gradient(180deg, rgba(255,255,255,.38), rgba(255,255,255,0)); pointer-events: none; }
+.adm-badge svg { position: relative; filter: drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
+.adm-count { position: absolute; top: -5px; right: -6px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #fff; color: #0C3B2E; font-size: 10px; font-weight: 800; line-height: 18px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+.adm-label { max-width: 100%; font-size: 11.5px; font-weight: 600; line-height: 1.2; color: #302B25; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-strip .adm-badge { width: 42px; height: 42px; border-radius: 13px; }
+.adm-strip .adm-label { font-size: 10.5px; color: rgba(48,43,37,.7); }
+.adm-tile.is-on .adm-label { color: #013A2B; font-weight: 800; }
+.adm-strip .adm-tile.is-on .adm-badge { outline: 2px solid #013A2B; outline-offset: 2px; }
+.adm-dashboard    { --a: #2F9A6A; --b: #0C3B2E; --s: rgba(12,59,46,.55); }
+.adm-students     { --a: #3BA7A0; --b: #156B66; --s: rgba(21,107,102,.5); }
+.adm-progress     { --a: #5B8DEF; --b: #2A55B8; --s: rgba(42,85,184,.45); }
+.adm-projects     { --a: #F0A04B; --b: #C2621B; --s: rgba(194,98,27,.45); }
+.adm-certificates { --a: #E5C07A; --b: #B08431; --s: rgba(176,132,49,.5); }
+.adm-payments     { --a: #34B27B; --b: #13734A; --s: rgba(19,115,74,.5); }
+.adm-referrals    { --a: #F07A8E; --b: #C23A57; --s: rgba(194,58,87,.45); }
+.adm-campus       { --a: #8A7CF0; --b: #5643C4; --s: rgba(86,67,196,.45); }
+.adm-export       { --a: #8FB35A; --b: #5B7E2A; --s: rgba(91,126,42,.45); }
+.adm-courses      { --a: #4FA3D9; --b: #1F6E9E; --s: rgba(31,110,158,.45); }
+.adm-settings     { --a: #8A9199; --b: #4C535B; --s: rgba(76,83,91,.45); }
+
+/* ---------- admin stat cards: glossy colour tiles with a 3D shape on the edge ---------- */
+.adm-stat { --a: #2F9A6A; --b: #13734A; --c: #F6C85F; --d: #E08A2E; --s: rgba(19,115,74,.45);
+  position: relative; overflow: hidden; isolation: isolate; display: flex; flex-direction: column; align-items: flex-start;
+  min-height: 150px; padding: 14px 14px 13px; border-radius: 22px; color: #fff;
+  background: linear-gradient(160deg, var(--a), var(--b));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 14px 26px -14px var(--s), 0 2px 4px rgba(0,0,0,.06);
+  transition: transform .18s ease, box-shadow .18s ease; -webkit-tap-highlight-color: transparent; }
+/* the 3D capsule peeking in from the right edge */
+.adm-stat::before { content: ''; position: absolute; z-index: -1; right: -30px; top: 26%; width: 62px; height: 124%; border-radius: 40px 40px 0 0; transform: rotate(-12deg);
+  background: radial-gradient(70% 40% at 30% 18%, rgba(255,255,255,.75), rgba(255,255,255,0) 60%), linear-gradient(100deg, var(--c), var(--d) 75%);
+  box-shadow: inset -8px -6px 14px rgba(0,0,0,.18), -10px 10px 22px -8px rgba(0,0,0,.28); }
+/* a soft orb behind it */
+.adm-stat::after { content: ''; position: absolute; z-index: -2; right: -40px; top: -40px; width: 120px; height: 120px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.28), rgba(255,255,255,0) 65%); }
+.adm-stat:active { transform: scale(.97); }
+@media (hover: hover) { .adm-stat:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 20px 30px -14px var(--s); } }
+.adm-stat-icon { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--b);
+  background: #fff; box-shadow: 0 6px 12px -6px rgba(0,0,0,.35), inset 0 -2px 0 rgba(0,0,0,.06); }
+.adm-stat-label { margin-top: auto; padding-top: 14px; max-width: 74%; font-size: 14px; font-weight: 700; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,.18); }
+.adm-stat-value { margin-top: 4px; font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: -.01em; text-shadow: 0 1px 2px rgba(0,0,0,.18); }
+.adm-stat-note { margin-top: 4px; max-width: 72%; font-size: 11.5px; line-height: 1.25; color: rgba(255,255,255,.82); }
+.adm-stat-students     { --a: #2E9C8F; --b: #136A60; --c: #FFD36B; --d: #F29A2E; --s: rgba(19,106,96,.5); }
+.adm-stat-students-b   { --a: #3C8DE0; --b: #2457B0; --c: #9BE7FF; --d: #4BB6E8; --s: rgba(36,87,176,.45); }
+.adm-stat-progress     { --a: #E3A33A; --b: #B86A12; --c: #FFE6A3; --d: #F6B94A; --s: rgba(184,106,18,.45); }
+.adm-stat-projects     { --a: #E0625A; --b: #B23A3A; --c: #FFC86B; --d: #F59E2B; --s: rgba(178,58,58,.45); }
+.adm-stat-certificates { --a: #C65BD6; --b: #8E36B0; --c: #FFB3C4; --d: #F06A8E; --s: rgba(142,54,176,.45); }
+/* phones: no hover effects that stay stuck after a tap */
+@media (hover: none) {
+  .admin-ui [class*="hover:-translate-y"]:hover, .admin-ui [class*="hover:shadow"]:hover { transform: none !important; }
 }

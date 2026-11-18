@@ -27,7 +27,7 @@ beforeAll(async () => {
   adminToken = (await request(app).post('/api/learners/login').send({ email: 'proctor-admin@example.test', password: 'Proctor-test-9', regNo: '' })).body.staffToken;
 
   const reg = await request(app).post('/api/learners/register').send({ name: 'Proctor Tester', regNo: 'PROC0001', phone: '9876543210', email, password: 'secret123' });
-  token = (await request(app).post('/api/learners/verify-email').send({ email, code: reg.body.devCode })).body.token;
+  token = reg.body.token;
   await request(app).post('/api/enrollment').set('X-Learner-Token', token).send({ userId: email, courseId });
   const db = JSON.parse(fs.readFileSync(tmp, 'utf8'));
   const course = db.courses.find(c => c.id === courseId);

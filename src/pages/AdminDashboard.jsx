@@ -31,6 +31,12 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
   const admin = profile || adminProp;
   const [activeSection, setActiveSection] = useState(initialSection || 'dashboard');
   useEffect(() => { if (initialSection) setActiveSection(initialSection); }, [initialSection]);
+  // Each section is its own history entry, so the phone's Back button returns to the previous section.
+  useEffect(() => {
+    const onPop = () => { setActiveSection(new URLSearchParams(window.location.search).get('section') || 'dashboard'); setBuilderCourse(null); };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Core Database Data States
@@ -578,7 +584,15 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     activeSection === 'campus' ? 'Partner colleges, student verification, campaigns and vouchers' :
     activeSection === 'export' ? 'Download student data as Excel' :
     activeSection === 'courses' ? 'Manage the course catalog' : 'Admin account & security';
-  const go = (id) => { setActiveSection(id); setBuilderCourse(null); setMobileSidebarOpen(false); };
+  const go = (id) => {
+    setBuilderCourse(null); setMobileSidebarOpen(false);
+    if (id === activeSection) return;
+    setActiveSection(id);
+    const url = new URL(window.location.href);
+    if (id === 'dashboard') url.searchParams.delete('section'); else url.searchParams.set('section', id);
+    window.history.pushState(null, '', url.pathname + url.search);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
 
   return (
     <div className={`admin-ui ${embedded ? "min-h-[calc(100vh-64px)] lg:min-h-[calc(100vh-78px)]" : "min-h-screen"} bg-[#F8F5EE] font-sans flex text-[#302B25]`}>
@@ -712,7 +726,25 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
 
       {/* Main Admin Portal Content */}
       <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-[30px] space-y-[30px]">
-        <p className="-mb-4 text-sm text-[#302B25]/60">{pageSubtitle}</p>
+        {/* phones: every section as a tappable 3D icon badge (a grid on the dashboard, a slim strip elsewhere) */}
+        {!builderCourse && (
+          <nav aria-label="Admin sections" className={`lg:hidden ${activeSection === 'dashboard' ? 'adm-grid' : 'adm-strip -mx-4 px-4'}`}>
+            {menuItems.map(item => {
+              const Icon = item.icon;
+              const on = activeSection === item.id;
+              return (
+                <button key={item.id} onClick={() => go(item.id)} className={`adm-tile ${on ? 'is-on' : ''}`} aria-current={on ? 'page' : undefined}>
+                  <span className={`adm-badge adm-${item.id}`}>
+                    <Icon className="w-[20px] h-[20px]" strokeWidth={2.1} />
+                    {item.badge > 0 && <span className="adm-count">{item.badge > 99 ? '99+' : item.badge}</span>}
+                  </span>
+                  <span className="adm-label">{item.label.replace('Project Submissions', 'Projects').replace('Course Progress', 'Progress').replace('Course Catalog', 'Courses').replace('Export Reports', 'Reports').replace('Admin Settings', 'Settings').replace('Campus Rewards', 'Campus')}</span>
+                </button>
+              );
+            })}
+          </nav>
+        )}
+        <p className="-mb-4 text-sm text-[#302B25]/60 hidden sm:block">{pageSubtitle}</p>
 
         {/* ============================================================== */}
         {/* SECTION 1: DASHBOARD OVERVIEW */}
@@ -721,7 +753,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
           <div className="space-y-8">
             
             {/* Summary cards (tinted, TailwindAdmin style) */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
               {[
                 { label: 'Registered students', value: analytics?.totalStudents || students.length, note: 'Database verified', icon: Users, tint: 'bg-[#E8EFEA]', ink: 'text-[#013A2B]', go: 'students' },
                 { label: 'Active students', value: analytics?.activeStudents || students.filter(s => s.status === 'active').length, note: 'Currently enrolled', icon: UserCheck, tint: 'bg-[#EEF3F0]', ink: 'text-[#426557]', go: 'students' },
@@ -729,11 +761,11 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
                 { label: 'Projects submitted', value: analytics?.projectsSubmitted || projectSubmissions.length, note: 'GitHub repositories', icon: FolderCheck, tint: 'bg-[#F6EFE6]', ink: 'text-[#8A4B1C]', go: 'projects' },
                 { label: 'Certificates earned', value: analytics?.certificatesEarned || certificates.filter(c => c.status === 'active').length, note: 'QR-code verified', icon: Award, tint: 'bg-[#EFEDE9]', ink: 'text-[#302B25]', go: 'certificates' }
               ].map(c => (
-                <button key={c.label} onClick={() => setActiveSection(c.go)} className={`${c.tint} rounded-[12px] p-5 text-left hover:-translate-y-0.5 hover:shadow-md transition`}>
-                  <span className={`w-11 h-11 rounded-[10px] bg-white flex items-center justify-center ${c.ink}`}><c.icon className="w-[22px] h-[22px]" /></span>
-                  <p className={`mt-4 text-[14px] font-semibold ${c.ink}`}>{c.label}</p>
-                  <p className="mt-0.5 text-[26px] font-semibold text-[#302B25] leading-tight">{c.value}</p>
-                  <p className="text-[12px] text-[#302B25]/55">{c.note}</p>
+                <button key={c.label} onClick={() => go(c.go)} className={`adm-stat adm-stat-${c.go}${c.label.startsWith('Active') ? '-b' : ''} text-left`}>
+                  <span className="adm-stat-icon"><c.icon className="w-[20px] h-[20px]" /></span>
+                  <span className="adm-stat-label">{c.label}</span>
+                  <span className="adm-stat-value">{c.value}</span>
+                  <span className="adm-stat-note">{c.note}</span>
                 </button>
               ))}
             </div>
@@ -745,7 +777,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
               <div className="bg-white rounded-3xl dark-bezel p-6 space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <h3 className="text-sm font-black text-slate-900">Registered Students Overview</h3>
-                  <button onClick={() => setActiveSection('students')} className="text-xs font-bold text-brand-700 hover:underline">View All Students →</button>
+                  <button onClick={() => go('students')} className="text-xs font-bold text-brand-700 hover:underline">View All Students →</button>
                 </div>
                 <div className="divide-y divide-slate-100 text-xs font-bold">
                   {students.length === 0 ? (
@@ -781,7 +813,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
               <div className="bg-white rounded-3xl dark-bezel p-6 space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <h3 className="text-sm font-black text-slate-900">Recent Project Submissions</h3>
-                  <button onClick={() => setActiveSection('projects')} className="text-xs font-bold text-brand-700 hover:underline">View Review Queue →</button>
+                  <button onClick={() => go('projects')} className="text-xs font-bold text-brand-700 hover:underline">View Review Queue →</button>
                 </div>
                 <div className="divide-y divide-slate-100 text-xs font-bold">
                   {projectSubmissions.length === 0 ? (
