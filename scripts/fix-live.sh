@@ -8,7 +8,7 @@ set -euo pipefail
 
 NEW=/var/www/arshithcamp
 OLD=/var/www/bootcamp
-SITE=https://arshithbootcamp.com
+SITE=https://codelekho.com
 cd "$NEW"
 
 echo "==> Code: $(git log --oneline -1)"

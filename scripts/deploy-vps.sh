@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Installs or updates Arshith Bootcamp on an Ubuntu VPS (Hostinger), as root, in one go:
-#   bash scripts/deploy-vps.sh arshithbootcamp.com
+#   bash scripts/deploy-vps.sh codelekho.com
 # First run: installs Node 20, git, Nginx, certbot and pm2, downloads the code to /var/www/bootcamp and
 # stops so you can fill in .env. Run it again to build, start the app, set up Nginx and HTTPS.
 # Later runs: pull the latest code, rebuild and restart.
 set -euo pipefail
 
-DOMAIN="${1:-arshithbootcamp.com}"
+DOMAIN="${1:-codelekho.com}"
 APP_DIR=/var/www/bootcamp
 REPO=https://github.com/YashwantPanga/ARSHITH-BOOT-CAMP-.git
 NAME=bootcamp
