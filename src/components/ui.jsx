@@ -211,7 +211,7 @@ export function ProgressRing({ value = 0, size = 56, stroke = 6, label, dark = f
 /** eduleb "section-top" page banner: centered title, optional text and a Home / page breadcrumb. */
 export function PageTop({ title, crumb, eyebrow, onHome, children }) {
   return (
-    <section className="relative overflow-hidden bg-cream border-b border-brand-900/10">
+    <section className="relative overflow-hidden bg-white border-b border-brand-900/10">
       <div className="absolute inset-0 edu-shape pointer-events-none" aria-hidden="true" />
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 text-center">
         {eyebrow && <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">{eyebrow}</p>}

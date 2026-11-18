@@ -28,7 +28,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
   };
 
   return (
-    <section className="relative overflow-hidden bg-cream">
+    <section className="relative overflow-hidden bg-white">
       {/* background colour follows the headline word: leaf, gold, sea-green, sage - all from the site palette */}
       <div className="absolute inset-0 hidden lg:block pointer-events-none" aria-hidden="true">
         {['hb-leaf', 'hb-gold', 'hb-sea', 'hb-sage'].map((c, k) => <span key={c} className={`hero-tone ${c} ${k === word ? 'is-on' : ''}`} />)}
@@ -103,10 +103,10 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
       {/* Our features as counter cards, on an ivory strip whose top edge rises in a curved notch */}
       <div className="hero-strip relative mt-2 lg:-mt-10">
         <svg className="block w-full h-[40px] sm:h-[62px]" viewBox="0 0 1440 62" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0 62 H1062 C1092 62 1098 54 1116 34 C1138 9 1146 1 1178 1 H1440 V62 Z" fill="#FBF8F1" stroke="rgba(1,58,43,.08)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          <path d="M0 62 H1062 C1092 62 1098 54 1116 34 C1138 9 1146 1 1178 1 H1440 V62 Z" fill="#FFFFFF" stroke="rgba(1,58,43,.08)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
         </svg>
         <p className="hidden md:block absolute right-[5%] top-[16px] text-[13.5px] font-medium text-charcoal/45">↓ Scroll to explore courses</p>
-      <div className="relative bg-[#FBF8F1]">
+      <div className="relative bg-white">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-14">
         <h2 className="sr-only">Our Features</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">

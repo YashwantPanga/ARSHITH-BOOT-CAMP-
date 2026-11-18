@@ -53,7 +53,7 @@ afterEach(() => { cleanup(); vi.clearAllMocks(); });
 describe('Refer & Earn page', () => {
   it('shows how it works to visitors', async () => {
     render(<ReferralPage studentUser={null} navigate={() => {}} />);
-    expect(screen.getByText('Three steps. Real money.')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Three steps. Real money.' })).toBeTruthy();
     expect(screen.getAllByText(/₹90/).length).toBeGreaterThan(0);
   });
 

@@ -116,9 +116,9 @@ export default function InterviewHero({ price, total, signedIn, earned, required
       </div>
 
       {/* cream strip with the curved notch */}
-      <div className="relative bg-[#FBF6EF]">
+      <div className="relative bg-white">
         <svg className="absolute left-0 right-0 -top-[34px] sm:-top-[46px] w-full h-[35px] sm:h-[47px]" viewBox="0 0 1440 62" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0 62 H1062 C1092 62 1098 54 1116 34 C1138 9 1146 1 1178 1 H1440 V62 Z" fill="#FBF6EF" />
+          <path d="M0 62 H1062 C1092 62 1098 54 1116 34 C1138 9 1146 1 1178 1 H1440 V62 Z" fill="#FFFFFF" />
         </svg>
         <p className="absolute right-5 sm:right-10 -top-[24px] sm:-top-[32px] flex items-center gap-1.5 text-[11.5px] sm:text-[13px] text-[#0D0D0C]/45"><ShieldCheck className="w-3.5 h-3.5" /> Secure payment · Cashfree</p>
         <div className="px-5 py-5 sm:px-12 sm:py-7 grid grid-cols-2 lg:grid-cols-[1.2fr_repeat(3,1fr)_auto] gap-x-5 gap-y-4 items-center">

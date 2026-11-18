@@ -18,7 +18,7 @@ import { QUEST, QuestCard, QuestHero } from '../components/interview/QuestArt';
 import Approaches from '../components/interview/Approaches';
 import { api } from '../services/api';
 import { paths } from '../router';
-import { BrandLoader } from '../components/ui';
+import { BrandLoader, RevealText } from '../components/ui';
 import PaymentNotice from '../components/PaymentNotice';
 import InterviewHero from '../components/interview/InterviewHero';
 
@@ -213,7 +213,7 @@ function LockedPrep({ signedIn, certificates, purchase, onPaid, navigate }) {
         {paying && <PaymentNotice product="interview" price={price} paymentsEnabled={purchase ? purchase.paymentsEnabled : undefined} onPaid={() => { setPaying(false); onPaid?.(); }} onClose={() => setPaying(false)} />}
 
         <section className="mt-7 sm:mt-12">
-          <h2 className="font-display text-[19px] sm:text-[22px] font-bold text-evergreen">What is included</h2>
+          <RevealText as="h2" className="font-display text-[19px] sm:text-[22px] font-bold text-evergreen">What is included</RevealText>
           {/* phones: one row that scrolls sideways */}
           <div className="mt-3 sm:mt-4 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto no-scrollbar snap-x scroll-px-5 -mx-5 px-5 sm:mx-0 sm:px-0 pb-1" aria-hidden="true">
             {INTERVIEW_SETS.map(s => (
@@ -253,7 +253,7 @@ function PrepHome({ progress, signedIn, navigate }) {
         <div className="flex flex-col sm:flex-row sm:items-end gap-5 justify-between">
           <div>
             <p className="eyebrow">Interview Prep</p>
-            <h1 className="font-display text-[34px] sm:text-[44px] font-bold text-evergreen leading-tight mt-2">Study plans for your interviews</h1>
+            <RevealText as="h1" className="font-display text-[34px] sm:text-[44px] font-bold text-evergreen leading-tight mt-2">Study plans for your interviews</RevealText>
             <p className="mt-3 text-[15.5px] text-charcoal/70 max-w-2xl">Practise the questions placement and job interviews really ask. Write real SQL, Python and JavaScript in your browser, check your answer instantly, and learn from a worked solution for every problem.</p>
           </div>
           {signedIn
@@ -263,7 +263,7 @@ function PrepHome({ progress, signedIn, navigate }) {
 
         {ongoing.length > 0 && (
           <section className="mt-12">
-            <h2 className="font-display text-[22px] font-bold text-evergreen">Ongoing</h2>
+            <RevealText as="h2" className="font-display text-[22px] font-bold text-evergreen">Ongoing</RevealText>
             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
               {ongoing.map(s => {
                 const solved = Object.keys(progress[s.id] || {}).length;
@@ -284,7 +284,7 @@ function PrepHome({ progress, signedIn, navigate }) {
         )}
 
         <section className="mt-12">
-          <h2 className="font-display text-[22px] font-bold text-evergreen">Featured</h2>
+          <RevealText as="h2" className="font-display text-[22px] font-bold text-evergreen">Featured</RevealText>
           <div className="mt-4 -mx-4 px-4 flex gap-3.5 overflow-x-auto no-scrollbar snap-x scroll-px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-4 sm:overflow-visible">
             {INTERVIEW_SETS.map(s => (
               <QuestCard key={s.id} set={s} solved={Object.keys(progress[s.id] || {}).length} signedIn={signedIn} onOpen={() => navigate(paths.interview(s.id))} />

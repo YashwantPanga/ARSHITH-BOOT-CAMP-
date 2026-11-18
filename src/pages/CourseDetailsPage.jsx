@@ -47,7 +47,7 @@ export default function CourseDetailsPage({ course, enrolledCourseId, offer, isL
   return (
     <div className="bg-ivory pb-20">
       {/* banner */}
-      <section className="relative overflow-hidden bg-cream border-b border-brand-900/10">
+      <section className="relative overflow-hidden bg-white border-b border-brand-900/10">
         <div className="absolute inset-0 edu-shape pointer-events-none" aria-hidden="true" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-14">
           <nav aria-label="Breadcrumb" className="font-display text-[15px] text-evergreen flex flex-wrap items-center gap-x-2">
@@ -60,7 +60,7 @@ export default function CourseDetailsPage({ course, enrolledCourseId, offer, isL
           <div className="grid lg:grid-cols-12 gap-10 mt-8 items-center">
             <div className="lg:col-span-7">
               <span className="font-display inline-flex rounded-md bg-forest text-ivory text-[13px] font-medium px-3 py-1">{course.category}</span>
-              <h1 className="mt-4 text-[36px] sm:text-[46px] lg:text-[54px] font-bold leading-[1.08] text-evergreen">{displayTitle(course.title)}</h1>
+              <RevealText as="h1" className="mt-4 text-[36px] sm:text-[46px] lg:text-[54px] font-bold leading-[1.08] text-evergreen">{displayTitle(course.title)}</RevealText>
               <p className="mt-4 text-[16px] sm:text-[17px] text-charcoal/70 leading-relaxed max-w-2xl">{cleanText(course.description)}</p>
               <div className="mt-7 flex flex-wrap gap-3">
                 {[

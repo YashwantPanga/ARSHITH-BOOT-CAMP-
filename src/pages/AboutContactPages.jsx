@@ -27,7 +27,7 @@ export function AboutPage({ onExplore, onHome }) {
           </Reveal>
         </div>
       </section>
-      <section className="bg-cream py-16">
+      <section className="bg-white border-y border-brand-900/[0.06] py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-3 gap-6">
           {values.map((v, i) => (
             <Reveal key={v.title} delay={i * 90}>

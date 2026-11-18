@@ -15,7 +15,7 @@ export default function Footer({ navigate }) {
   );
 
   return (
-    <footer className="bg-cream text-charcoal relative overflow-hidden border-t border-brand-900/10">
+    <footer className="bg-white text-charcoal relative overflow-hidden border-t border-brand-900/10">
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         {/* Navigation & Brand Grid: on phones the two link lists sit side by side */}

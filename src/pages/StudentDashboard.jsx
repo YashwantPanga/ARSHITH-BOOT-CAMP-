@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { PlayCircle, Award, Lock, ListChecks, ShieldCheck, BookOpen, Mail, Hash, ArrowRight, CheckCircle2, User, KeyRound, Copy, Check, Eye, EyeOff, LayoutDashboard, Settings } from 'lucide-react';
-import { ProgressRing, ProgressBar, SafeImg, BrandLoader } from '../components/ui';
+import { ProgressRing, ProgressBar, SafeImg, BrandLoader, RevealText } from '../components/ui';
 import { courseArt } from '../components/CourseCard';
 import { cleanText, displayTitle } from '../utils/textUtils';
 import { api } from '../services/api';
@@ -44,7 +44,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
   return (
     <div className="bg-ivory min-h-[70vh] pb-16">
       {/* banner */}
-      <section className="relative overflow-hidden bg-cream border-b border-brand-900/10">
+      <section className="relative overflow-hidden bg-white border-b border-brand-900/10">
         <div className="absolute inset-0 edu-shape pointer-events-none" aria-hidden="true" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-10">
           <nav aria-label="Breadcrumb" className="font-display text-[15px] text-evergreen">
@@ -54,7 +54,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
           <div className="mt-5">
             <div className="min-w-0">
               <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">My dashboard</p>
-              <h1 className="mt-1 text-[30px] sm:text-[38px] font-bold leading-tight text-evergreen">Welcome back, {firstName}!</h1>
+              <RevealText as="h1" className="mt-1 text-[30px] sm:text-[38px] font-bold leading-tight text-evergreen">Welcome back, {firstName}!</RevealText>
               <p className="text-charcoal/65 mt-1">{course ? 'Pick up where you left off.' : 'Choose your course to get started.'}</p>
             </div>
           </div>
@@ -98,7 +98,7 @@ export default function StudentDashboard({ studentUser, courses, coursesLoaded, 
           ) : !course ? (
             <div className="edu-card p-8 sm:p-12 text-center max-w-2xl mx-auto">
               <span className="mx-auto w-14 h-14 rounded-full bg-brand-100 text-forest flex items-center justify-center"><BookOpen className="w-7 h-7" /></span>
-              <h2 className="mt-4 text-2xl font-semibold text-evergreen">You haven't enrolled in a course yet</h2>
+              <RevealText as="h2" className="mt-4 text-2xl font-semibold text-evergreen">You haven't enrolled in a course yet</RevealText>
               <p className="mt-2 text-charcoal/65">Pick a course, finish the modules, pass the final assessment and earn your certificate.</p>
               <button onClick={onExploreCourses} className="btn font-display !rounded-md bg-forest text-ivory hover:bg-sage mt-6 px-6 py-3">Browse courses <ArrowRight className="w-4 h-4" /></button>
             </div>

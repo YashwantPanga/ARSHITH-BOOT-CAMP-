@@ -180,8 +180,6 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
     <div className="landing-type min-h-screen relative overflow-hidden bg-ivory flex flex-col items-center px-4 py-8 sm:py-12">
       {/* soft brand backdrop */}
       <div className="absolute inset-0 texture-dots opacity-50 pointer-events-none" aria-hidden="true" />
-      <div className="absolute -top-40 -right-40 w-[520px] h-[520px] rounded-full bg-brand-100/60 blur-3xl pointer-events-none" aria-hidden="true" />
-      <div className="absolute -bottom-48 -left-40 w-[480px] h-[480px] rounded-full bg-[#E9DFC9]/70 blur-3xl pointer-events-none" aria-hidden="true" />
       <button onClick={onHome} className="relative mb-6" aria-label="CodeLekho home">
         <img src="/codelekho-logo.svg" alt="CodeLekho" className="h-7 w-auto" />
       </button>

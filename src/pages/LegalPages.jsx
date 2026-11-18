@@ -1,5 +1,5 @@
 import React from 'react';
-import { PageTop } from '../components/ui';
+import { PageTop, RevealText } from '../components/ui';
 
 const UPDATED = '24 October 2026';
 const CONTACT = 'codelekho@arshithgroup.com';
@@ -24,7 +24,7 @@ function LegalDoc({ title, intro, sections, onHome }) {
           <p className="text-[15.5px] leading-relaxed text-charcoal/75">{intro}</p>
           {sections.map((s, i) => (
             <section key={s.title} id={`s${i + 1}`} className="mt-9 scroll-mt-28">
-              <h2 className="flex items-baseline gap-3 text-[22px] text-evergreen"><span className="font-display text-sage">{String(i + 1).padStart(2, '0')}</span>{s.title}</h2>
+              <RevealText as="h2" className="flex items-baseline gap-3 text-[22px] text-evergreen"><span className="font-display text-sage">{String(i + 1).padStart(2, '0')}</span>{s.title}</RevealText>
               <div className="mt-3 space-y-3 text-[15px] leading-relaxed text-charcoal/75">
                 {s.body.map((para, j) => Array.isArray(para)
                   ? <ul key={j} className="list-disc pl-5 space-y-1.5 marker:text-sage">{para.map(li => <li key={li}>{li}</li>)}</ul>

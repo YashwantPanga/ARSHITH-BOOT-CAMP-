@@ -1,7 +1,6 @@
 import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
-import BubbleBackground from './components/BubbleBackground';
 import PopularCourses from './components/PopularCourses';
 import WhyLearnWithUs from './components/WhyLearnWithUs';
 import CtaSection from './components/CtaSection';
@@ -697,7 +696,6 @@ function AppShell() {
 
       {!isChromeless && <Footer navigate={navigate} />}
       {/* soft drifting colour bubbles over every page (not the staff tools) */}
-      {!adminUser && <BubbleBackground className="site-bubbles" base={false} lite />}
       {studentUser && <StreakToast />}
       {!isChromeless && (
         <MobileBottomNav route={displayRoute} navigate={navigate} studentUser={studentUser} />

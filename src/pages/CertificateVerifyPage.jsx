@@ -39,7 +39,7 @@ export default function CertificateVerifyPage({ certId = '', onSearch, onHome })
   const active = cert?.status === 'active';
 
   return (
-    <div className="bg-cream">
+    <div className="bg-white">
       <section className="relative overflow-hidden bg-brand-900 text-ivory">
         <div className="absolute inset-0 texture-dots-light" />
         <div className="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-white/5" />

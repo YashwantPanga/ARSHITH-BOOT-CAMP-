@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { RevealText } from '../components/ui';
 import QRCode from 'qrcode';
 import {
   Copy, Check, Share2, QrCode, Gift, Wallet, Clock, ArrowRight, Users, MousePointerClick, UserPlus, ShoppingBag,
@@ -81,7 +82,7 @@ function HowItWorks({ rules, navigate, signedIn }) {
         <div className="relative max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-20 grid lg:grid-cols-2 gap-10 items-center">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-[#E5C88E]/40 bg-[#E5C88E]/10 px-3 py-1 text-[12px] font-bold uppercase tracking-[0.18em] text-[#E5C88E]"><Gift className="w-3.5 h-3.5" /> Refer &amp; Earn</span>
-            <h1 className="mt-5 font-display text-[40px] sm:text-[56px] font-bold leading-[1.02] tracking-[-0.02em]">Your Network.<br /><span className="text-[#E5C88E]">Your Rewards.</span></h1>
+            <RevealText as="h1" className="mt-5 font-display text-[40px] sm:text-[56px] font-bold leading-[1.02] tracking-[-0.02em]">Your Network.<br /><span className="text-[#E5C88E]">Your Rewards.</span></RevealText>
             <p className="mt-5 text-[16.5px] leading-relaxed text-ivory/75 max-w-lg">Invite friends to CodeLekho. Help them save {r.discountPct}% and earn {r.commissionPct}% commission on their eligible purchases.</p>
             <div className="mt-7 flex flex-wrap gap-3">
               <button onClick={() => navigate(signedIn ? paths.refer() : paths.register(paths.refer()))} className="h-12 px-6 rounded-xl bg-gradient-to-b from-[#F3D9A0] to-[#C9A15A] text-[#2A1D08] font-display font-bold inline-flex items-center gap-2 shadow-[0_12px_30px_-12px_rgba(229,200,142,.8)]">Start Earning <ArrowRight className="w-4 h-4" /></button>
@@ -95,7 +96,7 @@ function HowItWorks({ rules, navigate, signedIn }) {
 
       <section id="how" className="max-w-6xl mx-auto px-5 sm:px-8 py-14 scroll-mt-24">
         <p className="text-[12.5px] font-bold uppercase tracking-[0.2em] text-sage">How it works</p>
-        <h2 className="mt-2 font-display text-[30px] sm:text-[38px] font-semibold text-evergreen">Three steps. Real money.</h2>
+        <RevealText as="h2" className="mt-2 font-display text-[30px] sm:text-[38px] font-semibold text-evergreen">Three steps. Real money.</RevealText>
         <div className="mt-8 grid md:grid-cols-3 gap-4">
           {[
             [Share2, 'Share your link', 'Copy your link or QR, or send it on WhatsApp. Your friend has 30 days to sign up and buy.'],
@@ -232,7 +233,7 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-[12.5px] font-bold uppercase tracking-[0.2em] text-sage">Refer &amp; Earn</p>
-            <h1 className="mt-1 font-display text-[30px] sm:text-[38px] font-bold text-evergreen leading-tight">Your Network. <span className="text-[#B88A3E]">Your Rewards.</span></h1>
+            <RevealText as="h1" className="mt-1 font-display text-[30px] sm:text-[38px] font-bold text-evergreen leading-tight">Your Network. <span className="text-[#B88A3E]">Your Rewards.</span></RevealText>
           </div>
           <button onClick={openNotes} className="relative h-10 px-3.5 rounded-xl bg-white border border-brand-900/10 inline-flex items-center gap-2 text-[13.5px] font-semibold text-evergreen"><Bell className="w-4 h-4" /> Notifications{unread > 0 && <span className="ml-1 min-w-5 h-5 px-1.5 rounded-full bg-[#C9A15A] text-white text-[11px] flex items-center justify-center">{unread}</span>}</button>
         </div>
@@ -435,7 +436,7 @@ export function RefLanding({ code, studentUser, navigate, toast }) {
           ) : (
             <>
               <span className="inline-flex items-center gap-2 rounded-full border border-[#E5C88E]/40 bg-[#E5C88E]/10 px-3 py-1 text-[12px] font-bold uppercase tracking-[0.18em] text-[#E5C88E]"><Gift className="w-3.5 h-3.5" /> You are invited</span>
-              <h1 className="mt-5 font-display text-[38px] sm:text-[52px] font-bold leading-[1.03]">{state.referrerName} invited you to <span className="text-[#E5C88E]">CodeLekho</span></h1>
+              <RevealText as="h1" className="mt-5 font-display text-[38px] sm:text-[52px] font-bold leading-[1.03]">{state.referrerName} invited you to <span className="text-[#E5C88E]">CodeLekho</span></RevealText>
               <p className="mt-4 text-[16.5px] text-ivory/75 max-w-md">Get <b className="text-ivory">{state.discountPct}% off</b> eligible courses and Interview Prep. The discount is applied automatically at checkout.</p>
               {state.claim && <p className={`mt-4 rounded-xl px-4 py-3 text-[14px] ${state.claim.ok ? 'bg-[#8EE3B5]/15 text-[#BFF3D6]' : 'bg-white/10 text-ivory/80'}`}>{state.claim.message}</p>}
             </>

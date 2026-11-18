@@ -29,7 +29,7 @@ export default function CoursesPage({ courses, enrolledCourseId, onSelectCourse,
   return (
     <div className="bg-ivory">
       {/* eduleb "section-top" banner */}
-      <section className="relative overflow-hidden bg-cream border-b border-brand-900/10">
+      <section className="relative overflow-hidden bg-white border-b border-brand-900/10">
         {/* animated study scenes fill the banner's sides on wide screens */}
         <LaptopScene className="hidden xl:block absolute left-[2%] 2xl:left-[5%] bottom-0 w-[250px] 2xl:w-[330px] pointer-events-none" />
         <ExamScene className="hidden xl:block absolute right-[2%] 2xl:right-[5%] bottom-0 w-[250px] 2xl:w-[330px] pointer-events-none" />

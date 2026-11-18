@@ -13,7 +13,7 @@ const STEPS = [
 /** "How it works" in the eduleb about layout (image + checklist) with numbered step cards below. */
 export default function WhyLearnWithUs() {
   return (
-    <section className="relative py-12 md:py-24 bg-cream overflow-hidden">
+    <section className="relative py-12 md:py-24 bg-white border-y border-brand-900/[0.06] overflow-hidden">
       <div className="absolute inset-0 edu-shape pointer-events-none" aria-hidden="true" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
