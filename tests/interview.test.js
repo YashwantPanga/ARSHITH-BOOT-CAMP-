@@ -9,12 +9,51 @@ import { INTERVIEW_SETS, findInterviewSet } from '../shared/interview/index.js';
 import { INTERVIEW_SQL_SCHEMA } from '../shared/interview/sqlSchema.js';
 import { buildPythonCheck, parsePythonCheck, pyRepr } from '../shared/interview/pyHarness.js';
 import { approachesFor } from '../shared/interview/approaches/index.js';
+import { codeLang, LANG_LABEL } from '../shared/interview/codeLang.js';
 
 // Interview Prep content and progress. Python answers are checked against real Python by
 // `npm run verify:interview`; here we check the content shape, the SQL answers and the API.
 describe('interview content', () => {
+  it('gives every Interview Questions topic at least 20 clean, complete answers', () => {
+    const set = findInterviewSet('interview-questions');
+    const byTopic = {};
+    for (const it of set.items) byTopic[it.topic] = (byTopic[it.topic] || 0) + 1;
+    for (const [topic, count] of Object.entries(byTopic)) expect(count, topic).toBeGreaterThanOrEqual(20);
+    // Markdown the answer renderer understands: `code`, **bold**, "- " bullets, "1. " steps.
+    const known = /(`[^`]+`)|(\*\*[^*]+\*\*)/g;
+    const deco = /[☀-➿⭐★☆]|[\u{1F300}-\u{1FAFF}]/u;
+    for (const it of set.items) {
+      expect(it.answer.length, it.id).toBeGreaterThan(400);
+      expect(it.answer, it.id).toContain('Interview tip:');
+      const left = it.answer.replace(known, '');
+      expect(left, `${it.id} has a stray * or backtick`).not.toMatch(/[*`]/);
+      expect(left, `${it.id} has a $ (rendered as maths)`).not.toMatch(/\$/);
+      expect(it.answer, `${it.id} has a heading or emoji`).not.toMatch(/^#+ /m);
+      expect(deco.test(it.answer + it.title), `${it.id} has a decorative symbol`).toBe(false);
+      expect(it.answer, `${it.id} wraps code in bold (shows literal backticks)`).not.toMatch(/\*\*`[^`]+`\*\*/);
+      expect(it.answer, `${it.id} has chatbot filler`).not.toMatch(/\b(certainly|great question|let's dive|delve|in conclusion|as an ai)\b|—/i);
+      if (it.code) expect(LANG_LABEL[codeLang(it)], `${it.id} code language`).toBeTruthy();
+    }
+    // The other sets' statements, explanations and approach ideas: no stray markdown or emoji either.
+    const strip = (t) => String(t || '').replace(known, '');
+    for (const s of INTERVIEW_SETS.filter(x => x.kind !== 'concept')) {
+      for (const it of s.items) {
+        for (const f of ['prompt', 'explanation']) expect(strip(it[f]), `${it.id}.${f}`).not.toMatch(/[*`]|^#+ /m);
+        for (const a of approachesFor(it)?.list || []) expect(strip(a.idea), `${it.id} approach "${a.title}"`).not.toMatch(/[*`]/);
+      }
+    }
+    const codes = set.items.filter(i => i.code).map(i => i.code.trim());
+    expect(new Set(codes).size, 'every code example is unique').toBe(codes.length);
+  });
+
+  it('compiles every JSX example in Interview Questions', async () => {
+    const { transform } = await import('esbuild');
+    for (const it of findInterviewSet('interview-questions').items.filter(i => codeLang(i) === 'jsx')) {
+      await expect(transform(it.code, { loader: 'jsx' }), it.id).resolves.toBeTruthy();
+    }
+  });
   it('has every set with unique ids and complete items', () => {
-    expect(INTERVIEW_SETS.map(s => [s.id, s.items.length])).toEqual([['sql-50', 50], ['dsa-75', 75], ['programming-essentials', 50], ['js-30', 30], ['interview-questions', 150]]);
+    expect(INTERVIEW_SETS.map(s => [s.id, s.items.length])).toEqual([['sql-50', 50], ['dsa-75', 75], ['programming-essentials', 50], ['js-30', 30], ['interview-questions', 214]]);
     const ids = INTERVIEW_SETS.flatMap(s => s.items.map(i => i.id));
     expect(new Set(ids).size).toBe(ids.length);
     for (const s of INTERVIEW_SETS) {

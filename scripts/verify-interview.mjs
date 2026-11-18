@@ -91,5 +91,47 @@ for (const { id, approach } of allExtraApproaches().filter(a => a.id.startsWith(
   }
 }
 
+// Interview Questions: every worked example must run. Python and Java run for real, JavaScript in
+// Node (browser and server snippets are syntax-checked only), SQL on the practice database.
+// HTML, JSX, YAML, shell and config snippets are not executed here (JSX is compiled by the tests).
+console.log('Interview Questions code examples');
+{
+  const fs = await import('node:fs');
+  const os = await import('node:os');
+  const path = await import('node:path');
+  const { codeLang } = await import('../shared/interview/codeLang.js');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'iq-'));
+  let ran = 0;
+  for (const it of findInterviewSet('interview-questions').items) {
+    if (!it.code) continue;
+    const lang = codeLang(it);
+    const file = path.join(tmp, `q${it.n}`);
+    let r = null;
+    if (lang === 'python') {
+      fs.writeFileSync(`${file}.py`, it.code);
+      r = spawnSync(PY, [`${file}.py`], { encoding: 'utf8', timeout: 120000, cwd: tmp });
+    } else if (lang === 'javascript') {
+      fs.writeFileSync(`${file}.js`, it.code);
+      const checkOnly = /app\.listen|localStorage|document\.|new WebSocket|fetch\(/.test(it.code);
+      r = spawnSync(process.execPath, checkOnly ? ['--check', `${file}.js`] : [`${file}.js`], { encoding: 'utf8', timeout: 15000 });
+    } else if (lang === 'java') {
+      const cls = (it.code.match(/public class (\w+)/) || [])[1] || 'Main';
+      fs.mkdirSync(`${file}-java`, { recursive: true });
+      fs.writeFileSync(path.join(`${file}-java`, `${cls}.java`), it.code);
+      r = spawnSync(process.env.JAVA || 'java', [path.join(`${file}-java`, `${cls}.java`)], { encoding: 'utf8', timeout: 60000 });
+      if (r.error?.code === 'ENOENT') { console.log(`  skip ${it.id}: java not installed`); continue; }
+    } else if (lang === 'sql') {
+      const db = new SQL.Database();
+      db.exec(INTERVIEW_SQL_SCHEMA);
+      try { db.exec(it.code); r = { status: 0 }; } catch (e) { r = { status: 1, stderr: e.message }; }
+      db.close();
+    } else continue;
+    ran++;
+    if (r.status !== 0 || r.error) fail(`${it.id} ${it.title} [${lang}]: ${(r.stderr || String(r.error)).trim().slice(-400)}`);
+  }
+  fs.rmSync(tmp, { recursive: true, force: true });
+  console.log(`  ran ${ran} examples`);
+}
+
 console.log(failures ? `\n${failures} problem(s)` : '\nAll interview answers verified.');
 process.exit(failures ? 1 : 0);

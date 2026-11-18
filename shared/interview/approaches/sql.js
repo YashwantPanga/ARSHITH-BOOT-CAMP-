@@ -46,7 +46,7 @@ export const SQL_APPROACHES = {
   'sql-13': { extra: [A('Conditional aggregation', 'Sum the amount only for delivered rows using CASE; handy when you need several totals in one query.',
     "SELECT SUM(CASE WHEN status = 'delivered' THEN amount ELSE 0 END) AS revenue FROM orders;", 'one scan')],
     pick: 'WHERE + SUM is simplest for one total; CASE inside SUM is great when you need delivered and cancelled totals side by side.' },
-  'sql-14': { extra: [A('Window count', 'COUNT(*) OVER (PARTITION BY status) with DISTINCT gives the same pairs.',
+  'sql-14': { extra: [A('Window count', '`COUNT(*) OVER (PARTITION BY status)` with DISTINCT gives the same pairs.',
     'SELECT DISTINCT status, COUNT(*) OVER (PARTITION BY status) AS orders FROM orders;', 'scan + window')],
     pick: 'GROUP BY is the standard way to count per category.' },
   'sql-15': { extra: [A('Window functions', 'Compute max and min over each department partition, then keep one row per department.',

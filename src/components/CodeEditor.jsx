@@ -28,7 +28,7 @@ function useFontSize() {
   return size;
 }
 
-export default function CodeEditor({ value, onChange, lang, onRun, minHeight = 220, label = 'Code editor', className = '', light = false }) {
+export default function CodeEditor({ value, onChange, lang, onRun, minHeight = 220, label = 'Code editor', className = '', light = false, onCursor, highlightLine = false }) {
   const preRef = useRef(null);
   const gutterRef = useRef(null);
   const lines = useMemo(() => tokenLines(value, lang), [value, lang]);
@@ -36,6 +36,16 @@ export default function CodeEditor({ value, onChange, lang, onRun, minHeight = 2
   const wrap = fontSize === 16; // touch screen
   const LINE = fontSize * 1.7; // px, line height of the code
   const gutter = wrap ? 0 : String(lines.length).length > 2 ? 48 : 40; // px
+  // Line of the caret, for the optional current-line highlight and the Ln / Col readout.
+  const [caretLine, setCaretLine] = useState(0);
+  const trackCaret = (e) => {
+    const ta = e.currentTarget;
+    const before = ta.value.slice(0, ta.selectionStart);
+    const line = before.split('\n').length;
+    setCaretLine(line);
+    onCursor?.({ line, col: before.length - before.lastIndexOf('\n') });
+  };
+  const showLine = highlightLine && !wrap && caretLine > 0;
 
   const onKeyDown = (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); onRun?.(); return; }
@@ -57,11 +67,11 @@ export default function CodeEditor({ value, onChange, lang, onRun, minHeight = 2
   return (
     <div className={`relative font-mono leading-[1.7] ${light ? 'bg-white code-light' : 'bg-evergreen'} ${className}`} style={{ minHeight, fontSize }}>
       {!wrap && <div ref={gutterRef} aria-hidden="true" className="absolute top-0 bottom-0 left-0 overflow-hidden select-none text-right text-brand-400/70 text-[12px]" style={{ width: gutter, paddingTop: PAD_Y }}>
-        {lines.map((_, i) => <div key={i} className="pr-1" style={{ height: LINE, lineHeight: `${LINE}px` }}>{i + 1}</div>)}
+        {lines.map((_, i) => <div key={i} className={`pr-1 ${showLine && caretLine === i + 1 ? 'text-ivory/80' : ''}`} style={{ height: LINE, lineHeight: `${LINE}px` }}>{i + 1}</div>)}
       </div>}
       <pre ref={preRef} aria-hidden="true" className={`absolute top-0 bottom-0 right-0 overflow-hidden m-0 ${light ? 'text-[#1F2D28]' : 'text-[#E9F1EC]'} pointer-events-none ${wrap ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'}`} style={{ left: gutter, ...layer }}>
         {lines.map((toks, i) => (
-          <div key={i}>{toks.length ? toks.map((t, k) => (t.t ? <span key={k} className={`tok-${t.t}`}>{t.v}</span> : <React.Fragment key={k}>{t.v}</React.Fragment>)) : ' '}</div>
+          <div key={i} className={showLine && caretLine === i + 1 ? 'bg-white/[.06] -mx-[14px] px-[14px]' : undefined}>{toks.length ? toks.map((t, k) => (t.t ? <span key={k} className={`tok-${t.t}`}>{t.v}</span> : <React.Fragment key={k}>{t.v}</React.Fragment>)) : ' '}</div>
         ))}
       </pre>
       <textarea
@@ -69,6 +79,7 @@ export default function CodeEditor({ value, onChange, lang, onRun, minHeight = 2
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
         onScroll={syncScroll}
+        onSelect={highlightLine || onCursor ? trackCaret : undefined}
         spellCheck={false}
         autoCapitalize="off"
         autoComplete="off"

@@ -8,7 +8,9 @@ import { INTERVIEW_SQL_SCHEMA } from '../../shared/interview/sqlSchema.js';
 import { RESULT_MARK, buildPythonCheck, parsePythonCheck, pyRepr, pythonStarter } from '../../shared/interview/pyHarness.js';
 import { TICK_MARK, buildJsCheck, jsRepr, jsStarter } from '../../shared/interview/jsHarness.js';
 import CodeEditor from '../components/CodeEditor';
-import { Inline } from '../components/lesson/Markdown';
+import AnswerText from '../components/interview/AnswerText';
+import { CodePanel, ComplexityTiles, CopyButton, LangSwitch, PANEL_BTN, PANEL_PRIMARY, PANEL_RUN, QuestionHeader, StaticCode, Tabs, fileNameFor } from '../components/interview/CodePanel';
+import { codeLang } from '../../shared/interview/codeLang.js';
 import { runJavaScript, runPython, runSqlFresh } from '../utils/runners';
 import { noteCoding } from '../utils/activity';
 import { MyPlanCard, PlanModal, planStats } from '../components/interview/StudyPlan';
@@ -31,7 +33,6 @@ const THEMES = {
   jade: { card: 'from-[#2F7A5C] via-[#1D6049] to-[#0C2D26]', tile: 'from-[#3C8E6C] to-[#0C2D26]', glow: '#A8E6C1' },
   ember: { card: 'from-[#C47A1E] via-[#8E4E12] to-[#3D2108]', tile: 'from-[#D98A26] to-[#4A2A0A]', glow: '#FFD580' }
 };
-const LANG_LABEL = { sql: 'SQL', python: 'Python 3', javascript: 'JavaScript' };
 const DIFF_STYLE = {
   Easy: 'bg-mint-50 text-mint-500 border-mint-200',
   Medium: 'bg-[#FBF3DF] text-[#8A6414] border-[#EBD7A4]',
@@ -497,7 +498,7 @@ function TopBar({ set, item, navigate, solved }) {
         <button onClick={() => navigate(paths.interview(set.id))} className="flex items-center gap-1.5 text-[14px] text-charcoal/70 hover:text-forest min-w-0">
           <ArrowLeft className="w-4 h-4 shrink-0" /><span className="truncate">{set.title}</span>
         </button>
-        <span className="ml-auto text-[13px] text-charcoal/50 tabular-nums">{idx + 1} / {set.items.length}</span>
+        <span className="ml-auto text-[13px] text-charcoal/50 tabular-nums whitespace-nowrap">{idx + 1} / {set.items.length}</span>
         {solved && <span className="hidden sm:inline-flex items-center gap-1 text-[12.5px] font-semibold text-mint-400"><CheckCircle2 className="w-4 h-4" /> Solved</span>}
         <button disabled={!prev} onClick={() => navigate(paths.interview(set.id, prev.id))} className="w-9 h-9 rounded-lg border border-brand-900/15 flex items-center justify-center disabled:opacity-30 hover:border-sage" aria-label="Previous"><ChevronLeft className="w-4 h-4" /></button>
         <button disabled={!next} onClick={() => navigate(paths.interview(set.id, next.id))} className="w-9 h-9 rounded-lg border border-brand-900/15 flex items-center justify-center disabled:opacity-30 hover:border-sage" aria-label="Next"><ChevronRight className="w-4 h-4" /></button>
@@ -506,24 +507,8 @@ function TopBar({ set, item, navigate, solved }) {
   );
 }
 
-/** Blank-line separated paragraphs; a paragraph whose lines all start with "- " becomes a bullet list. */
-function Paragraphs({ text, className = '' }) {
-  return String(text).split('\n\n').map((p, i) => {
-    const lines = p.split('\n');
-    if (lines.every(l => l.startsWith('- '))) {
-      return (
-        <ul key={i} className="space-y-1.5">
-          {lines.map((l, j) => <li key={j} className={`flex gap-2.5 text-[15px] leading-relaxed text-charcoal/85 ${className}`}><span className="mt-[9px] w-1.5 h-1.5 rounded-full bg-sage shrink-0" /><span><Inline text={l.slice(2)} /></span></li>)}
-        </ul>
-      );
-    }
-    return <p key={i} className={`text-[15px] leading-relaxed text-charcoal/85 ${className}`}><Inline text={p} /></p>;
-  });
-}
-
-function CodeView({ code }) {
-  return <pre className="mt-3 p-3 sm:p-4 max-w-full rounded-xl bg-[#0C2D26] text-[#E8F1EC] text-[12px] sm:text-[13px] leading-[1.65] sm:leading-6 overflow-x-auto thin-scroll font-mono">{code}</pre>;
-}
+/** Problem statements and model answers: paragraphs, lists, fenced code and tips (see AnswerText). */
+const Paragraphs = AnswerText;
 
 /** Last result set of a sql.js run as rows of plain values. */
 const lastRows = (res) => {
@@ -599,7 +584,7 @@ function Workspace({ set, item, progress, plans, mark, signedIn, navigate, toast
     const ok = await mark(set.id, item.id, true);
     if (!ok) return;
     if (plan && before.todayPlanned && before.doneToday + 1 === plan.perDay) {
-      toast?.(`🎯 Today's goal done! ${plan.perDay} of ${plan.perDay} solved. Keep your plan streak going.`, 'success', 5200);
+      toast?.(`Today's goal done! ${plan.perDay} of ${plan.perDay} solved. Keep your plan streak going.`, 'success', 5200);
     } else {
       toast?.('Accepted! Saved to your progress.', 'success', 3200);
     }
@@ -665,23 +650,42 @@ function Workspace({ set, item, progress, plans, mark, signedIn, navigate, toast
     else runPy(submit);
   };
 
+  const [view, setView] = useState(startTab === 'solution' ? 'solution' : 'problem');   // phone tabs
+  const [cursor, setCursor] = useState(null);
+  const showView = (v) => { setView(v); if (v === 'problem' || v === 'solution') setTab(v); };
+  const runFromBar = (submit) => { setView('code'); run(submit); };
+  const lang = set.kind;
+  const open = reveal || solved;
+  const passed = out?.kind === 'py' ? out.results.filter(r => r.ok).length : 0;
+  const status = !out ? null
+    : out.kind === 'status' ? { tone: 'wait', text: out.text }
+    : out.kind === 'error' ? { tone: 'bad', text: 'Error: see the output below' }
+    : out.kind === 'sql' ? (out.verdict ? { tone: out.verdict === 'accepted' ? 'ok' : 'bad', text: out.verdict === 'accepted' ? 'Accepted: result matches' : 'Result does not match yet' } : { tone: 'ok', text: `Query ran: ${out.mine.values.length} row${out.mine.values.length === 1 ? '' : 's'}` })
+    : { tone: passed === out.results.length ? 'ok' : 'bad', text: `${passed} of ${out.results.length} ${out.submit ? 'tests' : 'examples'} passed` };
+  const toneDot = { ok: 'bg-[#8FD9A8]', bad: 'bg-[#F3A39A]', wait: 'bg-[#F2D27A] animate-pulse' };
+
   return (
-    <div className="bg-ivory min-h-screen">
+    <div className="bg-ivory min-h-screen pb-[92px] lg:pb-0">
       <TopBar set={set} item={item} navigate={navigate} solved={solved} />
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* left: statement / solution */}
-        <div className="edu-card overflow-hidden flex flex-col min-w-0 lg:max-h-[calc(100vh-120px)] lg:sticky lg:top-[76px]">
-          <div className="flex border-b border-brand-900/10 px-2">
-            {[['problem', 'Problem'], ['solution', 'Solution']].map(([id, label]) => (
-              <button key={id} onClick={() => setTab(id)} className={`px-4 py-3 text-[14px] font-semibold border-b-2 -mb-px transition ${tab === id ? 'border-forest text-forest' : 'border-transparent text-charcoal/55 hover:text-charcoal'}`}>{label}</button>
-            ))}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-5 sm:pt-7">
+        <QuestionHeader n={item.n} eyebrow="Problem" difficulty={item.difficulty} tags={[item.topic]} title={item.title}
+          right={<LangSwitch langs={[lang]} active={lang} />} />
+        <Tabs className="mt-5 lg:hidden" active={view} onChange={showView}
+          tabs={[['problem', 'Problem'], ['solution', 'Solution'], ['code', 'Code'], ['explanation', 'Explanation']]} />
+      </div>
+
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-5 items-start">
+        {/* left: problem / solution approach */}
+        <div className={`${view === 'problem' || view === 'solution' ? 'flex' : 'hidden'} lg:flex edu-card !rounded-[22px] overflow-hidden flex-col min-w-0 lg:max-h-[calc(100vh-110px)] lg:sticky lg:top-[76px]`}>
+          <div className="hidden lg:flex items-center gap-3 px-5 pt-4">
+            <span className="w-8 h-8 rounded-lg bg-[#EEF7F1] text-forest flex items-center justify-center shrink-0"><CheckCircle2 className="w-4 h-4" /></span>
+            <Tabs className="flex-1 !border-b-0" active={tab} onChange={showView} tabs={[['problem', 'Problem'], ['solution', 'Solution approach']]} />
           </div>
+          <div className="hidden lg:block mx-5 border-b border-dashed border-brand-900/15" />
           <div className="p-4 sm:p-6 overflow-y-auto thin-scroll">
             {tab === 'problem' ? (
               <>
-                <h1 className="font-display text-[24px] font-bold text-evergreen leading-tight">{item.n}. {item.title}</h1>
-                <div className="mt-2.5 flex flex-wrap items-center gap-2"><DifficultyPill level={item.difficulty} /><span className="text-[12.5px] text-charcoal/55">{item.topic}</span></div>
-                <div className="mt-5 space-y-3"><Paragraphs text={item.prompt} /></div>
+                <div className="space-y-3"><Paragraphs text={item.prompt} /></div>
                 {isSql && item.ordered && <p className="mt-3 text-[13px] text-charcoal/60">Row order matters for this one.</p>}
                 {isSql && <p className="mt-3 text-[13px] text-charcoal/60">Column names do not matter; the values in each row do.</p>}
                 {isJs && item.tests.slice(0, 2).map((tc, i) => (
@@ -699,44 +703,117 @@ function Workspace({ set, item, progress, plans, mark, signedIn, navigate, toast
                 {!isSql && <p className="mt-4 text-[13px] text-charcoal/60">Submit also runs {item.tests.length - 2} hidden test{item.tests.length - 2 === 1 ? '' : 's'}.{item.compare ? ' Any order of the answer is accepted.' : ''}</p>}
                 {isSql && <TablePreview tables={item.tables} />}
               </>
-            ) : !reveal && !solved ? (
-              <div className="py-10 text-center">
-                <span className="mx-auto w-14 h-14 rounded-full bg-brand-50 text-forest flex items-center justify-center"><Lock className="w-6 h-6" /></span>
-                <p className="mt-4 font-display text-[19px] font-semibold text-evergreen">Give it a real try first</p>
-                <p className="mt-1.5 text-[14px] text-charcoal/65 max-w-sm mx-auto">You learn most from struggling a little. Stuck after a few attempts? Open the solution and study how it works.</p>
-                <button onClick={() => setReveal(true)} className="btn-outline mt-5"><Eye className="w-4 h-4" /> Show the solution</button>
-              </div>
+            ) : !open ? (
+              <SolutionGate onShow={() => setReveal(true)} />
             ) : (
-              <>
-                <Approaches item={item} onCopy={(code) => { edit(code); setTab('problem'); }} />
-              </>
+              <Approaches item={item} lang={lang} onCopy={(c) => { edit(c); setTab('problem'); setView('code'); }} />
             )}
           </div>
         </div>
 
-        {/* right: editor + output */}
-        <div className="min-w-0 flex flex-col gap-4">
-          <div className="edu-card overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-brand-900/10 bg-cream/60">
-              <span className="text-[12.5px] font-semibold uppercase tracking-[0.14em] text-sage">{LANG_LABEL[set.kind]}</span>
-              <button onClick={reset} className="ml-auto inline-flex items-center gap-1 text-[12.5px] text-charcoal/55 hover:text-forest"><RotateCcw className="w-3.5 h-3.5" /> Reset</button>
-            </div>
-            <CodeEditor value={code} onChange={edit} lang={set.kind} onRun={() => run(false)} minHeight={isSql ? 220 : 300} label={`${item.title} answer`} />
-            <div className="flex items-center gap-2 px-4 py-3 border-t border-brand-900/10">
-              <span className="hidden sm:inline text-[12px] text-charcoal/45">Ctrl + Enter runs</span>
-              <button onClick={() => run(false)} disabled={!!busy} className="ml-auto inline-flex items-center gap-1.5 h-10 px-4 rounded-md border border-forest/40 text-forest font-semibold text-[14px] hover:bg-brand-50 disabled:opacity-60">
-                {busy === 'run' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />} Run
-              </button>
-              <button onClick={() => run(true)} disabled={!!busy} className="inline-flex items-center gap-1.5 h-10 px-4 rounded-md bg-forest text-ivory font-semibold text-[14px] hover:bg-sage disabled:opacity-60">
-                {busy === 'submit' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Submit
-              </button>
-            </div>
-          </div>
-
+        {/* right: code snippet panel + output */}
+        <div className={`${view === 'code' ? 'flex' : 'hidden'} lg:flex min-w-0 flex-col gap-4`}>
+          <CodePanel fileName={fileNameFor(item, lang)}
+            actions={<>
+              <CopyButton text={() => code} />
+              <button onClick={reset} className={PANEL_BTN}><RotateCcw className="w-4 h-4" /> Reset</button>
+              <button onClick={() => run(false)} disabled={!!busy} className={`hidden lg:inline-flex ${PANEL_RUN}`}>{busy === 'run' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-current" />} Run</button>
+              <button onClick={() => run(true)} disabled={!!busy} className={`hidden lg:inline-flex ${PANEL_PRIMARY}`}>{busy === 'submit' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Submit</button>
+            </>}
+            footer={<>
+              {status ? <span className="inline-flex items-center gap-2 text-ivory/85"><span className={`w-2 h-2 rounded-full ${toneDot[status.tone]}`} />{status.text}</span>
+                : <span className="hidden lg:inline">Ctrl + Enter runs</span>}
+              {solved && <span className="text-[#8FD9A8]">Solved</span>}
+              {cursor && <span className="ml-auto hidden lg:inline tabular-nums">Ln {cursor.line}, Col {cursor.col}</span>}
+            </>}>
+            <CodeEditor value={code} onChange={edit} lang={set.kind} onRun={() => run(false)} minHeight={isSql ? 240 : 340}
+              label={`${item.title} answer`} className="!bg-[#0C2D26]" highlightLine onCursor={setCursor} />
+          </CodePanel>
           <OutputPanel out={out} item={item} isSql={isSql} isJs={isJs} signedIn={signedIn} navigate={navigate} set={set} />
         </div>
       </div>
+
+      <div className={`${view === 'explanation' ? 'block' : 'hidden'} lg:block max-w-[1400px] mx-auto px-4 sm:px-6 pb-10`}>
+        <ExplanationCard item={item} set={set} out={out} open={open} onShow={() => setReveal(true)} />
+      </div>
+
+      {/* phone: run and submit stay within reach */}
+      <div className="lg:hidden fixed inset-x-0 bottom-0 z-[60] bg-white/95 backdrop-blur border-t border-brand-900/10 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] flex gap-3">
+        <button onClick={() => runFromBar(false)} disabled={!!busy} className="flex-1 inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-[#EEF7F1] border border-[#CDE5D6] text-evergreen font-bold text-[15.5px] disabled:opacity-60">
+          {busy === 'run' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-current" />} Run
+        </button>
+        <button onClick={() => runFromBar(true)} disabled={!!busy} className="flex-1 inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-forest text-ivory font-bold text-[15.5px] disabled:opacity-60">
+          {busy === 'submit' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Submit
+        </button>
+      </div>
     </div>
+  );
+}
+
+function SolutionGate({ onShow }) {
+  return (
+    <div className="py-10 text-center">
+      <span className="mx-auto w-14 h-14 rounded-full bg-[#EEF7F1] text-forest flex items-center justify-center"><Lock className="w-6 h-6" /></span>
+      <p className="mt-4 font-display text-[19px] font-semibold text-evergreen">Give it a real try first</p>
+      <p className="mt-1.5 text-[14px] text-charcoal/65 max-w-sm mx-auto">You learn most from struggling a little. Stuck after a few attempts? Open the solution and study how it works.</p>
+      <button onClick={onShow} className="btn-outline mt-5"><Eye className="w-4 h-4" /> Show the solution</button>
+    </div>
+  );
+}
+
+/** Walkthrough, complexity and the visible test cases, each shown only when the problem has it. */
+function ExplanationCard({ item, set, out, open, onShow }) {
+  const tests = set.kind === 'python' || set.kind === 'javascript' ? item.tests.slice(0, 2) : [];
+  const resultOf = (i) => (out?.kind === 'py' ? out.results[i] : null);
+  const label = (t) => (set.kind === 'javascript' ? t.code : `${item.fn}(${t[0].map(pyRepr).join(', ')})`);
+  const expected = (t) => (set.kind === 'javascript' ? jsRepr(t.expected) : pyRepr(t[1]));
+  const cols = [item.explanation && 'walk', item.complexity && 'complexity', tests.length && 'tests'].filter(Boolean);
+  if (!cols.length) return null;
+  const grid = { 1: 'lg:grid-cols-1', 2: 'lg:grid-cols-[1.4fr_1fr]', 3: 'lg:grid-cols-[1.3fr_1fr_1fr]' }[cols.length];
+  const eyebrow = 'text-[12px] font-semibold uppercase tracking-[0.14em] text-charcoal/50 mb-3';
+  return (
+    <section className="edu-card !rounded-[22px] overflow-hidden">
+      <header className="flex flex-wrap items-center gap-3 px-5 sm:px-6 py-4 border-b border-dashed border-brand-900/15">
+        <span className="w-8 h-8 rounded-lg bg-[#EEF7F1] text-forest flex items-center justify-center font-display font-bold">i</span>
+        <h2 className="font-display text-[18px] font-bold text-evergreen">Explanation</h2>
+        {tests[0] && set.kind === 'python' && <span className="ml-auto hidden md:inline font-mono text-[12.5px] text-charcoal/50 truncate max-w-[50%]">Example: {label(tests[0])}</span>}
+      </header>
+      <div className={`grid grid-cols-1 ${grid} divide-y lg:divide-y-0 lg:divide-x divide-brand-900/10`}>
+        {cols.includes('walk') && (
+          <div className="p-5 sm:p-6 min-w-0">
+            <p className={eyebrow}>Walkthrough</p>
+            {open ? <div className="space-y-3"><Paragraphs text={item.explanation} /></div>
+              : <p className="text-[14px] text-charcoal/60">The walkthrough gives the solution away. <button onClick={onShow} className="font-semibold text-forest hover:underline">Show it</button> when you are ready.</p>}
+          </div>
+        )}
+        {cols.includes('complexity') && (
+          <div className="p-5 sm:p-6 min-w-0">
+            <p className={eyebrow}>Complexity</p>
+            {open ? <ComplexityTiles text={item.complexity} /> : <p className="text-[14px] text-charcoal/60">Shown with the solution.</p>}
+          </div>
+        )}
+        {cols.includes('tests') && (
+          <div className="p-5 sm:p-6 min-w-0">
+            <p className={eyebrow}>Test cases</p>
+            <ul className="space-y-2.5">
+              {tests.map((t, i) => {
+                const r = resultOf(i);
+                return (
+                  <li key={i} className="rounded-xl bg-[#F3F8F4] border border-brand-900/[.06] px-3.5 py-2.5">
+                    <div className="flex items-start gap-2">
+                      <code className="flex-1 min-w-0 font-mono text-[12.5px] text-charcoal/85 break-all whitespace-pre-wrap">{label(t)}</code>
+                      {r && <span className={`shrink-0 px-2 py-0.5 rounded-md text-[11px] font-bold tracking-wide ${r.ok ? 'bg-[#DDF0E3] text-[#1E6A45]' : 'bg-[#FCE8E6] text-[#A3352B]'}`}>{r.ok ? 'PASS' : 'FAIL'}</span>}
+                    </div>
+                    <p className="mt-1 font-mono text-[12px] text-charcoal/55 break-all">returns {expected(t)}</p>
+                  </li>
+                );
+              })}
+            </ul>
+            {!out && <p className="mt-3 text-[12.5px] text-charcoal/50">Run your code to check these.</p>}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -816,9 +893,11 @@ function OutputPanel({ out, item, isSql, isJs, signedIn, navigate, set }) {
 
 function ConceptCard({ set, item, progress, mark, signedIn, navigate, toast, startTab }) {
   const [open, setOpen] = useState(startTab === 'solution');
+  const [view, setView] = useState('answer');          // phone tabs
   const known = !!progress[set.id]?.[item.id];
   const idx = set.items.indexOf(item);
   const next = set.items[idx + 1];
+  const lang = item.code ? codeLang(item) : null;
   const toggleKnown = async () => {
     if (!signedIn) { navigate(paths.login(paths.interview(set.id, item.id))); return; }
     await mark(set.id, item.id, !known);
@@ -827,34 +906,54 @@ function ConceptCard({ set, item, progress, mark, signedIn, navigate, toast, sta
       if (next) navigate(paths.interview(set.id, next.id));
     }
   };
+  const knownLabel = known ? 'Known (undo)' : signedIn ? 'I knew this' : 'Sign in to track';
+  const goNext = () => next && navigate(paths.interview(set.id, next.id));
   return (
-    <div className="bg-ivory min-h-screen">
+    <div className={`bg-ivory min-h-screen ${open ? 'pb-[92px] lg:pb-0' : ''}`}>
       <TopBar set={set} item={item} navigate={navigate} solved={known} />
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <div className="edu-card p-6 sm:p-9">
-          <div className="flex flex-wrap items-center gap-2"><DifficultyPill level={item.difficulty} /><span className="text-[12.5px] text-charcoal/55">{item.topic}</span></div>
-          <h1 className="mt-4 font-display text-[26px] sm:text-[30px] font-bold text-evergreen leading-tight">{item.title}</h1>
-          {!open ? (
-            <div className="mt-8 rounded-2xl border border-dashed border-brand-900/20 bg-cream/60 p-6 text-center">
-              <Trophy className="w-6 h-6 text-sage mx-auto" />
-              <p className="mt-2 text-[14.5px] text-charcoal/70">Say your answer out loud as if you were in the interview, then compare it with ours.</p>
-              <button onClick={() => setOpen(true)} className="btn-primary mt-4"><Eye className="w-4 h-4" /> Show the answer</button>
+      <div className={`${lang ? 'max-w-[1300px]' : 'max-w-3xl'} mx-auto px-4 sm:px-6 pt-5 sm:pt-7 pb-10`}>
+        <QuestionHeader n={item.n} difficulty={item.difficulty} tags={[item.topic]} title={item.title}
+          right={lang ? <LangSwitch langs={[lang]} active={lang} /> : null} />
+
+        {!open ? (
+          <div className="mt-7 edu-card !rounded-[22px] p-7 sm:p-9 text-center max-w-3xl">
+            <span className="mx-auto w-12 h-12 rounded-full bg-[#EEF7F1] text-forest flex items-center justify-center"><Eye className="w-5 h-5" /></span>
+            <p className="mt-3 text-[15px] text-charcoal/70 max-w-md mx-auto">Say your answer out loud as if you were in the interview, then compare it with ours.</p>
+            <button onClick={() => setOpen(true)} className="btn-primary mt-5"><Eye className="w-4 h-4" /> Show the answer</button>
+          </div>
+        ) : (
+          <>
+            {lang && <Tabs className="mt-5 lg:hidden" active={view} onChange={setView} tabs={[['answer', 'Answer'], ['code', 'Code']]} />}
+            <div className={`mt-5 sm:mt-6 grid grid-cols-1 gap-5 items-start ${lang ? 'lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]' : ''}`}>
+              <article className={`${!lang || view === 'answer' ? 'block' : 'hidden'} lg:block edu-card !rounded-[22px] p-5 sm:p-8 min-w-0 animate-fade-up`}>
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="w-8 h-8 rounded-lg bg-[#EEF7F1] text-forest flex items-center justify-center"><CheckCircle2 className="w-4 h-4" /></span>
+                  <h2 className="font-display text-[18px] font-bold text-evergreen">Model answer</h2>
+                </div>
+                <div className="space-y-4"><Paragraphs text={item.answer} /></div>
+                <div className="mt-7 hidden lg:flex flex-wrap gap-3">
+                  <button onClick={toggleKnown} className={known ? 'btn-outline' : 'btn-primary'}><CheckCircle2 className="w-4 h-4" /> {knownLabel}</button>
+                  {next && <button onClick={goNext} className="btn-outline">Next question <ArrowRight className="w-4 h-4" /></button>}
+                </div>
+              </article>
+              {lang && (
+                <div className={`${view === 'code' ? 'block' : 'hidden'} lg:block min-w-0 lg:sticky lg:top-[76px]`}>
+                  <CodePanel fileName={fileNameFor(item, lang)} actions={<CopyButton text={() => item.code} />}>
+                    <StaticCode code={item.code} lang={lang} maxHeight="calc(100vh - 190px)" />
+                  </CodePanel>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="mt-6 animate-fade-up">
-              <p className="eyebrow mb-2">Model answer</p>
-              <div className="space-y-3"><Paragraphs text={item.answer} /></div>
-              {item.code && <CodeView code={item.code} />}
-              <div className="mt-7 flex flex-wrap gap-3">
-                <button onClick={toggleKnown} className={known ? 'btn-outline' : 'btn-primary'}>
-                  <CheckCircle2 className="w-4 h-4" /> {known ? 'Known (undo)' : signedIn ? 'I knew this' : 'Sign in to track'}
-                </button>
-                {next && <button onClick={() => navigate(paths.interview(set.id, next.id))} className="btn-outline">Next question <ArrowRight className="w-4 h-4" /></button>}
-              </div>
-            </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
+
+      {open && (
+        <div className="lg:hidden fixed inset-x-0 bottom-0 z-[60] bg-white/95 backdrop-blur border-t border-brand-900/10 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] flex gap-3">
+          {next && <button onClick={goNext} className="flex-1 inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-[#EEF7F1] border border-[#CDE5D6] text-evergreen font-bold text-[15px]">Next <ArrowRight className="w-4 h-4" /></button>}
+          <button onClick={toggleKnown} className={`flex-1 inline-flex items-center justify-center gap-2 h-12 rounded-2xl font-bold text-[15px] ${known ? 'bg-white border border-forest/40 text-forest' : 'bg-forest text-ivory'}`}><CheckCircle2 className="w-4 h-4" /> {knownLabel}</button>
+        </div>
+      )}
     </div>
   );
 }

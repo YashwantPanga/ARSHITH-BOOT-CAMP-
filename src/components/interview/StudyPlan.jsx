@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Check, Flag, Minus, Pencil, Plus, Rocket, X, Zap } from 'lucide-react';
+import { Check, Flag, Leaf, Minus, Pencil, Plus, Rocket, TrendingUp, X, Zap } from 'lucide-react';
 import { Flame } from '../StreakCard';
 
 /* ------------------------------------------------------------------ */
@@ -61,9 +61,6 @@ function RocketArt({ launch = false }) {
         <radialGradient id="rk-glow" cx="50%" cy="60%" r="55%"><stop offset="0%" stopColor="#F2D27A" stopOpacity=".55" /><stop offset="100%" stopColor="#F2D27A" stopOpacity="0" /></radialGradient>
       </defs>
       <circle cx="100" cy="80" r="70" fill="url(#rk-glow)" className="mission-pulse" />
-      {[[30, 30], [168, 42], [150, 18], [46, 62], [176, 96]].map(([x, y], i) => (
-        <circle key={i} cx={x} cy={y} r="2.2" fill="#F2D27A" className="mission-twinkle" style={{ animationDelay: `${i * 0.4}s` }} />
-      ))}
       <ellipse cx="100" cy="138" rx="46" ry="7" fill="#013A2B" opacity=".18" />
       <g className={launch ? 'mission-launch' : 'mission-hover'}>
         <path d="M100 18c18 14 26 38 24 66H76c-2-28 6-52 24-66z" fill="url(#rk-body)" stroke="#013A2B" strokeWidth="3" />
@@ -102,9 +99,9 @@ function Chest({ open }) {
 /* ------------------------------------------------------------------ */
 
 const LEVELS = [
-  { n: 1, name: 'Warm-up', emoji: '🌱', note: 'Easy pace, build the habit' },
-  { n: 2, name: 'Steady', emoji: '🔥', note: 'Most popular choice' },
-  { n: 3, name: 'Beast mode', emoji: '⚡', note: 'For interview week' }
+  { n: 1, name: 'Warm-up', icon: Leaf, note: 'Easy pace, build the habit' },
+  { n: 2, name: 'Steady', icon: TrendingUp, note: 'Most popular choice' },
+  { n: 3, name: 'Intensive', icon: Zap, note: 'For interview week' }
 ];
 
 export function PlanModal({ set, initial, onSave, onClose, solvedCount = 0 }) {
@@ -147,7 +144,7 @@ export function PlanModal({ set, initial, onSave, onClose, solvedCount = 0 }) {
         <div className="px-5 sm:px-7 pb-[calc(20px+env(safe-area-inset-bottom))]">
           {state === 'done' ? (
             <div className="text-center py-3 animate-fade-up">
-              <p className="font-display text-[22px] font-bold text-evergreen">Mission launched! 🚀</p>
+              <p className="font-display text-[22px] font-bold text-evergreen">Your daily plan is saved</p>
               <p className="mt-1 text-[14px] text-charcoal/65">{perDay} problem{perDay > 1 ? 's' : ''} on each training day{finish ? `. Finish line: ${finish}` : ''}.</p>
             </div>
           ) : (
@@ -159,7 +156,7 @@ export function PlanModal({ set, initial, onSave, onClose, solvedCount = 0 }) {
                   return (
                     <button key={l.n} onClick={() => setPerDay(l.n)} aria-pressed={on}
                       className={`relative rounded-2xl border-2 px-2 py-3 text-center transition active:scale-[.97] ${on ? 'border-[#E8A13A] bg-[#FFF6E0] shadow-[0_10px_20px_-14px_rgba(232,161,58,.9)]' : 'border-brand-900/10 bg-white hover:border-brand-300'}`}>
-                      <span className="block text-[22px] leading-none">{l.emoji}</span>
+                      <l.icon className={`block mx-auto w-[22px] h-[22px] ${on ? 'text-[#C47A1E]' : 'text-forest'}`} aria-hidden="true" />
                       <span className="block mt-1.5 font-display text-[14px] font-bold text-evergreen">{l.name}</span>
                       <span className="block text-[11.5px] text-charcoal/55">{l.n} a day</span>
                       {on && <Check className="absolute top-1.5 right-1.5 w-4 h-4 text-[#C47A1E]" />}

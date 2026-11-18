@@ -7,6 +7,21 @@ import { JS_30 } from './js30.js';
 import { ESSENTIALS_50 } from './essentials50.js';
 import { QUESTIONS_PART2 } from './questions150.part2.js';
 import { QUESTIONS_PART3 } from './questions150.part3.js';
+import { QUESTIONS_PART4 } from './questions.part4.js';
+import { QUESTIONS_PART5 } from './questions.part5.js';
+import { TIPS, EXTRA_CODE } from './questions150.extras.js';
+
+// Questions 61-150 get their closing tip and worked example from questions150.extras.js.
+const withExtras = (item) => {
+  const tip = TIPS[item.n];
+  const extra = EXTRA_CODE[item.n];
+  if (!tip && !extra) return item;
+  return {
+    ...item,
+    ...(tip && !item.answer.includes('Interview tip:') ? { answer: `${item.answer}\n\nInterview tip: ${tip}` } : {}),
+    ...(extra && !item.code ? { code: extra.code.replace(/^\n/, ''), ...(extra.lang ? { lang: extra.lang } : {}) } : {})
+  };
+};
 
 export const INTERVIEW_SETS = [
   {
@@ -34,10 +49,10 @@ export const INTERVIEW_SETS = [
     summary: ['Built for JavaScript beginners and front-end interviews', 'Covers closures, promises, async/await and classes', 'Every problem has tests and a worked solution']
   },
   {
-    id: 'interview-questions', kind: 'concept', title: 'Interview Questions 150', tagline: 'Every topic interviewers ask, with clear answers',
-    description: 'One hundred and fifty questions covering everything a technical interview can touch: SQL and databases, Python, OOP, data structures, operating systems, networks, web and React, data science, system design and the HR round. Think of your answer, then compare it with a detailed, easy-to-follow model answer.',
-    icon: 'chat', theme: 'gold', items: [...QUESTIONS_60, ...QUESTIONS_PART2, ...QUESTIONS_PART3],
-    summary: ['Complete revision before placement and job interviews', 'Covers 12 areas: SQL, Python, OOP, DSA, OS, networks, web, AI, system design, HR', 'Detailed model answers with examples and code']
+    id: 'interview-questions', kind: 'concept', title: 'Interview Questions 200+', tagline: 'Every topic interviewers ask, with clear answers',
+    description: 'More than two hundred frequently asked questions, at least twenty in every area, covering everything a technical interview can touch: SQL and databases, Python, OOP, data structures, operating systems, networks, web and React, data science, system design and the HR round. Think of your answer, then compare it with a detailed model answer, worked code examples and an interview tip.',
+    icon: 'chat', theme: 'gold', items: [...QUESTIONS_60, ...QUESTIONS_PART2, ...QUESTIONS_PART3].map(withExtras).concat(QUESTIONS_PART4, QUESTIONS_PART5),
+    summary: ['Complete revision before placement and job interviews', '10 areas, 20+ questions each: SQL, Python, web, data science, OOP, DSA, OS, networks, system design, HR', 'Detailed model answers with examples and code']
   }
 ];
 

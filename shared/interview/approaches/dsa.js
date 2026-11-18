@@ -374,7 +374,7 @@ export const DSA_APPROACHES = {
     pick: 'Recursive DFS is the shortest; mention the queue version for big images.'
   },
   'dsa-63': {
-    extra: [A('Pattern buckets', 'Group words by patterns like "h*t". Words in the same bucket are one letter apart, so neighbours are found without trying 26 letters.',
+    extra: [A('Pattern buckets', 'Group words by patterns like `h*t`. Words in the same bucket are one letter apart, so neighbours are found without trying 26 letters.',
       "from collections import defaultdict, deque\n\ndef ladder_length(begin, end, words):\n    if end not in words:\n        return 0\n    buckets = defaultdict(list)\n    for w in words + [begin]:\n        for i in range(len(w)):\n            buckets[w[:i] + '*' + w[i + 1:]].append(w)\n    q, seen = deque([(begin, 1)]), {begin}\n    while q:\n        w, steps = q.popleft()\n        if w == end:\n            return steps\n        for i in range(len(w)):\n            for nxt in buckets[w[:i] + '*' + w[i + 1:]]:\n                if nxt not in seen:\n                    seen.add(nxt)\n                    q.append((nxt, steps + 1))\n    return 0", 'O(N · L²) time')],
     pick: 'Plain BFS trying each letter is the easiest to get right; pattern buckets are faster when the word list is large.'
   },

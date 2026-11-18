@@ -1,8 +1,8 @@
 // Interview Questions 150, questions 61-105: OOP, DSA concepts, Operating Systems, Computer Networks.
 // Answers use blank lines between paragraphs and "- " lines for bullet lists.
 
-const Q = (n, topic, difficulty, title, answer, code) =>
-  ({ id: `iq-${String(n).padStart(2, '0')}`, n, topic, difficulty, title, answer, ...(code ? { code } : {}) });
+const Q = (n, topic, difficulty, title, answer, code, lang) =>
+  ({ id: `iq-${String(n).padStart(2, '0')}`, n, topic, difficulty, title, answer, ...(code ? { code } : {}), ...(lang ? { lang } : {}) });
 
 export const QUESTIONS_PART2 = [
   // ---------------- Object-Oriented Programming ----------------
@@ -19,7 +19,7 @@ export const QUESTIONS_PART2 = [
     'class Employee:\n    def __init__(self, name, salary):\n        self.name, self.salary = name, salary\n\n    def pay(self):\n        return self.salary\n\nclass Manager(Employee):          # Manager inherits from Employee\n    def pay(self):                # and overrides one method\n        return self.salary + 10000'),
   Q(65, 'OOP', 'Medium', 'Method overloading vs method overriding?',
     '**Overloading**: several methods in the **same class** with the same name but **different parameters** (number or type). The compiler picks one at compile time, so it is called compile-time (static) polymorphism. Java and C++ support it; Python does not directly (the last definition wins), but default arguments and `*args` give the same effect.\n\n**Overriding**: a **child class** provides its own version of a method that already exists in the parent, with the same signature. Which version runs is decided at run time from the actual object, so it is run-time (dynamic) polymorphism.',
-    '// Java\nclass MathUtil {\n    int add(int a, int b) { return a + b; }            // overloading\n    int add(int a, int b, int c) { return a + b + c; }\n}\nclass Animal { String sound() { return "..."; } }\nclass Dog extends Animal {\n    @Override String sound() { return "Woof"; }        // overriding\n}'),
+    "// Save as Main.java and run: java Main.java\npublic class Main {\n    static class MathUtil {\n        int add(int a, int b) { return a + b; }                  // overloading:\n        int add(int a, int b, int c) { return a + b + c; }       // same name,\n        double add(double a, double b) { return a + b; }         // different parameters\n    }\n    static class Animal { String sound() { return \"...\"; } }\n    static class Dog extends Animal {\n        @Override String sound() { return \"Woof\"; }              // overriding\n    }\n\n    public static void main(String[] args) {\n        MathUtil m = new MathUtil();\n        System.out.println(m.add(2, 3) + \" \" + m.add(2, 3, 4) + \" \" + m.add(1.5, 2.5));   // chosen at compile time\n        Animal pet = new Dog();\n        System.out.println(pet.sound());                         // Woof: chosen at run time\n    }\n}", 'java'),
   Q(66, 'OOP', 'Medium', 'Abstract class vs interface?',
     'Both describe what subclasses must do, but they differ:\n\n- An **abstract class** can have normal methods with code, fields (state) and constructors, plus abstract methods without a body. A class can extend only **one** abstract class (in Java).\n- An **interface** is a pure contract: method signatures (and in modern Java, default methods), no instance state. A class can implement **many** interfaces.\n\nUse an abstract class when related classes share code ("is-a" with common behaviour, e.g. `Shape`). Use an interface for a capability that unrelated classes can have (e.g. `Comparable`, `Printable`). In Python, `abc.ABC` with `@abstractmethod` plays both roles.'),
   Q(67, 'OOP', 'Medium', 'What is polymorphism? Give a real example.',
