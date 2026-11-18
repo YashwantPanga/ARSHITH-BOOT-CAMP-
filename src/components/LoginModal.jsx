@@ -101,42 +101,44 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
 
         <form onSubmit={handleSubmit} className={`${isSignup ? 'mt-4 grid gap-x-3 gap-y-3 grid-cols-2' : 'mt-6 grid gap-4'}`} noValidate>
           {isSignup && (
-            <Field className="col-span-2" label="Full name" hint="Printed on your certificate exactly as typed.">
-              <input className="auth-input" autoComplete="name" value={form.name} onChange={set('name')} />
+            <Field id="auth-name" className="col-span-2" label="Full name" hint="Printed on your certificate exactly as typed.">
+              <input id="auth-name" className="auth-input" autoComplete="name" value={form.name} onChange={set('name')} />
             </Field>
           )}
-          <Field label="Email" className={isSignup ? 'col-span-2' : ''}>
-            <input className="auth-input" type="email" autoComplete="email" value={form.email} onChange={set('email')} />
+          <Field id="auth-email" label="Email" className={isSignup ? 'col-span-2' : ''}>
+            <input id="auth-email" className="auth-input" type="email" autoComplete="email" value={form.email} onChange={set('email')} />
           </Field>
           <Field
+            id="auth-reg"
             label={isSignup ? 'Reg. / ID number' : 'Registration / ID number'}
             hint={isSignup
               ? 'Roll no. or any ID · needed to log in'
               : 'The registration / ID number you entered when you signed up.'}
           >
-            <input className="auth-input uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal" value={form.regNo} onChange={set('regNo')} />
+            <input id="auth-reg" className="auth-input uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal" value={form.regNo} onChange={set('regNo')} />
           </Field>
           {isSignup && (
-            <Field label="Phone number">
-              <input className="auth-input" type="tel" autoComplete="tel" value={form.phone} onChange={set('phone')} />
+            <Field id="auth-phone" label="Phone number">
+              <input id="auth-phone" className="auth-input" type="tel" autoComplete="tel" value={form.phone} onChange={set('phone')} />
             </Field>
           )}
           <Field
+            id="auth-password"
             label="Password"
             aside={!isSignup && (
               <button type="button" onClick={() => onForgotPassword(form.email.trim())} className="text-[14px] font-semibold text-brand-900 underline underline-offset-2 hover:text-forest">Forgot password?</button>
             )}
           >
             <span className="relative block">
-              <input className="auth-input pr-12" type={showPw ? 'text' : 'password'} autoComplete={isSignup ? 'new-password' : 'current-password'} value={form.password} onChange={set('password')} />
-              <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-charcoal/45 hover:text-brand-900" aria-label={showPw ? 'Hide password' : 'Show password'}>
+              <input id="auth-password" className="auth-input pr-12" type={showPw ? 'text' : 'password'} autoComplete={isSignup ? 'new-password' : 'current-password'} value={form.password} onChange={set('password')} />
+              <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-md text-charcoal/50 hover:text-brand-900" aria-label={showPw ? 'Hide password' : 'Show password'}>
                 {showPw ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
               </button>
             </span>
           </Field>
           {isSignup && (
-            <Field label="Confirm password">
-              <input className="auth-input" type={showPw ? 'text' : 'password'} autoComplete="new-password" value={form.confirm} onChange={set('confirm')} />
+            <Field id="auth-confirm" label="Confirm password">
+              <input id="auth-confirm" className="auth-input" type={showPw ? 'text' : 'password'} autoComplete="new-password" value={form.confirm} onChange={set('confirm')} />
             </Field>
           )}
           {isSignup && (
@@ -189,15 +191,17 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
   );
 }
 
-function Field({ label, className = '', hint, aside, children }) {
+// A plain wrapper, not a <label>: a label around the whole field passed stray taps (for example
+// just beside the show-password eye) on to the first button inside it, "Forgot password?".
+function Field({ label, id, className = '', hint, aside, children }) {
   return (
-    <label className={`block ${className}`}>
+    <div className={`block ${className}`}>
       <span className="flex items-baseline justify-between gap-3 mb-1.5">
-        <span className="text-[15px] font-bold text-charcoal">{label} <span className="text-rose-600" aria-hidden="true">*</span></span>
+        <label htmlFor={id} className="text-[15px] font-bold text-charcoal">{label} <span className="text-rose-600" aria-hidden="true">*</span></label>
         {aside}
       </span>
       {children}
       {hint && <span className="block mt-1.5 text-[12.5px] leading-snug text-charcoal/55">{hint}</span>}
-    </label>
+    </div>
   );
 }

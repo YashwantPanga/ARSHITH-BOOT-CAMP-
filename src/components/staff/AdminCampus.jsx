@@ -21,7 +21,8 @@ const TONE = {
 };
 const Pill = ({ s }) => <span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide whitespace-nowrap ${TONE[s] || 'bg-slate-100 text-slate-600'}`}>{String(s).replace(/_/g, ' ').toLowerCase()}</span>;
 const Field = ({ label, error, children, wide }) => (
-  <label className={`block ${wide ? 'sm:col-span-2' : ''}`}><span className="text-[12px] font-bold text-slate-500">{label}</span><span className="mt-1 block">{children}</span>{error && <span className="mt-1 block text-[12px] text-rose-600">{error}</span>}</label>
+  // a div, not a <label>: some fields hold buttons, and a label passes stray taps to its first button
+  <div className={`block ${wide ? 'sm:col-span-2' : ''}`}><span className="text-[12px] font-bold text-slate-500">{label}</span><span className="mt-1 block">{children}</span>{error && <span className="mt-1 block text-[12px] text-rose-600">{error}</span>}</div>
 );
 const Modal = ({ title, onClose, children, wide }) => (
   <div className="fixed inset-0 z-[120] flex items-start sm:items-center justify-center p-3 sm:p-6 bg-slate-900/40 overflow-y-auto" role="dialog" aria-modal="true" onClick={onClose}>

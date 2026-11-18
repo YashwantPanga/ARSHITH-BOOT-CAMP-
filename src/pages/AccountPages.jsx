@@ -87,7 +87,7 @@ function PasswordInput({ value, onChange, show, onToggle }) {
     <span className="relative block">
       <input className="auth-input pr-12" type={show ? 'text' : 'password'} autoComplete="new-password" value={value} onChange={onChange} />
       {onToggle && (
-        <button type="button" onClick={onToggle} className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-charcoal/45 hover:text-brand-900" aria-label={show ? 'Hide password' : 'Show password'}>
+        <button type="button" onClick={onToggle} className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-md text-charcoal/50 hover:text-brand-900" aria-label={show ? 'Hide password' : 'Show password'}>
           {show ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
         </button>
       )}
