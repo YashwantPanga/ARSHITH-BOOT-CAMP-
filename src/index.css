@@ -900,3 +900,25 @@ button, a, [role='button'], input, select, textarea, label { touch-action: manip
 @media (hover: none) {
   .admin-ui [class*="hover:-translate-y"]:hover, .admin-ui [class*="hover:shadow"]:hover { transform: none !important; }
 }
+
+/* ---------- 3D primary button: a raised green key that presses down when tapped ---------- */
+.btn-3d { position: relative; color: #FBF8F1 !important; border: 0 !important;
+  background: linear-gradient(180deg, #2A7A57 0%, #145A43 55%, #0C4232 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.28), inset 0 -2px 0 rgba(0,0,0,.18), 0 4px 0 #062A20, 0 10px 18px -8px rgba(1,58,43,.65);
+  transform: translateY(0); transition: transform .12s ease, box-shadow .12s ease, filter .12s ease; -webkit-tap-highlight-color: transparent; }
+.btn-3d::after { content: ''; position: absolute; inset: 1px 8px auto 8px; height: 45%; border-radius: inherit; background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0)); pointer-events: none; }
+@media (hover: hover) { .btn-3d:hover { filter: brightness(1.06); } }
+.btn-3d:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 0 #062A20, 0 4px 8px -6px rgba(1,58,43,.6); }
+.btn-3d:disabled { filter: saturate(.7); }
+
+/* ---------- phone course carousel: centre card full size, neighbours scaled down ---------- */
+.course-carousel { margin: 0 -16px; }
+.cc-track { position: relative; display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+  padding: 6px calc((100% - min(68vw, 270px)) / 2) 14px; -webkit-overflow-scrolling: touch; }
+.cc-slide { flex: 0 0 min(68vw, 270px); scroll-snap-align: center; transform-origin: center; will-change: transform, opacity; transition: transform .08s linear, opacity .08s linear; }
+.cc-slide > button { box-shadow: 0 18px 30px -20px rgba(1,58,43,.55); }
+.cc-arrow { width: 40px; height: 40px; border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #013A2B; background: #fff; border: 1px solid rgba(1,58,43,.14); box-shadow: 0 4px 10px -6px rgba(1,58,43,.4); -webkit-tap-highlight-color: transparent; }
+.cc-arrow:active { transform: scale(.94); }
+.cc-dot { width: 7px; height: 7px; border-radius: 999px; background: rgba(1,58,43,.2); transition: width .25s ease, background .25s ease; }
+.cc-dot.is-on { width: 20px; background: #145A43; }
+@media (prefers-reduced-motion: reduce) { .cc-slide { transition: none; } }

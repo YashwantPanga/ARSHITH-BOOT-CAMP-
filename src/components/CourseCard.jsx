@@ -77,7 +77,7 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
                 <Lock className="w-4 h-4" /> Finish current course first
               </button>
             ) : (
-              <button onClick={() => onEnroll(course.id)} className="btn font-display w-full py-3 !rounded-md bg-cream text-forest border border-forest/20 hover:bg-forest hover:text-ivory hover:border-forest group/btn">
+              <button onClick={() => onEnroll(course.id)} className="btn-3d btn font-display w-full py-3 !rounded-xl group/btn">
                 {enrolLabel(course)} <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
               </button>
             )}
@@ -141,7 +141,7 @@ export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll, offer
                 <Lock className="w-4 h-4" /> Finish current course first
               </button>
             ) : (
-              <button onClick={() => onEnroll(course.id)} className="btn font-display w-full py-2.5 text-[14px] !rounded-md bg-forest text-ivory hover:bg-sage group/btn">
+              <button onClick={() => onEnroll(course.id)} className="btn-3d btn font-display w-full py-2.5 text-[14px] !rounded-xl group/btn">
                 {enrolLabel(course)} <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
               </button>
             )}

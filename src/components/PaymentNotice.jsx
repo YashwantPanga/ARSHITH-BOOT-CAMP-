@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, IndianRupee, Mail, Phone, Loader2, ShieldCheck, TicketPercent, Check, PartyPopper } from 'lucide-react';
+import { X, IndianRupee, Mail, Phone, Loader2, ShieldCheck, TicketPercent, Check } from 'lucide-react';
 import { displayTitle } from '../utils/textUtils';
 import { api } from '../services/api';
 import { payWithCashfree, preloadCashfree } from '../utils/cashfree';
@@ -85,24 +85,25 @@ export default function PaymentNotice({ course, price = 149, retake = false, pro
     </div>
   );
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-evergreen/60 backdrop-blur-sm animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="pay-title" onClick={() => !busy && onClose()}>
-      <div className="relative w-full max-w-md rounded-[22px] bg-ivory p-6 sm:p-7 shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4 bg-evergreen/60 backdrop-blur-sm animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="pay-title" onClick={() => !busy && onClose()}>
+      {/* phones: a medium card that scrolls inside itself, so the Pay button is always reachable */}
+      <div className="relative w-full max-w-[360px] sm:max-w-md max-h-[calc(100dvh-24px)] overflow-y-auto overscroll-contain no-scrollbar rounded-[22px] bg-ivory p-4 sm:p-7 shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} disabled={busy} className="absolute top-3 right-3 p-2 rounded-full text-charcoal/50 hover:bg-cream disabled:opacity-40" aria-label="Close"><X className="w-4 h-4" /></button>
-        <span className="w-14 h-14 rounded-full bg-brand-100 text-forest flex items-center justify-center"><IndianRupee className="w-7 h-7" /></span>
-        <h2 id="pay-title" className="mt-4 text-[23px] font-bold text-evergreen leading-tight">{online ? <>Unlock {itemTitle}{retake ? ' again' : ''} for {priceShown}</> : <>{itemTitle} costs {priceShown}</>}</h2>
-        <p className="mt-2 text-[14.5px] text-charcoal/70 leading-relaxed">
+        <span className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-brand-100 text-forest flex items-center justify-center"><IndianRupee className="w-5 h-5 sm:w-7 sm:h-7" /></span>
+        <h2 id="pay-title" className="mt-3 sm:mt-4 pr-8 text-[19px] sm:text-[23px] font-bold text-evergreen leading-tight">{online ? <>Unlock {itemTitle}{retake ? ' again' : ''} for {priceShown}</> : <>{itemTitle} costs {priceShown}</>}</h2>
+        <p className="mt-1.5 sm:mt-2 text-[13px] sm:text-[14.5px] text-charcoal/70 leading-relaxed">
           {interview
             ? <>A one-time payment unlocks every Interview Prep set for good. It is free for students who complete all 4 courses.</>
             : retake
             ? <>You used both final assessment attempts without passing, so this course is locked. Buy it again for ₹{price} to study it once more with two fresh attempts.</>
-            : <>One-time payment for the full course and certificate. You get two attempts at the final assessment; if you fail both, you can buy the course again.</>}
+            : <>One-time payment for the full course and certificate.<span className="hidden sm:inline"> You get two attempts at the final assessment; if you fail both, you can buy the course again.</span></>}
         </p>
         {quote && (
           <PriceBox quote={quote} celebrate={celebrate} money={money} fetchQuote={fetchQuote} disabled={busy} onApplied={(q) => { setQuote(q); setCelebrate(true); }} onVoucher={applyVoucher} onRemoveVoucher={removeVoucher} />
         )}
         {online ? (
           <>
-            <ul className="mt-4 rounded-xl bg-white border border-sage/25 p-4 text-[14px] text-charcoal/75 space-y-1.5">
+            <ul className="mt-3 sm:mt-4 rounded-xl bg-white border border-sage/25 px-3.5 py-3 sm:p-4 text-[13px] sm:text-[14px] text-charcoal/75 space-y-1 sm:space-y-1.5">
               {interview ? (
                 <>
                   <li>✓ 350+ coding problems and interview questions</li>
@@ -118,7 +119,7 @@ export default function PaymentNotice({ course, price = 149, retake = false, pro
               )}
             </ul>
             {error && <p className="mt-3 text-[13.5px] text-rose-600" role="alert">{error}</p>}
-            <button onClick={pay} disabled={busy} className="font-display mt-5 w-full h-12 rounded-md bg-forest text-ivory text-[15.5px] font-semibold hover:bg-sage transition-colors disabled:opacity-70 inline-flex items-center justify-center gap-2">
+            <button onClick={pay} disabled={busy} className="btn-3d font-display mt-4 sm:mt-5 w-full h-12 rounded-xl text-[15.5px] font-semibold disabled:opacity-70 inline-flex items-center justify-center gap-2">
               {busy ? <><Loader2 className="w-4 h-4 animate-spin" /> {confirming ? 'Confirming your payment…' : 'Opening secure payment…'}</> : discounted ? <>Pay {priceLabel} <s className="text-ivory/55 font-medium text-[14px]">{was}</s> and unlock</> : `Pay ${priceLabel} and unlock`}
             </button>
             <p className="mt-3 flex items-center justify-center gap-1.5 text-[12px] text-charcoal/55"><ShieldCheck className="w-3.5 h-3.5" /> UPI, cards and net banking, secured by Cashfree</p>
@@ -164,6 +165,8 @@ function PriceBox({ quote, celebrate, money, onApplied, fetchQuote, disabled, on
       const q = await fetchQuote();
       if (!(q.discountPaise > 0)) throw new Error('This code does not give a discount on this item.');
       setState({ busy: false, error: '', from: check.referrerName || '' });
+      // close the code field and clear it, so the "college voucher instead" box starts empty
+      setOpen(false); setCode('');
       onApplied(q);
     } catch (err) {
       setState({ busy: false, error: err.message || 'Could not apply this code.', from: '' });
@@ -193,7 +196,7 @@ function PriceBox({ quote, celebrate, money, onApplied, fetchQuote, disabled, on
   if (discounted) {
     return (
       <>
-      <div className={`relative mt-4 rounded-2xl border border-[#E5C88E] bg-gradient-to-b from-[#FFF8E8] to-[#FFFDF6] p-4 text-[14px] ${celebrate ? 'offer-pop' : ''}`}>
+      <div className={`relative mt-3 sm:mt-4 rounded-2xl border border-[#E5C88E] bg-gradient-to-b from-[#FFF8E8] to-[#FFFDF6] p-3.5 sm:p-4 text-[13.5px] sm:text-[14px] ${celebrate ? 'offer-pop' : ''}`}>
         {celebrate && <Burst />}
         <div className="flex items-center justify-between gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-forest text-ivory pl-1.5 pr-2.5 py-1 text-[12px] font-bold">
@@ -210,12 +213,12 @@ function PriceBox({ quote, celebrate, money, onApplied, fetchQuote, disabled, on
           <span className="font-display text-[15px] font-semibold text-evergreen">You pay</span>
           <span className={`font-display text-[24px] font-bold text-evergreen tabular-nums leading-none ${celebrate ? 'offer-price' : ''}`}>{money(shown)}</span>
         </p>
-        {celebrate && <p className="offer-saved mt-3 flex items-center justify-center gap-1.5 rounded-xl bg-[#E5C88E]/30 py-2 text-[13.5px] font-bold text-[#7A5A1E]"><PartyPopper className="w-4 h-4" /> Offer unlocked · you save {money(quote.discountPaise)}</p>}
+        {celebrate && <p className="offer-saved mt-3 flex items-center justify-center gap-1.5 rounded-xl bg-[#E5C88E]/30 py-2 text-[13.5px] font-bold text-[#7A5A1E]">Offer unlocked · you save {money(quote.discountPaise)}</p>}
         {voucher && <p className="mt-2 text-center text-[11.5px] text-charcoal/50">{voucher.college} · used up only when your payment succeeds</p>}
       </div>
       {/* a referred learner can still use a college voucher instead (it replaces the referral discount) */}
       {!voucher && (!open
-        ? <button type="button" onClick={() => setOpen(true)} disabled={disabled} className="mt-2 w-full text-center text-[13px] font-semibold text-[#8A6420] hover:underline underline-offset-2">Have a college voucher? Apply it instead</button>
+        ? <button type="button" onClick={() => { setCode(''); setOpen(true); }} disabled={disabled} className="mt-2 w-full text-center text-[13px] font-semibold text-[#8A6420] hover:underline underline-offset-2">Have a college voucher? Apply it instead</button>
         : (
           <form onSubmit={apply} className="offer-open mt-2.5 rounded-2xl border border-[#C9A15A] bg-[#FFF8E8]/60 p-3">
             <label htmlFor="pay-ref" className="block text-[12.5px] font-semibold text-charcoal/70 mb-1.5">College voucher</label>

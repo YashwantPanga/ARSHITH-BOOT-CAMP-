@@ -31,7 +31,7 @@ export default function CourseDetailsPage({ course, enrolledCourseId, offer, isL
       <p className="text-xs text-charcoal/55 text-center">Finish your current course first (pass its final or use both attempts).</p>
     </div>
   ) : (
-    <button onClick={onEnroll} className="btn font-display !rounded-md w-full py-3.5 text-[15.5px] bg-forest text-ivory hover:bg-sage shadow-[0_14px_28px_-16px_rgba(1,58,43,.8)]">{!isLoggedIn ? 'Sign in to enroll' : price ? `Enroll for ₹${price}` : 'Enroll in this course'}</button>
+    <button onClick={onEnroll} className="btn-3d btn font-display !rounded-xl w-full py-3.5 text-[15.5px]">{!isLoggedIn ? 'Sign in to enroll' : price ? `Enroll for ₹${price}` : 'Enroll in this course'}</button>
   );
 
   // eduleb "course details" side list

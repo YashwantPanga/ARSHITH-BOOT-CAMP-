@@ -151,10 +151,16 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
             <button onClick={() => openMenu(true)} className="p-2.5 rounded-xl text-brand-900 hover:bg-brand-50" aria-label="Search courses">
               <Search className="w-[22px] h-[22px]" />
             </button>
-            {studentUser && (
+            {studentUser ? (
               <button onClick={() => openMenu()} className="w-9 h-9 rounded-full bg-brand-900 text-ivory text-xs font-bold flex items-center justify-center active:scale-95 transition" aria-label="Open account menu">
                 {initials}
               </button>
+            ) : (
+              <>
+                {/* phones: Log in and Join now right in the header, not hidden in the menu */}
+                <button onClick={() => go(paths.login())} className="h-9 px-2 rounded-lg font-display text-[14px] font-semibold text-evergreen whitespace-nowrap active:bg-brand-50">Log in</button>
+                <button onClick={() => go(paths.register())} className="btn-3d h-9 px-3.5 rounded-lg font-display text-[14px] font-semibold whitespace-nowrap">Join now</button>
+              </>
             )}
           </div>
         </div>

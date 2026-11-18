@@ -8,6 +8,7 @@ import { cleanText, displayTitle } from '../utils/textUtils';
 import { Reveal, RevealText } from './ui';
 import { TrackMark } from './TrackBadge';
 import { TRACKS } from '../data/meta';
+import CourseCarousel from './CourseCarousel';
 
 export default function PopularCourses({ courses, enrolledCourseId, offer, onSelectCourse, onEnrollCourse, onViewAllCourses }) {
   const [track, setTrack] = useState('all');
@@ -44,10 +45,11 @@ export default function PopularCourses({ courses, enrolledCourseId, offer, onSel
           </div>
         ) : (
           <>
-          {/* phones: medium cards, two per row, then a full-width "show all" button */}
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:hidden">
-            {list.slice(0, 4).map(c => <CourseRow key={`${track}-${c.id}`} course={c} enrolledCourseId={enrolledCourseId} offer={offer} onSelect={onSelectCourse} />)}
-            <button onClick={onViewAllCourses} className="font-display w-full h-12 rounded-md bg-forest text-ivory text-[15px] font-semibold hover:bg-sage transition">Show all courses</button>
+          {/* phones: a swipe carousel - the centre card full size, the ones beside it smaller - then "show all" */}
+          <div className="mt-5 sm:hidden">
+            <CourseCarousel key={track} items={list} getKey={c => c.id} label="Certificate courses"
+              renderItem={(c, extra) => <CourseRow course={c} enrolledCourseId={enrolledCourseId} offer={offer} onSelect={onSelectCourse} large {...extra} />} />
+            <button onClick={onViewAllCourses} className="btn-3d font-display mt-5 w-full h-12 rounded-xl text-[15px] font-semibold">Show all courses</button>
           </div>
           <div className="mt-8 hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-5">
             {list.map((c, i) => (
@@ -64,26 +66,27 @@ export default function PopularCourses({ courses, enrolledCourseId, offer, onSel
 }
 
 /** One course as a medium card (phones, two per row): picture, provider, title, key facts and price. */
-export function CourseRow({ course, enrolledCourseId, offer, onSelect }) {
+export function CourseRow({ course, enrolledCourseId, offer, onSelect, large = false, tabIndex }) {
   const isMine = offer?.enrolledIds ? offer.enrolledIds.includes(course.id) : enrolledCourseId === course.id;
   const tag = isMine ? 'Enrolled' : priceLabel(course);
   return (
-    <button onClick={() => onSelect(course.id)} className="group h-full flex flex-col rounded-2xl bg-white border border-brand-900/10 overflow-hidden text-left shadow-[0_10px_24px_-18px_rgba(1,58,43,.55)] active:scale-[.98] transition">
+    <button onClick={() => onSelect(course.id)} tabIndex={tabIndex} className="group w-full h-full flex flex-col rounded-2xl bg-white border border-brand-900/10 overflow-hidden text-left shadow-[0_10px_24px_-18px_rgba(1,58,43,.55)] active:scale-[.98] transition">
       {/* the course art is 16:10 - show all of it so the course name on the picture is never cut off */}
       <span className="relative block w-full aspect-[16/10] bg-forest overflow-hidden">
         <SafeImg src={courseArt(course)} alt="" className="w-full h-full object-cover" />
         <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10.5px] font-bold shadow-sm ${isMine ? 'bg-forest text-ivory' : 'bg-white/95 text-forest'}`}>{tag}</span>
         {course.bestSeller && !isMine && <BestSellerBadge className="absolute right-1.5 top-1.5 !px-1.5 !py-0.5 !text-[9px]" />}
       </span>
-      <span className="flex-1 flex flex-col p-2.5">
+      <span className={`flex-1 flex flex-col ${large ? 'p-3.5' : 'p-2.5'}`}>
         <span className="flex items-center gap-1 min-w-0">
           <img src="/codelekho-icon.png" alt="" className="w-4 h-4 rounded border border-brand-900/10 bg-white object-contain p-[1px] shrink-0" />
           <span className="text-[10.5px] text-charcoal/55 truncate">CodeLekho</span>
         </span>
-        <span className="mt-1 block text-[13.5px] font-bold leading-snug text-charcoal line-clamp-2 min-h-[36px]">{displayTitle(course.title)}</span>
-        <span className="mt-auto pt-1.5 flex items-center gap-1 text-[11px] text-charcoal/60 min-w-0">
+        <span className={`mt-1 block font-bold leading-snug text-charcoal line-clamp-2 ${large ? 'text-[16px] min-h-[42px]' : 'text-[13.5px] min-h-[36px]'}`}>{displayTitle(course.title)}</span>
+        <span className={`mt-auto pt-1.5 flex items-center gap-1 text-charcoal/60 min-w-0 ${large ? 'text-[12.5px]' : 'text-[11px]'}`}>
           <Clock className="w-3 h-3 shrink-0 text-sage" />
           <span className="truncate">{hoursOf(course)}</span>
+          {large && <span className="ml-auto shrink-0 font-display text-[13px] font-bold text-forest">{tag}</span>}
         </span>
       </span>
     </button>
