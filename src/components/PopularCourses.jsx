@@ -68,7 +68,7 @@ export default function PopularCourses({ courses, enrolledCourseId, offer, onSel
 /** One course as a medium card (phones, two per row): picture, provider, title, key facts and price. */
 export function CourseRow({ course, enrolledCourseId, offer, onSelect, large = false, tabIndex }) {
   const isMine = offer?.enrolledIds ? offer.enrolledIds.includes(course.id) : enrolledCourseId === course.id;
-  const tag = isMine ? 'Enrolled' : priceLabel(course);
+  const tag = isMine ? (offer?.admin ? 'Full access' : 'Enrolled') : priceLabel(course);
   return (
     <button onClick={() => onSelect(course.id)} tabIndex={tabIndex} className="group w-full h-full flex flex-col rounded-2xl bg-white border border-brand-900/10 overflow-hidden text-left shadow-[0_10px_24px_-18px_rgba(1,58,43,.55)] active:scale-[.98] transition">
       {/* the course art is 16:10 - show all of it so the course name on the picture is never cut off */}

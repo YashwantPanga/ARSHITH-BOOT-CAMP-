@@ -44,7 +44,7 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
           <SafeImg src={art || course.thumbnail} alt="" className="w-full h-full object-cover object-[44%_50%] transition-transform duration-700 group-hover:scale-[1.04]" />
           {!art && <div className="absolute inset-0 bg-gradient-to-t from-evergreen/55 via-evergreen/5 to-transparent" />}
           {course.bestSeller && <BestSellerBadge className="absolute top-2.5 left-2.5" />}
-          {isMine && <span className="absolute top-2.5 right-2.5 chip bg-ivory text-brand-900">Enrolled</span>}
+          {isMine && <span className="absolute top-2.5 right-2.5 chip bg-ivory text-brand-900">{offer?.admin ? 'Full access' : 'Enrolled'}</span>}
           {isLocked && <span className="absolute top-2.5 right-2.5 chip bg-white/90 text-charcoal/70"><Lock className="w-3 h-3" /> Locked</span>}
         </div>
         <TrackBadge type={course.iconType} className="absolute left-5 -bottom-5" />
@@ -62,7 +62,7 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
             <span className="flex items-center gap-1"><Clock className="w-4 h-4 text-sage" />{hoursOf(course)}</span>
           </div>
 
-          {isMine && (
+          {isMine && !offer?.admin && (
             <div className="mt-4">
               <div className="flex justify-between text-xs mb-1.5"><span className="text-charcoal/60">Your progress</span><span className="font-semibold text-brand-900">{course.progress || 0}%</span></div>
               <ProgressBar value={course.progress || 0} />
@@ -71,7 +71,7 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
 
           <div className="mt-4 pt-4 border-t border-brand-900/10">
             {isMine ? (
-              <button onClick={() => onEnroll(course.id)} className="btn-primary font-display w-full py-3 !rounded-md"><PlayCircle className="w-4 h-4" /> Continue learning</button>
+              <button onClick={() => onEnroll(course.id)} className="btn-primary font-display w-full py-3 !rounded-md"><PlayCircle className="w-4 h-4" /> {offer?.admin ? 'Open course' : 'Continue learning'}</button>
             ) : isLocked ? (
               <button disabled className="btn font-display w-full py-3 !rounded-md bg-cream text-charcoal/50 border border-brand-900/10" title="Finish your current course first">
                 <Lock className="w-4 h-4" /> Finish current course first
@@ -101,7 +101,7 @@ export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll, offer
         <div className="relative aspect-[16/10] overflow-hidden bg-forest">
           <SafeImg src={courseArt(course)} alt="" className="w-full h-full object-cover object-[44%_50%] transition-transform duration-700 group-hover:scale-[1.05]" />
           {course.bestSeller && <BestSellerBadge className="absolute top-3 left-3" />}
-          {isMine && <span className="absolute top-3 right-3 chip bg-ivory text-brand-900">Enrolled</span>}
+          {isMine && <span className="absolute top-3 right-3 chip bg-ivory text-brand-900">{offer?.admin ? 'Full access' : 'Enrolled'}</span>}
           {isLocked && <span className="absolute top-3 right-3 chip bg-white/90 text-charcoal/70"><Lock className="w-3 h-3" /> Locked</span>}
         </div>
         {/* vertical category tag on the image's left edge */}
@@ -122,7 +122,7 @@ export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll, offer
         </div>
         <p className="mt-1.5 flex items-center gap-1 text-[12.5px] text-charcoal/55"><BadgeCheck className="w-3.5 h-3.5 text-leaf" /> Completion Certificate</p>
 
-        {isMine && (
+        {isMine && !offer?.admin && (
           <div className="mt-3 w-full text-left">
             <div className="flex justify-between text-[11.5px] mb-1"><span className="text-charcoal/60">Your progress</span><span className="font-semibold text-brand-900">{course.progress || 0}%</span></div>
             <ProgressBar value={course.progress || 0} />
@@ -131,11 +131,11 @@ export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll, offer
 
         <div className="mt-auto pt-4 w-full">
           {isMine
-            ? <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-charcoal/50">Unlocked · yours to learn</p>
+            ? <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-charcoal/50">{offer?.admin ? 'Admin · full access' : 'Unlocked · yours to learn'}</p>
             : <p className="font-display text-[26px] font-bold leading-none text-evergreen">{priceLabel(course)}</p>}
           <div className="mt-2">
             {isMine ? (
-              <button onClick={() => onEnroll(course.id)} className="btn-primary font-display w-full py-2.5 text-[14px] !rounded-md"><PlayCircle className="w-4 h-4" /> Continue learning</button>
+              <button onClick={() => onEnroll(course.id)} className="btn-primary font-display w-full py-2.5 text-[14px] !rounded-md"><PlayCircle className="w-4 h-4" /> {offer?.admin ? 'Open course' : 'Continue learning'}</button>
             ) : isLocked ? (
               <button disabled className="btn font-display w-full py-2.5 text-[14px] !rounded-md bg-cream text-charcoal/50 border border-brand-900/10" title="Finish your current course first">
                 <Lock className="w-4 h-4" /> Finish current course first

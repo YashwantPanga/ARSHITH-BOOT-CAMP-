@@ -133,11 +133,14 @@ function AppShell() {
   const [enrollState, setEnrollState] = useState(null);
   // failed courses (both final attempts used) stay locked until the learner pays to take them again
   const closedIds = useMemo(() => enrolledIds.filter(id => enrollState?.courses?.[id] === 'failed'), [enrolledIds, enrollState]);
+  // the admin (signed in without a student account) can open and read every course, so every card shows it as open
+  const adminReader = !!adminUser && !studentUser;
   const courseOffer = useMemo(() => ({
     canEnrollNew: true,
-    enrolledIds: enrolledIds.filter(id => !closedIds.includes(id)),
+    enrolledIds: adminReader ? courses.map(c => c.id) : enrolledIds.filter(id => !closedIds.includes(id)),
+    admin: adminReader,
     allFree: enrollState?.free === true // every course free (PAID_COURSES=off)
-  }), [studentUser, enrollState, enrolledIds, closedIds]);
+  }), [studentUser, enrollState, enrolledIds, closedIds, adminReader, courses]);
 
   const saveUser = useCallback((u) => {
     setStudentUser(u);
@@ -243,6 +246,8 @@ function AppShell() {
 
   const requestEnroll = useCallback((courseId) => {
     const course = courses.find(c => c.id === courseId);
+    // admin: straight into the course, no enrolment or payment
+    if (adminUser && !studentUser) { navigate(paths.learn(courseId)); return; }
     if (!studentUser) {
       toast('Please sign in or create an account to enroll.', 'info');
       navigate(paths.login(paths.course(courseId)));
@@ -263,7 +268,7 @@ function AppShell() {
       return;
     }
     setEnrollTarget(course || { id: courseId, title: courseId });
-  }, [studentUser, enrolledIds, closedIds, courses, navigate, toast]);
+  }, [studentUser, adminUser, enrolledIds, closedIds, courses, navigate, toast]);
 
   const confirmEnroll = async () => {
     if (!enrollTarget || !studentUser) return;
