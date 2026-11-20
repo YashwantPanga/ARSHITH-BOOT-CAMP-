@@ -128,7 +128,7 @@ export default function MobileMenu({ open, onClose, route, navigate, studentUser
 
           {/* search */}
           <form onSubmit={(e) => { e.preventDefault(); go(paths.courses(query.trim() ? { q: query.trim() } : undefined)); }} className="relative mx-5 mt-4">
-            <input id="mobile-search" type="search" placeholder="What do you want to learn today?" value={query} onChange={(e) => setQuery(e.target.value)}
+            <input id="mobile-search" type="search" placeholder="Search courses" value={query} onChange={(e) => setQuery(e.target.value)}
               className="w-full h-11 pl-10 pr-4 rounded-xl bg-cream border border-brand-900/10 text-[16px] outline-none focus:border-sage focus:bg-white" />
             <Search className="w-4 h-4 text-charcoal/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
           </form>

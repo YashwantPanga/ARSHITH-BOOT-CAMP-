@@ -6,8 +6,8 @@ import { IMAGES } from '../data/meta';
 const STEPS = [
   { title: 'Read 15 deep-dive modules', text: 'Concepts, worked code, common mistakes and best practices — written like a textbook, not a playlist.', tone: 'bg-brand-100 text-forest' },
   { title: 'Complete every module quiz', text: 'A 5-question quiz closes each module. Finish it to mark the module complete.', tone: 'bg-[#EFE9DC] text-charcoal' },
-  { title: 'Take the proctored final', text: 'The 45-minute final unlocks after every module quiz and one project repository, with camera, tab and fullscreen monitoring.', tone: 'bg-[#E3ECE7] text-sage' },
-  { title: 'Earn a unique certificate', text: 'Score 70%+ and download a certificate with your exact score and a one-of-a-kind verification ID.', tone: 'bg-forest text-ivory' }
+  { title: 'Take the proctored final', text: 'The 45-minute final unlocks once you pass every module quiz and submit one project as a GitHub repository. It uses camera, tab-switch and fullscreen monitoring, and you get two attempts.', tone: 'bg-[#E3ECE7] text-sage' },
+  { title: 'Earn a unique certificate', text: 'Score 70% or higher and download a certificate with your exact score and a one-of-a-kind verification ID.', tone: 'bg-forest text-ivory' }
 ];
 
 /** "How it works" in the eduleb about layout (image + checklist) with numbered step cards below. */
@@ -28,8 +28,8 @@ export default function WhyLearnWithUs() {
 
           <Reveal>
             <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">How it works</p>
-            <RevealText as="h2" className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight">Construct a stunning career perspective — <b>one verified step at a time</b></RevealText>
-            <p className="mt-4 text-charcoal/70 leading-relaxed max-w-xl">Every course follows the same honest path. Nothing is skipped, and your certificate shows exactly what you scored.</p>
+            <RevealText as="h2" className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight">Build a standout career, <b>one verified step at a time</b></RevealText>
+            <p className="mt-4 text-charcoal/70 leading-relaxed max-w-xl">Every course follows the same clear path. Nothing is skipped, and your certificate shows exactly what you scored.</p>
             <ul className="mt-6 space-y-3">
               {['70% pass mark for the final assessment', '3 mini projects'].map(t => (
                 <li key={t} className="flex items-center gap-3 font-display text-[16.5px] font-medium text-evergreen">

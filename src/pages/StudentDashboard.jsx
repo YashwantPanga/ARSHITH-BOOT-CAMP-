@@ -311,11 +311,11 @@ function ProfileSettings({ studentUser, onSaved }) {
           <label className="block">
             <span className="text-[14px] font-semibold text-charcoal">Full name</span>
             <input className={`${field} mt-1.5`} value={form.name} disabled={studentUser.nameLocked} onChange={e => setForm({ ...form, name: e.target.value })} autoComplete="name" />
-            <span className="mt-1 block text-[12px] text-charcoal/55">{studentUser.nameLocked ? 'Locked: your name is printed on your certificate.' : 'Exactly as on your government or college photo ID - it is checked before the final exam and printed on your certificate.'}</span>
+            <span className="mt-1 block text-[12px] text-charcoal/55">{studentUser.nameLocked ? 'Locked: your name is printed on your certificate.' : 'Exactly as on your government or college photo ID – it is checked before the final exam and printed on your certificate.'}</span>
           </label>
           <div className="grid sm:grid-cols-2 gap-4">
             <label className="block">
-              <span className="text-[14px] font-semibold text-charcoal">Registration / ID number</span>
+              <span className="text-[14px] font-semibold text-charcoal">Registration or ID number</span>
               <input className={`${field} mt-1.5 uppercase tracking-wide`} value={form.regNo} onChange={e => setForm({ ...form, regNo: e.target.value.toUpperCase() })} />
             </label>
             <label className="block">

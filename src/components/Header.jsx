@@ -121,7 +121,7 @@ export default function Header({ route, navigate, studentUser, onLogout, courses
             <Search className="w-5 h-5 text-charcoal/40 absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="search"
-              placeholder="What do you want to learn today?"
+              placeholder="Search courses"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full h-12 pl-12 pr-4 text-[15px] bg-cream border border-brand-900/10 rounded-full outline-none placeholder:text-charcoal/45 focus:bg-white focus:border-sage focus:ring-4 focus:ring-brand-100 transition"

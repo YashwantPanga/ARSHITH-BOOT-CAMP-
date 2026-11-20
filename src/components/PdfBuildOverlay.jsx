@@ -3,9 +3,9 @@ import { Check, FileDown } from 'lucide-react';
 
 const TIPS = [
   'Every code example comes with a "How this code works" panel.',
-  'Diagrams are drawn as sharp vector figures - perfect for printing.',
+  'Diagrams are drawn as sharp vector figures – perfect for printing.',
   'Each module opens with a summary of what it contains.',
-  'Code keeps its indentation and syntax colours.',
+  'Code keeps its indentation and syntax colors.',
   'Your name is printed on the cover of your manual.'
 ];
 

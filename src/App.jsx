@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState, useRe
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import PopularCourses from './components/PopularCourses';
+import { categorySlug } from './data/meta';
 import WhyLearnWithUs from './components/WhyLearnWithUs';
 import CtaSection from './components/CtaSection';
 import HomeButton from './components/HomeButton';
@@ -297,14 +298,14 @@ function AppShell() {
     confirmOrder(cfOrder)
       .then((res) => {
         if (res.kind === 'interview') {
-          toast('Payment received - Interview Prep is unlocked.', 'success', 5000);
+          toast('Payment received – Interview Prep is unlocked.', 'success', 5000);
           navigate(clean, { replace: true });
           window.location.reload(); // Interview Prep reads its access fresh
           return;
         }
         setEnrollState(res);
         saveUser({ ...studentUser, enrolledCourseIds: res.courseIds || enrolledIds });
-        toast('Payment received - a receipt is on its way to your email.', 'success', 5000);
+        toast('Payment received – a receipt is on its way to your email.', 'success', 5000);
         navigate(res.courseId ? paths.learn(res.courseId) : clean, { replace: true });
       })
       .catch((err) => {
@@ -321,7 +322,7 @@ function AppShell() {
     saveUser({ ...studentUser, enrolledCourseIds: res.courseIds || [paidId, ...enrolledIds.filter(id => id !== paidId)] });
     setCelebrate({ ...(findCourse(paidId) || paymentFor?.course), paid: paymentFor?.price || 0 });
     setPaymentFor(null);
-    toast('Payment received - a receipt is on its way to your email.', 'success', 5000);
+    toast('Payment received – a receipt is on its way to your email.', 'success', 5000);
     // open the course straight away; the celebration shows on top of it
     if (paidId) navigate(paths.learn(paidId));
   };
@@ -414,6 +415,20 @@ function AppShell() {
 
   /* ---------------- Render ---------------- */
   const goCourses = (query) => navigate(paths.courses(query));
+
+  // each page gets its own browser-tab title, e.g. "About | CodeLekho"
+  useEffect(() => {
+    const course = route.params?.courseId ? courses.find(c => c.id === route.params.courseId) : null;
+    const names = {
+      courses: 'Courses', categories: 'Categories', about: 'About', contact: 'Contact', terms: 'Terms of Use',
+      privacy: 'Privacy Policy', refunds: 'Refund Policy', refer: 'Refer & Earn', 'ref-landing': 'You’re invited',
+      dashboard: adminUser && !studentUser ? 'Admin' : 'My dashboard', certificate: 'Certificate', interview: 'Interview Prep',
+      verify: 'Verify a certificate', login: 'Log in', register: 'Sign up', 'verify-email': 'Verify your email',
+      'forgot-password': 'Forgot password', 'reset-password': 'Reset password', 'not-found': 'Page not found'
+    };
+    const page = (route.name === 'course-details' || route.name === 'learning') && course ? displayTitle(course.title) : names[route.name];
+    document.title = page ? `${page} | CodeLekho` : 'CodeLekho | Learn Today, Build Tomorrow';
+  }, [route, courses, adminUser, studentUser]);
   // Login, register and the account screens open as a modal card over the page the visitor was on
   // (that page stays visible, faded, behind it). Opening one directly shows the home page behind.
   const AUTH_ROUTES = ['login', 'register', 'verify-email', 'forgot-password', 'reset-password'];
@@ -590,7 +605,7 @@ function AppShell() {
       page = <CertificateVerifyPage certId={route.params.certId} onSearch={(id) => navigate(paths.verify(id), { replace: true })} onHome={() => navigate('/')} />;
       break;
     case 'categories':
-      page = <CategoriesPage courses={courses} onCategorySelect={(cat) => goCourses({ category: cat })} onHome={() => navigate(paths.home())} />;
+      page = <CategoriesPage courses={courses} onCategorySelect={(cat) => goCourses({ category: categorySlug(cat) })} onHome={() => navigate(paths.home())} />;
       break;
     case 'about':
       page = <AboutPage onExplore={() => goCourses()} onHome={() => navigate(paths.home())} />;

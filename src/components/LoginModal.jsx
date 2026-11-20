@@ -90,7 +90,7 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
         <p className={`${isSignup ? 'mt-1.5 text-[14px]' : asModal ? 'mt-2 text-[15px]' : 'mt-2 text-[16px]'} leading-relaxed text-charcoal/65`}>
           {isSignup
             ? 'Mentor-written courses and a QR-verified certificate.'
-            : 'Learn on your own time with mentor-written courses and quizzes after every module.'}
+            : 'Welcome back. Log in to continue your courses.'}
         </p>
 
         {error && (
@@ -110,10 +110,10 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
           </Field>
           <Field
             id="auth-reg"
-            label={isSignup ? 'Reg. / ID number' : 'Registration / ID number'}
+            label={isSignup ? 'Reg. or ID number' : 'Registration or ID number'}
             hint={isSignup
               ? 'Roll no. or any ID · needed to log in'
-              : 'The registration / ID number you entered when you signed up.'}
+              : 'The registration or ID number you entered when you signed up.'}
           >
             <input id="auth-reg" className="auth-input uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal" value={form.regNo} onChange={set('regNo')} />
           </Field>
@@ -150,7 +150,7 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
           )}
 
           <button type="submit" disabled={busy} className={`${isSignup ? 'col-span-2 h-11' : 'h-12'} mt-1 rounded-lg bg-brand-900 text-ivory text-[16px] font-bold hover:bg-forest active:scale-[.99] disabled:opacity-70 transition shadow-[0_10px_24px_-12px_rgba(1,58,43,.7)]`}>
-            {busy ? 'Please wait…' : isSignup ? 'Create account' : 'Continue'}
+            {busy ? 'Please wait…' : isSignup ? 'Create account' : 'Log in'}
           </button>
           {isSignup && (
             <p className="col-span-2 text-center text-[12px] text-charcoal/60">
@@ -164,12 +164,12 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
         </div>
 
         <button type="button" onClick={() => onSwitchMode(isSignup ? 'login' : 'signup')} className={`w-full ${isSignup ? 'h-11 text-[15px]' : 'h-12 text-[16px]'} rounded-lg border border-charcoal/80 bg-white font-bold text-charcoal hover:bg-slate-50 transition`}>
-          {isSignup ? 'Log in to an existing account' : 'Create a new account'}
+          {isSignup ? 'Log in instead' : 'Sign up'}
         </button>
 
         {!isSignup && (
           <p className={`${asModal ? 'mt-5 text-[12.5px]' : 'mt-6 text-[13px]'} leading-relaxed text-charcoal/60`}>
-            Use the email, registration / ID number and password you signed up with. Having trouble? Use Forgot password to reset it.
+            Having trouble? Use “Forgot password?” to reset it.
           </p>
         )}
       </div>

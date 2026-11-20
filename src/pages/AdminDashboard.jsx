@@ -109,7 +109,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
   const [deletingStudent, setDeletingStudent] = useState(false);
   const deleteStudentAccount = async (student) => {
     if (!student) return;
-    const typed = window.prompt(`Delete ${student.name} (${student.email}) permanently?\n\nThis removes their login, enrolment, quiz and exam attempts, project submissions and certificates. It cannot be undone.\n\nType DELETE to confirm.`);
+    const typed = window.prompt(`Delete ${student.name} (${student.email}) permanently?\n\nThis removes their login, enrollment, quiz and exam attempts, project submissions and certificates. It cannot be undone.\n\nType DELETE to confirm.`);
     if (typed !== 'DELETE') return;
     setDeletingStudent(true);
     try {
@@ -2277,13 +2277,13 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
                   <label className="block text-xs font-bold text-slate-700 mb-1">Category</label>
                   <select
                     name="category"
-                    defaultValue={editingCourse?.category || 'Programming'}
+                    defaultValue={editingCourse?.category || 'Python'}
                     className="w-full px-3 py-2 text-xs font-bold bg-slate-50 border-2 border-slate-200 rounded-xl outline-none"
                   >
-                    <option value="Programming">Programming</option>
+                    <option value="Python">Python</option>
                     <option value="SQL">SQL</option>
                     <option value="Web Development">Web Development</option>
-                    <option value="AI">AI</option>
+                    <option value="AI & Data Science">AI & Data Science</option>
                   </select>
                 </div>
 

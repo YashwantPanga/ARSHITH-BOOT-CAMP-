@@ -24,7 +24,7 @@ function LegalDoc({ title, intro, sections, onHome }) {
           <p className="text-[15.5px] leading-relaxed text-charcoal/75">{intro}</p>
           {sections.map((s, i) => (
             <section key={s.title} id={`s${i + 1}`} className="mt-9 scroll-mt-28">
-              <RevealText as="h2" className="flex items-baseline gap-3 text-[22px] text-evergreen"><span className="font-display text-sage">{String(i + 1).padStart(2, '0')}</span>{s.title}</RevealText>
+              <RevealText as="h2" className="text-[22px] text-evergreen"><span className="font-display text-sage">{i + 1}.</span>{' '}{s.title}</RevealText>
               <div className="mt-3 space-y-3 text-[15px] leading-relaxed text-charcoal/75">
                 {s.body.map((para, j) => Array.isArray(para)
                   ? <ul key={j} className="list-disc pl-5 space-y-1.5 marker:text-sage">{para.map(li => <li key={li}>{li}</li>)}</ul>
@@ -49,17 +49,19 @@ export function TermsPage({ onHome }) {
       intro="These Terms of Use govern your use of CodeLekho, operated by Arshith Group, Bengaluru, India. By creating an account or using the site you agree to them. If you do not agree, please do not use the site."
       sections={[
         { title: 'Your account', body: [
-          'You must give your full name exactly as it appears on a government or college photo ID, and a working email address. Your name is printed on your certificate and checked against your ID before the final assessment.',
+          'Provide your full name exactly as it appears on a government or college photo ID, along with a working email address and your registration or ID number. Your name is printed on your certificate and checked against your ID before the final assessment.',
+          'The site is for learners aged 18 and over. Learners under 18 may use it only with the consent of a parent or guardian.',
           'Keep your password private. You are responsible for activity on your account. One person may hold one account.'
         ] },
         { title: 'Courses and certificates', body: [
-          'Each course costs ₹149 (AI with Data Science costs ₹199), and Interview Prep costs ₹599 as a one-time payment (it is free for students who earn certificates in all 4 courses). The price is always shown before you pay, and payments follow the Refund and Cancellation Policy.',
-          'Each course has two attempts at its final assessment. If you fail both, you can start the course again: every module quiz is reset and you get two fresh attempts. A certificate of completion is issued when you finish every module quiz, submit the required project and score at least 70% in the proctored final assessment.',
+          'Each course costs ₹149 (AI & Data Science costs ₹199), and Interview Prep costs ₹599 as a one-time payment. Interview Prep is free when you earn all 4 course certificates. The price is always shown before you pay, and payments follow the Refund Policy.',
+          'Each course has two attempts at its final assessment. If you fail both, you can start the course again: every module quiz is reset and you get two fresh attempts. A certificate is issued when you pass every module quiz, submit one project as a GitHub repository and score at least 70% in the proctored final assessment.',
           'Certificates confirm completion of a CodeLekho course. They are not a degree, diploma or university qualification, and are not issued under UGC or AICTE approval. Each certificate has a unique ID that anyone can verify on this site.',
           'We may revoke a certificate obtained through cheating, impersonation or false information.'
         ] },
         { title: 'Proctored assessment', body: [
-          'The final assessment is monitored to keep certificates trustworthy. It requires a webcam, fullscreen mode and a single browser tab. During the assessment the site checks, on your device, that the same person who started is present, that no other person, phone or hand-held device is visible, and where you are looking.',
+          'The final assessment is monitored to keep certificates trustworthy. It requires a webcam, fullscreen mode and a single browser tab.',
+          'During the assessment, the site checks on your device that the same person who started is still present and where you are looking. It also checks that no other person, phone or handheld device is visible.',
           'Suspected violations are recorded with the time and type of event and are visible to our administrators. Repeated or serious violations may end the attempt or lead to a review of your result.'
         ] },
         { title: 'Acceptable use', body: [
@@ -74,19 +76,19 @@ export function TermsPage({ onHome }) {
         ] },
         { title: 'Intellectual property', body: [
           '© 2026 Arshith Group. All rights reserved. The course content, lessons, quizzes, diagrams, code, design, logos and certificates on this site belong to Arshith Group or its licensors and are protected by the Copyright Act, 1957 and other laws.',
-          'You may read the material and download your own course PDF and certificate for personal learning only. No other copying, reproduction, adaptation or redistribution is permitted without our written permission. "CodeLekho" and its logo are brand names of Arshith Group.'
+          'You may read the material and download your own course PDF and certificate for personal learning only. No other copying, reproduction, adaptation or redistribution is permitted without our written permission. “CodeLekho” and its logo are brand names of Arshith Group.'
         ] },
         { title: 'Availability and changes', body: [
-          'We work to keep the site available and accurate but provide it "as is". Courses, features and these terms may change; we will update the date above when they do. Continuing to use the site after a change means you accept it.'
+          'We work to keep the site available and accurate but provide it “as is”. Courses, features and these terms may change. When they do, we update the “Last updated” date at the top of this page. Continuing to use the site after a change means you accept it.'
         ] },
         { title: 'Ending your account', body: [
-          'You can ask us to close your account at any time. We may suspend or close accounts that break these terms. Certificates already issued stay verifiable unless revoked for misconduct.'
+          'You can ask us to close your account at any time. We may suspend or close accounts that break these terms. Certificates already issued stay verifiable unless they are revoked for cheating, impersonation or false information.'
         ] },
         { title: 'Liability', body: [
           'To the extent the law allows, Arshith Group is not liable for indirect or consequential loss arising from use of the site. Nothing in these terms limits rights you have under Indian consumer law.'
         ] },
         { title: 'Governing law', body: [
-          'These terms are governed by the laws of India. Courts in Bengaluru, Karnataka have jurisdiction over any dispute.'
+          'These terms are governed by the laws of India. Courts in Bengaluru, Karnataka, have jurisdiction over any dispute.'
         ] }
       ]}
     />
@@ -98,19 +100,19 @@ export function PrivacyPage({ onHome }) {
     <LegalDoc
       title="Privacy Policy"
       onHome={onHome}
-      intro="This policy explains what personal data Arshith Group collects through CodeLekho, why, and the choices you have. It is written to meet the Digital Personal Data Protection Act, 2023 and the Information Technology Act, 2000."
+      intro="This policy explains what personal data Arshith Group collects through CodeLekho, why, and the choices you have. It is written to comply with the Digital Personal Data Protection Act, 2023 and the Information Technology Act, 2000."
       sections={[
         { title: 'Data we collect', body: [
           [
-            'Account details: your name (as on your photo ID), email address, password (stored only as a secure hash) and your learner ID.',
-            'Learning records: course enrolment, module progress, quiz and assessment scores, project links you submit and the certificates issued to you.',
+            'Account details: your name (as on your photo ID), email address, password (stored only as a secure hash), phone number and your registration or ID number.',
+            'Learning records: course enrollment, module progress, quiz and assessment scores, project links you submit and the certificates issued to you.',
             'Assessment monitoring results: whether your face checks passed, and the time and type of any suspected violations (for example another person visible or leaving fullscreen).',
             'Messages you send through the contact form.',
             'Basic technical data needed to run the site, such as your browser type and a sign-in token kept in your browser.'
           ]
         ] },
         { title: 'Camera and face images', body: [
-          'Camera access is requested only for the proctored final assessment, and only with your permission. Your face reference is analysed in your browser, on your own device. The images are not uploaded or stored by us.',
+          'Camera access is requested only for the proctored final assessment, and only with your permission. Your face reference is analyzed in your browser, on your own device. The images are not uploaded or stored by us.',
           'Only the outcomes are sent to our server: whether the face checks passed and the violation events described above.'
         ] },
         { title: 'Why we use your data', body: [
@@ -118,28 +120,30 @@ export function PrivacyPage({ onHome }) {
             'to create and secure your account and send sign-in and verification codes;',
             'to track your progress, run quizzes and assessments, and issue certificates in your name;',
             'to keep assessments fair and investigate suspected cheating;',
-            'to let anyone verify a certificate ID (this shows the name, course, score and date on that certificate);',
+            'to let anyone verify a certificate ID (this shows the certificate holder’s name, the course, the score and the issue date);',
             'to answer your questions and improve our courses.'
           ],
           'We do not sell your data or use it for advertising.'
         ] },
-        { title: 'Who processes it', body: [
-          'Your data is stored with our database provider (Supabase) and emails are delivered through our email provider (Brevo). Payments are handled by Cashfree, which receives your name, email and payment details directly; we receive only the payment ID and status. They process data only on our instructions. We may disclose data if the law requires it.'
+        { title: 'Who handles your data', body: [
+          'Your data is stored with our database provider (Supabase) and emails are delivered through our email provider (Brevo). Payments are handled by Cashfree, which receives your name, email and payment details directly; we receive only the payment ID and status. Supabase and Brevo process your data only on our instructions. We may disclose data if the law requires it.'
         ] },
-        { title: 'How long we keep it', body: [
-          'Account and learning records are kept while your account is open. Certificate records are kept so certificates stay verifiable. When you ask us to delete your account we remove your personal data, except what we must keep by law or to prevent fraud.'
+        { title: 'How long we keep your data', body: [
+          'Account and learning records are kept while your account is open. When you ask us to delete your account, we remove your personal data, except what we must keep by law or to prevent fraud.',
+          'Certificate records, including the name printed on the certificate, are kept so that issued certificates stay verifiable.'
         ] },
         { title: 'Your rights', body: [
-          'You may ask to see, correct or delete your personal data, withdraw consent for future processing, or nominate someone to act for you. Write to us at the address below; we reply within 30 days.'
+          'You may ask to access, correct or delete your personal data, withdraw consent for future processing, or nominate someone to act for you. Write to the Grievance Officer (Section 9). We reply within 30 days.'
         ] },
         { title: 'Security', body: [
           'Passwords are hashed, connections use HTTPS, and administrator access is restricted and time-limited. No system is perfectly secure, so please use a strong password of your own.'
         ] },
         { title: 'Children', body: [
-          'The site is intended for learners aged 18 and over. Learners under 18 may use it only with the consent of a parent or guardian.'
+          'The site is for learners aged 18 and over. Learners under 18 may use it only with the consent of a parent or guardian.'
         ] },
         { title: 'Grievance officer', body: [
-          `For any privacy concern or complaint, contact the Grievance Officer, Arshith Group, Bengaluru, Karnataka, India at ${CONTACT}. If you are not satisfied with our response you may approach the Data Protection Board of India.`
+          `For any privacy concern or complaint, email the Grievance Officer at ${CONTACT}. Postal address: Grievance Officer, Arshith Group, Bengaluru, Karnataka, India.`,
+          'If you are not satisfied with our response, you may approach the Data Protection Board of India.'
         ] }
       ]}
     />
@@ -149,28 +153,29 @@ export function PrivacyPage({ onHome }) {
 export function RefundPage({ onHome }) {
   return (
     <LegalDoc
-      title="Refund and Cancellation Policy"
+      title="Refund Policy"
       onHome={onHome}
       intro="This policy covers payments made on CodeLekho, operated by Arshith Group, Bengaluru, India. Payments are processed securely by Cashfree; we never see or store your card, UPI or bank details."
       sections={[
         { title: 'What you pay for', body: [
-          'Prices are shown before you pay: each course costs ₹149 (AI with Data Science costs ₹199) and Interview Prep costs ₹599.',
-          'A payment unlocks one course for the account that paid: all its modules, quizzes, the project and the proctored final assessment. The course is unlocked as soon as the payment is confirmed, and a receipt is emailed to you.'
+          'Prices are shown before you pay: each course costs ₹149 (AI & Data Science costs ₹199) and Interview Prep costs ₹599.',
+          'A course payment unlocks that course for the account that paid: all its modules, quizzes, projects and the proctored final assessment. An Interview Prep payment unlocks every Interview Prep set for that account, with lifetime access. Access starts as soon as the payment is confirmed, and a receipt is emailed to you.'
         ] },
         { title: 'Cancellation', body: [
-          'Because the course is a digital service that is unlocked immediately, an order cannot be cancelled once the payment is successful.'
+          'Because courses and Interview Prep are digital services that unlock immediately, an order cannot be cancelled once the payment is successful. It may still be refunded under Section 3.'
         ] },
         { title: 'Refunds', body: [
           'You can ask for a full refund within 7 days of payment if you have not yet attempted the final assessment of that course.',
           'We also refund in full if you were charged twice for the same course, or if money was taken but the course was not unlocked and we cannot fix it.',
-          'Refunds are not given after a final assessment attempt, for a failed assessment, or when access was removed for breaking the Terms of Use.'
+          'Refunds are not given once you have attempted the final assessment (whether you passed or failed), or when access was removed for breaking the Terms of Use.',
+          'If you joined through a referral link, a refund also cancels the commission your referrer earned on that payment.'
         ] },
         { title: 'How to ask', body: [
           `Email ${CONTACT} or call +91 82177 29744 with your registered email and the Cashfree payment ID from your receipt. We reply within 2 working days.`,
-          'Approved refunds are sent back to the original payment method within 5-7 working days. When a refund is made, the course is locked again.'
+          'Approved refunds are sent back to the original payment method within 5–7 working days. When a refund is made, the course is locked again.'
         ] },
         { title: 'Failed payments', body: [
-          'If money leaves your account but the payment fails, your bank or Cashfree normally returns it automatically within 5-7 working days. If it does not, contact us with the payment ID.'
+          'If money leaves your account but the payment fails, your bank or Cashfree normally returns it automatically within 5–7 working days. If it does not, contact us with the payment ID.'
         ] }
       ]}
     />

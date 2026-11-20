@@ -19,6 +19,16 @@ export function cleanText(str) {
 }
 
 /** "Module 03: NumPy Basics" -> "NumPy Basics" (the UI already shows the module number). */
+/** Shortens text at a word boundary (never mid-word or after a comma) and adds an ellipsis. */
+export function shortText(str, max = 96) {
+  const t = cleanText(str);
+  if (t.length <= max) return t;
+  let cut = t.slice(0, max + 1).replace(/\s+\S*$/, '');
+  // never end on a comma or a small joining word ("…React, and…")
+  for (let k = 0; k < 3; k++) cut = cut.replace(/[\s,;:–—-]+$/, '').replace(/\s+(and|or|with|the|a|an|of|to|for|from|in|on)$/i, '');
+  return `${cut}…`;
+}
+
 export function moduleTitle(str) {
   return cleanText(str).replace(/^module\s*\d+\s*[:.\-]\s*/i, '');
 }

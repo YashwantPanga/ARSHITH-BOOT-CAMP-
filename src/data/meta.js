@@ -1,10 +1,25 @@
+// One name per category, used on filters, badges and the Categories page. 'All Categories' is the
+// "no filter" value (shown as "All courses").
 export const CATEGORIES = [
   'All Categories',
-  'Programming',
-  'Web Development',
+  'Python',
   'SQL',
-  'Artificial Intelligence & Data Science'
+  'Web Development',
+  'AI & Data Science'
 ];
+export const categoryLabel = (c) => (c === 'All Categories' ? 'All courses' : c);
+
+// older records used other names for the same categories
+const CATEGORY_ALIASES = { Programming: 'Python', 'Artificial Intelligence & Data Science': 'AI & Data Science', AI: 'AI & Data Science', 'AI & Data': 'AI & Data Science' };
+export const categoryOf = (course) => CATEGORY_ALIASES[course?.category] || course?.category || '';
+
+/** Category in the address bar: "web-development" rather than "Web+Development". */
+export const categorySlug = (c) => String(c || '').toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+export const categoryFromSlug = (s) => {
+  if (!s) return 'All Categories';
+  const name = CATEGORY_ALIASES[s] || s;
+  return CATEGORIES.find(c => c === name || categorySlug(c) === categorySlug(name)) || 'All Categories';
+};
 
 const U = (id, w = 1600) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=90`;
 
@@ -23,8 +38,8 @@ export const IMAGES = {
 export const TRACKS = {
   python: { label: 'Python', short: 'Py', mark: 'py' },
   database: { label: 'SQL', short: 'SQL', mark: 'sql' },
-  code: { label: 'Web Dev', short: '</>', mark: 'web' },
-  brain: { label: 'AI & Data', short: 'AI', mark: 'ai' }
+  code: { label: 'Web Development', short: '</>', mark: 'web' },
+  brain: { label: 'AI & Data Science', short: 'AI', mark: 'ai' }
 };
 
 /** Rough learning hours per course, shown on cards (falls back to the course.duration string). */

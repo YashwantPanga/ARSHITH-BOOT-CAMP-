@@ -77,7 +77,7 @@ export default function PaymentNotice({ course, price = 149, retake = false, pro
   };
 
   const itemTitle = interview ? 'Interview Prep' : displayTitle(course?.title || 'this course');
-  const subject = encodeURIComponent(`${interview ? 'Unlock Interview Prep' : `Enrol in ${course?.title || 'a course'}`} (₹${price})`);
+  const subject = encodeURIComponent(`${interview ? 'Unlock Interview Prep' : `Enroll in ${course?.title || 'a course'}`} (₹${price})`);
   const contact = (
     <div className="mt-3 grid gap-1.5">
       <a href={`mailto:codelekho@arshithgroup.com?subject=${subject}`} className="inline-flex items-center gap-2 text-forest font-semibold hover:underline"><Mail className="w-4 h-4" /> codelekho@arshithgroup.com</a>
@@ -108,7 +108,7 @@ export default function PaymentNotice({ course, price = 149, retake = false, pro
                 <>
                   <li>✓ 350+ coding problems and interview questions</li>
                   <li>✓ Daily plans, multiple approaches and solutions</li>
-                  <li>✓ Lifetime access - pay once</li>
+                  <li>✓ Lifetime access – pay once</li>
                 </>
               ) : (
                 <>

@@ -10,7 +10,7 @@ const SLOT_MS = 1750;
 export const WORDS = [
   { word: 'Learn', tint: '#3FB874' },
   { word: 'Code', tint: '#E3B21F' },
-  { word: 'Practise', tint: '#F2772F' },
+  { word: 'Practice', tint: '#F2772F' },
   { word: 'Get hired', tint: '#B45FC4' }
 ];
 

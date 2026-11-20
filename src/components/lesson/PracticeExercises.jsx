@@ -95,7 +95,7 @@ export function ExerciseCard({ ex, index, courseId, moduleId, completed, onCompl
     setCheck({ status: 'checking' });
     try {
       const res = await api.checkPractice(payload);
-      setCheck({ status: 'checked', ...res, ...(codeFailed && !res.correct ? { feedback: 'Your code did not run - see the error above the button. Here is the correct answer:' } : {}) });
+      setCheck({ status: 'checked', ...res, ...(codeFailed && !res.correct ? { feedback: 'Your code did not run – see the error above the button. Here is the correct answer:' } : {}) });
       if (res.correct) onCompleted?.(ex.id, res.recorded);
     } catch (e) {
       // Keep the learner's answer; just report the failure and allow a retry.

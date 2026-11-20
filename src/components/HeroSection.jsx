@@ -15,9 +15,9 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
   const moduleCount = courses.reduce((n, c) => n + (c.modules?.length || 0), 0) || 60;
 
   const features = [
-    { icon: Layers, value: trackCount, title: 'Career tracks', text: 'Python, SQL, Web Development and AI with Data Science.', tone: 'bg-brand-100 text-forest' },
-    { icon: BookOpen, value: `${moduleCount}+`, title: 'Deep-dive modules', text: 'Mentor-written lessons, live code practice and a quiz after every module.', tone: 'bg-[#EFE9DC] text-charcoal' },
-    { icon: Timer, value: '45 min', title: 'Proctored final', text: 'A proctored final assessment - 70% to pass.', tone: 'bg-[#E3ECE7] text-sage' },
+    { icon: Layers, value: trackCount, title: 'Career tracks', text: 'Python, SQL, Web Development, and AI & Data Science.', tone: 'bg-brand-100 text-forest' },
+    { icon: BookOpen, value: `${moduleCount}`, title: 'In-depth modules', text: 'Mentor-written lessons, live code practice and a quiz after every module.', tone: 'bg-[#EFE9DC] text-charcoal' },
+    { icon: Timer, value: '45 min', title: 'Proctored final', text: 'A proctored final assessment. Pass mark: 70%.', tone: 'bg-[#E3ECE7] text-sage' },
     { icon: Award, value: '100%', title: 'Verified certificates', text: 'Every certificate is unique and QR-verified.', tone: 'bg-forest text-ivory' }
   ];
 
@@ -40,7 +40,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
       <MobileHero word={word} onRegisterClick={onRegisterClick} onExploreClick={onExploreClick} onVerifyClick={onVerifyClick} />
       <div className="relative hidden lg:block">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8">
-        <nav className="text-sm text-ivory/60 lg:text-charcoal/60" aria-label="Breadcrumb">Home <span className="mx-1.5 text-ivory/30 lg:text-charcoal/30">/</span> <a href="https://arshithgroup.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-ivory lg:text-sage hover:underline">arshithgroup.com</a></nav>
+        <nav className="text-sm text-ivory/60 lg:text-charcoal/60" aria-label="Breadcrumb">Home <span className="mx-1.5 text-ivory/30 lg:text-charcoal/30">/</span> <span className="font-semibold text-ivory lg:text-sage">CodeLekho</span></nav>
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-6 items-center">

@@ -8,7 +8,7 @@ import { api } from '../../services/api';
 
 export const QUEST = {
   'sql-50': {
-    track: 'SQL TRACK', bubble: 'SELECT *!', screen: 'db', glyphs: ['JOIN', '{ }', 'WHERE'],
+    track: 'SQL TRACK', bubble: 'Query it!', screen: 'db', glyphs: ['JOIN', '{ }', 'WHERE'],
     bg: 'linear-gradient(120deg,#062A3A 0%,#0B4F5C 45%,#127A78 75%,#2BB3A0 100%)',
     hair: '#1B2A4A', phones: '#2BD4B4', hoodie: '#F2B544', iris: '#1FA394', glow: '#5EF0D2'
   },
@@ -18,12 +18,12 @@ export const QUEST = {
     hair: '#2B1D4F', phones: '#7EE0FF', hoodie: '#3FC1A5', iris: '#5B6CFF', glow: '#9FA8FF'
   },
   'programming-essentials': {
-    track: 'PYTHON TRACK', bubble: "Let's code!", screen: 'code', glyphs: ['{ }', 'λ', 'def'],
+    track: 'PROGRAMMING TRACK', bubble: 'Let’s code!', screen: 'code', glyphs: ['{ }', 'λ', 'def'],
     bg: 'linear-gradient(120deg,#1A0B3D 0%,#3B1478 42%,#7A2A9C 72%,#E2577E 100%)',
     hair: '#1E1A4D', phones: '#FF7EB6', hoodie: '#2EC4A6', iris: '#8B5CF6', glow: '#FF9ED2'
   },
   'js-30': {
-    track: 'JS SPRINT', bubble: 'async / await!', screen: 'js', glyphs: ['=>', '{ }', '===' ],
+    track: 'JAVASCRIPT SPRINT', bubble: 'async/await', screen: 'js', glyphs: ['=>', '{ }', '===' ],
     bg: 'linear-gradient(120deg,#3A1405 0%,#8A3A0C 40%,#D9701E 72%,#FFB347 100%)',
     hair: '#3A1E12', phones: '#FFD34D', hoodie: '#2E86DE', iris: '#E8641C', glow: '#FFD580'
   },

@@ -182,7 +182,7 @@ export default function InterviewPrepPage({ setId, itemId, tab, studentUser, isA
   const props = { ...state, navigate, toast, studentUser, startTab: tab };
 
   if (state.unlocked === null) return <div className="bg-ivory min-h-[60vh] flex items-center justify-center"><BrandLoader label="Checking access" /></div>;
-  if (!state.unlocked) return <LockedPrep signedIn={state.signedIn} certificates={state.certificates} purchase={state.purchase} onPaid={() => { state.unlockPaid(); toast?.('Payment received - Interview Prep is unlocked.', 'success', 5000); }} navigate={navigate} />;
+  if (!state.unlocked) return <LockedPrep signedIn={state.signedIn} certificates={state.certificates} purchase={state.purchase} onPaid={() => { state.unlockPaid(); toast?.('Payment received – Interview Prep is unlocked.', 'success', 5000); }} navigate={navigate} />;
   if (setId && !set) return <NotFound navigate={navigate} what="This study plan" />;
   if (itemId && !item) return <NotFound navigate={navigate} what="This question" back={paths.interview(set.id)} />;
   if (item) return set.kind === 'concept' ? <ConceptCard key={item.id} set={set} item={item} {...props} /> : <Workspace key={item.id} set={set} item={item} {...props} />;
@@ -213,7 +213,7 @@ function LockedPrep({ signedIn, certificates, purchase, onPaid, navigate }) {
         {paying && <PaymentNotice product="interview" price={price} paymentsEnabled={purchase ? purchase.paymentsEnabled : undefined} onPaid={() => { setPaying(false); onPaid?.(); }} onClose={() => setPaying(false)} />}
 
         <section className="mt-7 sm:mt-12">
-          <RevealText as="h2" className="font-display text-[19px] sm:text-[22px] font-bold text-evergreen">What is included</RevealText>
+          <RevealText as="h2" className="font-display text-[19px] sm:text-[22px] font-bold text-evergreen">What’s included</RevealText>
           {/* phones: one row that scrolls sideways */}
           <div className="mt-3 sm:mt-4 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto no-scrollbar snap-x scroll-px-5 -mx-5 px-5 sm:mx-0 sm:px-0 pb-1" aria-hidden="true">
             {INTERVIEW_SETS.map(s => (
@@ -254,7 +254,7 @@ function PrepHome({ progress, signedIn, navigate }) {
           <div>
             <p className="eyebrow">Interview Prep</p>
             <RevealText as="h1" className="font-display text-[34px] sm:text-[44px] font-bold text-evergreen leading-tight mt-2">Study plans for your interviews</RevealText>
-            <p className="mt-3 text-[15.5px] text-charcoal/70 max-w-2xl">Practise the questions placement and job interviews really ask. Write real SQL, Python and JavaScript in your browser, check your answer instantly, and learn from a worked solution for every problem.</p>
+            <p className="mt-3 text-[15.5px] text-charcoal/70 max-w-2xl">Practice the questions placement and job interviews really ask. Write real SQL, Python and JavaScript in your browser, check your answer instantly, and learn from a worked solution for every problem.</p>
           </div>
           {signedIn
             ? <div className="edu-card px-5 py-3.5 shrink-0"><p className="text-[12px] text-charcoal/55">Solved so far</p><p className="font-display text-[26px] font-bold text-forest leading-none mt-1">{done}<span className="text-charcoal/40 text-[16px]"> / {total}</span></p></div>

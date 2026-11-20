@@ -81,7 +81,7 @@ export default function InterviewHero({ price, total, signedIn, earned, required
                 <p className="mt-3 rounded-xl bg-white/70 px-3 py-2 text-[12.5px] text-[#0D0D0C]/70"><b className="text-[#0D0D0C]">Pattern:</b> GROUP BY email HAVING COUNT(*) &gt; 1</p>
               </>,
               <>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0D0D0C]/50">Readiness</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0D0D0C]/50">Example · Readiness</p>
                 <div className="mt-2 flex items-end gap-2"><p className="font-display text-[40px] font-semibold leading-none">92%</p><p className="pb-1 text-[12.5px] text-[#0D0D0C]/55">interview ready</p></div>
                 <div className="mt-3 h-2 rounded-full bg-[#0D0D0C]/10 overflow-hidden"><span className="iv-bar block h-full rounded-full bg-[#B45FC4]" /></div>
                 <p className="mt-3 text-[12.5px] text-[#0D0D0C]/55">SQL · Python · JavaScript · DSA</p>
@@ -102,14 +102,14 @@ export default function InterviewHero({ price, total, signedIn, earned, required
           <div className="mt-6 sm:mt-8 flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
               <button onClick={onUnlock} className="group h-12 px-6 rounded-xl bg-[#0D0D0C] text-white font-display text-[15px] font-semibold inline-flex items-center justify-center gap-2 transition hover:bg-[#013A2B] active:scale-[.99]">
-                {signedIn ? `Unlock for ₹${price}` : `Sign in · ₹${price} lifetime`} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                {signedIn ? `Unlock for ₹${price}` : `Get lifetime access · ₹${price}`} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               </button>
               <button onClick={signedIn ? onContinue : onBrowse} className={`iv-free h-12 px-5 rounded-xl border-[1.4px] border-[#0D0D0C]/80 font-display text-[14.5px] font-semibold inline-flex items-center justify-center gap-2 transition hover:bg-[#0D0D0C] hover:text-white ${word === 3 ? 'is-lit' : ''}`}>
-                <Award className="w-4 h-4" /> Free with {required} certificates{signedIn ? ` · ${earned}/${required}` : ''}
+                <Award className="w-4 h-4" /> Free when you earn all {required} certificates{signedIn ? ` · ${earned}/${required}` : ''}
               </button>
             </div>
             <p className="text-[13.5px] sm:text-[14.5px] leading-snug text-[#0D0D0C]/60 max-w-[420px]">
-              {total} real interview questions in SQL, Python, JavaScript and DSA, with worked solutions and your own study plan.
+              {total} real interview questions in SQL, Python, JavaScript, and data structures and algorithms (DSA), with worked solutions and your own study plan.
             </p>
           </div>
         </div>
@@ -120,10 +120,10 @@ export default function InterviewHero({ price, total, signedIn, earned, required
         <svg className="absolute left-0 right-0 -top-[34px] sm:-top-[46px] w-full h-[35px] sm:h-[47px]" viewBox="0 0 1440 62" preserveAspectRatio="none" aria-hidden="true">
           <path d="M0 62 H1062 C1092 62 1098 54 1116 34 C1138 9 1146 1 1178 1 H1440 V62 Z" fill="#FFFFFF" />
         </svg>
-        <p className="absolute right-5 sm:right-10 -top-[24px] sm:-top-[32px] flex items-center gap-1.5 text-[11.5px] sm:text-[13px] text-[#0D0D0C]/45"><ShieldCheck className="w-3.5 h-3.5" /> Secure payment · Cashfree</p>
+        <p className="absolute right-5 sm:right-10 -top-[24px] sm:-top-[32px] flex items-center gap-1.5 text-[11.5px] sm:text-[13px] text-[#0D0D0C]/45"><ShieldCheck className="w-3.5 h-3.5" /> Secured by Cashfree</p>
         <div className="px-5 py-5 sm:px-12 sm:py-7 grid grid-cols-2 lg:grid-cols-[1.2fr_repeat(3,1fr)_auto] gap-x-5 gap-y-4 items-center">
-          <p className="col-span-2 lg:col-span-1 font-display text-[17px] sm:text-[20px] font-medium leading-tight">Practise what companies<br className="hidden sm:block" /> really ask</p>
-          {[[`${total}+`, 'Questions and problems'], ['4', 'Practice tracks'], [`₹${price}`, 'One-time, lifetime access']].map(([v, l], k) => (
+          <p className="col-span-2 lg:col-span-1 font-display text-[17px] sm:text-[20px] font-medium leading-tight">Practice what companies<br className="hidden sm:block" /> really ask</p>
+          {[[`${total}`, 'Questions and problems'], ['5', 'Practice sets'], [`₹${price}`, 'One-time, lifetime access']].map(([v, l], k) => (
             <div key={l} className={k === 2 ? 'col-span-2 sm:col-span-1' : ''}>
               <p className="font-display text-[26px] sm:text-[32px] font-semibold leading-none tracking-tight">{v}</p>
               <p className="mt-1 text-[12.5px] sm:text-[13.5px] text-[#0D0D0C]/55">{l}</p>

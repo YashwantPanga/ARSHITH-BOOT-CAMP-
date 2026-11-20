@@ -46,7 +46,7 @@ export default function CertificateVerifyPage({ certId = '', onSearch, onHome })
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 py-16 text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-200">Certificate verification</p>
           <h1 className="mt-3 text-3xl sm:text-[2.6rem] font-medium leading-tight">Verify a CodeLekho certificate</h1>
-          <p className="mt-3 text-brand-100/90">Enter the certificate ID, or scan the QR code on the certificate with your phone camera.</p>
+          <p className="mt-3 text-brand-100/90">Scan the QR code on the certificate with your phone camera, or type the certificate ID.</p>
           <form onSubmit={submit} className="mt-8 flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
             <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="e.g. ARB-PY-2026-7KQ2M9XD" className="flex-1 px-5 py-3.5 rounded-xl text-charcoal bg-ivory font-mono uppercase outline-none placeholder:normal-case placeholder:font-sans focus:ring-4 focus:ring-brand-300/40" />
             <button className="btn bg-ivory text-brand-900 hover:bg-white px-6 py-3.5"><Search className="w-4 h-4" /> Verify</button>
@@ -60,8 +60,8 @@ export default function CertificateVerifyPage({ certId = '', onSearch, onHome })
           <div className="grid sm:grid-cols-3 gap-4">
             {[
               { icon: QrCode, t: 'Scan the QR', d: 'Point any phone camera at the QR code in the certificate’s corner.' },
-              { icon: Hash, t: 'Or type the ID', d: 'Every certificate carries a unique ID like ARB-PY-2026-XXXXXXXX.' },
-              { icon: ShieldCheck, t: 'See live status', d: 'We show the holder, course, score and whether it is still valid.' }
+              { icon: Hash, t: 'Or type the ID', d: <>Every certificate carries a unique ID like <span className="whitespace-nowrap font-mono">ARB-PY-2026-XXXXXXXX</span>.</> },
+              { icon: ShieldCheck, t: 'See live status', d: 'We show the certificate holder’s name, the course, the score, the issue date and whether it is still valid.' }
             ].map(s => (
               <div key={s.t} className="card p-5">
                 <span className="w-10 h-10 rounded-xl bg-brand-900 text-ivory flex items-center justify-center"><s.icon className="w-5 h-5" /></span>

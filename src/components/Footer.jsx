@@ -38,11 +38,11 @@ export default function Footer({ navigate }) {
               </a>
             </div>
             <p className="text-[15px] text-charcoal/70 leading-relaxed max-w-xs">
-              Learn today, build tomorrow. Structured courses, honest assessments and verifiable certificates.
+              Learn today, build tomorrow. Structured courses, proctored assessments and verifiable certificates.
             </p>
             {/* Social Media Circular Buttons */}
             <div className="pt-2">
-              <p className="font-display text-[15px] font-semibold text-evergreen mb-3">Connect With Us</p>
+              <p className="font-display text-[15px] font-semibold text-evergreen mb-3">Connect with us</p>
               <div className="flex items-center gap-3">
                 <a
                   href="https://www.instagram.com/arshithgroup/"
@@ -95,7 +95,7 @@ export default function Footer({ navigate }) {
           <div>
             <h4 className="font-display text-[17px] sm:text-[20px] font-bold text-evergreen mb-3 sm:mb-5">Company</h4>
             <ul className="space-y-2.5">
-              {link('About us', paths.about())}
+              {link('About', paths.about())}
               {link('Contact', paths.contact())}
               {link('Terms of Use', paths.terms())}
               {link('Privacy Policy', paths.privacy())}
@@ -140,7 +140,7 @@ export default function Footer({ navigate }) {
             <span className="text-ivory/30">|</span>
             <button onClick={() => navigate(paths.privacy())} className="hover:text-ivory transition-colors">Privacy Policy</button>
             <span className="text-ivory/30">|</span>
-            <button onClick={() => navigate(paths.refunds())} className="hover:text-ivory transition-colors">Refunds</button>
+            <button onClick={() => navigate(paths.refunds())} className="hover:text-ivory transition-colors">Refund Policy</button>
           </span>
         </div>
       </div>

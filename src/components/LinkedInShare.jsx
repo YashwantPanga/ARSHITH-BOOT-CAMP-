@@ -98,7 +98,7 @@ export default function LinkedInShare({ cert, verifyUrl, renderCanvas, onClose }
                 <button onClick={copy} className="font-display h-11 rounded-md border border-forest/25 bg-white text-forest text-[14.5px] font-semibold inline-flex items-center justify-center gap-1.5 hover:border-forest">{copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}{copied ? 'Copied' : 'Copy text'}</button>
               </div>
             </div>
-            <p className="mt-3 text-[12px] text-charcoal/55">LinkedIn opens with the text filled in - press <strong>Post</strong> there. "Add to profile" lists the certificate under Licenses &amp; certifications.</p>
+            <p className="mt-3 text-[12px] text-charcoal/55">LinkedIn opens with the text filled in – press <strong>Post</strong> there. "Add to profile" lists the certificate under Licenses &amp; certifications.</p>
           </div>
         )}
       </div>

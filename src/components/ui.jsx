@@ -147,7 +147,21 @@ function splitWords(node, counter) {
       !part || /^\s+$/.test(part) ? part : <span key={i} className="blur-word" style={{ '--i': counter.n++ }}>{part}</span>
     ));
   }
-  if (Array.isArray(node)) return node.map((child, i) => <React.Fragment key={i}>{splitWords(child, counter)}</React.Fragment>);
+  if (Array.isArray(node)) {
+    // punctuation right after an element ("<b>courses</b>, built") stays glued to it, so the comma
+    // never wraps onto a line of its own
+    const out = [];
+    node.forEach((child, i) => {
+      const prev = node[i - 1];
+      const m = typeof child === 'string' && React.isValidElement(prev) ? child.match(/^([,.;:!?)\]]+)([\s\S]*)$/) : null;
+      if (m && out.length) {
+        const last = out.pop();
+        out.push(<span key={`g${i}`} className="whitespace-nowrap">{last}{splitWords(m[1], counter)}</span>);
+        out.push(<React.Fragment key={i}>{splitWords(m[2], counter)}</React.Fragment>);
+      } else out.push(<React.Fragment key={i}>{splitWords(child, counter)}</React.Fragment>);
+    });
+    return out;
+  }
   if (React.isValidElement(node) && node.props.children != null) {
     return React.cloneElement(node, undefined, splitWords(node.props.children, counter));
   }

@@ -113,7 +113,7 @@ export default function IdentityCheck({ attachVideo, onChange }) {
           <p className="text-xs text-slate-500">Centre your face in the outline, in good light, and look at the screen as you will during the exam. If you wear glasses, wear them now. This becomes your reference for identity and eye tracking.</p>
           {face.state === 'error' && <p className="mt-1 text-xs text-rose-600">{face.msg}</p>}
           {face.state === 'done'
-            ? <div className="mt-2 flex items-center gap-2">{face.thumb && <img src={face.thumb} alt="Your captured face" className="w-12 h-9 rounded-md object-cover ring-1 ring-mint-300" />}<span className="text-xs text-mint-500 font-semibold">Face captured - you can start the exam</span><button type="button" onClick={doFace} className="ml-auto text-xs underline text-slate-500">Retake</button></div>
+            ? <div className="mt-2 flex items-center gap-2">{face.thumb && <img src={face.thumb} alt="Your captured face" className="w-12 h-9 rounded-md object-cover ring-1 ring-mint-300" />}<span className="text-xs text-mint-500 font-semibold">Face captured – you can start the exam</span><button type="button" onClick={doFace} className="ml-auto text-xs underline text-slate-500">Retake</button></div>
             : (
               <div className="mt-2 flex items-center gap-3">
                 <button type="button" onClick={doFace} disabled={models.state !== 'ready' || face.state === 'busy'} className={`btn-plum text-sm py-2.5 px-4 ${models.state === 'ready' && face.state !== 'busy' ? 'cta-pulse' : ''}`}><ScanFace className="w-4 h-4" /> {face.state === 'busy' ? 'Capturing…' : face.state === 'error' ? 'Try again' : 'Capture my face'}</button>

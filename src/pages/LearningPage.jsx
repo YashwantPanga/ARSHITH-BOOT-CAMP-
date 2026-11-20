@@ -77,7 +77,7 @@ function LivePreview({ code, title }) {
   </script></body></html>`;
   return (
     <div>
-      <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-sage mb-1.5">Result (live preview - try clicking or typing in it)</p>
+      <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-sage mb-1.5">Result (live preview – try clicking or typing in it)</p>
       <iframe title={`Live preview: ${title}`} srcDoc={doc} sandbox="allow-scripts allow-forms allow-modals" className="w-full rounded-xl border border-slate-200 bg-white" style={{ height: h }} />
     </div>
   );
@@ -320,7 +320,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
               )}
               {sec.code && (
                 <div className="space-y-2">
-                  <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-sage">{sec.run === false ? 'Example' : 'Example - press Try it to run it yourself'}</p>
+                  <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-sage">{sec.run === false ? 'Example' : 'Example – press Try it to run it yourself'}</p>
                   <CodeBlock courseId={course.id} language={sec.language} code={sec.code} runnable={sec.run !== false} />
                 </div>
               )}

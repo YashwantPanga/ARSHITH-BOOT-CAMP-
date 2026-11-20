@@ -190,9 +190,9 @@ export default function ModuleQuizModal({ isOpen, onClose, module, moduleNumber,
                     <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center ${good ? 'bg-mint-50 text-mint-400' : result.passed ? 'bg-amber-50 text-amber-500' : 'bg-rose-50 text-rose-500'}`}>
                       {good ? <Trophy className="w-10 h-10" /> : result.passed ? <BookOpen className="w-10 h-10" /> : <XCircle className="w-10 h-10" />}
                     </div>
-                    <h3 className="mt-4 text-2xl font-bold text-brand-900">{good ? 'Module complete!' : result.passed ? 'Module done - keep practising' : 'Not passed yet'}</h3>
+                    <h3 className="mt-4 text-2xl font-bold text-brand-900">{good ? 'Module complete!' : result.passed ? 'Module done – keep practicing' : 'Not passed yet'}</h3>
                     <p className="text-slate-500 mt-1 max-w-md mx-auto">{good
-                      ? 'Great work - this module is now marked complete.'
+                      ? 'Great work – this module is now marked complete.'
                       : result.passed
                         ? `The module is marked complete, but ${result.percentage}% shows some ideas need another look. Review your answers, reread the sections, and retake the quiz - the final assessment needs 70%.`
                         : 'You need 70% to pass. Review the module and try again.'}</p>

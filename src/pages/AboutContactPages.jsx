@@ -6,9 +6,9 @@ import { api } from '../services/api';
 
 export function AboutPage({ onExplore, onHome }) {
   const values = [
-    { icon: Target, title: 'Mission', text: 'Make rigorous, job-ready technical education affordable and accessible to every learner.' },
-    { icon: Eye, title: 'Vision', text: 'Certificates that mean something — earned through real assessments, verifiable by anyone.' },
-    { icon: HeartHandshake, title: 'Approach', text: 'Deep reading, frequent practice, honest scoring and one focused course at a time.' }
+    { icon: Target, title: 'Mission', text: 'We make rigorous, job-ready technical education affordable and accessible to learners across India.' },
+    { icon: Eye, title: 'Vision', text: 'We want every certificate to mean something: earned through real assessments and verifiable by anyone.' },
+    { icon: HeartHandshake, title: 'Approach', text: 'We combine in-depth reading, frequent practice and fair scoring, so you can focus on one course at a time.' }
   ];
   return (
     <div>
@@ -20,9 +20,9 @@ export function AboutPage({ onExplore, onHome }) {
             <SafeImg src={IMAGES.portrait} alt="" className="rounded-[20px] h-60 w-full object-cover mt-10 shadow-[0_24px_48px_-28px_rgba(1,58,43,.5)]" />
           </Reveal>
           <Reveal>
-            <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">About us</p>
-            <RevealText as="h2" className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight">We provide <b>exclusive coaching courses</b> &amp; life-building education</RevealText>
-            <p className="mt-4 text-charcoal/70 leading-relaxed">CodeLekho is an online academy built around complete, textbook-quality courses. Every module ends with a quiz, every course ends with a proctored final assessment, and every certificate carries the learner's real score and a unique verification ID.</p>
+            <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Our story</p>
+            <RevealText as="h2" className="edu-title mt-2 text-3xl sm:text-[38px] leading-tight">Practical, career-focused courses with <b>certificates you can verify</b></RevealText>
+            <p className="mt-4 text-charcoal/70 leading-relaxed">CodeLekho is an online academy built around complete, textbook-quality courses. Every module ends with a quiz, every course ends with a proctored final assessment, and every certificate carries the learner’s real score and a unique verification ID.</p>
             <button onClick={onExplore} className="btn-primary font-display !rounded-md mt-7 px-7 py-3.5 text-[15.5px]">Explore courses</button>
           </Reveal>
         </div>
@@ -56,13 +56,13 @@ export function ContactPage({ onHome }) {
     <PageTop title="Contact" crumb="Contact" onHome={onHome} />
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid lg:grid-cols-12 gap-10">
       <div className="lg:col-span-5">
-        <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Contact</p>
-        <RevealText as="h2" className="edu-title mt-2 text-3xl sm:text-[38px]">Contact <b>CodeLekho</b></RevealText>
-        <p className="mt-3 text-charcoal/70">Questions about a course, your assessment or a certificate? We usually reply within one working day.</p>
+        <p className="font-display text-[13px] font-semibold uppercase tracking-[0.22em] text-sage">Get in touch</p>
+        <RevealText as="h2" className="edu-title mt-2 text-3xl sm:text-[38px]">Questions? <b>We’re here to help.</b></RevealText>
+        <p className="mt-3 text-charcoal/70">Ask us about a course, your assessment, a certificate, a payment or refund, or Interview Prep. We reply within 2 working days.</p>
         <div className="mt-8 bg-forest text-white rounded-[20px] p-7 space-y-5">
-          <p className="flex gap-3"><MapPin className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Headquarters</span>Bengaluru, Karnataka, India</span></p>
-          <p className="flex gap-3"><Phone className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Phone</span>+91 82177 29744</span></p>
-          <p className="flex gap-3"><Mail className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Email</span>codelekho@arshithgroup.com</span></p>
+          <p className="flex gap-3"><MapPin className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Address</span>Bengaluru, Karnataka, India</span></p>
+          <p className="flex gap-3"><Phone className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Phone</span><a href="tel:+918217729744" className="hover:underline">+91 82177 29744</a></span></p>
+          <p className="flex gap-3"><Mail className="w-5 h-5 text-peach-400 shrink-0" /><span><span className="block text-xs text-brand-200">Email</span><a href="mailto:codelekho@arshithgroup.com" className="hover:underline">codelekho@arshithgroup.com</a></span></p>
         </div>
       </div>
       <div className="lg:col-span-7">
@@ -71,7 +71,7 @@ export function ContactPage({ onHome }) {
             <div className="text-center py-12 animate-scale-in">
               <CheckCircle2 className="w-12 h-12 text-mint-400 mx-auto" />
               <h2 className="mt-4 text-xl font-bold text-brand-900">Message received</h2>
-              <p className="text-slate-500 mt-1">Thanks, {form.name.split(' ')[0]}! We'll get back to you at {form.email}.</p>
+              <p className="text-slate-500 mt-1">Thanks, {form.name.split(' ')[0]}! We’ll get back to you at {form.email}.</p>
               <button className="btn-outline mt-6" onClick={() => { setSent(false); setForm({ name: '', email: '', message: '' }); }}>Send another</button>
             </div>
           ) : (
@@ -86,7 +86,7 @@ export function ContactPage({ onHome }) {
               {err && <p className="sm:col-span-2 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3">{err}</p>}
               <label className="block"><span className="text-xs font-semibold text-slate-600">Name</span><input className="input mt-1.5" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></label>
               <label className="block"><span className="text-xs font-semibold text-slate-600">Email</span><input type="email" className="input mt-1.5" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></label>
-              <label className="block sm:col-span-2"><span className="text-xs font-semibold text-slate-600">Message</span><textarea rows={6} className="input mt-1.5 resize-y" value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} /></label>
+              <label className="block sm:col-span-2"><span className="text-xs font-semibold text-slate-600">Message</span><textarea rows={6} placeholder="How can we help?" className="input mt-1.5 resize-y" value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} /></label>
               <button disabled={!valid || sending} className="btn-primary sm:col-span-2 py-3.5"><Send className="w-4 h-4" /> {sending ? 'Sending…' : 'Send message'}</button>
             </form>
           )}

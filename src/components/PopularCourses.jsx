@@ -30,7 +30,7 @@ export default function PopularCourses({ courses, enrolledCourseId, offer, onSel
 
         {/* Track filter – like the partner tabs in the reference */}
         <div className="mt-6 sm:mt-8 flex flex-wrap sm:flex-nowrap gap-2 sm:gap-3 sm:overflow-x-auto no-scrollbar pb-1">
-          <button onClick={() => setTrack('all')} className={`font-display shrink-0 h-10 sm:h-[54px] px-4 sm:px-6 rounded-full border text-[14px] sm:text-[15px] font-medium transition ${track === 'all' ? 'bg-forest border-forest text-ivory' : 'bg-white border-brand-900/15 text-charcoal/75 hover:border-sage hover:text-forest'}`}>All Tracks</button>
+          <button onClick={() => setTrack('all')} className={`font-display shrink-0 h-10 sm:h-[54px] px-4 sm:px-6 rounded-full border text-[14px] sm:text-[15px] font-medium transition ${track === 'all' ? 'bg-forest border-forest text-ivory' : 'bg-white border-brand-900/15 text-charcoal/75 hover:border-sage hover:text-forest'}`}>All courses</button>
           {tracks.map(t => (
             <button key={t} onClick={() => setTrack(t)} className={`shrink-0 h-10 sm:h-[54px] pl-1 sm:pl-1.5 pr-3.5 sm:pr-5 rounded-full border flex items-center gap-1.5 sm:gap-2.5 transition ${track === t ? 'bg-forest border-forest text-ivory' : 'bg-white border-brand-900/15 text-charcoal/80 hover:border-sage'}`}>
               <span className="w-8 h-8 sm:w-[42px] sm:h-[42px] rounded-full bg-white ring-2 sm:ring-4 ring-brand-50 flex items-center justify-center"><TrackMark type={t} className="w-5 h-5 sm:w-6 sm:h-6" /></span>

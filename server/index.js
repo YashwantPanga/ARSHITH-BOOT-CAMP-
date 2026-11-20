@@ -6,6 +6,7 @@ import { applyAdminSettings } from './lib/adminSetup.js';
 import { getDb, saveDb } from './db.js';
 import { runJobs } from './lib/referrals.js';
 import { sweep as campusSweep } from './lib/campus.js';
+import { applyTextFixes } from './lib/textFixes.js';
 
 const PORT = process.env.PORT || 5000;
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -28,6 +29,7 @@ async function connectDb() {
 app.listen(PORT, async () => {
   const mode = await connectDb();
   for (const change of applyAdminSettings()) console.log(`[admin] ${change}`);
+  try { const db = getDb(); if (applyTextFixes(db)) { saveDb(db); console.log('[text] course names and descriptions updated'); } } catch (err) { console.error('[text]', err.message); }
   console.log(`=================================================`);
   console.log(` CodeLekho Secure Backend API Running     `);
   console.log(` Port: http://localhost:${PORT}                   `);

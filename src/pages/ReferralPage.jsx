@@ -82,13 +82,13 @@ function HowItWorks({ rules, navigate, signedIn }) {
         <div className="relative max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-20 grid lg:grid-cols-2 gap-10 items-center">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-[#E5C88E]/40 bg-[#E5C88E]/10 px-3 py-1 text-[12px] font-bold uppercase tracking-[0.18em] text-[#E5C88E]"><Gift className="w-3.5 h-3.5" /> Refer &amp; Earn</span>
-            <RevealText as="h1" className="mt-5 font-display text-[40px] sm:text-[56px] font-bold leading-[1.02] tracking-[-0.02em]">Your Network.<br /><span className="text-[#E5C88E]">Your Rewards.</span></RevealText>
-            <p className="mt-5 text-[16.5px] leading-relaxed text-ivory/75 max-w-lg">Invite friends to CodeLekho. Help them save {r.discountPct}% and earn {r.commissionPct}% commission on their eligible purchases.</p>
+            <RevealText as="h1" className="mt-5 font-display text-[40px] sm:text-[56px] font-bold leading-[1.02] tracking-[-0.02em]">Your network.<br /><span className="text-[#E5C88E]">Your rewards.</span></RevealText>
+            <p className="mt-5 text-[16.5px] leading-relaxed text-ivory/75 max-w-lg">Invite friends to CodeLekho. They save {r.discountPct}%, and you earn {r.commissionPct}% commission on their eligible purchases.</p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <button onClick={() => navigate(signedIn ? paths.refer() : paths.register(paths.refer()))} className="h-12 px-6 rounded-xl bg-gradient-to-b from-[#F3D9A0] to-[#C9A15A] text-[#2A1D08] font-display font-bold inline-flex items-center gap-2 shadow-[0_12px_30px_-12px_rgba(229,200,142,.8)]">Start Earning <ArrowRight className="w-4 h-4" /></button>
-              <a href="#how" className="h-12 px-6 rounded-xl border border-white/20 text-ivory font-semibold inline-flex items-center">Explore How It Works</a>
+              <button onClick={() => navigate(signedIn ? paths.refer() : paths.register(paths.refer()))} className="h-12 px-6 rounded-xl bg-gradient-to-b from-[#F3D9A0] to-[#C9A15A] text-[#2A1D08] font-display font-bold inline-flex items-center gap-2 shadow-[0_12px_30px_-12px_rgba(229,200,142,.8)]">Get your referral link <ArrowRight className="w-4 h-4" /></button>
+              <a href="#how" className="h-12 px-6 rounded-xl border border-white/20 text-ivory font-semibold inline-flex items-center">See how it works</a>
             </div>
-            <p className="mt-5 text-[13px] text-ivory/55">Minimum withdrawal {rupees(r.minWithdrawalPaise, 0)} · paid by UPI or bank transfer</p>
+            <p className="mt-5 text-[13px] text-ivory/55">Minimum withdrawal: {rupees(r.minWithdrawalPaise, 0)} · Paid by UPI or bank transfer</p>
           </div>
           <RewardArt className="w-full max-w-[440px] mx-auto" />
         </div>
@@ -101,7 +101,7 @@ function HowItWorks({ rules, navigate, signedIn }) {
           {[
             [Share2, 'Share your link', 'Copy your link or QR, or send it on WhatsApp. Your friend has 30 days to sign up and buy.'],
             [BadgeIndianRupee, `They save ${r.discountPct}%`, `The discount is applied automatically at checkout on every eligible course and Interview Prep.`],
-            [Wallet, `You earn ${r.commissionPct}%`, `Commission on what they actually pay. It is released after ${r.releaseDays} days and you can withdraw from ${rupees(r.minWithdrawalPaise, 0)}.`]
+            [Wallet, `You earn ${r.commissionPct}%`, `Commission on what they actually pay. After a ${r.releaseDays}-day hold you can withdraw it, from ${rupees(r.minWithdrawalPaise, 0)}.`]
           ].map(([Icon, t, d], i) => (
             <div key={t} className="relative rounded-[20px] bg-white border border-[#E8E1CF] shadow-[0_1px_2px_rgba(12,45,38,.04)] p-6 shadow-[0_18px_40px_-32px_rgba(12,45,38,.6)]">
               <span className="absolute right-5 top-4 font-display text-[44px] font-bold text-brand-900/[.06]">0{i + 1}</span>
@@ -116,21 +116,23 @@ function HowItWorks({ rules, navigate, signedIn }) {
           <div className="rounded-[22px] bg-[#0C2D26] text-ivory p-6">
             <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#8EE3B5]">Example</p>
             <div className="mt-4 grid grid-cols-4 gap-2 text-center">
-              {[['Course price', '₹1,000'], [`${r.discountPct}% off`, '− ₹100'], ['Friend pays', '₹900'], [`You earn ${r.commissionPct}%`, '₹90']].map(([l, v], i) => (
+              {[['Course price', '₹1,000'], [`${r.discountPct}% off`, '−₹100'], ['Friend pays', '₹900'], [`Your commission (${r.commissionPct}%)`, '₹90']].map(([l, v], i) => (
                 <div key={l} className={`rounded-xl p-3 ${i === 3 ? 'bg-gradient-to-b from-[#F3D9A0] to-[#C9A15A] text-[#2A1D08]' : 'bg-white/[.06] border border-white/10'}`}>
                   <p className="font-display text-[18px] sm:text-[22px] font-bold">{v}</p>
                   <p className={`mt-1 text-[11px] ${i === 3 ? 'text-[#2A1D08]/70' : 'text-ivory/60'}`}>{l}</p>
                 </div>
               ))}
             </div>
+            <p className="mt-4 text-[13.5px] leading-relaxed text-ivory/70">Your friend pays ₹900 instead of ₹1,000, and ₹90 is added to your wallet. After the {r.releaseDays}-day hold you can withdraw it.</p>
           </div>
           <ul className="rounded-[20px] bg-white border border-[#E8E1CF] shadow-[0_1px_2px_rgba(12,45,38,.04)] p-6 grid gap-2.5 text-[14px] text-charcoal/75">
             {[
               `Commission is ${r.commissionPct}% of the amount your friend actually paid, after their discount.`,
-              `It stays pending for ${r.releaseDays} days, then moves to your available balance.`,
-              `Withdraw from ${rupees(r.minWithdrawalPaise, 0)} by UPI or bank transfer; paid within ${r.payoutSlaDays} days of approval.`,
+              `Each commission has a ${r.releaseDays}-day hold, then moves to your available balance.`,
+              `Withdraw from ${rupees(r.minWithdrawalPaise, 0)} by UPI or bank transfer. Payout within ${r.payoutSlaDays} days of approval.`,
+              `Eligible purchases are courses and Interview Prep that your friend buys within ${r.attributionDays || 30} days of signing up through your link.`,
               'Refunded purchases reverse the commission. You cannot refer yourself.',
-              'Earnings may be taxable income under Indian law; please declare them.'
+              'Earnings may be taxable income under Indian law, so please declare them.'
             ].map(t => <li key={t} className="flex gap-2.5"><ShieldCheck className="w-4 h-4 mt-0.5 shrink-0 text-sage" />{t}</li>)}
           </ul>
         </div>
@@ -219,7 +221,7 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
     setSharing(true);
     try {
       const r = await shareCard({ svg: cardRef.current, width: 1080, height: 1350, fileName: `CodeLekho-invite-${data.code}.png`, text });
-      if (r === 'fallback') toast?.('Your invite card was saved - attach it in the WhatsApp chat that opened.', 'success', 5000);
+      if (r === 'fallback') toast?.('Your invite card was saved – attach it in the WhatsApp chat that opened.', 'success', 5000);
     } catch {
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
     } finally { setSharing(false); }
@@ -233,7 +235,7 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-[12.5px] font-bold uppercase tracking-[0.2em] text-sage">Refer &amp; Earn</p>
-            <RevealText as="h1" className="mt-1 font-display text-[30px] sm:text-[38px] font-bold text-evergreen leading-tight">Your Network. <span className="text-[#B88A3E]">Your Rewards.</span></RevealText>
+            <RevealText as="h1" className="mt-1 font-display text-[30px] sm:text-[38px] font-bold text-evergreen leading-tight">Your network. <span className="text-[#B88A3E]">Your rewards.</span></RevealText>
           </div>
           <button onClick={openNotes} className="relative h-10 px-3.5 rounded-xl bg-white border border-brand-900/10 inline-flex items-center gap-2 text-[13.5px] font-semibold text-evergreen"><Bell className="w-4 h-4" /> Notifications{unread > 0 && <span className="ml-1 min-w-5 h-5 px-1.5 rounded-full bg-[#C9A15A] text-white text-[11px] flex items-center justify-center">{unread}</span>}</button>
         </div>

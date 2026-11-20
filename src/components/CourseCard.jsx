@@ -2,7 +2,7 @@ import React from 'react';
 import { Clock, Lock, PlayCircle, BadgeCheck, ArrowRight, BookOpen, Flame } from 'lucide-react';
 import { SafeImg, ProgressBar } from './ui';
 import TrackBadge from './TrackBadge';
-import { cleanText, displayTitle } from '../utils/textUtils';
+import { cleanText, displayTitle, shortText } from '../utils/textUtils';
 import { hoursOf, TRACKS } from '../data/meta';
 
 // Certificate-style card art (1600x1000, 16:10) in public/course-cards/, by course id. Other courses
@@ -15,13 +15,14 @@ export const priceOf = (course) => Number(course?.price) || 0;
 /** Price as shown on cards: '₹149', or 'Free' when courses are free. */
 export const priceLabel = (course) => (priceOf(course) > 0 ? `₹${priceOf(course)}` : 'Free');
 /** Text of the enrol button. */
-export const enrolLabel = (course) => (priceOf(course) > 0 ? `Enroll for ₹${priceOf(course)}` : 'Enroll for Free');
+// the price is already shown on the card, so the button says only what it does
+export const enrolLabel = (course) => (priceOf(course) > 0 ? 'Enroll now' : 'Enroll for free');
 
-/** The gold "Best Seller" ribbon on the highlighted course. */
+/** The gold "Bestseller" ribbon on the highlighted course. */
 export function BestSellerBadge({ className = '' }) {
   return (
     <span className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#F6D27A] to-[#E0B54A] px-2.5 py-1 font-display text-[11.5px] font-bold uppercase tracking-[0.08em] text-[#3D2A05] shadow-[0_6px_14px_-6px_rgba(120,80,0,.8)] ${className}`}>
-      <Flame className="w-3 h-3 fill-current" /> Best Seller
+      <Flame className="w-3 h-3 fill-current" /> Bestseller
     </span>
   );
 }
@@ -54,10 +55,10 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
         <h3 className="font-display text-[19px] font-semibold text-evergreen leading-snug">
           <button onClick={() => onSelect(course.id)} className="text-left hover:text-sage transition-colors">{displayTitle(course.title)}</button>
         </h3>
-        <p className="mt-1.5 text-sm text-charcoal/60 line-clamp-2">{cleanText(course.shortDescription || course.description)}</p>
+        <p className="mt-1.5 text-sm text-charcoal/60 line-clamp-2">{shortText(course.shortDescription || course.description, 90)}</p>
 
         <div className="mt-auto pt-5">
-          <p className="flex items-center gap-2 text-sm text-charcoal/70"><BadgeCheck className="w-4 h-4 text-sage" /> Completion Certificate · {modules} modules</p>
+          <p className="flex items-center gap-2 text-sm text-charcoal/70"><BadgeCheck className="w-4 h-4 text-sage" /> Professional Certificate · {modules} modules</p>
           <div className="mt-2 flex items-center gap-2 text-sm text-charcoal/70">
             <span className="flex items-center gap-1"><Clock className="w-4 h-4 text-sage" />{hoursOf(course)}</span>
           </div>
@@ -114,13 +115,13 @@ export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll, offer
         <h3 className="font-display text-[18px] font-semibold text-evergreen leading-snug">
           <button onClick={() => onSelect(course.id)} className="hover:text-sage transition-colors">{displayTitle(course.title)}</button>
         </h3>
-        <p className="mt-1.5 text-[13.5px] leading-relaxed text-charcoal/60 line-clamp-2">{cleanText(course.shortDescription || course.description)}</p>
+        <p className="mt-1.5 text-[13.5px] leading-relaxed text-charcoal/60 line-clamp-2">{shortText(course.shortDescription || course.description, 80)}</p>
 
         <div className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[12.5px] text-charcoal/65">
           <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5 text-sage" />{modules} modules</span>
           <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-sage" />{hoursOf(course)}</span>
         </div>
-        <p className="mt-1.5 flex items-center gap-1 text-[12.5px] text-charcoal/55"><BadgeCheck className="w-3.5 h-3.5 text-leaf" /> Completion Certificate</p>
+        <p className="mt-1.5 flex items-center gap-1 text-[12.5px] text-charcoal/55"><BadgeCheck className="w-3.5 h-3.5 text-leaf" /> Professional Certificate</p>
 
         {isMine && !offer?.admin && (
           <div className="mt-3 w-full text-left">

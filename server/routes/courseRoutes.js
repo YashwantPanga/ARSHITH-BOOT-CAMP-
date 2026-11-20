@@ -112,7 +112,7 @@ router.post('/admin/courses', verifyAdminToken, (req, res) => {
     id,
     slug,
     title,
-    category: category || 'Programming',
+    category: category || 'Python',
     level: level || 'Beginner',
     duration: duration || '30 hours',
     rating: 5.0,
