@@ -4,6 +4,7 @@
 // public API, and grades practice submissions on the server.
 
 import ENRICHMENT from '../data/enrichment/index.js';
+import { polishDeep } from './textPolish.js';
 
 export function getModuleEnrichment(courseId, moduleId) {
   return ENRICHMENT[courseId]?.[moduleId] || null;
@@ -18,7 +19,7 @@ const EXERCISE_PRIVATE = ['check', 'solution', 'solutionCode', 'explanation', 'm
 /** Public copy: everything a learner needs to attempt the work, but no answers or solutions. */
 export function toPublicEnrichment(e) {
   if (!e) return null;
-  return {
+  return polishDeep({
     ...e,
     exercises: (e.exercises || []).map((ex) => {
       const out = { ...ex };
@@ -28,7 +29,7 @@ export function toPublicEnrichment(e) {
       return out;
     }),
     knowledgeCheck: (e.knowledgeCheck || []).map(({ answer, explanation, ...q }) => q)
-  };
+  });
 }
 
 /* ------------------------------------------------------------------ */

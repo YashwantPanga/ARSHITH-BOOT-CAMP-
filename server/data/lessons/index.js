@@ -21,6 +21,7 @@ import aiSec1 from './ai-sections.part1.js';
 import aiSec2 from './ai-sections.part2.js';
 import aiSec3 from './ai-sections.part3.js';
 import EXAMPLE_FIXES from './example-fixes.js';
+import { polishCourse } from '../../lib/textPolish.js';
 
 /** { [courseId]: { [moduleId]: sections[] } } - the detailed step-by-step sections. */
 const SECTIONS = {
@@ -64,8 +65,10 @@ const fixedExamples = (courseId, moduleId, examples) => {
 
 /** The course with the rewritten lessons applied (the stored course is not changed). */
 export function withLessons(course) {
-  if (!course || (!SECTIONS[course.id] && !FULL[course.id])) return course;
-  return {
+  if (!course) return course;
+  // grammar and spacing corrections (text-fixes.js) are applied to every course's module text
+  if (!SECTIONS[course.id] && !FULL[course.id]) return polishCourse(course);
+  return polishCourse({
     ...course,
     modules: (course.modules || []).map(m => {
       const full = FULL[course.id]?.[m.id];
@@ -80,7 +83,7 @@ export function withLessons(course) {
       if (examples) rm.codeExamples = examples;
       return { ...m, ...(full?.description ? { description: full.description } : {}), readingMaterial: rm };
     })
-  };
+  });
 }
 
 /** SQL lessons with their detailed sections (used by tests). */
