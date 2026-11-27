@@ -175,7 +175,7 @@ function AppShell() {
       if (!readStudent()) return;
       saveUser(null);
       setProgressByCourse({});
-      toast('Please sign in again to continue — your session has expired.', 'info', 5200);
+      toast('Your session has expired. Please sign in again to continue.', 'info', 5200);
       const here = window.location.pathname + window.location.search;
       navigate(paths.login(here.startsWith('/login') ? undefined : here), { replace: true });
     };
@@ -367,7 +367,7 @@ function AppShell() {
     setAdminUser(null);
     saveUser(user);
     toast(isNew
-      ? `Account created! Your learner ID is ${user.learnerId} — it will appear on your certificate.`
+      ? `Account created! Your learner ID is ${user.learnerId}. It will appear on your certificate.`
       : `Welcome${user.name ? `, ${user.name.split(' ')[0]}` : ''}!`, 'success', isNew ? 6500 : 3800);
     const next = route.query.next && route.query.next.startsWith('/') ? route.query.next : paths.home();
     navigate(next, { replace: true });

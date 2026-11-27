@@ -12,6 +12,7 @@ import ai1 from './data-science-ai.part1.js';
 import ai2 from './data-science-ai.part2.js';
 import ai3 from './data-science-ai.part3.js';
 import SQL_DIAGRAM_EXPLAIN from '../lessons/sql-diagram-explain.js';
+import { CYBER_ENRICHMENT } from '../courses/cyber-security/build.js';
 
 // Adds the longer per-box explanations (shown when a learner clicks a diagram box).
 const withExplanations = (mods, explain) => Object.fromEntries(Object.entries(mods).map(([id, e]) => [
@@ -24,7 +25,8 @@ const ENRICHMENT = {
   'python-programming': { ...py1, ...py2, ...py3 },
   'sql-mastery': withExplanations({ ...sql1, ...sql2, ...sql3 }, SQL_DIAGRAM_EXPLAIN),
   'web-development': { ...web1, ...web2, ...web3 },
-  'data-science-ai': { ...ai1, ...ai2, ...ai3 }
+  'data-science-ai': { ...ai1, ...ai2, ...ai3 },
+  'cyber-security': CYBER_ENRICHMENT
 };
 
 export default ENRICHMENT;

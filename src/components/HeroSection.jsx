@@ -15,7 +15,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
   const moduleCount = courses.reduce((n, c) => n + (c.modules?.length || 0), 0) || 60;
 
   const features = [
-    { icon: Layers, value: trackCount, title: 'Career tracks', text: 'Python, SQL, Web Development, and AI & Data Science.', tone: 'bg-brand-100 text-forest' },
+    { icon: Layers, value: trackCount, title: 'Career tracks', text: 'Python, SQL, Web Development, AI & Data Science, and Cyber Security.', tone: 'bg-brand-100 text-forest' },
     { icon: BookOpen, value: `${moduleCount}`, title: 'In-depth modules', text: 'Mentor-written lessons, live code practice and a quiz after every module.', tone: 'bg-[#EFE9DC] text-charcoal' },
     { icon: Timer, value: '45 min', title: 'Proctored final', text: 'A proctored final assessment. Pass mark: 70%.', tone: 'bg-[#E3ECE7] text-sage' },
     { icon: Award, value: '100%', title: 'Verified certificates', text: 'Every certificate is unique and QR-verified.', tone: 'bg-forest text-ivory' }
@@ -53,7 +53,7 @@ export default function HeroSection({ onExploreClick, onRegisterClick, onVerifyC
             <span className="block">with <span className="text-[#BCD1C6] lg:text-sage">job-ready online courses</span></span>
           </h1>
           <p className="mt-4 lg:mt-5 text-[15.5px] sm:text-[17px] text-ivory/80 lg:text-charcoal/70 leading-relaxed max-w-lg">
-            Mentor-written programs in Python, SQL, Web Development and AI — with deep-dive modules, live code practice,
+            Mentor-written programs in Python, SQL, Web Development, AI and Cyber Security, with deep-dive modules, live code practice,
             quizzes after every module, a proctored final and a QR-verified certificate.
           </p>
 

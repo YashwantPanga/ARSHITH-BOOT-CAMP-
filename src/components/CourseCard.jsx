@@ -7,7 +7,7 @@ import { hoursOf, TRACKS } from '../data/meta';
 
 // Certificate-style card art (1600x1000, 16:10) in public/course-cards/, by course id. Other courses
 // keep their own thumbnail.
-const CARD_ART = new Set(['python-programming', 'sql-mastery', 'web-development', 'data-science-ai']);
+const CARD_ART = new Set(['python-programming', 'sql-mastery', 'web-development', 'data-science-ai', 'cyber-security']);
 /** The course's card image: certificate-style art when available, otherwise its thumbnail. */
 export const courseArt = (course) => (CARD_ART.has(course.id) ? `/course-cards/${course.id}.webp` : course.thumbnail);
 /** Rupees for this course (0 when courses are free); the server sets it. */

@@ -38,7 +38,7 @@ function ScenePair() {
       <div className="ws-from-right flex items-center justify-end gap-4">
         <span className="text-right">
           <span className="block font-display text-[19px] font-bold leading-tight">Interview Prep</span>
-          <span className="block text-[13px] text-white/65">Practise <span style={{ color: P.lime }}>here</span></span>
+          <span className="block text-[13px] text-white/65">Practice <span style={{ color: P.lime }}>here</span></span>
         </span>
         <span className="w-[118px] h-[86px] shrink-0 rounded-2xl flex flex-col items-center justify-center gap-1 border border-white/15 shadow-[0_14px_26px_-12px_rgba(0,0,0,.8)]" style={{ background: `linear-gradient(160deg, ${P.lime}, ${P.green} 70%)` }}>
           <Code2 className="w-7 h-7" style={{ color: P.night }} strokeWidth={2.4} />

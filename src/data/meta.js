@@ -5,7 +5,8 @@ export const CATEGORIES = [
   'Python',
   'SQL',
   'Web Development',
-  'AI & Data Science'
+  'AI & Data Science',
+  'Cyber Security'
 ];
 export const categoryLabel = (c) => (c === 'All Categories' ? 'All courses' : c);
 
@@ -39,7 +40,8 @@ export const TRACKS = {
   python: { label: 'Python', short: 'Py', mark: 'py' },
   database: { label: 'SQL', short: 'SQL', mark: 'sql' },
   code: { label: 'Web Development', short: '</>', mark: 'web' },
-  brain: { label: 'AI & Data Science', short: 'AI', mark: 'ai' }
+  brain: { label: 'AI & Data Science', short: 'AI', mark: 'ai' },
+  shield: { label: 'Cyber Security', short: 'CS', mark: 'cs' }
 };
 
 /** Rough learning hours per course, shown on cards (falls back to the course.duration string). */

@@ -11,7 +11,7 @@ const SKIP = new Set([
   'options', 'correctAnswer', 'answer', 'check', 'accept', 'expected', 'expectedOutput', 'tests', 'setup', 'schema', 'seed',
   'result', 'output', 'rows', 'columns', 'values', 'input', 'stdin', 'quickReference', 'cheatSheet', 'diagram', 'mermaid',
   'id', 'moduleId', 'courseId', 'language', 'checkType', 'checkLanguage', 'url', 'link', 'thumbnail', 'introVideoUrl',
-  'iconBg', 'iconType', 'slug', 'status', 'line', 'hidden'
+  'iconBg', 'iconType', 'slug', 'status', 'line', 'hidden', 'pdfUrl', 'href'
 ]);
 
 // a plain word with optional surrounding punctuation (no digits, dots, underscores or inner brackets)

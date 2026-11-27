@@ -223,7 +223,7 @@ export default function FinalTestModal({ isOpen, onClose: closeModal, course, st
       window.history.pushState({ exam: true }, '', here);
       addViolation('NAVIGATION', 'You tried to leave the exam using the Back button.');
     };
-    const onVisibility = () => { if (document.hidden) addViolation('TAB_SWITCH', 'You switched tabs or minimised the window.'); };
+    const onVisibility = () => { if (document.hidden) addViolation('TAB_SWITCH', 'You switched tabs or minimized the window.'); };
     const onBlur = () => addViolation('WINDOW_BLUR', 'The exam window lost focus (another app or window was opened).');
     const onFs = () => {
       const fs = !!document.fullscreenElement;
@@ -532,7 +532,7 @@ export default function FinalTestModal({ isOpen, onClose: closeModal, course, st
               <ul className="space-y-3">
                 {[
                   [Maximize, 'Stay in full screen', 'The exam runs in full screen. Pressing Esc or leaving full screen counts as a warning.'],
-                  [MonitorX, 'Do not switch tabs or apps', 'Switching tabs, minimising, or clicking another window counts as a warning.'],
+                  [MonitorX, 'Do not switch tabs or apps', 'Switching tabs, minimizing, or clicking another window counts as a warning.'],
                   [Video, 'Keep your camera on', 'Your face must stay visible. Covering or turning off the camera counts as a warning.'],
                   [UserCheck, 'Identity is checked all the time', 'Before you start, your face is captured. The person on camera is compared with your captured face throughout the exam.'],
                   [Users, 'Only you in the frame', 'Another person on camera counts as a warning.'],

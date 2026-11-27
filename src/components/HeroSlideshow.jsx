@@ -8,7 +8,8 @@ export const HERO_SLIDES = [
   { course: 'Python Programming', alt: 'Colour-highlighted Python code on a dark editor screen', ...img('photo-1515879218367-8466d910aaa4') },
   { course: 'SQL & Databases', alt: 'A data-centre server rack with neatly bundled glowing network cables', ...img('photo-1558494949-ef010cbdcc31') },
   { course: 'Web Development', alt: 'JavaScript and React code on a dark monitor', ...img('photo-1633356122544-f134324a6cee') },
-  { course: 'AI & Data Science', alt: 'An analytics dashboard with charts and live metrics on a dark screen', ...img('photo-1551288049-bebda4e38f71', 'bottom') }
+  { course: 'AI & Data Science', alt: 'An analytics dashboard with charts and live metrics on a dark screen', ...img('photo-1551288049-bebda4e38f71', 'bottom') },
+  { course: 'Cyber Security', alt: 'A glowing circuit board on a dark background', ...img('photo-1550751827-4bd374c3f58b') }
 ];
 
 const reducedMotion = () => {

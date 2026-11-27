@@ -562,7 +562,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
     { heading: 'Content', ids: ['courses'] },
     { heading: 'Account', ids: ['settings'] }
   ];
-  const pageTitle = builderCourse ? `Course Content Builder — ${builderCourse.title}` :
+  const pageTitle = builderCourse ? `Course Content Builder: ${builderCourse.title}` :
     activeSection === 'dashboard' ? 'Dashboard' :
     activeSection === 'students' ? 'Students' :
     activeSection === 'progress' ? 'Course Progress' :
@@ -2257,7 +2257,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
             </button>
 
             <h2 className="text-xl font-black text-slate-900 mb-4">
-              {editingCourse ? `Edit Course — ${editingCourse.title}` : 'Publish New Course'}
+              {editingCourse ? `Edit Course: ${editingCourse.title}` : 'Publish New Course'}
             </h2>
 
             <form onSubmit={handleSaveCourseSubmit} className="space-y-4">
@@ -2284,6 +2284,7 @@ export default function AdminDashboard({ admin: adminProp, profile, onLogout, on
                     <option value="SQL">SQL</option>
                     <option value="Web Development">Web Development</option>
                     <option value="AI & Data Science">AI & Data Science</option>
+                    <option value="Cyber Security">Cyber Security</option>
                   </select>
                 </div>
 

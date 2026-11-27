@@ -99,7 +99,7 @@ export function ExerciseCard({ ex, index, courseId, moduleId, completed, onCompl
       if (res.correct) onCompleted?.(ex.id, res.recorded);
     } catch (e) {
       // Keep the learner's answer; just report the failure and allow a retry.
-      setCheck({ status: 'error', message: e.status ? e.message : 'Could not reach the server to check your answer. Your work is kept — try again.' });
+      setCheck({ status: 'error', message: e.status ? e.message : 'Could not reach the server to check your answer. Your work is kept. Please try again.' });
     }
   };
 

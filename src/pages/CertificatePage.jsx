@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import LinkedInShare from '../components/LinkedInShare';
+import { openAddToProfile } from '../utils/linkedin';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
@@ -186,7 +187,8 @@ export default function CertificatePage({ course, studentUser, onBack, onVerify,
           {state.status === 'ok' && (
             <div className="flex flex-wrap gap-2">
               <button onClick={() => onVerify(cert.certificateId)} className="btn-ghost border border-brand-900/15"><ShieldCheck className="w-4 h-4" /> Verify online</button>
-              <button onClick={shareLinkedIn} className="btn-ghost border border-brand-900/15"><Linkedin className="w-4 h-4" /> Share on LinkedIn</button>
+              <button onClick={() => openAddToProfile(cert, verifyUrl)} className="btn-ghost border border-[#0A66C2]/40 text-[#0A66C2]"><Linkedin className="w-4 h-4" /> Add to LinkedIn</button>
+              <button onClick={shareLinkedIn} className="btn-ghost border border-brand-900/15"><Linkedin className="w-4 h-4" /> Post on LinkedIn</button>
               <button onClick={downloadPng} disabled={!!downloading} className="btn-outline"><ImageIcon className="w-4 h-4" />{downloading === 'png' ? 'Preparing…' : 'PNG'}</button>
               <button onClick={downloadPdf} disabled={!!downloading || !qr} className="btn-primary"><Download className="w-4 h-4" />{downloading === 'pdf' ? 'Preparing PDF…' : 'Download PDF'}</button>
             </div>
@@ -247,19 +249,42 @@ export default function CertificatePage({ course, studentUser, onBack, onVerify,
 
 const QR_BOX = { x: 842, y: 548, s: 104 };
 
+/** Official seal: a gold rosette with the brand mark in the centre and the issuer's name around it. */
 function Seal() {
-  const ticks = Array.from({ length: 36 }, (_, i) => i * 10);
+  const GOLD = '#C9A35B', GOLD_DARK = '#9C7A3A';
+  const points = 48;
+  const rosette = Array.from({ length: points * 2 }, (_, i) => {
+    const a = (Math.PI * i) / points - Math.PI / 2;
+    const r = i % 2 ? 55.5 : 59;
+    return `${(60 + r * Math.cos(a)).toFixed(2)},${(60 + r * Math.sin(a)).toFixed(2)}`;
+  }).join(' ');
   return (
-    <svg width="118" height="118" viewBox="0 0 120 120" aria-hidden="true">
-      <circle cx="60" cy="60" r="57" fill={FOREST} />
-      {ticks.map(a => <line key={a} x1="60" y1="6" x2="60" y2="11" stroke={IVORY} strokeOpacity=".5" strokeWidth="1.2" transform={`rotate(${a} 60 60)`} />)}
-      <circle cx="60" cy="60" r="45" fill="none" stroke={IVORY} strokeOpacity=".6" strokeWidth="1" />
-      <circle cx="60" cy="60" r="41" fill={EVERGREEN} />
-      <text x="60" y="34" textAnchor="middle" fontFamily="DM Sans, system-ui, sans-serif" fontSize="7" fontWeight="700" letterSpacing="2" fill={IVORY} fillOpacity=".85">VERIFIED</text>
-      <text x="60" y="94" textAnchor="middle" fontFamily="DM Sans, system-ui, sans-serif" fontSize="7" fontWeight="700" letterSpacing="2" fill={IVORY} fillOpacity=".85">CODELEKHO</text>
-      <path d="M60 46 C60 56 60 62 60 78" stroke={IVORY} strokeWidth="2" fill="none" strokeLinecap="round" />
-      <path d="M60 66 C52 66 46 61 45 53 C53 53 59 58 60 66Z" fill="#90B1A2" />
-      <path d="M60 58 C68 58 74 53 75 45 C67 45 61 50 60 58Z" fill={IVORY} />
+    <svg width="124" height="124" viewBox="0 0 120 120" aria-hidden="true">
+      <defs>
+        <radialGradient id="seal-gold" cx="40%" cy="35%" r="70%">
+          <stop offset="0%" stopColor="#E8CD8E" />
+          <stop offset="100%" stopColor={GOLD} />
+        </radialGradient>
+        <path id="seal-top" d="M21,60 a39,39 0 0,1 78,0" />
+        <path id="seal-bottom" d="M17.5,60 a42.5,42.5 0 0,0 85,0" />
+      </defs>
+      <polygon points={rosette} fill="url(#seal-gold)" stroke={GOLD_DARK} strokeWidth=".6" />
+      <circle cx="60" cy="60" r="51" fill="none" stroke={GOLD_DARK} strokeWidth=".8" />
+      <circle cx="60" cy="60" r="48.5" fill={FOREST} />
+      <circle cx="60" cy="60" r="46" fill="none" stroke={GOLD} strokeWidth=".7" />
+      <circle cx="60" cy="60" r="31" fill="none" stroke={GOLD} strokeWidth=".7" />
+      <text fontFamily="DM Sans, system-ui, sans-serif" fontSize="8" fontWeight="700" letterSpacing="2.6" fill="#F1E3BF" textAnchor="middle">
+        <textPath href="#seal-top" startOffset="50%">CODELEKHO</textPath>
+      </text>
+      <text fontFamily="DM Sans, system-ui, sans-serif" fontSize="5.8" fontWeight="700" letterSpacing="1.5" fill="#F1E3BF" fillOpacity=".9" textAnchor="middle">
+        <textPath href="#seal-bottom" startOffset="50%">CERTIFIED PROFESSIONAL</textPath>
+      </text>
+      {[[20.5, 62], [99.5, 62]].map(([x, y]) => <circle key={x} cx={x} cy={y} r="1.6" fill={GOLD} />)}
+      <g stroke="#F1E3BF" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        <path d="M49 51 L42 60 L49 69" />
+        <path d="M71 51 L78 60 L71 69" />
+      </g>
+      <path d="M63.5 48 L56.5 72" stroke={GOLD} strokeWidth="3.6" strokeLinecap="round" />
     </svg>
   );
 }
@@ -268,9 +293,11 @@ function CertificateArt({ cert, verifyUrl, qr }) {
   const grade = String(cert.grade || '').replace(/^\d+%\s*/, '');
   return (
     <div style={{ width: W, height: H, position: 'relative', background: IVORY, fontFamily: 'DM Sans, system-ui, sans-serif', overflow: 'hidden', color: CHARCOAL }}>
-      {/* Watermark: repeated brand tile + large centred mark */}
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(/arshith-watermark-tile.png)', backgroundSize: '240px 160px', opacity: 0.05 }} />
-      <div style={{ position: 'absolute', left: 250, top: 200, width: 700, textAlign: 'center', transform: 'rotate(-18deg)', fontFamily: 'DM Serif Display, Georgia, serif', fontSize: 120, fontWeight: 400, color: FOREST, opacity: 0.035, letterSpacing: 10 }}>ARSHITH</div>
+      {/* Watermark: one faint brand mark in the centre of the certificate */}
+      <svg style={{ position: 'absolute', left: 470, top: 150, opacity: 0.018 }} width="360" height="360" viewBox="0 0 120 120" aria-hidden="true">
+        <g stroke={FOREST} strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" fill="none"><path d="M40 34 L14 60 L40 86" /><path d="M80 34 L106 60 L80 86" /></g>
+        <path d="M68 24 L52 96" stroke={FOREST} strokeWidth="10" strokeLinecap="round" />
+      </svg>
 
       {/* Left band */}
       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 210, background: `linear-gradient(180deg, ${FOREST} 0%, ${EVERGREEN} 100%)` }}>

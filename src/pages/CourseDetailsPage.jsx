@@ -3,6 +3,7 @@ import { ArrowLeft, Clock, Award, CheckCircle2, ChevronDown, BookOpen, ShieldChe
 import { ProgressBar, RevealText } from '../components/ui';
 import { priceOf, BestSellerBadge } from '../components/CourseCard';
 import CourseSlideshow from '../components/CourseSlideshow';
+import CourseBannerReel, { hasBannerReel } from '../components/CourseBannerReel';
 import { slidesForCourse } from '../data/courseGallery';
 import { cleanText, displayTitle } from '../utils/textUtils';
 
@@ -74,7 +75,9 @@ export default function CourseDetailsPage({ course, enrolledCourseId, offer, isL
               </div>
             </div>
             <div className="lg:col-span-5">
-              <CourseSlideshow slides={slides} courseTitle={displayTitle(course.title)} iconType={course.iconType} />
+              {hasBannerReel(course.id)
+                ? <CourseBannerReel courseId={course.id} courseTitle={displayTitle(course.title)} onCta={isMine ? onContinue : onEnroll} />
+                : <CourseSlideshow slides={slides} courseTitle={displayTitle(course.title)} iconType={course.iconType} />}
             </div>
           </div>
         </div>

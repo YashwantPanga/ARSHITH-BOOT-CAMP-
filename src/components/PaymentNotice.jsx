@@ -93,7 +93,7 @@ export default function PaymentNotice({ course, price = 149, retake = false, pro
         <h2 id="pay-title" className="mt-3 sm:mt-4 pr-8 text-[19px] sm:text-[23px] font-bold text-evergreen leading-tight">{online ? <>Unlock {itemTitle}{retake ? ' again' : ''} for {priceShown}</> : <>{itemTitle} costs {priceShown}</>}</h2>
         <p className="mt-1.5 sm:mt-2 text-[13px] sm:text-[14.5px] text-charcoal/70 leading-relaxed">
           {interview
-            ? <>A one-time payment unlocks every Interview Prep set for good. It is free for students who complete all 4 courses.</>
+            ? <>A one-time payment unlocks every Interview Prep set for good. It is free for students who earn 4 course certificates.</>
             : retake
             ? <>You used both final assessment attempts without passing, so this course is locked. Buy it again for ₹{price} to study it once more with two fresh attempts.</>
             : <>One-time payment for the full course and certificate.<span className="hidden sm:inline"> You get two attempts at the final assessment; if you fail both, you can buy the course again.</span></>}
@@ -128,7 +128,7 @@ export default function PaymentNotice({ course, price = 149, retake = false, pro
           <>
             <div className="mt-4 rounded-xl border border-dashed border-sage/50 bg-white p-4 text-[14px] text-charcoal/75">
               <p className="font-display font-semibold text-evergreen">Online payment is coming soon</p>
-              <p className="mt-1">To enrol now, contact us. After payment we enrol you straight away.</p>
+              <p className="mt-1">To enroll now, contact us. After payment we enroll you straight away.</p>
               {contact}
             </div>
             <button onClick={onClose} className="font-display mt-5 w-full h-12 rounded-md bg-forest text-ivory text-[15.5px] font-semibold hover:bg-sage transition-colors">OK</button>

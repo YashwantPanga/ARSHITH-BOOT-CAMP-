@@ -34,8 +34,10 @@ export function savePng(blob, fileName) {
  * Shares the card. Returns 'shared' (the share sheet opened with the image), 'cancelled', or
  * 'fallback' (image saved + WhatsApp opened with the text).
  */
-export async function shareCard({ svg, width, height, fileName, text }) {
-  const blob = await svgToPngBlob(svg, width, height);
+export async function shareCard({ svg, blob: ready, width, height, fileName, text }) {
+  // Pass a ready-made `blob` when you can: phones only allow the share sheet right after the tap, so
+  // building the image first can make the browser refuse it (and then only the text is sent).
+  const blob = ready || await svgToPngBlob(svg, width, height);
   const file = new File([blob], fileName, { type: 'image/png' });
   if (navigator.canShare?.({ files: [file] })) {
     try { await navigator.share({ files: [file], text }); return 'shared'; } catch (e) { if (e?.name === 'AbortError') return 'cancelled'; }

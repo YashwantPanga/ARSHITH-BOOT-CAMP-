@@ -35,6 +35,16 @@ export function TrackMark({ type, className = 'w-7 h-7' }) {
           {[[10, 12], [22, 12], [10, 20], [22, 20], [16, 9], [16, 23], [16, 16]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="1.9" fill="#FBF8F1" />)}
         </svg>
       );
+    case 'cs':
+      return (
+        <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+          <path d="M16 3 5.5 7v8.2c0 6.6 4.4 11.8 10.5 13.8 6.1-2 10.5-7.2 10.5-13.8V7L16 3Z" fill="#013A2B" />
+          <path d="M16 6.2v19.6c4.4-1.8 7.4-5.7 7.4-10.6V9.1L16 6.2Z" fill="#426557" />
+          <rect x="11.6" y="14.4" width="8.8" height="7" rx="1.6" fill="#FBF8F1" />
+          <path d="M13.4 14.4v-1.8a2.6 2.6 0 0 1 5.2 0v1.8" stroke="#FBF8F1" strokeWidth="1.6" fill="none" />
+          <circle cx="16" cy="17.6" r="1.1" fill="#013A2B" />
+        </svg>
+      );
     default:
       return (
         <svg viewBox="0 0 32 32" className={className} aria-hidden="true"><rect x="4" y="4" width="24" height="24" rx="6" fill="#013A2B" /></svg>

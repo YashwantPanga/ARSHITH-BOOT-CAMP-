@@ -92,7 +92,7 @@ function VerifiedCard({ cert, active, onHome }) {
       <div className={`p-6 flex items-center gap-4 ${active ? 'bg-brand-900 text-ivory' : 'bg-rose-50'}`}>
         {active ? <span className="w-12 h-12 rounded-full bg-ivory text-brand-900 flex items-center justify-center"><BadgeCheck className="w-7 h-7" /></span> : <ShieldX className="w-10 h-10 text-rose-600" />}
         <div className="flex-1">
-          <p className={`font-display text-xl font-semibold ${active ? '' : 'text-rose-700'}`}>{active ? 'Verified — this certificate is authentic' : 'This certificate has been revoked'}</p>
+          <p className={`font-display text-xl font-semibold ${active ? '' : 'text-rose-700'}`}>{active ? 'Verified: this certificate is authentic' : 'This certificate has been revoked'}</p>
           <p className={`text-sm font-mono ${active ? 'text-brand-200' : 'text-slate-600'}`}>{cert.certificateId}</p>
         </div>
         {qr && <img src={qr} alt="" className="hidden sm:block w-16 h-16 rounded-lg bg-white p-1" />}

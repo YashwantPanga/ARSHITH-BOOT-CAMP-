@@ -13,9 +13,11 @@ import { validateEnrichment, validateDiagram } from '../shared/contentSchema.js'
 import { normalizeModule } from '../src/utils/normalizeModule.js';
 import { COURSE_GALLERY } from '../src/data/courseGallery.js';
 import { resolveLink } from '../shared/linkOverrides.js';
+import { ensureCyberCourse } from '../server/lib/cyberCourse.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const db = JSON.parse(fs.readFileSync(path.join(ROOT, 'server', 'data', 'db.json'), 'utf8'));
+ensureCyberCourse(db); // the server adds the Cyber Security course at startup
 const norm = (s) => String(s || '').trim().toLowerCase();
 
 export function validateCatalogue() {

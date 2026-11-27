@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Linkedin, X, Copy, Check, Award, ExternalLink, Loader2 } from 'lucide-react';
 import { api } from '../services/api';
+import { openAddToProfile } from '../utils/linkedin';
 
 const CONFETTI = ['#013A2B', '#426557', '#E0B54A', '#BCD1C6', '#0A66C2'];
 
@@ -46,11 +48,11 @@ export default function LinkedInShare({ cert, verifyUrl, renderCanvas, onClose }
   }, [cert.certificateId, renderCanvas, onClose]);
 
   const post = () => window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank', 'noopener');
-  const addToProfile = () => window.open(`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(cert.courseTitle)}&organizationName=${encodeURIComponent('CodeLekho')}&certId=${encodeURIComponent(cert.certificateId)}&certUrl=${encodeURIComponent(verifyUrl)}${cert.issueDate ? `&issueYear=${new Date(cert.issueDate).getFullYear()}&issueMonth=${new Date(cert.issueDate).getMonth() + 1}` : ''}`, '_blank', 'noopener');
+  const addToProfile = () => openAddToProfile(cert, verifyUrl);
   const copy = async () => { try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1600); } catch { /* blocked */ } };
   const initials = String(cert.studentName || '?').split(/\s+/).map(s => s[0]).join('').slice(0, 2).toUpperCase();
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-evergreen/70 backdrop-blur-sm animate-fade-in" role="dialog" aria-modal="true" aria-label="Share on LinkedIn" onClick={onClose}>
       <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-[22px] bg-ivory shadow-2xl en-card" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-3 right-3 z-20 p-2 rounded-full text-charcoal/50 hover:bg-cream" aria-label="Close"><X className="w-4 h-4" /></button>
@@ -90,11 +92,11 @@ export default function LinkedInShare({ cert, verifyUrl, renderCanvas, onClose }
             {!imageSaved && <p className="mt-2 text-[12px] text-charcoal/55">The picture could not be attached; LinkedIn will show a link preview instead.</p>}
 
             <div className="mt-5 grid gap-2">
-              <button onClick={post} className="font-display h-12 rounded-md bg-[#0A66C2] text-white text-[15.5px] font-semibold inline-flex items-center justify-center gap-2 hover:bg-[#004182] transition-colors">
-                <Linkedin className="w-5 h-5" /> Post on LinkedIn
+              <button onClick={addToProfile} className="font-display h-12 rounded-md bg-[#0A66C2] text-white text-[15.5px] font-semibold inline-flex items-center justify-center gap-2 hover:bg-[#004182] transition-colors">
+                <Linkedin className="w-5 h-5" /> Add certificate to LinkedIn profile
               </button>
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={addToProfile} className="font-display h-11 rounded-md border border-forest/25 bg-white text-forest text-[14.5px] font-semibold inline-flex items-center justify-center gap-1.5 hover:border-forest"><ExternalLink className="w-4 h-4" /> Add to profile</button>
+                <button onClick={post} className="font-display h-11 rounded-md border border-forest/25 bg-white text-forest text-[14.5px] font-semibold inline-flex items-center justify-center gap-1.5 hover:border-forest"><ExternalLink className="w-4 h-4" /> Post about it</button>
                 <button onClick={copy} className="font-display h-11 rounded-md border border-forest/25 bg-white text-forest text-[14.5px] font-semibold inline-flex items-center justify-center gap-1.5 hover:border-forest">{copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}{copied ? 'Copied' : 'Copy text'}</button>
               </div>
             </div>
@@ -102,6 +104,7 @@ export default function LinkedInShare({ cert, verifyUrl, renderCanvas, onClose }
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

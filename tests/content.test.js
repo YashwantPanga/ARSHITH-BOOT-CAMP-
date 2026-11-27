@@ -6,8 +6,10 @@ import { normalizeModule, normalizeDiagram, normalizePracticeExercise, normalize
 import ENRICHMENT from '../server/data/enrichment/index.js';
 import { fingerprint, compare } from '../scripts/content-diff.mjs';
 import { validateCatalogue } from '../scripts/validate-content.mjs';
+import { ensureCyberCourse } from '../server/lib/cyberCourse.js';
 
 const db = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'server', 'data', 'db.json'), 'utf8'));
+ensureCyberCourse(db); // the server adds the Cyber Security course at startup
 const allModules = db.courses.flatMap(c => c.modules.map(m => ({ course: c, module: m })));
 
 describe('diagram validation', () => {
@@ -102,7 +104,7 @@ describe('enrichment content', () => {
   });
   it('validation script reports zero errors for the whole catalogue', () => {
     const { errors, rows } = validateCatalogue();
-    expect(rows.length).toBe(60);
+    expect(rows.length).toBe(75);
     expect(errors).toEqual([]);
   });
 });

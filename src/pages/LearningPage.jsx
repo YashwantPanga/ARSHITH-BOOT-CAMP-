@@ -17,6 +17,7 @@ import { PlaygroundProvider, usePlayground } from '../components/CodePlayground'
 import { ConceptMap, BlueprintDiagram } from '../components/Diagrams';
 import { conceptLabel, conceptSummary, markdownConcepts } from '../utils/conceptSummary';
 import VisualDiagram from '../components/diagrams/VisualDiagram';
+import SlideDiagram from '../components/diagrams/SlideDiagram';
 import { visualDiagramFor } from '../data/visualDiagrams';
 import { detectLanguage } from '../utils/highlight';
 import { displayNameOf, userIdOf } from '../utils/session';
@@ -141,6 +142,14 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
   const [pdfProgress, setPdfProgress] = useState(null);
   const [pdfDone, setPdfDone] = useState(false);
   const downloadPdf = async () => {
+    // courses that ship a complete, designed notes PDF download that file
+    if (course.pdfUrl) {
+      const a = document.createElement('a');
+      a.href = course.pdfUrl;
+      a.download = course.pdfUrl.split('/').pop();
+      document.body.appendChild(a); a.click(); a.remove();
+      return;
+    }
     setPdfBusy(true); setPdfDone(false); setPdfProgress(null);
     try {
       await generateCoursePDF(course, studentName, { onProgress: setPdfProgress });
@@ -388,7 +397,9 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
             <div className="space-y-3">
               {E?.workflow && <p className="text-xs font-bold tracking-[0.14em] text-sage">ARCHITECTURE DIAGRAM</p>}
               {/* Visual version when one exists; the original text diagram stays one click away. */}
-              {visualDiagramFor(current.id)
+              {visualDiagramFor(current.id)?.slides
+                ? <SlideDiagram key={current.id} def={visualDiagramFor(current.id)} />
+                : visualDiagramFor(current.id)
                 ? <VisualDiagram key={current.id} def={visualDiagramFor(current.id)} original={nm.diagram.ascii} />
                 : <BlueprintDiagram ascii={nm.diagram.ascii} />}
               <Paragraphs text={nm.diagram.explanation} className="text-sm leading-6 text-slate-600" />
@@ -410,7 +421,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
                     <span className="absolute -left-[1.95rem] top-0 w-6 h-6 rounded-full bg-peach-500 text-white text-[11px] font-bold flex items-center justify-center">{st.step || k + 1}</span>
                     {st.title && <p className="text-sm font-semibold text-brand-900">{cleanText(st.title)}</p>}
                     {st.instruction && <p className={`text-sm ${st.title ? 'text-slate-600 mt-0.5' : 'font-medium text-slate-700'}`}>{cleanText(st.instruction)}</p>}
-                    {st.code && <div className="mt-2"><CodeBlock courseId={course.id} code={st.code} /></div>}
+                    {st.code && <div className="mt-2"><CodeBlock courseId={course.id} language={st.language} code={st.code} runnable={st.run !== false} /></div>}
                     {st.explanation && <p className="text-sm text-slate-500 mt-2">{cleanText(st.explanation)}</p>}
                   </li>
                 ))}
@@ -432,7 +443,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
             const key = `lbl-${i}`;
             return (
               <div key={i} className="space-y-2.5">
-                <CodeBlock courseId={course.id} language={ex.language} code={ex.code} title={stripNum(ex.title)} />
+                <CodeBlock courseId={course.id} language={ex.language} code={ex.code} title={stripNum(ex.title)} runnable={ex.run !== false} />
                 {ex.explanation && (
                   <div className="rounded-xl border border-brand-100 bg-brand-50/60 px-4 py-3">
                     <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-brand-600">How this code works</p>
@@ -591,7 +602,7 @@ function LearningInner({ course, studentUser, activeModuleId, onSelectModule, on
           )}
           {E?.cheatSheet?.length > 0 && (
             <div>
-              <p className="text-xs font-bold tracking-[0.14em] text-sage mb-2">REMEMBER — CHEAT SHEET</p>
+              <p className="text-xs font-bold tracking-[0.14em] text-sage mb-2">REMEMBER: CHEAT SHEET</p>
               <div className="grid sm:grid-cols-2 gap-2">{E.cheatSheet.map((c, i) => <code key={i} className="text-[12.5px] p-2.5 rounded-lg bg-evergreen text-[#E9F1EC] break-words whitespace-pre-wrap">{c}</code>)}</div>
             </div>
           )}

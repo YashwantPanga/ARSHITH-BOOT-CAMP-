@@ -7,7 +7,8 @@ const COURSE_CODES = {
   'python-programming': 'PY',
   'sql-mastery': 'SQL',
   'web-development': 'WD',
-  'data-science-ai': 'AIDS'
+  'data-science-ai': 'AIDS',
+  'cyber-security': 'CS'
 };
 
 function courseCode(course) {

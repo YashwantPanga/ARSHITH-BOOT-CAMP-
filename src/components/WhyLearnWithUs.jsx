@@ -4,7 +4,7 @@ import { Reveal, SafeImg, RevealText } from './ui';
 import { IMAGES } from '../data/meta';
 
 const STEPS = [
-  { title: 'Read 15 deep-dive modules', text: 'Concepts, worked code, common mistakes and best practices — written like a textbook, not a playlist.', tone: 'bg-brand-100 text-forest' },
+  { title: 'Read 15 deep-dive modules', text: 'Concepts, worked code, common mistakes and best practices, written like a textbook and not a playlist.', tone: 'bg-brand-100 text-forest' },
   { title: 'Complete every module quiz', text: 'A 5-question quiz closes each module. Finish it to mark the module complete.', tone: 'bg-[#EFE9DC] text-charcoal' },
   { title: 'Take the proctored final', text: 'The 45-minute final unlocks once you pass every module quiz and submit one project as a GitHub repository. It uses camera, tab-switch and fullscreen monitoring, and you get two attempts.', tone: 'bg-[#E3ECE7] text-sage' },
   { title: 'Earn a unique certificate', text: 'Score 70% or higher and download a certificate with your exact score and a one-of-a-kind verification ID.', tone: 'bg-forest text-ivory' }

@@ -15,11 +15,11 @@ export const COURSE_GALLERY = {
   'sql-mastery': [
     { src: U('photo-1544383835-bda2bc66a55d'), alt: 'Wooden library card-catalogue drawers, an analogy for indexed data', caption: 'Organise data so every question has a fast, exact answer' },
     { src: U('photo-1551288049-bebda4e38f71'), alt: 'Analytics dashboard with charts on a monitor', caption: 'Turn tables into reports with joins, aggregates and window functions' },
-    { src: U('photo-1460925895917-afdab827c52f'), alt: 'Laptop displaying business charts and metrics', caption: 'Practise every query on a live sample database' }
+    { src: U('photo-1460925895917-afdab827c52f'), alt: 'Laptop displaying business charts and metrics', caption: 'Practice every query on a live sample database' }
   ],
   'web-development': [
     { src: U('photo-1547658719-da2b51169166'), alt: 'Website open on a desktop monitor, tablet and phone at the same time', caption: 'Build responsive sites that work on every screen' },
-    { src: U('photo-1498050108023-c5249f4df085'), alt: 'Laptop with code editor on a bright desk', caption: 'HTML, CSS, JavaScript, React and Node.js — end to end' },
+    { src: U('photo-1498050108023-c5249f4df085'), alt: 'Laptop with code editor on a bright desk', caption: 'HTML, CSS, JavaScript, React and Node.js from end to end' },
     { src: U('photo-1555066931-4365d14bab8c'), alt: 'Code editor with JavaScript on a laptop screen', caption: 'Ship a full-stack capstone for your portfolio' }
   ],
   'data-science-ai': [
@@ -27,6 +27,11 @@ export const COURSE_GALLERY = {
     { src: U('photo-1543286386-713bdd548da4'), alt: 'Hand-drawn line chart on paper next to a ruler and pen', caption: 'Statistics and probability, explained with worked examples' },
     { src: U('photo-1518186285589-2f7649de83e0'), alt: 'Monitor showing financial line charts', caption: 'From exploratory analysis to models that predict' },
     { src: U('photo-1555949963-ff9fe0c870eb'), alt: 'Colourful code on a dark screen', caption: 'NumPy, pandas, scikit-learn and modern AI tools' }
+  ],
+  'cyber-security': [
+    { src: U('photo-1544197150-b99a580bb7a8'), alt: 'Network patch panel with blue and grey Ethernet cables', caption: 'Understand the networks you defend, from packets to firewalls' },
+    { src: U('photo-1563986768609-322da13575f3'), alt: 'A person signing in on a laptop while holding a phone', caption: 'Identity, MFA and access control done right' },
+    { src: U('photo-1510511459019-5dda7724fd87'), alt: 'Laptop with green code on its screen in a dark room', caption: 'SOC monitoring, incident response and forensics in safe labs' }
   ]
 };
 

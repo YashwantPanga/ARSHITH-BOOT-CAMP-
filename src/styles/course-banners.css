@@ -1,0 +1,82 @@
+/* Animated course banners (from course-banners.html). Background images: public/course-banners/. */
+.cb{position:relative;display:block;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:18px;background:var(--cb-dark,#0b0b1a);isolation:isolate;margin:0}
+.cb-stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;transform:scale(var(--cb-scale,1));overflow:hidden;font-family:Inter,system-ui,sans-serif;color:#fff;-webkit-font-smoothing:antialiased}
+.cb-stage *{box-sizing:border-box}
+.cb-bg{position:absolute;inset:-90px;perspective:1100px;transform:translate3d(var(--cb-px,0),var(--cb-py,0),0);transition:transform .6s ease-out}
+.cb-bg-img{position:absolute;inset:0;background-size:cover;background-position:center;will-change:transform;backface-visibility:hidden}
+.cb-bg--tilt .cb-bg-img{animation:cb-tilt 18s ease-in-out infinite alternate}
+.cb-bg--orbit .cb-bg-img{animation:cb-orbit 26s ease-in-out infinite}
+.cb-bg--drift .cb-bg-img{animation:cb-drift 16s ease-in-out infinite alternate}
+.cb-shade{position:absolute;inset:0}
+.cb-fg{position:absolute;inset:0;transform:perspective(1400px) rotateX(var(--cb-rx,0deg)) rotateY(var(--cb-ry,0deg));transform-style:preserve-3d;transition:transform .5s ease-out}
+.cb-cta{display:inline-flex;align-self:flex-start;flex:none;align-items:center;gap:10px;min-height:56px;padding:16px 30px;border-radius:999px;background:var(--cb-accent);font:700 22px/1 Inter,system-ui,sans-serif;text-decoration:none;transition:transform .2s ease,filter .2s ease}
+.cb-cta:hover{transform:translateY(-2px);filter:brightness(1.06)}
+.cb-cta:focus-visible{outline:3px solid #fff;outline-offset:4px}
+@keyframes cb-tilt{0%{transform:rotateX(7deg) rotateY(-9deg) scale(1.16)}100%{transform:rotateX(-5deg) rotateY(9deg) scale(1.24) translate3d(-24px,12px,0)}}
+@keyframes cb-orbit{0%{transform:rotateZ(-2deg) rotateX(6deg) scale(1.2)}50%{transform:rotateZ(2deg) rotateY(9deg) rotateX(-3deg) scale(1.3)}100%{transform:rotateZ(-2deg) rotateX(6deg) scale(1.2)}}
+@keyframes cb-drift{0%{transform:translate3d(-34px,6px,0) rotateY(7deg) scale(1.2)}100%{transform:translate3d(34px,-14px,0) rotateY(-7deg) scale(1.22)}}
+@keyframes cb-fadeUp{from{opacity:0;transform:translateY(36px)}to{opacity:1;transform:none}}
+@keyframes cb-fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes cb-floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes cb-floatY2{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-12px) rotate(-1deg)}}
+@keyframes cb-floatY3{0%,100%{transform:translateY(0) rotate(3deg)}50%{transform:translateY(-14px) rotate(5deg)}}
+@keyframes cb-blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes cb-marqL{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes cb-marqR{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+@keyframes cb-slideUp{from{transform:translateY(105%)}to{transform:none}}
+@keyframes cb-grow{from{width:0}to{width:220px}}
+@keyframes cb-words{0%,28%{transform:translateY(0)}33%,61%{transform:translateY(-56px)}66%,94%{transform:translateY(-112px)}100%{transform:translateY(0)}}
+@keyframes cb-draw{0%{stroke-dashoffset:600}60%,90%{stroke-dashoffset:0}100%{stroke-dashoffset:600}}
+@keyframes cb-bar{0%{width:0}60%,90%{width:100%}100%{width:0}}
+@keyframes cb-rowIn{0%,10%{opacity:0;transform:translateX(-14px)}20%,90%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes cb-python-a-0{0%,8.33%{width:0}15.83%,90%{width:20ch}95%,100%{width:0}}
+@keyframes cb-python-a-1{0%,17.92%{width:0}23.92%,90%{width:16ch}95%,100%{width:0}}
+@keyframes cb-python-a-2{0%,26.00%{width:0}36.50%,90%{width:28ch}95%,100%{width:0}}
+@keyframes cb-python-a-3{0%,38.58%{width:0}46.83%,90%{width:22ch}95%,100%{width:0}}
+@keyframes cb-python-a-4{0%,48.92%{width:0}58.29%,90%{width:25ch}95%,100%{width:0}}
+@keyframes cb-python-a-pop{0%,60.38%{opacity:0;transform:scale(.6) rotate(3deg)}64.38%{opacity:1;transform:scale(1.06) rotate(3deg)}66.38%,90%{opacity:1;transform:scale(1) rotate(3deg)}95%,100%{opacity:0;transform:scale(.6) rotate(3deg)}}
+@keyframes cb-sql-a-0{0%,8.33%{width:0}16.21%,90%{width:21ch}95%,100%{width:0}}
+@keyframes cb-sql-a-1{0%,18.29%{width:0}24.29%,90%{width:16ch}95%,100%{width:0}}
+@keyframes cb-sql-a-2{0%,26.38%{width:0}37.25%,90%{width:29ch}95%,100%{width:0}}
+@keyframes cb-sql-a-3{0%,39.33%{width:0}44.21%,90%{width:13ch}95%,100%{width:0}}
+@keyframes cb-sql-a-4{0%,46.29%{width:0}52.29%,90%{width:16ch}95%,100%{width:0}}
+@keyframes cb-sql-a-pop{0%,54.37%{opacity:0;transform:scale(.6) rotate(3deg)}58.37%{opacity:1;transform:scale(1.06) rotate(3deg)}60.37%,90%{opacity:1;transform:scale(1) rotate(3deg)}95%,100%{opacity:0;transform:scale(.6) rotate(3deg)}}
+@keyframes cb-ai-a-0{0%,8.33%{width:0}15.46%,90%{width:19ch}95%,100%{width:0}}
+@keyframes cb-ai-a-1{0%,17.54%{width:0}28.42%,90%{width:29ch}95%,100%{width:0}}
+@keyframes cb-ai-a-2{0%,30.50%{width:0}38.75%,90%{width:22ch}95%,100%{width:0}}
+@keyframes cb-ai-a-3{0%,40.83%{width:0}50.96%,90%{width:27ch}95%,100%{width:0}}
+@keyframes cb-ai-a-4{0%,53.04%{width:0}60.92%,90%{width:21ch}95%,100%{width:0}}
+@keyframes cb-ai-a-pop{0%,63.00%{opacity:0;transform:scale(.6) rotate(3deg)}67.00%{opacity:1;transform:scale(1.06) rotate(3deg)}69.00%,90%{opacity:1;transform:scale(1) rotate(3deg)}95%,100%{opacity:0;transform:scale(.6) rotate(3deg)}}
+@keyframes cb-web-a-0{0%,8.33%{width:0}16.58%,90%{width:22ch}95%,100%{width:0}}
+@keyframes cb-web-a-1{0%,18.67%{width:0}26.92%,90%{width:22ch}95%,100%{width:0}}
+@keyframes cb-web-a-2{0%,29.00%{width:0}38.38%,90%{width:25ch}95%,100%{width:0}}
+@keyframes cb-web-a-3{0%,40.46%{width:0}46.08%,90%{width:15ch}95%,100%{width:0}}
+@keyframes cb-web-a-4{0%,48.17%{width:0}56.04%,90%{width:21ch}95%,100%{width:0}}
+@keyframes cb-web-a-pop{0%,58.12%{opacity:0;transform:scale(.6) rotate(3deg)}62.12%{opacity:1;transform:scale(1.06) rotate(3deg)}64.12%,90%{opacity:1;transform:scale(1) rotate(3deg)}95%,100%{opacity:0;transform:scale(.6) rotate(3deg)}}
+@keyframes cb-cyber-a-0{0%,8.33%{width:0}11.33%,90%{width:8ch}95%,100%{width:0}}
+@keyframes cb-cyber-a-1{0%,13.42%{width:0}18.67%,90%{width:14ch}95%,100%{width:0}}
+@keyframes cb-cyber-a-2{0%,20.75%{width:0}30.50%,90%{width:26ch}95%,100%{width:0}}
+@keyframes cb-cyber-a-3{0%,32.58%{width:0}38.58%,90%{width:16ch}95%,100%{width:0}}
+@keyframes cb-cyber-a-4{0%,40.67%{width:0}47.04%,90%{width:17ch}95%,100%{width:0}}
+@keyframes cb-cyber-a-pop{0%,49.12%{opacity:0;transform:scale(.6) rotate(3deg)}53.12%{opacity:1;transform:scale(1.06) rotate(3deg)}55.12%,90%{opacity:1;transform:scale(1) rotate(3deg)}95%,100%{opacity:0;transform:scale(.6) rotate(3deg)}}
+@media (prefers-reduced-motion: reduce){.cb *,.cb *::before,.cb *::after{animation:none!important;transition:none!important}.cb .cb-type{width:auto!important}.cb .cb-fg{transform:none!important}}
+.cb-paused *{animation-play-state:paused!important}
+.cb-img-python{background-image:url(/course-banners/python.jpg)}
+.cb-img-sql{background-image:url(/course-banners/sql.jpg)}
+.cb-img-ai{background-image:url(/course-banners/ai.jpg)}
+.cb-img-web{background-image:url(/course-banners/web.jpg)}
+.cb-img-cyber{background-image:url(/course-banners/cyber.jpg)}
+
+/* ---- CourseBannerReel: banners played one after another like a short video ---- */
+.cb-reel .cb-reel-layer{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;border-radius:0;margin:0}
+.cb-reel .cb-reel-layer.cb-reel-in{z-index:2;animation:cb-reel-wipe .9s cubic-bezier(.7,0,.2,1) both}
+.cb-reel-sweep{position:absolute;top:-10%;bottom:-10%;width:14%;z-index:3;transform:skewX(-12deg);animation:cb-reel-sweep .9s cubic-bezier(.7,0,.2,1) both;pointer-events:none;box-shadow:0 0 40px rgba(0,0,0,.25)}
+.cb-reel-fill{width:0;animation-name:cb-reel-fill;animation-timing-function:linear;animation-fill-mode:forwards}
+@keyframes cb-reel-wipe{from{clip-path:polygon(110% 0,130% 0,110% 100%,90% 100%)}to{clip-path:polygon(-30% 0,130% 0,110% 100%,-50% 100%)}}
+@keyframes cb-reel-sweep{from{left:100%}to{left:-25%}}
+@keyframes cb-reel-fill{from{width:0}to{width:100%}}
+@media (prefers-reduced-motion: reduce){.cb-reel .cb-reel-layer.cb-reel-in,.cb-reel-sweep{animation:none}.cb-reel-sweep{display:none}}
+
+/* moving video background (Python, Cyber Security); the still image stays underneath while it loads */
+.cb-bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+@media (prefers-reduced-motion: reduce){.cb-bg-video{display:none}}

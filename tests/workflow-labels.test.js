@@ -28,7 +28,7 @@ describe('workflow edge labels', () => {
   const all = Object.entries(ENRICHMENT).flatMap(([course, mods]) =>
     Object.entries(mods).filter(([, e]) => e.workflow).map(([id, e]) => [`${course}/${id}`, e.workflow]));
 
-  it('covers every module workflow', () => { expect(all.length).toBe(60); });
+  it('covers every module workflow', () => { expect(all.length).toBe(75); });
 
   it.each(all)('%s: labels clear boxes, arrowheads and each other', (name, def) => {
     const L = layoutDiagram(def);

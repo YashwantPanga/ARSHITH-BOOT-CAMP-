@@ -11,7 +11,10 @@ import { storedReferral } from '../utils/referral';
  */
 export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode, onBack, onHome, onSuccess, onNeedVerification, onForgotPassword }) {
   const isSignup = mode === 'signup';
-  const fromLink = storedReferral();
+  // an invite link (/ref/CODE, or /register?ref=CODE) fills in the referral code
+  const urlRef = (() => { try { return (new URLSearchParams(window.location.search).get('ref') || '').trim().toUpperCase().slice(0, 16); } catch { return ''; } })();
+  const remembered = storedReferral();
+  const fromLink = urlRef ? (remembered?.code === urlRef ? remembered : { code: urlRef, referrerName: '' }) : remembered;
   const [form, setForm] = useState({ name: '', regNo: '', phone: '', email: '', password: '', confirm: '', referral: fromLink?.code || '' });
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
@@ -145,7 +148,6 @@ export default function AuthPage({ asModal = false, mode = 'login', onSwitchMode
             <div className="col-span-2">
               <label className="block text-[13.5px] font-bold text-charcoal mb-1" htmlFor="ref-code">Referral code <span className="font-normal text-charcoal/50">(optional)</span></label>
               <input id="ref-code" className="auth-input font-mono tracking-wider" value={form.referral} onChange={set('referral')} maxLength={16} placeholder="e.g. YASH123" autoComplete="off" />
-              {fromLink?.code && form.referral === fromLink.code && <p className="mt-1.5 text-[12.5px] font-semibold text-forest">Invited by {fromLink.referrerName || 'a friend'} · 10% off your first purchases</p>}
             </div>
           )}
 

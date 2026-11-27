@@ -4,7 +4,9 @@ import {
   Combine, Container, Cpu, Database, FileCode2, FileSearch, Filter, FlaskConical, GitBranch, GitCompare, Gauge,
   Layers, LayoutGrid, Lightbulb, LineChart, ListChecks, Maximize2, MessageSquare, Minimize2, Network, PieChart,
   Puzzle, RefreshCw, Rocket, Scale, ScanSearch, Search, Server, Shapes, ShieldCheck, Sigma, SplitSquareHorizontal,
-  Table2, Target, TerminalSquare, TrendingUp, Workflow, X, Zap
+  Table2, Target, TerminalSquare, TrendingUp, Workflow, X, Zap,
+  Lock, KeyRound, UserRound, Users, Eye, AlertTriangle, Fingerprint, Globe, Mail, Wifi, Siren, Radar, FileLock2,
+  BadgeCheck, ClipboardCheck, Gavel, Award, Briefcase, HardDrive, Router, Activity
 } from 'lucide-react';
 import { cleanText } from '../../utils/textUtils';
 
@@ -22,7 +24,10 @@ export const ICONS = {
   loop: RefreshCw, rocket: Rocket, scale: Scale, server: Server, shapes: Shapes, shield: ShieldCheck, sigma: Sigma,
   split: SplitSquareHorizontal, table: Table2, terminal: TerminalSquare, workflow: Workflow, zap: Zap, cpu: Cpu,
   binary: Binary, blocks: Blocks, boxes: Boxes, bug: Bug, cloud: Cloud, code: Code2, combine: Combine,
-  container: Container, filecode: FileCode2
+  container: Container, filecode: FileCode2,
+  lock: Lock, key: KeyRound, user: UserRound, users: Users, eye: Eye, alert: AlertTriangle, fingerprint: Fingerprint,
+  globe: Globe, mail: Mail, wifi: Wifi, siren: Siren, radar: Radar, filelock: FileLock2, badge: BadgeCheck,
+  clipboard: ClipboardCheck, gavel: Gavel, award: Award, briefcase: Briefcase, disk: HardDrive, router: Router, activity: Activity
 };
 
 // Static class strings so Tailwind keeps them in the build. Text colours meet WCAG AA on their tints.
@@ -162,7 +167,7 @@ function Flow({ s }) {
           <ul className="mt-1.5 space-y-1">
             {s.loops.map((l, i) => (
               <li key={i} className="text-[13px] leading-5 text-charcoal/80">
-                <span className="font-semibold">{l.from}</span> <span aria-hidden="true">↺</span><span className="sr-only">loops back to</span> <span className="font-semibold">{l.to}</span>{l.label && <span className="text-charcoal/60"> — {l.label}</span>}
+                <span className="font-semibold">{l.from}</span> <span aria-hidden="true">↺</span><span className="sr-only">loops back to</span> <span className="font-semibold">{l.to}</span>{l.label && <span className="text-charcoal/60">: {l.label}</span>}
               </li>
             ))}
           </ul>

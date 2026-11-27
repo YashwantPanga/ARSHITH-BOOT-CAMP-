@@ -48,6 +48,8 @@ RULES.py = RULES.python;
 export function detectLanguage(code = '', hint = '', courseId = '') {
   const h = String(hint || '').toLowerCase();
   if (h) {
+    // config and shell languages first: "json" contains "js" and "powershell" would otherwise fall through
+    if (/json|yaml|yml|yara|http|docker|powershell|ps1|bash|shell|^sh$|cmd|text|plain|console/.test(h)) return 'text';
     if (/py/.test(h)) return 'python';
     if (/sql|postgres|mysql/.test(h)) return 'sql';
     if (/html|jsx/.test(h)) return 'html';

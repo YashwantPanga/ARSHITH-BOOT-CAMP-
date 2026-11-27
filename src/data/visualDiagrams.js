@@ -4,6 +4,8 @@
 // original is kept; formulas and advanced terms sit in `details` (shown when a card is opened).
 // Rendered by src/components/diagrams/VisualDiagram.jsx.
 
+import { CYBER_DIAGRAMS } from './cyberDiagrams';
+
 export const VISUAL_DIAGRAMS = {
   /* ------------------------------------------------------------------ 01 */
   'ai-ds-mod-1': {
@@ -52,7 +54,7 @@ export const VISUAL_DIAGRAMS = {
         ]
       }
     ],
-    note: 'Not every AI system uses machine learning, and generative models differ in how they use deep learning — the levels show how the fields relate, not that each always contains the next.'
+    note: 'Not every AI system uses machine learning, and generative models differ in how they use deep learning; the levels show how the fields relate, not that each always contains the next.'
   },
 
   /* ------------------------------------------------------------------ 02 */
@@ -112,11 +114,11 @@ export const VISUAL_DIAGRAMS = {
           { title: 'Prepend 1 to the shorter shape', icon: 'blocks', text: 'B becomes shape (1, 3).' },
           { title: 'Compare dimensions from the right', icon: 'compare',
             items: ['Dimension 1: 3 == 3 → compatible', 'Dimension 0: 4 vs 1 → the 1 broadcasts to 4'] },
-          { title: 'Result shape (4, 3)', icon: 'zap', tone: 'teal', text: 'Executed with zero memory duplication — B is not copied 4 times.' }
+          { title: 'Result shape (4, 3)', icon: 'zap', tone: 'teal', text: 'Executed with zero memory duplication: B is not copied 4 times.' }
         ]
       }
     ],
-    note: 'Contiguous storage lets NumPy walk through numbers with byte strides instead of following Python object pointers — the source of its large speed-ups.'
+    note: 'Contiguous storage lets NumPy walk through numbers with byte strides instead of following Python object pointers, the source of its large speed-ups.'
   },
 
   /* ------------------------------------------------------------------ 04 */
@@ -226,12 +228,12 @@ export const VISUAL_DIAGRAMS = {
         title: 'From population to hypotheses',
         direction: 'column',
         steps: [
-          { title: 'Population', subtitle: 'Unknown μ (mean) and σ (spread)', icon: 'boxes', text: 'Everyone you care about — too large to measure fully.' },
+          { title: 'Population', subtitle: 'Unknown μ (mean) and σ (spread)', icon: 'boxes', text: 'Everyone you care about, too large to measure fully.' },
           { title: 'Random sampling', subtitle: 'n ≥ 30', icon: 'filter', text: 'Pick a random subset.' },
           { title: 'Sample dataset', subtitle: 'x̄, s, n', icon: 'table', text: 'The sample mean, standard deviation and size.',
-            details: ['Central Limit Theorem: x̄ ~ N(μ, σ / √n) — sample means are approximately normally distributed.'] },
+            details: ['Central Limit Theorem: x̄ ~ N(μ, σ / √n): sample means are approximately normally distributed.'] },
           { title: 'Formulate hypotheses', icon: 'scale',
-            items: ['H0: μA = μB — null hypothesis, no genuine difference', 'H1: μA ≠ μB — alternative hypothesis, a significant difference exists'] }
+            items: ['H0: μA = μB: null hypothesis, no genuine difference', 'H1: μA ≠ μB: alternative hypothesis, a significant difference exists'] }
         ]
       },
       {
@@ -539,5 +541,5 @@ export const VISUAL_DIAGRAMS = {
 };
 
 export function visualDiagramFor(moduleId) {
-  return VISUAL_DIAGRAMS[moduleId] || null;
+  return VISUAL_DIAGRAMS[moduleId] || CYBER_DIAGRAMS[moduleId] || null;
 }

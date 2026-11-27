@@ -1,9 +1,9 @@
 # Content validation report
 
-Generated: 2026-10-30T12:28:04.225Z
+Generated: 2026-11-26T07:52:55.874Z
 
-- Courses: 4 · Modules: 60
-- Errors: **0** · Warnings: **0**
+- Courses: 5 · Modules: 75
+- Errors: **1** · Warnings: **0**
 
 Required per module: objectives, concepts, architecture/workflow, practice, summary, references. Optional: case study, knowledge check.
 
@@ -71,10 +71,25 @@ Required per module: objectives, concepts, architecture/workflow, practice, summ
 | data-science-ai/ai-ds-mod-13 | ✓ | ✓ | ✓ | ✓ (3) | ✓ | ✓ | ✓ | ✓ | string diagram (normalised) | 10 |
 | data-science-ai/ai-ds-mod-14 | ✓ | ✓ | ✓ | ✓ (3) | ✓ | ✓ | ✓ | ✓ | string diagram (normalised) | 10 |
 | data-science-ai/ai-ds-mod-15 | ✓ | ✓ | ✓ | ✓ (3) | ✓ | ✓ | ✓ | ✓ | string diagram (normalised) | 10 |
+| cyber-security/cs-mod-1 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
+| cyber-security/cs-mod-2 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
+| cyber-security/cs-mod-3 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
+| cyber-security/cs-mod-4 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
+| cyber-security/cs-mod-5 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
+| cyber-security/cs-mod-6 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
+| cyber-security/cs-mod-7 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
+| cyber-security/cs-mod-8 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
+| cyber-security/cs-mod-9 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
+| cyber-security/cs-mod-10 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
+| cyber-security/cs-mod-11 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
+| cyber-security/cs-mod-12 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
+| cyber-security/cs-mod-13 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
+| cyber-security/cs-mod-14 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
+| cyber-security/cs-mod-15 | ✓ | ✓ | ✓ | ✓ (4) | ✓ | ✓ | ✓ | ✓ | standard | 0 |
 
 ## Errors
 
-None.
+- cyber-security/cs-mod-7: bad reference http://www.pentest-standard.org/
 
 ## Warnings
 

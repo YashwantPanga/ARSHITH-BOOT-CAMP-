@@ -389,7 +389,7 @@ function DiagramStack({ def, L, onSelect }) {
       {loops.length > 0 && (
         <div className="mt-3 rounded-xl border border-dashed border-brand-300 bg-white/70 p-3">
           <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-sage flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5" aria-hidden="true" /> Feedback loops</p>
-          <ul className="mt-1.5 space-y-1">{loops.map((e, i) => <li key={i} className="text-[13px] text-charcoal/80"><span className="font-semibold">{label.get(e.from)}</span> ↺ <span className="font-semibold">{label.get(e.to)}</span>{e.label && <span className="text-charcoal/60"> — {e.label}</span>}</li>)}</ul>
+          <ul className="mt-1.5 space-y-1">{loops.map((e, i) => <li key={i} className="text-[13px] text-charcoal/80"><span className="font-semibold">{label.get(e.from)}</span> ↺ <span className="font-semibold">{label.get(e.to)}</span>{e.label && <span className="text-charcoal/60">: {e.label}</span>}</li>)}</ul>
         </div>
       )}
     </div>

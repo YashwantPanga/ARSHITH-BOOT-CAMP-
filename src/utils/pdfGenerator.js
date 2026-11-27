@@ -453,7 +453,7 @@ export async function generateCoursePDF(course, studentName = 'Student', { onPro
   const coverTitleMain = isWebDev
     ? "WEB DEVELOPMENT - COMPLETE COURSE MATERIAL"
     : isAIDataScience
-      ? "AI WITH DATA SCIENCE — COMPLETE 15-MODULE COURSE MATERIAL"
+      ? "AI WITH DATA SCIENCE: COMPLETE 15-MODULE COURSE MATERIAL"
       : `COMPLETE COURSE MANUAL:\n${cleanCourseTitle.toUpperCase()}`;
 
   doc.setFontSize(20);

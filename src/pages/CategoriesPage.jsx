@@ -1,5 +1,5 @@
 import React from 'react';
-import { Terminal, Code2, Database, Brain, ArrowRight } from 'lucide-react';
+import { Terminal, Code2, Database, Brain, ShieldCheck, ArrowRight } from 'lucide-react';
 import { Reveal, PageTop } from '../components/ui';
 import { categoryOf } from '../data/meta';
 
@@ -7,7 +7,8 @@ const META = {
   Python: { icon: Terminal, tone: 'bg-brand-900', text: 'Learn Python from first principles to object-oriented programming, files, web data and databases.' },
   SQL: { icon: Database, tone: 'bg-mint-400', text: 'Relational modeling, joins, window functions, indexing and transactions.' },
   'Web Development': { icon: Code2, tone: 'bg-peach-500', text: 'HTML, CSS, modern JavaScript, React, and Node/Express for REST APIs.' },
-  'AI & Data Science': { icon: Brain, tone: 'bg-[#1E5141]', text: 'Data wrangling, statistics, machine learning and model evaluation.' }
+  'AI & Data Science': { icon: Brain, tone: 'bg-[#1E5141]', text: 'Data wrangling, statistics, machine learning and model evaluation.' },
+  'Cyber Security': { icon: ShieldCheck, tone: 'bg-[#2C4A3F]', text: 'Networks, ethical hacking, SOC operations, forensics, cloud security and GRC.' }
 };
 
 export default function CategoriesPage({ courses = [], onCategorySelect, onHome }) {
@@ -16,7 +17,7 @@ export default function CategoriesPage({ courses = [], onCategorySelect, onHome 
   return (
     <div>
       <PageTop eyebrow="Categories" title="Explore by category" crumb="Categories" onHome={onHome}>
-        <p className="mt-3 text-charcoal/70 max-w-xl mx-auto">Four categories. Pick the one that fits your goal.</p>
+        <p className="mt-3 text-charcoal/70 max-w-xl mx-auto">Five categories. Pick the one that fits your goal.</p>
       </PageTop>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid sm:grid-cols-2 gap-6">

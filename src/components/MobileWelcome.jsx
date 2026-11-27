@@ -18,7 +18,7 @@ export function MobileHero({ word, onRegisterClick, onExploreClick, onVerifyClic
       <p className="mt-6 font-display text-[12.5px] font-semibold uppercase tracking-[0.24em] text-[#BCD1C6]">CodeLekho</p>
       <h1 className="mt-2 text-[31px] leading-[1.12] font-bold text-ivory"><CyclingWord className="justify-center" index={word} /><span className="block">with <span className="text-[#BCD1C6]">job-ready online courses</span></span></h1>
       <p className="mt-3 text-[15px] leading-relaxed text-ivory/85">
-        Mentor-written programs in Python, SQL, Web Development and AI — with deep-dive modules, live code practice,
+        Mentor-written programs in Python, SQL, Web Development, AI and Cyber Security, with deep-dive modules, live code practice,
         quizzes after every module, a proctored final and a QR-verified certificate.
       </p>
       <button onClick={onRegisterClick} className="font-display mt-6 w-full h-12 rounded-md bg-ivory text-forest text-[16px] font-semibold active:scale-[.99] transition">Start Learning</button>

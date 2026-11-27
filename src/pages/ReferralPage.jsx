@@ -3,13 +3,13 @@ import { RevealText } from '../components/ui';
 import QRCode from 'qrcode';
 import {
   Copy, Check, Share2, QrCode, Gift, Wallet, Clock, ArrowRight, Users, MousePointerClick, UserPlus, ShoppingBag,
-  BadgeIndianRupee, Landmark, Smartphone, Bell, Trophy, ShieldCheck, Loader2, ChevronRight, Sparkle, Info
+  BadgeIndianRupee, Landmark, Smartphone, Bell, Trophy, ShieldCheck, Loader2, ChevronRight, Info
 } from 'lucide-react';
 import { api } from '../services/api';
 import { paths } from '../router';
 import ReferralTicket from '../components/ReferralTicket';
 import ReferralShareCard from '../components/ReferralShareCard';
-import { shareCard } from '../utils/shareCard';
+import { shareCard, svgToPngBlob } from '../utils/shareCard';
 import { rupees, visitorId, rememberReferral, forgetReferral } from '../utils/referral';
 
 /**
@@ -214,13 +214,22 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
   const total = Math.max(1, w.pending + w.available + w.reserved + w.withdrawn);
   // shares the invite as a card image (with the link as the caption)
   const cardRef = useRef(null);
+  const cardBlob = useRef(null);
   const [sharing, setSharing] = useState(false);
+  // the invite card image is made in advance, so a tap on Share opens the share sheet straight away
+  useEffect(() => {
+    let live = true;
+    const t = setTimeout(() => {
+      if (cardRef.current) svgToPngBlob(cardRef.current, 1080, 1350).then(b => { if (live) cardBlob.current = b; }).catch(() => {});
+    }, 600);
+    return () => { live = false; clearTimeout(t); };
+  }, [data.code, data.link, firstName, data.rules.discountPct]);
   const share = async () => {
     if (sharing) return;
-    const text = `Learn coding with me on CodeLekho - you get ${data.rules.discountPct}% off with my code ${data.code}: ${data.link}`;
+    const text = `Learn coding with me on CodeLekho. You get ${data.rules.discountPct}% off with my code ${data.code}: ${data.link}`;
     setSharing(true);
     try {
-      const r = await shareCard({ svg: cardRef.current, width: 1080, height: 1350, fileName: `CodeLekho-invite-${data.code}.png`, text });
+      const r = await shareCard({ svg: cardRef.current, blob: cardBlob.current, width: 1080, height: 1350, fileName: `CodeLekho-invite-${data.code}.png`, text });
       if (r === 'fallback') toast?.('Your invite card was saved – attach it in the WhatsApp chat that opened.', 'success', 5000);
     } catch {
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
@@ -384,7 +393,7 @@ function Dashboard({ data, setData, toast, navigate, firstName }) {
   );
 }
 
-const Empty = ({ text }) => <p className="py-10 text-center text-[13.5px] text-charcoal/50"><Sparkle className="w-4 h-4 inline mr-1 -mt-0.5 text-sage" />{text}</p>;
+const Empty = ({ text }) => <p className="py-10 text-center text-[13.5px] text-charcoal/50">{text}</p>;
 
 export default function ReferralPage({ studentUser, navigate, toast }) {
   const [data, setData] = useState(null);
@@ -403,7 +412,10 @@ export default function ReferralPage({ studentUser, navigate, toast }) {
   return <Dashboard data={data} setData={setData} toast={toast} navigate={navigate} firstName={(() => { const w = String(studentUser.name || '').trim().split(/\s+/).filter(Boolean); return w.find(x => x.replace(/\./g, '').length > 1) || w[0] || 'a friend'; })()} />;
 }
 
-/** /ref/CODE: remembers the code, counts the click, links a signed-in learner, and invites a visitor to join. */
+/**
+ * /ref/CODE: remembers the code and counts the click. A visitor goes straight to the Register page
+ * with the referral code already filled in; a signed-in learner gets the invite linked to their account.
+ */
 export function RefLanding({ code, studentUser, navigate, toast }) {
   const [state, setState] = useState({ loading: true });
   useEffect(() => {
@@ -414,6 +426,7 @@ export function RefLanding({ code, studentUser, navigate, toast }) {
         if (!live) return;
         if (!r.valid) { setState({ invalid: true }); return; }
         rememberReferral(r.code, r.referrerName);
+        if (!studentUser) { navigate(paths.register(), { replace: true }); return; }
         let claim = null;
         if (studentUser) {
           try { const c = await api.claimReferral(r.code); claim = { ok: true, message: c.message }; forgetReferral(); } catch (e) { claim = { ok: false, message: e.message }; }

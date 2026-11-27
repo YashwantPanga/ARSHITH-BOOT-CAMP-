@@ -54,7 +54,7 @@ export function TermsPage({ onHome }) {
           'Keep your password private. You are responsible for activity on your account. One person may hold one account.'
         ] },
         { title: 'Courses and certificates', body: [
-          'Each course costs ₹149 (AI & Data Science costs ₹199), and Interview Prep costs ₹599 as a one-time payment. Interview Prep is free when you earn all 4 course certificates. The price is always shown before you pay, and payments follow the Refund Policy.',
+          'Each course costs ₹149 (AI & Data Science costs ₹199), and Interview Prep costs ₹599 as a one-time payment. Interview Prep is free when you earn any 4 course certificates. The price is always shown before you pay, and payments follow the Refund Policy.',
           'Each course has two attempts at its final assessment. If you fail both, you can start the course again: every module quiz is reset and you get two fresh attempts. A certificate is issued when you pass every module quiz, submit one project as a GitHub repository and score at least 70% in the proctored final assessment.',
           'Certificates confirm completion of a CodeLekho course. They are not a degree, diploma or university qualification, and are not issued under UGC or AICTE approval. Each certificate has a unique ID that anyone can verify on this site.',
           'We may revoke a certificate obtained through cheating, impersonation or false information.'

@@ -1,4 +1,4 @@
-// Interview Prep access: free for learners who hold certificates for all 4 courses (see
+// Interview Prep access: free for learners who hold certificates for 4 different courses (see
 // interviewRoutes.js); anyone else can unlock it for interviewPrice() (₹599) through Cashfree.
 const norm = (v) => String(v || '').trim().toLowerCase();
 

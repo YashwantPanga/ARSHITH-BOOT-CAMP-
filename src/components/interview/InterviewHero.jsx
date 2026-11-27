@@ -105,7 +105,7 @@ export default function InterviewHero({ price, total, signedIn, earned, required
                 {signedIn ? `Unlock for ₹${price}` : `Get lifetime access · ₹${price}`} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               </button>
               <button onClick={signedIn ? onContinue : onBrowse} className={`iv-free h-12 px-5 rounded-xl border-[1.4px] border-[#0D0D0C]/80 font-display text-[14.5px] font-semibold inline-flex items-center justify-center gap-2 transition hover:bg-[#0D0D0C] hover:text-white ${word === 3 ? 'is-lit' : ''}`}>
-                <Award className="w-4 h-4" /> Free when you earn all {required} certificates{signedIn ? ` · ${earned}/${required}` : ''}
+                <Award className="w-4 h-4" /> Free when you earn any {required} course certificates{signedIn ? ` · ${earned}/${required}` : ''}
               </button>
             </div>
             <p className="text-[13.5px] sm:text-[14.5px] leading-snug text-[#0D0D0C]/60 max-w-[420px]">
