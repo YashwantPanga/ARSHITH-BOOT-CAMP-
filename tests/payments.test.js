@@ -154,6 +154,7 @@ describe('prices', () => {
     process.env.INTERVIEW_PRICE = '';
     expect(coursePrice('python-programming')).toBe(149);
     expect(coursePrice('data-science-ai')).toBe(199);
+    expect(coursePrice('cyber-security')).toBe(199);
     expect(interviewPrice()).toBe(599);
   });
 });

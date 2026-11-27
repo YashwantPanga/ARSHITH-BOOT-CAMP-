@@ -1,6 +1,6 @@
 import express from 'express';
 import { withLessons } from '../data/lessons/index.js';
-import { priceFor, BEST_SELLER_COURSE } from '../lib/enrollment.js';
+import { priceFor, BEST_SELLER_COURSE, NEW_COURSE } from '../lib/enrollment.js';
 import { getDb, saveDb, logActivity, readDb, dbVersion } from '../db.js';
 import { verifyAdminToken } from '../middleware/auth.js';
 
@@ -33,6 +33,7 @@ function toPublicCourse(stored) {
     price: priceFor(course.id),
     isFree: priceFor(course.id) === 0,
     bestSeller: course.id === BEST_SELLER_COURSE,
+    isNew: course.id === NEW_COURSE,
     progress: 0,
     finalTest: finalTest ? {
       id: finalTest.id,

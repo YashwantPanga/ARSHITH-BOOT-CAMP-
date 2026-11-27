@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, Lock, PlayCircle, BadgeCheck, ArrowRight, BookOpen, Flame } from 'lucide-react';
+import { Clock, Lock, PlayCircle, BadgeCheck, ArrowRight, BookOpen, Flame, ShieldCheck } from 'lucide-react';
 import { SafeImg, ProgressBar } from './ui';
 import TrackBadge from './TrackBadge';
 import { cleanText, displayTitle, shortText } from '../utils/textUtils';
@@ -26,7 +26,22 @@ export function BestSellerBadge({ className = '' }) {
     </span>
   );
 }
-const bestSellerRing = 'ring-2 ring-[#E0B54A] shadow-[0_24px_48px_-26px_rgba(160,110,10,.65)]';
+/** The "New" tag on the newest course (Cyber Security): dark with a signal-green edge. */
+export function NewBadge({ className = '' }) {
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full bg-[#0B0521] px-2.5 py-1 font-display text-[11.5px] font-bold uppercase tracking-[0.08em] text-[#39FF88] ring-1 ring-[#39FF88]/60 shadow-[0_6px_14px_-6px_rgba(10,60,30,.8)] ${className}`}>
+      <ShieldCheck className="w-3 h-3" /> New
+    </span>
+  );
+}
+/** The course's tag, if it has one: Bestseller or New. */
+export function CourseTag({ course, className = '' }) {
+  if (course?.bestSeller) return <BestSellerBadge className={className} />;
+  if (course?.isNew) return <NewBadge className={className} />;
+  return null;
+}
+const hasTag = (course) => Boolean(course?.bestSeller || course?.isNew);
+const tagRing = (course) => (course?.bestSeller ? 'ring-2 ring-[#E0B54A] shadow-[0_24px_48px_-26px_rgba(160,110,10,.65)]' : course?.isNew ? 'ring-2 ring-[#39FF88]/70 shadow-[0_24px_48px_-26px_rgba(20,120,60,.55)]' : '');
 
 export default function CourseCard({ course, enrolledCourseId, onSelect, onEnroll, offer, index = 0 }) {
   const isMine = offer?.enrolledIds ? offer.enrolledIds.includes(course.id) : enrolledCourseId === course.id;
@@ -36,7 +51,7 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
 
   return (
     <article
-      className={`edu-card group relative flex flex-col h-full overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_40px_-24px_rgba(1,58,43,.4)] hover:border-sage/50 ${course.bestSeller && !isMine ? bestSellerRing : ''} ${isLocked ? 'opacity-80' : ''}`}
+      className={`edu-card group relative flex flex-col h-full overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_40px_-24px_rgba(1,58,43,.4)] hover:border-sage/50 ${hasTag(course) && !isMine ? tagRing(course) : ''} ${isLocked ? 'opacity-80' : ''}`}
       style={{ animationDelay: `${index * 60}ms` }}
     >
       {/* Image with the overlapping track plate */}
@@ -44,7 +59,7 @@ export default function CourseCard({ course, enrolledCourseId, onSelect, onEnrol
         <div className="relative aspect-[16/10] overflow-hidden bg-forest">
           <SafeImg src={art || course.thumbnail} alt="" className="w-full h-full object-cover object-[44%_50%] transition-transform duration-700 group-hover:scale-[1.04]" />
           {!art && <div className="absolute inset-0 bg-gradient-to-t from-evergreen/55 via-evergreen/5 to-transparent" />}
-          {course.bestSeller && <BestSellerBadge className="absolute top-2.5 left-2.5" />}
+          <CourseTag course={course} className="absolute top-2.5 left-2.5" />
           {isMine && <span className="absolute top-2.5 right-2.5 chip bg-ivory text-brand-900">{offer?.admin ? 'Full access' : 'Enrolled'}</span>}
           {isLocked && <span className="absolute top-2.5 right-2.5 chip bg-white/90 text-charcoal/70"><Lock className="w-3 h-3" /> Locked</span>}
         </div>
@@ -97,11 +112,11 @@ export function CourseTile({ course, enrolledCourseId, onSelect, onEnroll, offer
   const modules = course.modules?.length || 0;
 
   return (
-    <article className={`edu-card group relative flex flex-col h-full overflow-hidden text-center transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_48px_-26px_rgba(1,58,43,.45)] ${course.bestSeller && !isMine ? bestSellerRing : ''} ${isLocked ? 'opacity-80' : ''}`}>
+    <article className={`edu-card group relative flex flex-col h-full overflow-hidden text-center transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_48px_-26px_rgba(1,58,43,.45)] ${hasTag(course) && !isMine ? tagRing(course) : ''} ${isLocked ? 'opacity-80' : ''}`}>
       <button onClick={() => onSelect(course.id)} className="relative block" aria-label={`View ${course.title}`}>
         <div className="relative aspect-[16/10] overflow-hidden bg-forest">
           <SafeImg src={courseArt(course)} alt="" className="w-full h-full object-cover object-[44%_50%] transition-transform duration-700 group-hover:scale-[1.05]" />
-          {course.bestSeller && <BestSellerBadge className="absolute top-3 left-3" />}
+          <CourseTag course={course} className="absolute top-3 left-3" />
           {isMine && <span className="absolute top-3 right-3 chip bg-ivory text-brand-900">{offer?.admin ? 'Full access' : 'Enrolled'}</span>}
           {isLocked && <span className="absolute top-3 right-3 chip bg-white/90 text-charcoal/70"><Lock className="w-3 h-3" /> Locked</span>}
         </div>

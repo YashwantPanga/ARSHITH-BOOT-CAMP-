@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Clock } from 'lucide-react';
-import CourseCard, { courseArt, priceLabel, BestSellerBadge } from './CourseCard';
+import CourseCard, { courseArt, priceLabel, CourseTag } from './CourseCard';
 import { SafeImg } from './ui';
 import { hoursOf } from '../data/meta';
 import { cleanText, displayTitle } from '../utils/textUtils';
@@ -75,7 +75,7 @@ export function CourseRow({ course, enrolledCourseId, offer, onSelect, large = f
       <span className="relative block w-full aspect-[16/10] bg-forest overflow-hidden">
         <SafeImg src={courseArt(course)} alt="" className="w-full h-full object-cover" />
         <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10.5px] font-bold shadow-sm ${isMine ? 'bg-forest text-ivory' : 'bg-white/95 text-forest'}`}>{tag}</span>
-        {course.bestSeller && !isMine && <BestSellerBadge className="absolute right-1.5 top-1.5 !px-1.5 !py-0.5 !text-[9px]" />}
+        {!isMine && <CourseTag course={course} className="absolute right-1.5 top-1.5 !px-1.5 !py-0.5 !text-[9px]" />}
       </span>
       <span className={`flex-1 flex flex-col ${large ? 'p-3.5' : 'p-2.5'}`}>
         <span className="flex items-center gap-1 min-w-0">

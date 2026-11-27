@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { ArrowLeft, Clock, Award, CheckCircle2, ChevronDown, BookOpen, ShieldCheck, Lock, PlayCircle, ListChecks, FileText, BarChart3, Layers, Languages } from 'lucide-react';
 import { ProgressBar, RevealText } from '../components/ui';
-import { priceOf, BestSellerBadge } from '../components/CourseCard';
+import { priceOf, CourseTag } from '../components/CourseCard';
 import CourseSlideshow from '../components/CourseSlideshow';
 import CourseBannerReel, { hasBannerReel } from '../components/CourseBannerReel';
 import { slidesForCourse } from '../data/courseGallery';
@@ -148,8 +148,8 @@ export default function CourseDetailsPage({ course, enrolledCourseId, offer, isL
                 <p className="text-[12px] uppercase tracking-[0.2em] text-[#BCD1C6]">Course fee</p>
                 <p className="font-display text-[34px] font-bold leading-none text-ivory mt-1">{isMine ? 'Unlocked' : price ? `₹${price}` : 'Free'}</p>
               </div>
-              {course.bestSeller && !isMine
-                ? <BestSellerBadge />
+              {(course.bestSeller || course.isNew) && !isMine
+                ? <CourseTag course={course} />
                 : <span className="rounded-full bg-ivory/15 text-ivory text-[12.5px] font-semibold px-3 py-1.5 inline-flex items-center gap-1.5"><Award className="w-3.5 h-3.5" /> Certificate included</span>}
             </div>
             <div className="p-6 space-y-5">
